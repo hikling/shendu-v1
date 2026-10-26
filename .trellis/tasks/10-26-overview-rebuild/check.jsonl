@@ -1,0 +1,5 @@
+{"file":".trellis/spec/frontend/index.md","reason":"Required frontend quality checks"}
+{"file":".trellis/spec/frontend/architecture.md","reason":"Verify shared shell and immutable-asset versioning"}
+{"file":".trellis/spec/frontend/state-and-data.md","reason":"Verify route guard and record lifecycle preservation"}
+{"file":".trellis/spec/frontend/ui-quality.md","reason":"Verify desktop/mobile, keyboard, theme and reduced-motion behavior"}
+{"file":".trellis/spec/backend/http-and-security.md","reason":"Verify no auth or record-ownership regression"}

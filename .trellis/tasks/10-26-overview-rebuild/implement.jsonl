@@ -1,0 +1,5 @@
+{"file":".trellis/spec/frontend/index.md","reason":"Frontend pre-development checklist and quality gate"}
+{"file":".trellis/spec/frontend/architecture.md","reason":"Current single-page rendering, shell/navigation ownership and asset cache contract"}
+{"file":".trellis/spec/frontend/state-and-data.md","reason":"Record cache, authenticated requests, route guard and review lifecycle invariants"}
+{"file":".trellis/spec/frontend/ui-quality.md","reason":"Themes, responsive behavior, focus and reduced-motion requirements"}
+{"file":".trellis/spec/backend/http-and-security.md","reason":"Preserve authenticated record ownership and existing API behavior"}
