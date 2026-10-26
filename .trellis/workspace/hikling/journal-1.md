@@ -262,3 +262,25 @@
 ### Status
 
 [OK] **Completed**
+
+
+## Session 12: 六类纯文字介绍与悬停翻滚
+<!-- trellis-session: v=2 fp=fd2a69e3f2c5f8ef -->
+
+**Date**: 2026-10-27
+**Task**: 六类纯文字介绍与悬停翻滚
+**Branch**: `main`
+
+### Summary
+
+六类介绍精简为名称与说明，删除用途标签、时长、页脚和进入按钮，图标直接导航保留。独立视觉层加入780ms单次跃起翻滚，保留放大阴影和散开粒子，按钮及其他图标位置不变。6类真实动效、12次直达、36项边界、键盘及减少动态效果验证通过，README和规范同步。
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `72cd2dc` | fix: simplify category descriptions and add hover tumble |
+
+### Status
+
+[OK] **Completed**
