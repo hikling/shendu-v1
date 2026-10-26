@@ -240,3 +240,25 @@
 ### Status
 
 [OK] **Completed**
+
+
+## Session 11: 六类四周散开动效与图标直达
+<!-- trellis-session: v=2 fp=39e29ed760129aca -->
+
+**Date**: 2026-10-27
+**Task**: 六类四周散开动效与图标直达
+**Branch**: `main`
+
+### Summary
+
+按用户参考的散开意图增加16粒子和扩散环的本地CSS短动效，保留悬停原位放大与信息；图标本身通过共享data-nav单击直达，移除旧点击切换绑定。六类真实悬停、12次桌面/手机图标直达、Enter/空格、介绍入口与减少动态效果验证通过。规范、README和动效预览同步。
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `9e4c834` | feat: add category burst feedback and direct icon navigation |
+
+### Status
+
+[OK] **Completed**
