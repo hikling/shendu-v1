@@ -130,3 +130,25 @@
 ### Status
 
 [OK] **Completed**
+
+
+## Session 6: 概览图标入口与长卷上移
+<!-- trellis-session: v=2 fp=f7e80368e93e3be9 -->
+
+**Date**: 2026-10-26
+**Task**: 概览图标入口与长卷上移
+**Branch**: `main`
+
+### Summary
+
+六类入口改为紧凑 SVG 图标菜单，悬停或聚焦向左展开名称，单击直达；删除长卷标题并上移约222px。六类导航和320–1660px响应式、键盘、减少动态效果验证通过，README预览与规范同步。
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `702c2bb` | fix: compact overview entries and lift record reel |
+
+### Status
+
+[OK] **Completed**
