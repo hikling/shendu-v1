@@ -15,7 +15,7 @@ typography:
   body:
     fontFamily: '"Noto Sans SC", "Microsoft YaHei", "PingFang SC", system-ui, sans-serif'
 rounded:
-  category-card: "18px"
+  category-card: "16px"
   record-card: "20px"
   menu: "18px"
 spacing:
@@ -35,13 +35,13 @@ components:
 
 一个人翻看自己写下的索引卡与长卷。概览的主句和六种时间尺度先建立方向，底部的真实记录缓慢经过；旧页面保留熟悉的书写工具气质。使用者是项目所有者本人，界面默认中文，日期按既有北京时间格式。
 
-概览借鉴用户提供的参考图的四段布局和一处持续移动效果。它是产品首页，主句有品牌表达，导航和记录卡保持工具的清晰度。不要出现 ClassDojo 标识、角色、照片或文案，也不要把全部旧页面一起改成营销首页。独特点是「日、周、月、季、年、决」六枚索引卡，以及由真实已完成复盘组成的回看长卷。
+概览借鉴用户提供的参考图的四段布局和一处持续移动效果。它是产品首页，主句有品牌表达，导航和记录卡保持工具的清晰度。不要出现 ClassDojo 标识、角色、照片或文案，也不要把全部旧页面一起改成营销首页。六类入口采用紧凑图标菜单，参考 Coffee options 的小方块与名称展开反馈；由真实已完成复盘组成的弧形长卷承接下方。
 
 **Token 归属：** 运行代码是规范值来源。`shendu/public/styles.css` 的 `.app-shell` 定义概览局部语义变量，`shendu/public/app.js` 的 `applyTheme()` 写入现有 `--primary` 等账户主题色。本文件镜像这些值并解释用途；改动两处时应在同一提交中核对映射。
 
 ## Colors
 
-`overview-background` → `--overview-bg`：概览画布。`overview-surface` → `--overview-surface`：入口、菜单和记录卡。`overview-ink` → `--overview-ink`：主句与标题。`overview-muted` → `--overview-muted`：说明、日期。`overview-line` → `--overview-line`：边界。交互强调色仍由账户主题的 `--primary` 决定，默认值为 `primary-default`；前景色使用既有 `--primary-contrast`。六类的次要色只帮助辨认，类别文字和「日、周、月、季、年、决」始终可见，不能只靠颜色区分。
+`overview-background` → `--overview-bg`：概览画布。`overview-surface` → `--overview-surface`：菜单和记录卡。`overview-ink` → `--overview-ink`：主句与标题。`overview-muted` → `--overview-muted`：说明、日期。`overview-line` → `--overview-line`：边界。交互强调色仍由账户主题的 `--primary` 决定，默认值为 `primary-default`；前景色使用既有 `--primary-contrast`。六类入口使用既有 `--type-color` / `--type-soft`，颜色只作辅助，不能替代语义图标和可访问名称。类别名称在悬停或键盘聚焦时向图标左侧展开，屏幕阅读器始终可读取入口名称。
 
 这些概览颜色局限于新首页和顶部导航；旧复盘表单继续使用现有 `--paper`、`--ink` 等变量，直到各页面以后分别重做。
 
@@ -51,7 +51,7 @@ components:
 
 ## Layout
 
-顶部导航为 `top-navigation-height`，在窄屏缩为 64px。概览内容上限 `overview-content-max`，从居中主句进入六列入口，再进入弧形回看。主句顶部留白由概览 `.overview-hero` 的 `clamp(30px,3vw,48px)` 控制，主句前不再放置「私人复盘空间」标签；六类入口前不放「选择一个时间尺度」。入口在平板变三列、窄手机变两列；旧页面主体仍由既有 `.workspace` 与 `.main` 管理。底部运动只发生在独立内容窗口，不让文档产生横向溢出。
+顶部导航为 `top-navigation-height`，在窄屏缩为 64px。概览内容上限 `overview-content-max`，从居中主句进入紧凑图标菜单，再进入弧形回看。主句顶部留白由概览 `.overview-hero` 的 `clamp(30px,3vw,48px)` 控制，主句前不再放置「私人复盘空间」标签；六类入口前不放「选择一个时间尺度」。入口区域上限 780px，桌面图标方块为 64px；名称展开时按钮宽度增加，邻近图标随之让位。680px 以下三列排布，540px 以下方块为 44px，380px 以下为两列；窄屏按钮单元保留名称展开所需空间，展开不改变行数。长卷不设可见标题，紧接图标菜单，运动路径顶部基准为 60px。旧页面主体仍由既有 `.workspace` 与 `.main` 管理。底部运动只发生在独立内容窗口，不让文档产生横向溢出。
 
 ## Elevation & Depth
 
@@ -59,7 +59,7 @@ components:
 
 ## Shapes
 
-入口、记录卡和菜单分别采用 frontmatter 中的圆角。小型类别印记和顶部「慎」印有更紧的圆角。记录卡沿弧线切线方向轻微倾斜；键盘阅读或减少动态效果时改为摆正的静态列表。
+入口、记录卡和菜单分别采用 frontmatter 中的圆角。图标方块桌面圆角 16px，窄屏随尺寸缩至 14px / 12px；顶部「慎」印有更紧的圆角。记录卡沿弧线切线方向轻微倾斜；键盘阅读或减少动态效果时改为摆正的静态列表。
 
 ## Components
 
@@ -73,7 +73,7 @@ components:
 
 ### Iconography and motion
 
-六枚中文时间尺度字形是主图形。顶部菜单复用现有线条图标。长卷沿两侧高、中央低的浅半圆弧连续移动，卡片随轨迹改变高度和角度；以自适应二次曲线路径呈现，循环复位位于可视窗口外。`bindOverviewArc()` 根据窗口和卡片尺寸生成路径、间距与时长，`.overview-record-card` 通过 CSS motion path 实际移动。界面不设暂停按钮；悬停暂停，键盘焦点进入可滚动静态列表，系统和账户减少动态效果设置拥有最终优先级。长卷标题下不再添加「从已完成的复盘中随机拾起一页。」说明。
+六类入口复用 `NAV_ICON_PATHS` 的语义 SVG，与顶部菜单相同。悬停或键盘聚焦时，类别名称从图标左侧展开，图标短暂弹动；单击或 Enter 通过原有 `data-nav` 进入对应页面。方框内只放图标，名称在框外。减少动态效果时名称仍立即显示，关闭展开过渡和图标弹动。长卷沿两侧高、中央低的浅半圆弧连续移动，卡片随轨迹改变高度和角度；以自适应二次曲线路径呈现，循环复位位于可视窗口外。`bindOverviewArc()` 根据窗口和卡片尺寸生成路径、间距与时长，`.overview-record-card` 通过 CSS motion path 实际移动。界面不设暂停按钮；悬停暂停，键盘焦点进入可滚动静态列表，系统和账户减少动态效果设置拥有最终优先级。不显示「回看长卷」「已经写下的记录」及随机拾页说明。
 
 ## Do's and Don'ts
 

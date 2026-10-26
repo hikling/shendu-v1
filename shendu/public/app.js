@@ -192,7 +192,7 @@ function bindOverviewArc(){
   if(!window||!track)return;
   const cards=$$('.overview-record-card',track),curve=document.createElementNS('http://www.w3.org/2000/svg','path');
   const layout=()=>{
-    const width=window.clientWidth,cardWidth=cards[0].offsetWidth,gap=parseFloat(getComputedStyle(track).columnGap)||0,rise=Math.min(150,Math.max(78,width*.115)),edge=90;
+    const width=window.clientWidth,cardWidth=cards[0].offsetWidth,gap=parseFloat(getComputedStyle(track).columnGap)||0,rise=Math.min(150,Math.max(78,width*.115)),edge=60;
     const arc=`M ${-cardWidth} ${edge} Q ${width/2} ${edge+rise*2} ${width+cardWidth} ${edge}`;
     curve.setAttribute('d',arc);
     // Extra travel stays outside the viewport so many records never overlap on the visible arc.
@@ -211,12 +211,11 @@ function bindOverviewArc(){
 function renderOverview(){
   const records=overviewRecords();
   const reelRecords=records.length?Array.from({length:Math.max(12,records.length)},(_,index)=>records[index%records.length]):[];
-  const categories=Object.entries(TYPES).map(([key,item])=>`<button class="overview-type-card type-${key}" type="button" data-nav="${key}" aria-label="进入${item.label}"><span class="overview-type-mark" aria-hidden="true">${TYPE_ICONS[key]}</span><strong>${item.label}</strong><span class="overview-type-hint">${item.position}</span><span class="overview-type-arrow" aria-hidden="true">↗</span></button>`).join('');
+  const categories=Object.entries(TYPES).map(([key,item])=>`<button class="overview-type-card type-${key}" type="button" data-nav="${key}" aria-label="进入${item.label}"><span class="overview-type-label" aria-hidden="true">${item.label}</span><span class="overview-type-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${NAV_ICON_PATHS[key]}</svg></span></button>`).join('');
   const cardSet=reelRecords.map((record,index)=>overviewRecordCard(record,index>=records.length,index)).join('');
   const reel=records.length?`<div class="overview-reel" id="overview-reel">
-      <div class="overview-reel-heading"><div><span class="overview-section-eyebrow">回看长卷</span><h2>已经写下的记录</h2></div></div>
       <div class="overview-reel-window" aria-label="已完成复盘摘要"><div class="overview-reel-track" style="--reel-count:${reelRecords.length}">${cardSet}</div></div>
-    </div>`:`<section class="overview-empty" aria-labelledby="overview-empty-title"><span class="overview-section-eyebrow">回看长卷</span><h2 id="overview-empty-title">从第一份复盘开始</h2><p>完成一份记录后，这里会出现属于你的回看卡片。</p><button type="button" data-nav="daily">开始每日复盘 <span aria-hidden="true">↗</span></button></section>`;
+    </div>`:`<section class="overview-empty" aria-labelledby="overview-empty-title"><h2 id="overview-empty-title">从第一份复盘开始</h2><p>完成一份记录后，这里会出现属于你的回看卡片。</p><button type="button" data-nav="daily">开始每日复盘 <span aria-hidden="true">↗</span></button></section>`;
   shell(`<div class="overview-page">
     <section class="overview-hero" aria-labelledby="overview-title"><h1 id="overview-title">言寡尤，行寡悔，<br><em>慎独存诚</em></h1><p>把事实、调整与验证，留成一份不会被情绪改写的记录。</p></section>
     <section class="overview-types" aria-labelledby="overview-types-title"><div class="overview-types-heading"><h2 id="overview-types-title">从哪里开始复盘？</h2></div><div class="overview-type-grid">${categories}</div></section>

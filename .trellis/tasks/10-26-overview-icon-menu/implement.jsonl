@@ -1,0 +1,2 @@
+{"file": ".trellis/spec/frontend/architecture.md", "reason": "复用图标和导航绑定并更新缓存版本"}
+{"file": ".trellis/spec/frontend/ui-quality.md", "reason": "交互、键盘和响应式规范"}
