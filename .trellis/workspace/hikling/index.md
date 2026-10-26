@@ -8,7 +8,7 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 3
+- **Total Sessions**: 4
 - **Last Active**: 2026-10-26
 <!-- @@@/auto:current-status -->
 
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~87 | Active |
+| `journal-1.md` | ~110 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -29,6 +29,7 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 4 | 2026-10-26 | 公开仓库与部署文档更新 | `756f286`, `4f4876d` | `main` |
 | 3 | 2026-10-26 | 概览与顶部导航重做 | `849d7c3`, `6534354` | `codex/restore-original-ui` |
 | 2 | 2026-10-23 | 恢复原版界面 | `5756981` | `codex/restore-original-ui` |
 | 1 | 2026-10-23 | 每日复盘 UI 重构与 PR | `e0fc653`, `23a2834` | `codex/ui-daily-review` |

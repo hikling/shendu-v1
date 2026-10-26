@@ -16,13 +16,13 @@
 
 ## Acceptance Criteria
 
-- [ ] README 不再声称旧 `code.html` 视觉稿、左侧抽屉或原 `Shendu` 仓库是当前版本；新仓库链接和所有复制命令一致。
-- [ ] README 的 Docker Compose、环境变量、Caddy、健康检查与现有文件匹配；有明确的首次运行验证及保留数据说明。
-- [ ] `shendu/VERSION`、`package.json`、`index.html` 的版本一致，Node 最低版本可直接运行当前启动命令。
-- [ ] 在可用环境中通过文档/脚本静态检查和隔离的启动烟测；若本机缺 Docker，明确记录无法本地执行容器部署。
-- [ ] 远程 Linux 构建检查通过：Compose 可解析、镜像可构建、容器 `/healthz` 可响应。
-- [ ] 新仓库公开且 `main` 能读到更新后的 README；远端可见性、提交和文件内容读回确认。
-- [ ] 仓库历史未含运行密钥、数据库或备份；原仓库仍保留。
+- [x] README 不再声称旧 `code.html` 视觉稿、左侧抽屉或原 `Shendu` 仓库是当前版本；新仓库链接和所有复制命令一致。
+- [x] README 的 Docker Compose、环境变量、Caddy、健康检查与现有文件匹配；有明确的首次运行验证及保留数据说明。
+- [x] `shendu/VERSION`、`package.json`、`index.html` 的版本一致，Node 最低版本可直接运行当前启动命令。
+- [x] 在可用环境中通过文档/脚本静态检查和隔离的启动烟测；若本机缺 Docker，明确记录无法本地执行容器部署。
+- [x] 远程 Linux 构建检查通过：Compose 可解析、镜像可构建、容器 `/healthz` 可响应。
+- [x] 新仓库公开且 `main` 能读到更新后的 README；远端可见性、提交和文件内容读回确认。
+- [x] 仓库历史未含运行密钥、数据库或备份；原仓库仍保留。
 
 ## Out of scope
 

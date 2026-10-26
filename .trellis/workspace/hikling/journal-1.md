@@ -85,3 +85,26 @@
 ### Status
 
 [OK] **Completed**
+
+
+## Session 4: 公开仓库与部署文档更新
+<!-- trellis-session: v=2 fp=f85c7f6732d076ae -->
+
+**Date**: 2026-10-26
+**Task**: 公开仓库与部署文档更新
+**Branch**: `main`
+
+### Summary
+
+重写 shendu-v1 README 与升级指南，统一 v1 版本和 Node 要求；远程 Linux 构建、26 项测试和容器健康检查通过；公开 GitHub 仓库并验证。
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `756f286` | docs: publish Shendu v1 setup guide |
+| `4f4876d` | docs: record public release verification |
+
+### Status
+
+[OK] **Completed**

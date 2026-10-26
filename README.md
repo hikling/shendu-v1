@@ -1,5 +1,7 @@
 # 慎独 · Shendu v1
 
+[![Verify build](https://github.com/hikling/shendu-v1/actions/workflows/verify.yml/badge.svg)](https://github.com/hikling/shendu-v1/actions/workflows/verify.yml)
+
 给自己使用的个人成长复盘系统。按日、周、月、90 天、年和重大决策记录事实、调整与验证，并在概览里回看已经完成的记录。代码可以公开获取，账户与复盘数据保存在你自己的设备或服务器上。
 
 ![慎独概览](docs/overview.png)
