@@ -142,19 +142,19 @@ function renderAuth(info={}){
   $('#auth-switch')?.addEventListener('click',()=>renderAuth({...info,mode:info.mode==='register'?'login':'register'}));
 }
 
-function navItems(className='header-menu-item'){return Object.entries(TYPES).filter(([key])=>key!=='quarterly'||state.stage.showQuarter).map(([key,item])=>`<button class="${className} ${state.route===key?'active':''}" type="button" data-nav="${key}" ${state.route===key?'aria-current="page"':''}>${navIcon(key)}<span>${item.label}</span></button>`).join('')}
+function navItems(className='header-menu-item'){return Object.entries(TYPES).filter(([key])=>key!=='quarterly'||state.stage.showQuarter).map(([key,item])=>`<button class="${className} ${state.route===key?'active':''}" type="button" data-nav="${key}" ${state.route===key?'aria-current="page"':''}>${navIcon(key)}<span class="header-menu-copy"><span>${item.label}</span>${className==='header-menu-item'?`<small>${item.meta.replace('m',' 分钟')}</small>`:''}</span></button>`).join('')}
 function headerLink(route,label,extra=''){return `<button class="header-link ${state.route===route?'active':''}" type="button" data-nav="${route}" ${state.route===route?'aria-current="page"':''}>${esc(label)}${extra}</button>`}
 function topbar(){
   const reviewsActive=Boolean(TYPES[state.route]),admin=['admin','superadmin'].includes(state.user.role),actionLabel=currentActionTemplate().pageTitle;
   const accountName=state.user.displayName||state.user.username;
   return `<header class="topbar shendu-header" id="site-header">
     <div class="header-inner">
-      <button class="header-brand" type="button" data-nav="overview" aria-label="慎独，返回概览"><span class="header-seal" aria-hidden="true">慎</span><span class="header-wordmark">慎独</span></button>
+      <button class="header-brand" type="button" data-nav="overview" aria-label="慎独，返回概览"><span class="seal header-seal" aria-hidden="true">慎</span><span class="brand-cn header-wordmark">慎獨</span></button>
       <nav class="header-nav" aria-label="主导航">
         ${headerLink('overview','概览')}
         <div class="header-menu">
           <button class="header-menu-trigger ${reviewsActive?'active':''}" type="button" data-menu-trigger aria-expanded="false" aria-controls="review-menu">复盘<span class="header-chevron" aria-hidden="true"></span></button>
-          <div class="header-menu-panel review-menu" id="review-menu" hidden>${navItems()}</div>
+          <div class="header-menu-panel review-menu" id="review-menu" hidden><span class="header-menu-caption">复盘节奏</span><div class="header-review-grid">${navItems()}</div></div>
         </div>
         ${headerLink('history','历史复盘')}
         ${headerLink('actions',actionLabel,state.stats.pending?`<span class="header-count">${Number(state.stats.pending)}</span>`:'')}
@@ -164,6 +164,7 @@ function topbar(){
         <div class="header-menu header-account-menu">
           <button class="header-account-trigger" type="button" data-menu-trigger aria-expanded="false" aria-controls="account-menu" aria-label="账户菜单：${esc(accountName)}"><span class="header-avatar" aria-hidden="true">${esc(accountName[0])}</span><span class="header-account-name">${esc(accountName)}</span><span class="header-chevron" aria-hidden="true"></span></button>
           <div class="header-menu-panel account-menu" id="account-menu" hidden>
+            <span class="header-menu-caption">我的空间</span>
             <button class="header-menu-item ${state.route==='backup'?'active':''}" type="button" data-nav="backup" ${state.route==='backup'?'aria-current="page"':''}>${navIcon('backup')}<span>数据备份</span></button>
             ${admin?`<button class="header-menu-item ${state.route==='users'?'active':''}" type="button" data-nav="users" ${state.route==='users'?'aria-current="page"':''}>${navIcon('users')}<span>账户管理</span></button>`:''}
             <button class="header-menu-item" type="button" data-modal="account">${navIcon('users')}<span>账户与安全</span></button>
@@ -219,13 +220,13 @@ function bindOverviewArc(){
 function renderOverview(){
   const records=overviewRecords();
   const reelRecords=records.length?Array.from({length:Math.max(12,records.length)},(_,index)=>records[index%records.length]):[];
-  const categories=Object.entries(TYPES).map(([key,item])=>`<button class="overview-type-card type-${key}" type="button" data-nav="${key}" aria-label="进入${item.label}"><span class="overview-type-mark" aria-hidden="true"><img src="/assets/overview/${key}.svg?v=1.0.0-overview4" alt="" width="320" height="320"></span><span class="overview-type-info" aria-hidden="true"><span class="overview-type-info-head"><strong>${item.label}</strong><span>${item.position}</span></span><span class="overview-type-description">${OVERVIEW_TYPE_DESCRIPTIONS[key]}</span><span class="overview-type-info-footer"><span>${item.meta.split(' · ')[1].replace('m',' 分钟')}</span><span>进入复盘 ↗</span></span></span></button>`).join('');
+  const categories=Object.entries(TYPES).map(([key,item])=>`<button class="overview-type-card type-${key}" type="button" data-nav="${key}" aria-label="进入${item.label}"><span class="overview-type-mark" aria-hidden="true"><img src="/assets/overview/${key}.svg?v=1.0.0-overview5" alt="" width="320" height="320"></span><span class="overview-type-info" aria-hidden="true"><span class="overview-type-info-head"><strong>${item.label}</strong><span>${item.position}</span></span><span class="overview-type-description">${OVERVIEW_TYPE_DESCRIPTIONS[key]}</span><span class="overview-type-info-footer"><span>${item.meta.split(' · ')[1].replace('m',' 分钟')}</span><span>进入复盘 ↗</span></span></span></button>`).join('');
   const cardSet=reelRecords.map((record,index)=>overviewRecordCard(record,index>=records.length,index)).join('');
   const reel=records.length?`<div class="overview-reel" id="overview-reel">
       <div class="overview-reel-window" aria-label="已完成复盘摘要"><div class="overview-reel-track" style="--reel-count:${reelRecords.length}">${cardSet}</div></div>
     </div>`:`<section class="overview-empty" aria-labelledby="overview-empty-title"><h2 id="overview-empty-title">从第一份复盘开始</h2><p>完成一份记录后，这里会出现属于你的回看卡片。</p><button type="button" data-nav="daily">开始每日复盘 <span aria-hidden="true">↗</span></button></section>`;
   shell(`<div class="overview-page">
-    <section class="overview-hero" aria-labelledby="overview-title"><h1 id="overview-title">言寡尤，行寡悔，<br><em>慎独存诚</em></h1><p>把事实、调整与验证，留成一份不会被情绪改写的记录。</p></section>
+    <section class="overview-hero" aria-labelledby="overview-title"><h1 id="overview-title">言寡尤，行寡悔<br><em>慎独存诚</em></h1><p>把事实、调整与验证，留成一份不会被情绪改写的记录。</p></section>
     <section class="overview-types" aria-labelledby="overview-types-title"><div class="overview-types-heading"><h2 id="overview-types-title">从哪里开始复盘？</h2></div><div class="overview-type-grid">${categories}</div></section>
     ${reel}
   </div>`);
@@ -499,6 +500,12 @@ function closeHeaderMenus(restoreFocus=false){
   $('#menu-toggle')?.setAttribute('aria-label','打开顶部菜单');
   if(restoreFocus)active?.focus();
 }
+function setHeaderMenu(button,open){
+  const panel=document.getElementById(button.getAttribute('aria-controls'));
+  if(!panel)return;
+  closeHeaderMenus();panel.hidden=!open;button.setAttribute('aria-expanded',String(open));
+  if(button.id==='menu-toggle')button.setAttribute('aria-label',open?'关闭顶部菜单':'打开顶部菜单');
+}
 function railIsOverlay(){return state.route==='overview'||window.matchMedia('(max-width:1199px)').matches}
 function setRailOverlayOpen(open,restoreFocus=false){
   const rail=$('#right-rail'),trigger=$('#rail-toggle');
@@ -517,7 +524,13 @@ function bindCommon(){
   $$('[data-modal]').forEach(button=>button.addEventListener('click',()=>{closeHeaderMenus();if(button.dataset.modal==='theme')openTheme();if(button.dataset.modal==='stage')openStage();if(button.dataset.modal==='account')openAccount()}));
   $('#settings-trigger')?.addEventListener('click',()=>{closeHeaderMenus();openSettings()});
   $('#mobile-settings-trigger')?.addEventListener('click',()=>{closeHeaderMenus();openSettings()});
-  $$('[data-menu-trigger]').forEach(button=>button.addEventListener('click',()=>{const panel=document.getElementById(button.getAttribute('aria-controls'));if(!panel)return;const opening=panel.hidden;closeHeaderMenus();panel.hidden=!opening;button.setAttribute('aria-expanded',String(opening));if(button.id==='menu-toggle')button.setAttribute('aria-label',opening?'关闭顶部菜单':'打开顶部菜单')}));
+  $$('[data-menu-trigger]').forEach(button=>{
+    const panel=document.getElementById(button.getAttribute('aria-controls'));if(!panel)return;
+    button.addEventListener('click',()=>setHeaderMenu(button,panel.hidden));
+    button.addEventListener('keydown',event=>{if(!['ArrowDown','ArrowUp'].includes(event.key))return;event.preventDefault();setHeaderMenu(button,true);const items=$$('button:not([disabled])',panel);(event.key==='ArrowUp'?items.at(-1):items[0])?.focus()});
+    panel.addEventListener('keydown',event=>{if(!['ArrowDown','ArrowUp','Home','End'].includes(event.key))return;const items=$$('button:not([disabled])',panel),index=items.indexOf(document.activeElement);if(index<0)return;event.preventDefault();const next=event.key==='Home'?0:event.key==='End'?items.length-1:(index+(event.key==='ArrowDown'?1:-1)+items.length)%items.length;items[next]?.focus()});
+  });
+  $('#site-header')?.addEventListener('focusout',event=>{const trigger=$('[data-menu-trigger][aria-expanded="true"]');if(!trigger)return;const panel=document.getElementById(trigger.getAttribute('aria-controls')),next=event.relatedTarget;if(!next||next===trigger||panel?.contains(next))return;closeHeaderMenus()});
   $('#rail-toggle')?.addEventListener('click',()=>{closeHeaderMenus();setRailOverlayOpen(!$('#right-rail').classList.contains('open'),true)});
   bindCalendar();
   bindActionButtons();

@@ -1,0 +1,2 @@
+{"file": ".trellis/spec/frontend/architecture.md", "reason": "共享导航与静态缓存"}
+{"file": ".trellis/spec/frontend/state-and-data.md", "reason": "未保存内容导航守卫"}
