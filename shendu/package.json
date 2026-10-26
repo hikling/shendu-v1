@@ -1,6 +1,6 @@
 {
   "name": "shendu-journal",
-  "version": "5.5.4",
+  "version": "1.0.0",
   "private": true,
   "type": "module",
   "description": "慎独：自托管个人复盘系统",
@@ -11,6 +11,6 @@
     "test": "node --test tests/*.test.mjs"
   },
   "engines": {
-    "node": ">=22.5"
+    "node": ">=22.13"
   }
 }

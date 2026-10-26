@@ -1,6 +1,6 @@
 # Runtime and Data
 
-`shendu/server.mjs` is the Node HTTP server and main location for routes, SQLite statements, record rules, sessions, and backup flows. `shendu/scripts/backup-safety.mjs` holds reusable file and Base64 safety helpers. The application uses native ESM and `DatabaseSync` from `node:sqlite` with Node >=22.5 (`shendu/package.json`); there is no ORM or migration package.
+`shendu/server.mjs` is the Node HTTP server and main location for routes, SQLite statements, record rules, sessions, and backup flows. `shendu/scripts/backup-safety.mjs` holds reusable file and Base64 safety helpers. The application uses native ESM and `DatabaseSync` from `node:sqlite` with Node >=22.13 (`shendu/package.json`), the first Node 22 release where SQLite no longer needs a CLI flag; the Docker image uses Node 24. There is no ORM or migration package.
 
 At startup, `server.mjs` creates the users, sessions, settings, records, and backup tables with indexes and `schema_meta`. It enables WAL, foreign keys, and a busy timeout. Schema evolution and `migrateSensitiveData()` live in the same file. Queries use prepared statements and value parameters. The record list builds a bounded `WHERE` clause from fixed fragments and argument values.
 

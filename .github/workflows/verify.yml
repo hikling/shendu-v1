@@ -1,0 +1,44 @@
+name: Verify build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Check scripts and tests
+        working-directory: shendu
+        run: |
+          npm run check
+          npm test
+      - name: Validate Compose configuration and build image
+        working-directory: shendu
+        run: |
+          cp .env.example .env
+          sed -i "s/replace_with_64_hex_characters/$(openssl rand -hex 32)/" .env
+          docker compose config >/dev/null
+          docker build -t shendu-ci .
+      - name: Start image and check health
+        run: |
+          docker run -d --name shendu-ci -p 127.0.0.1:43127:3000 shendu-ci
+          for attempt in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:43127/healthz; then
+              exit 0
+            fi
+            sleep 1
+          done
+          docker logs shendu-ci
+          exit 1
+      - name: Clean up smoke container
+        if: always()
+        run: docker rm -f shendu-ci || true

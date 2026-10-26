@@ -1,51 +1,59 @@
-# 升级个人备份兼容能力
+# 迁移旧部署到 shendu-v1
 
-新版继续读取旧版 `.shendu` **个人备份**。旧版 `.shendu-site`、`.shendu-db` 整站备份不是新版导入兼容承诺；回退必须保留原服务器目录中的数据库和内部密钥。不要只复制 `shendu.db`，也不要用新站生成的 `backup-master.key` 覆盖旧密钥。
+全新安装请按 [README](README.md#debian-1213-服务器部署) 操作。已在 `/opt/shendu-v1` 运行的站点，用 README 中的更新脚本即可。本页用于从旧 `Shendu` 仓库或 ZIP 部署迁移现有资料；**新仓库有独立 Git 历史，不能在旧目录直接把 `origin` 改成新地址后 `git pull`**。
 
-## 升级前
+以下示例假设旧站目录为 `/opt/Shendu`、新站使用 `/opt/shendu-v1`。在 Debian 服务器的 root shell 执行，并把路径按实际部署位置调整。迁移前为每个账户另存个人 `.shendu` 备份及其密码；旧版 `.shendu-site`、`.shendu-db` 不作为新版直接导入的兼容承诺。
 
-1. 在旧站为每个需要迁移的账户导出 `.shendu`，分别保存备份密码。文件和密码应放在服务器之外。升级后先用新版的“数据备份”页面校验并预览，再选择“安全合并”或“完整恢复”。
-2. 在 Debian 服务器上以 root 身份，停止应用后复制整个部署目录。这会一并保留 `.env`、`data/shendu.db`、WAL 文件、`data/backup-master.key`、旧代码和 Git 状态。将副本存放在空间足够且只有管理员能访问的位置。
-
-```sh
-cd /opt/Shendu/shendu
-docker compose stop shendu
-cd /opt
-umask 077
-backup_dir="/opt/Shendu-before-ui-$(date +%Y%m%d-%H%M%S)"
-cp -a Shendu "$backup_dir"
-printf '回退副本：%s\n' "$backup_dir"
-```
-
-3. 确认副本中存在 `shendu/data/shendu.db` 和 `shendu/data/backup-master.key`。如果缺少密钥，先查明旧站实际使用的 `SHENDU_MASTER_KEY_PATH`，并将该密钥与副本一起保存。记录当前 Git 提交：`git -C /opt/Shendu rev-parse HEAD`。
-
-## 升级与核对
-
-将新版代码部署到 `/opt/Shendu`，保留原 `.env`、`shendu/data/`、`shendu/tmp/` 和 Caddy 数据卷。现有 SQLite 资料及内部密钥会继续使用；首次启动可能执行旧明文资料的加密迁移。启动后检查：
-
-```sh
-cd /opt/Shendu/shendu
-docker compose up -d --build
-docker compose ps
-curl -fsS https://你的域名/healthz
-```
-
-用原账户登录，逐项核对六类复盘、完成与验证状态、阶段设置、主题、账户权限和备份目标。再导出一份新版个人备份并在隔离环境测试导入。若使用网页整站备份，在新版导出并在**隔离的新站**验证同版本恢复后，才把它作为新版的整站备份使用。
-
-## 回退
-
-如果核对失败，先停止当前部署，然后把升级前的**整个目录副本**恢复到原路径。下面命令会把失败部署保留在另一个目录供排查；把 `backup_dir` 换成升级前输出的实际路径。
+## 1. 停旧站并保留完整副本
 
 ```sh
 cd /opt/Shendu/shendu
 docker compose down
 cd /opt
-backup_dir=/opt/Shendu-before-ui-实际时间
-mv Shendu "Shendu-failed-$(date +%Y%m%d-%H%M%S)"
-cp -a "$backup_dir" Shendu
+umask 077
+backup_dir="/opt/Shendu-before-v1-$(date +%Y%m%d-%H%M%S)"
+cp -a Shendu "$backup_dir"
+printf '旧站副本：%s\n' "$backup_dir"
+```
+
+确认副本含 `shendu/data/shendu.db`、`shendu/data/backup-master.key`、`.env`，以及可能存在的 SQLite `-wal`、`-shm` 文件。若旧站把 `SHENDU_MASTER_KEY_PATH` 设在自定义位置，另行保存该密钥并在新站沿用。**只复制数据库、不复制原密钥会导致资料无法解密。**
+
+## 2. 克隆新仓库并复制配置、数据
+
+```sh
+git clone https://github.com/hikling/shendu-v1.git /opt/shendu-v1
+cd /opt/shendu-v1/shendu
+cp -a /opt/Shendu/shendu/.env .env
+mkdir -p data tmp
+cp -a /opt/Shendu/shendu/data/. data/
+chmod 600 .env
+docker compose config >/dev/null
+docker compose up -d --build
+docker compose ps
+```
+
+这里保留旧站的域名、内部加密密钥与数据库，不运行新站的 `scripts/install.sh` 来重置 `.env`。若原站有自定义外部密钥路径、不同目录挂载或其他 Compose 改动，应先手工把对应设置映射到新站，再启动。新旧部署不能同时运行：两者使用相同的容器名与域名端口。
+
+## 3. 验证
+
+```sh
+curl -fsS https://你的实际域名/healthz
+cd /opt/shendu-v1/shendu
+docker compose logs --tail=200 shendu
+```
+
+健康检查应包含 `"ok":true`。用原账户登录，核对概览、六类复盘、完成和验证状态、阶段设置、主题、权限及备份目标。再导出一份新版个人备份，在隔离环境测试导入。旧站目录和副本应保留到核对完成。
+
+## 回退
+
+若验证失败，先停止新站，再启动仍保留原数据的旧站：
+
+```sh
+cd /opt/shendu-v1/shendu
+docker compose down
 cd /opt/Shendu/shendu
 docker compose up -d --build
 docker compose ps
 ```
 
-回退后用旧账户登录，确认记录和设置。**不要**把升级后写入的新数据库文件单独复制到旧代码目录；代码、数据库和内部密钥应成组回退。正式部署前应在旧站目录的副本上演练这一流程，避免直接在生产资料上验证升级。
+回退使用的是切换前的旧数据库；在新站运行期间新增的记录不会自动回到旧站。不要把新站数据库单独复制到旧代码目录。代码、数据库、内部密钥和配置必须作为一组恢复；正式迁移前，建议先用旧站目录的副本在隔离环境演练。
