@@ -11,6 +11,14 @@ const TYPES = {
   decision:{label:'重大决策',meta:'留依据 · 20–30m',position:'留依据',date:'date'}
 };
 const TYPE_ICONS = {daily:'日',weekly:'周',monthly:'月',quarterly:'季',yearly:'年',decision:'决'};
+const OVERVIEW_TYPE_DESCRIPTIONS = {
+  daily:'记下今天发生的事，找到一个值得带进明天的调整。',
+  weekly:'把七天的进展与阻碍放在一起，找到可重复的好方法。',
+  monthly:'对照目标与结果，聚焦下个月最值得改善的瓶颈。',
+  quarterly:'回看 90 天的真实变化，校准下一阶段的目标与方向。',
+  yearly:'留下这一年的重要坐标，想清来年珍惜什么、投入什么。',
+  decision:'写下选项、事实与取舍，留给未来检验当时的判断。'
+};
 const NAV_ICON_PATHS = {
   daily:'<rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8 9h8M8 13h8M8 17h5"/>',
   weekly:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4M17 3v4M3 10h18M7 14h4M14 14h3M7 18h4"/>',
@@ -211,7 +219,7 @@ function bindOverviewArc(){
 function renderOverview(){
   const records=overviewRecords();
   const reelRecords=records.length?Array.from({length:Math.max(12,records.length)},(_,index)=>records[index%records.length]):[];
-  const categories=Object.entries(TYPES).map(([key,item])=>`<button class="overview-type-card type-${key}" type="button" data-nav="${key}" aria-label="进入${item.label}"><span class="overview-type-label" aria-hidden="true">${item.label}</span><span class="overview-type-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${NAV_ICON_PATHS[key]}</svg></span></button>`).join('');
+  const categories=Object.entries(TYPES).map(([key,item])=>`<button class="overview-type-card type-${key}" type="button" data-nav="${key}" aria-label="进入${item.label}"><span class="overview-type-mark" aria-hidden="true"><img src="/assets/overview/${key}.svg?v=1.0.0-overview4" alt="" width="320" height="320"></span><span class="overview-type-info" aria-hidden="true"><span class="overview-type-info-head"><strong>${item.label}</strong><span>${item.position}</span></span><span class="overview-type-description">${OVERVIEW_TYPE_DESCRIPTIONS[key]}</span><span class="overview-type-info-footer"><span>${item.meta.split(' · ')[1].replace('m',' 分钟')}</span><span>进入复盘 ↗</span></span></span></button>`).join('');
   const cardSet=reelRecords.map((record,index)=>overviewRecordCard(record,index>=records.length,index)).join('');
   const reel=records.length?`<div class="overview-reel" id="overview-reel">
       <div class="overview-reel-window" aria-label="已完成复盘摘要"><div class="overview-reel-track" style="--reel-count:${reelRecords.length}">${cardSet}</div></div>
@@ -222,6 +230,7 @@ function renderOverview(){
     ${reel}
   </div>`);
   $$('[data-overview-record]').forEach(button=>button.addEventListener('click',()=>attemptNavigate(()=>{const record=state.records.find(item=>item.id===button.dataset.overviewRecord);if(!record||record.status==='draft')return;state.route=record.type;state.current=record;document.title=`${TYPES[record.type].label} · 慎独`;renderReview(record.type,record.period,false,record)})));
+  $$('.overview-type-card').forEach(button=>['pointerenter','focus'].forEach(event=>button.addEventListener(event,()=>button.classList.remove('is-tip-dismissed'))));
   bindOverviewArc();
 }
 
@@ -522,5 +531,5 @@ async function init(){try{const info=await request('/api/auth/state');if(info.us
 document.addEventListener('pointerdown',event=>{if(!event.target.closest('.header-menu')&&!event.target.closest('#menu-toggle')&&!event.target.closest('#mobile-nav'))closeHeaderMenus()});
 window.addEventListener('resize',()=>{if($('#right-rail.open')&&!railIsOverlay())setRailOverlayOpen(false)});
 window.addEventListener('beforeunload',e=>{if(state.dirty){e.preventDefault();e.returnValue=''}});
-document.addEventListener('keydown',e=>{const modal=$('#modal-root .modal'),rail=$('#right-rail.open');if(e.key==='Tab'&&modal){const focusable=$$('button:not([disabled]),input:not([disabled]),textarea:not([disabled]),select:not([disabled]),a[href],[tabindex]:not([tabindex="-1"])',modal).filter(el=>!el.closest('.hidden'));if(focusable.length){const first=focusable[0],last=focusable.at(-1);if(e.shiftKey&&(document.activeElement===first||!modal.contains(document.activeElement))){e.preventDefault();last.focus()}else if(!e.shiftKey&&(document.activeElement===last||!modal.contains(document.activeElement))){e.preventDefault();first.focus()}}}else if(e.key==='Tab'&&rail){const focusable=$$('button:not([disabled]),input:not([disabled]),textarea:not([disabled]),select:not([disabled]),a[href]',rail);if(focusable.length){const first=focusable[0],last=focusable.at(-1);if(e.shiftKey&&(document.activeElement===first||!rail.contains(document.activeElement))){e.preventDefault();last.focus()}else if(!e.shiftKey&&(document.activeElement===last||!rail.contains(document.activeElement))){e.preventDefault();first.focus()}}}if(e.key==='Escape'){if($('#modal-root').children.length)closeModal();else if(rail){e.preventDefault();setRailOverlayOpen(false,true)}else if($('[data-menu-trigger][aria-expanded="true"]')){e.preventDefault();closeHeaderMenus(true)}}if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='s'&&state.current?.status==='draft'&&state.current.period===defaultPeriod(state.current.type)){e.preventDefault();saveCurrent()}});
+document.addEventListener('keydown',e=>{const modal=$('#modal-root .modal'),rail=$('#right-rail.open');if(e.key==='Tab'&&modal){const focusable=$$('button:not([disabled]),input:not([disabled]),textarea:not([disabled]),select:not([disabled]),a[href],[tabindex]:not([tabindex="-1"])',modal).filter(el=>!el.closest('.hidden'));if(focusable.length){const first=focusable[0],last=focusable.at(-1);if(e.shiftKey&&(document.activeElement===first||!modal.contains(document.activeElement))){e.preventDefault();last.focus()}else if(!e.shiftKey&&(document.activeElement===last||!modal.contains(document.activeElement))){e.preventDefault();first.focus()}}}else if(e.key==='Tab'&&rail){const focusable=$$('button:not([disabled]),input:not([disabled]),textarea:not([disabled]),select:not([disabled]),a[href]',rail);if(focusable.length){const first=focusable[0],last=focusable.at(-1);if(e.shiftKey&&(document.activeElement===first||!rail.contains(document.activeElement))){e.preventDefault();last.focus()}else if(!e.shiftKey&&(document.activeElement===last||!rail.contains(document.activeElement))){e.preventDefault();first.focus()}}}if(e.key==='Escape'){if($('#modal-root').children.length)closeModal();else if(rail){e.preventDefault();setRailOverlayOpen(false,true)}else if($('[data-menu-trigger][aria-expanded="true"]')){e.preventDefault();closeHeaderMenus(true)}else if(state.route==='overview'){$$('.overview-type-card').forEach(button=>button.classList.add('is-tip-dismissed'))}}if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='s'&&state.current?.status==='draft'&&state.current.period===defaultPeriod(state.current.type)){e.preventDefault();saveCurrent()}});
 init();

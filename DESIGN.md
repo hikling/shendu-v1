@@ -15,7 +15,7 @@ typography:
   body:
     fontFamily: '"Noto Sans SC", "Microsoft YaHei", "PingFang SC", system-ui, sans-serif'
 rounded:
-  category-card: "16px"
+  category-card: "20px"
   record-card: "20px"
   menu: "18px"
 spacing:
@@ -35,13 +35,13 @@ components:
 
 一个人翻看自己写下的索引卡与长卷。概览的主句和六种时间尺度先建立方向，底部的真实记录缓慢经过；旧页面保留熟悉的书写工具气质。使用者是项目所有者本人，界面默认中文，日期按既有北京时间格式。
 
-概览借鉴用户提供的参考图的四段布局和一处持续移动效果。它是产品首页，主句有品牌表达，导航和记录卡保持工具的清晰度。不要出现 ClassDojo 标识、角色、照片或文案，也不要把全部旧页面一起改成营销首页。六类入口采用紧凑图标菜单，参考 Coffee options 的小方块与名称展开反馈；由真实已完成复盘组成的弧形长卷承接下方。
+概览借鉴用户提供的参考图的四段布局和一处持续移动效果。它是产品首页，主句有品牌表达，导航和记录卡保持工具的清晰度。不要出现 ClassDojo 标识、角色、照片或文案，也不要把全部旧页面一起改成营销首页。六类入口采用带时间印记的彩色人物插画，保留 Coffee options 的悬停展开节奏，并以右侧信息卡解释用途；由真实已完成复盘组成的弧形长卷承接下方。
 
 **Token 归属：** 运行代码是规范值来源。`shendu/public/styles.css` 的 `.app-shell` 定义概览局部语义变量，`shendu/public/app.js` 的 `applyTheme()` 写入现有 `--primary` 等账户主题色。本文件镜像这些值并解释用途；改动两处时应在同一提交中核对映射。
 
 ## Colors
 
-`overview-background` → `--overview-bg`：概览画布。`overview-surface` → `--overview-surface`：菜单和记录卡。`overview-ink` → `--overview-ink`：主句与标题。`overview-muted` → `--overview-muted`：说明、日期。`overview-line` → `--overview-line`：边界。交互强调色仍由账户主题的 `--primary` 决定，默认值为 `primary-default`；前景色使用既有 `--primary-contrast`。六类入口使用既有 `--type-color` / `--type-soft`，颜色只作辅助，不能替代语义图标和可访问名称。类别名称在悬停或键盘聚焦时向图标左侧展开，屏幕阅读器始终可读取入口名称。
+`overview-background` → `--overview-bg`：概览画布。`overview-surface` → `--overview-surface`：菜单、信息卡和记录卡。`overview-ink` → `--overview-ink`：主句与标题。`overview-muted` → `--overview-muted`：说明、日期。`overview-line` → `--overview-line`：边界。交互强调色仍由账户主题的 `--primary` 决定，默认值为 `primary-default`；前景色使用既有 `--primary-contrast`。六类插画依次用青绿、珊瑚、琥珀、蓝、紫、橄榄绿，`assets/overview/README.md` 记录 SVG 与 CSS `--type-accent` / `--type-color` / `--type-soft` 的精确映射。插画调色属于固定类别配色，账户自定义强调色继续负责焦点等交互。颜色只作辅助，时间印记和可访问名称仍可辨认类别。
 
 这些概览颜色局限于新首页和顶部导航；旧复盘表单继续使用现有 `--paper`、`--ink` 等变量，直到各页面以后分别重做。
 
@@ -51,7 +51,7 @@ components:
 
 ## Layout
 
-顶部导航为 `top-navigation-height`，在窄屏缩为 64px。概览内容上限 `overview-content-max`，从居中主句进入紧凑图标菜单，再进入弧形回看。主句顶部留白由概览 `.overview-hero` 的 `clamp(30px,3vw,48px)` 控制，主句前不再放置「私人复盘空间」标签；六类入口前不放「选择一个时间尺度」。入口区域上限 780px，桌面图标方块为 64px；名称展开时按钮宽度增加，邻近图标随之让位。680px 以下三列排布，540px 以下方块为 44px，380px 以下为两列；窄屏按钮单元保留名称展开所需空间，展开不改变行数。长卷不设可见标题，紧接图标菜单，运动路径顶部基准为 60px。旧页面主体仍由既有 `.workspace` 与 `.main` 管理。底部运动只发生在独立内容窗口，不让文档产生横向溢出。
+顶部导航为 `top-navigation-height`，在窄屏缩为 64px。概览内容上限 `overview-content-max`，从居中主句进入插画菜单，再进入弧形回看。主句顶部留白由概览 `.overview-hero` 的 `clamp(30px,3vw,48px)` 控制，主句前不再放置「私人复盘空间」标签；六类入口前不放「选择一个时间尺度」。入口区域上限 1140px，桌面图标为 92px，右侧信息卡宽 250px；显示时按钮宽度扩至 356px，让相邻入口让位。960px 以下三列排布，图标 84px；540px 以下图标 76px。窄屏信息卡宽 220px，在入口下方按列对齐，避免裁切与横向溢出。长卷不设可见标题，紧接图标菜单，运动路径顶部基准为 60px。旧页面主体仍由既有 `.workspace` 与 `.main` 管理。底部运动只发生在独立内容窗口，不让文档产生横向溢出。
 
 ## Elevation & Depth
 
@@ -59,7 +59,7 @@ components:
 
 ## Shapes
 
-入口、记录卡和菜单分别采用 frontmatter 中的圆角。图标方块桌面圆角 16px，窄屏随尺寸缩至 14px / 12px；顶部「慎」印有更紧的圆角。记录卡沿弧线切线方向轻微倾斜；键盘阅读或减少动态效果时改为摆正的静态列表。
+入口、记录卡和菜单分别采用 frontmatter 中的圆角。插画底板桌面圆角 20px，窄屏随尺寸缩至 18px / 17px；右侧信息卡圆角 16px，具有清楚的白底、边界和一层阴影。顶部「慎」印有更紧的圆角。记录卡沿弧线切线方向轻微倾斜；键盘阅读或减少动态效果时改为摆正的静态列表。
 
 ## Components
 
@@ -73,7 +73,11 @@ components:
 
 ### Iconography and motion
 
-六类入口复用 `NAV_ICON_PATHS` 的语义 SVG，与顶部菜单相同。悬停或键盘聚焦时，类别名称从图标左侧展开，图标短暂弹动；单击或 Enter 通过原有 `data-nav` 进入对应页面。方框内只放图标，名称在框外。减少动态效果时名称仍立即显示，关闭展开过渡和图标弹动。长卷沿两侧高、中央低的浅半圆弧连续移动，卡片随轨迹改变高度和角度；以自适应二次曲线路径呈现，循环复位位于可视窗口外。`bindOverviewArc()` 根据窗口和卡片尺寸生成路径、间距与时长，`.overview-record-card` 通过 CSS motion path 实际移动。界面不设暂停按钮；悬停暂停，键盘焦点进入可滚动静态列表，系统和账户减少动态效果设置拥有最终优先级。不显示「回看长卷」「已经写下的记录」及随机拾页说明。
+六类入口使用用户指定 Iconfont 合集 52510 的实际矢量插画，保留构图、按类别改色并添加「日、周、月、季、年、决」印记。来源、素材编号和调色映射在 `assets/overview/README.md`。每日书写、每周寻找规律、每月分类、阶段定位方向、年度里程碑与决策提问分别对应产品语义。顶部菜单继续使用 `NAV_ICON_PATHS`。
+
+悬停或键盘聚焦时，在入口右侧展开含类别、用途与预计时间的信息卡；窄屏改在下方展开。单击或 Enter 通过原有 `data-nav` 进入对应页面，Escape 关闭提示；再次移入或新聚焦重新显示。悬停优先于另一个入口的键盘焦点，避免同时展开造成挤压。减少动态效果时信息卡仍立即显示，关闭过渡。
+
+长卷沿两侧高、中央低的浅半圆弧连续移动，卡片随轨迹改变高度和角度；以自适应二次曲线路径呈现，循环复位位于可视窗口外。`bindOverviewArc()` 根据窗口和卡片尺寸生成路径、间距与时长，`.overview-record-card` 通过 CSS motion path 实际移动。界面不设暂停按钮；只有鼠标位于真实记录卡片上才暂停，窗口空白处必须继续移动。键盘焦点进入可滚动静态列表，系统和账户减少动态效果设置拥有最终优先级。不显示「回看长卷」「已经写下的记录」及随机拾页说明。
 
 ## Do's and Don'ts
 
