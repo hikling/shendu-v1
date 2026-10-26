@@ -62,3 +62,26 @@
 ### Status
 
 [OK] **Completed**
+
+
+## Session 3: 概览与顶部导航重做
+<!-- trellis-session: v=2 fp=1bc087cf0bcbf7ea -->
+
+**Date**: 2026-10-26
+**Task**: 概览与顶部导航重做
+**Branch**: `codex/restore-original-ui`
+
+### Summary
+
+完成私人复盘概览、顶部导航与连续回看长卷；桌面及手机浏览器验收通过；私有 shendu-v1 仓库已建立并发布独立历史。
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `849d7c3` | feat: rebuild overview and top navigation |
+| `6534354` | docs: record overview delivery |
+
+### Status
+
+[OK] **Completed**
