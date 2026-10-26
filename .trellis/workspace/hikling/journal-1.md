@@ -108,3 +108,25 @@
 ### Status
 
 [OK] **Completed**
+
+
+## Session 5: 概览弧形长卷与文案调整
+<!-- trellis-session: v=2 fp=c53aae93f01e2cdd -->
+
+**Date**: 2026-10-26
+**Task**: 概览弧形长卷与文案调整
+**Branch**: `main`
+
+### Summary
+
+按参考图改为两侧高中央低的弧形循环；删除暂停按钮和指定文案，主句上移106px。Edge 桌面与手机实页验证、循环接缝、原记录点击、键盘和减少动态效果通过，预览图与规范同步。
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `5c95e27` | fix: curve overview reel and simplify hero |
+
+### Status
+
+[OK] **Completed**
