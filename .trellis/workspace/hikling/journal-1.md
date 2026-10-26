@@ -174,3 +174,25 @@
 ### Status
 
 [OK] **Completed**
+
+
+## Session 8: 恢复红色品牌标识与顶部导航优化
+<!-- trellis-session: v=2 fp=ece226486fe8cf72 -->
+
+**Date**: 2026-10-26
+**Task**: 恢复红色品牌标识与顶部导航优化
+**Branch**: `main`
+
+### Summary
+
+六类入口放大至112/96/84px，删除概览主句末逗号；恢复原版红色印章及宋体慎獨字样。共享导航改为柔和胶囊状态与两列复盘菜单，增加方向键、Home/End及焦点关闭。66项响应式检查、12次入口跳转、手机菜单、减少动态效果与未保存保护验证通过，规范和README预览同步。
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `3857761` | fix: restore red branding and soften header navigation |
+
+### Status
+
+[OK] **Completed**
