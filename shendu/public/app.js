@@ -82,6 +82,7 @@ function currentTemplateSnapshot(type){return{version:1,review:clone(currentRevi
 
 const state = { user:null, stage:null, theme:null, records:[], stats:{week:0,pending:0,total:0}, route:'overview', current:null, dirty:false, saving:false, navOpen:false, railOpen:false, reauthOpen:false, calendarMonth:null };
 let modalReturnFocus=null;
+let overviewReelObserver=null;
 async function request(path, options = {}) {
   const opts = { credentials:'same-origin', ...options, headers:{ ...(options.body && !(options.body instanceof Blob) && !(options.body instanceof ArrayBuffer) ? {'Content-Type':'application/json'} : {}), ...(options.headers||{}) } };
   if (opts.body && opts.headers['Content-Type']==='application/json' && typeof opts.body !== 'string') opts.body = JSON.stringify(opts.body);
@@ -155,7 +156,6 @@ function topbar(){
         <div class="header-menu header-account-menu">
           <button class="header-account-trigger" type="button" data-menu-trigger aria-expanded="false" aria-controls="account-menu" aria-label="账户菜单：${esc(accountName)}"><span class="header-avatar" aria-hidden="true">${esc(accountName[0])}</span><span class="header-account-name">${esc(accountName)}</span><span class="header-chevron" aria-hidden="true"></span></button>
           <div class="header-menu-panel account-menu" id="account-menu" hidden>
-            <span class="account-menu-caption">私人复盘空间</span>
             <button class="header-menu-item ${state.route==='backup'?'active':''}" type="button" data-nav="backup" ${state.route==='backup'?'aria-current="page"':''}>${navIcon('backup')}<span>数据备份</span></button>
             ${admin?`<button class="header-menu-item ${state.route==='users'?'active':''}" type="button" data-nav="users" ${state.route==='users'?'aria-current="page"':''}>${navIcon('users')}<span>账户管理</span></button>`:''}
             <button class="header-menu-item" type="button" data-modal="account">${navIcon('users')}<span>账户与安全</span></button>
@@ -172,39 +172,58 @@ function topbar(){
     </nav>
   </header>`;
 }
-function shell(content){const overview=state.route==='overview';$('#app').innerHTML=`<div class="app-shell ${overview?'overview-shell':''}">${topbar()}<div class="workspace"><main class="main ${overview?'overview-main':''}" id="main-content">${content}</main>${rightRail()}</div></div>`;bindCommon()}
+function shell(content){overviewReelObserver?.disconnect();overviewReelObserver=null;const overview=state.route==='overview';$('#app').innerHTML=`<div class="app-shell ${overview?'overview-shell':''}">${topbar()}<div class="workspace"><main class="main ${overview?'overview-main':''}" id="main-content">${content}</main>${rightRail()}</div></div>`;bindCommon()}
 
 function overviewText(value,limit){const text=String(value??'').replace(/\s+/g,' ').trim(),points=Array.from(text);return points.length>limit?points.slice(0,limit).join('')+'…':text}
-function overviewRecordCard(record,duplicate=false){
+function overviewRecordCard(record,duplicate=false,index=0){
   const title=overviewText(record.title||formatDate(record.period),58),summary=overviewText(recordSummary(record),106);
-  const tag=duplicate?'div':'button';
-  return `<${tag} class="overview-record-card type-${record.type}" ${duplicate?'aria-hidden="true"':'type="button"'} data-overview-record="${esc(record.id)}">
+  return `<button type="button" class="overview-record-card type-${record.type}" ${duplicate?'aria-hidden="true" tabindex="-1"':''} style="--reel-order:${index}" data-overview-record="${esc(record.id)}">
     <span class="overview-record-meta"><span class="overview-record-glyph" aria-hidden="true">${TYPE_ICONS[record.type]}</span><span>${esc(TYPES[record.type].label)}</span><time>${esc(formatDate(record.period))}</time></span>
     <strong>${esc(title)}</strong><span class="overview-record-summary">${esc(summary)}</span><span class="overview-record-open" aria-hidden="true">查看原记录 ↗</span>
-  </${tag}>`;
+  </button>`;
 }
 function overviewRecords(){
   const records=state.records.filter(record=>TYPES[record.type]&&(record.status==='completed'||record.status==='verified')).slice();
   for(let i=records.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[records[i],records[j]]=[records[j],records[i]]}
   return records.slice(0,12);
 }
+function bindOverviewArc(){
+  const window=$('.overview-reel-window'),track=$('.overview-reel-track');
+  if(!window||!track)return;
+  const cards=$$('.overview-record-card',track),curve=document.createElementNS('http://www.w3.org/2000/svg','path');
+  const layout=()=>{
+    const width=window.clientWidth,cardWidth=cards[0].offsetWidth,gap=parseFloat(getComputedStyle(track).columnGap)||0,rise=Math.min(150,Math.max(78,width*.115)),edge=90;
+    const arc=`M ${-cardWidth} ${edge} Q ${width/2} ${edge+rise*2} ${width+cardWidth} ${edge}`;
+    curve.setAttribute('d',arc);
+    // Extra travel stays outside the viewport so many records never overlap on the visible arc.
+    const extension=Math.max(0,(cards.length*(cardWidth+gap)-curve.getTotalLength())/2);
+    const path=`M ${-cardWidth-extension} ${edge} L ${-cardWidth} ${edge} Q ${width/2} ${edge+rise*2} ${width+cardWidth} ${edge} L ${width+cardWidth+extension} ${edge}`;
+    curve.setAttribute('d',path);
+    track.style.setProperty('--reel-path',`path('${path}')`);
+    track.style.setProperty('--reel-duration',`${curve.getTotalLength()/42}s`);
+    window.style.setProperty('--reel-height',`${edge+rise+cards[0].offsetHeight/2+40}px`);
+  };
+  const observer=new ResizeObserver(()=>{if(window.isConnected)layout();else observer.disconnect()});
+  overviewReelObserver=observer;
+  observer.observe(window);
+  layout();
+}
 function renderOverview(){
   const records=overviewRecords();
   const reelRecords=records.length?Array.from({length:Math.max(12,records.length)},(_,index)=>records[index%records.length]):[];
   const categories=Object.entries(TYPES).map(([key,item])=>`<button class="overview-type-card type-${key}" type="button" data-nav="${key}" aria-label="进入${item.label}"><span class="overview-type-mark" aria-hidden="true">${TYPE_ICONS[key]}</span><strong>${item.label}</strong><span class="overview-type-hint">${item.position}</span><span class="overview-type-arrow" aria-hidden="true">↗</span></button>`).join('');
-  const cardSet=reelRecords.map((record,index)=>overviewRecordCard(record,index>=records.length)).join('');
-  const duplicateSet=reelRecords.map(record=>overviewRecordCard(record,true)).join('');
-  const reel=records.length?`<div class="overview-reel" id="overview-reel" style="--reel-duration:${Math.max(48,reelRecords.length*6)}s">
-      <div class="overview-reel-heading"><div><span class="overview-section-eyebrow">回看长卷</span><h2>已经写下的记录</h2><p>从已完成的复盘中随机拾起一页。</p></div><button class="overview-reel-control" type="button" id="reel-toggle" aria-pressed="false" aria-label="暂停记录卡移动">暂停移动 <span aria-hidden="true">Ⅱ</span></button></div>
-      <div class="overview-reel-window" aria-label="已完成复盘摘要"><div class="overview-reel-track"><div class="overview-reel-set">${cardSet}</div><div class="overview-reel-set overview-reel-copy" aria-hidden="true">${duplicateSet}</div></div></div>
+  const cardSet=reelRecords.map((record,index)=>overviewRecordCard(record,index>=records.length,index)).join('');
+  const reel=records.length?`<div class="overview-reel" id="overview-reel">
+      <div class="overview-reel-heading"><div><span class="overview-section-eyebrow">回看长卷</span><h2>已经写下的记录</h2></div></div>
+      <div class="overview-reel-window" aria-label="已完成复盘摘要"><div class="overview-reel-track" style="--reel-count:${reelRecords.length}">${cardSet}</div></div>
     </div>`:`<section class="overview-empty" aria-labelledby="overview-empty-title"><span class="overview-section-eyebrow">回看长卷</span><h2 id="overview-empty-title">从第一份复盘开始</h2><p>完成一份记录后，这里会出现属于你的回看卡片。</p><button type="button" data-nav="daily">开始每日复盘 <span aria-hidden="true">↗</span></button></section>`;
   shell(`<div class="overview-page">
-    <section class="overview-hero" aria-labelledby="overview-title"><span class="overview-kicker"><i aria-hidden="true"></i> 私人复盘空间</span><h1 id="overview-title">言寡尤，行寡悔，<br><em>慎独存诚</em></h1><p>把事实、调整与验证，留成一份不会被情绪改写的记录。</p></section>
-    <section class="overview-types" aria-labelledby="overview-types-title"><div class="overview-types-heading"><span class="overview-section-eyebrow">选择一个时间尺度</span><h2 id="overview-types-title">从哪里开始复盘？</h2></div><div class="overview-type-grid">${categories}</div></section>
+    <section class="overview-hero" aria-labelledby="overview-title"><h1 id="overview-title">言寡尤，行寡悔，<br><em>慎独存诚</em></h1><p>把事实、调整与验证，留成一份不会被情绪改写的记录。</p></section>
+    <section class="overview-types" aria-labelledby="overview-types-title"><div class="overview-types-heading"><h2 id="overview-types-title">从哪里开始复盘？</h2></div><div class="overview-type-grid">${categories}</div></section>
     ${reel}
   </div>`);
   $$('[data-overview-record]').forEach(button=>button.addEventListener('click',()=>attemptNavigate(()=>{const record=state.records.find(item=>item.id===button.dataset.overviewRecord);if(!record||record.status==='draft')return;state.route=record.type;state.current=record;document.title=`${TYPES[record.type].label} · 慎独`;renderReview(record.type,record.period,false,record)})));
-  $('#reel-toggle')?.addEventListener('click',event=>{const reel=$('#overview-reel'),paused=reel.classList.toggle('is-paused');event.currentTarget.setAttribute('aria-pressed',String(paused));event.currentTarget.setAttribute('aria-label',paused?'继续记录卡移动':'暂停记录卡移动');event.currentTarget.innerHTML=paused?'继续移动 <span aria-hidden="true">▶</span>':'暂停移动 <span aria-hidden="true">Ⅱ</span>'});
+  bindOverviewArc();
 }
 
 const SPACE_PAGE_META = {
