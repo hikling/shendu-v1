@@ -218,3 +218,25 @@
 ### Status
 
 [OK] **Completed**
+
+
+## Session 10: 六类入口悬停自动展开
+<!-- trellis-session: v=2 fp=ec84681cb56c3bf7 -->
+
+**Date**: 2026-10-27
+**Task**: 六类入口悬停自动展开
+**Branch**: `main`
+
+### Summary
+
+将六类入口从点击展开改为鼠标悬停及键盘聚焦自动展开，保留原位放大、左侧信息和触屏点击。增加透明命中桥，移向信息卡和进入按钮不闪退；Escape回焦后保持关闭。六类真实悬停、跨间隙CTA、真实Tab和390px点击回归通过，README和规范同步。
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `c65c5a8` | fix: open overview categories on hover |
+
+### Status
+
+[OK] **Completed**
