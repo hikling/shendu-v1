@@ -196,3 +196,25 @@
 ### Status
 
 [OK] **Completed**
+
+
+## Session 9: 概览原位展开与居中阶段日历
+<!-- trellis-session: v=2 fp=9b1f0efb133d07b4 -->
+
+**Date**: 2026-10-26
+**Task**: 概览原位展开与居中阶段日历
+**Branch**: `main`
+
+### Summary
+
+六类点击原位放大左展信息，不挤压其他入口；顶部导航去框用文字色标记；轮播内表面强悬停且命中稳定；复用rightRail实现居中阶段日历与父子弹窗焦点管理。60项原位/边界检查、12次分类跳转、6种弹窗尺寸、真实指针暂停回归及日历未保存保护通过。README、预览与规范同步。
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `4908f97` | feat: refine overview interactions and center stage calendar |
+
+### Status
+
+[OK] **Completed**
