@@ -217,10 +217,13 @@ function bindOverviewArc(){
   observer.observe(window);
   layout();
 }
+function overviewBurst(){
+  return `<span class="overview-type-burst" aria-hidden="true">${Array.from({length:16},(_,index)=>{const angle=index*Math.PI/8,reach=.84+(index%3)*.1;return `<i style="--burst-x:${(Math.sin(angle)*reach).toFixed(3)};--burst-y:${(-Math.cos(angle)*reach).toFixed(3)};--burst-turn:${index*67}deg;--burst-delay:${index%4*18}ms"></i>`}).join('')}</span>`;
+}
 function renderOverview(){
   const records=overviewRecords();
   const reelRecords=records.length?Array.from({length:Math.max(12,records.length)},(_,index)=>records[index%records.length]):[];
-  const categories=Object.entries(TYPES).map(([key,item])=>`<div class="overview-type-card type-${key}"><button class="overview-type-trigger" type="button" data-overview-type="${key}" aria-expanded="false" aria-controls="overview-type-${key}" aria-label="${item.label}，展开介绍"><span class="overview-type-mark" aria-hidden="true"><img src="/assets/overview/${key}.svg?v=1.0.0-overview7" alt="" width="320" height="320"></span></button><div class="overview-type-info" id="overview-type-${key}" role="group" aria-labelledby="overview-type-title-${key}" hidden><span class="overview-type-info-head"><strong id="overview-type-title-${key}">${item.label}</strong><span>${item.position}</span></span><span class="overview-type-description">${OVERVIEW_TYPE_DESCRIPTIONS[key]}</span><span class="overview-type-info-footer"><span>${item.meta.split(' · ')[1].replace('m',' 分钟')}</span><button class="overview-type-enter" type="button" data-nav="${key}" aria-label="进入${item.label}">进入复盘 ↗</button></span></div></div>`).join('');
+  const categories=Object.entries(TYPES).map(([key,item])=>`<div class="overview-type-card type-${key}"><button class="overview-type-trigger" type="button" data-overview-type="${key}" data-nav="${key}" aria-expanded="false" aria-controls="overview-type-${key}" aria-label="进入${item.label}">${overviewBurst()}<span class="overview-type-mark" aria-hidden="true"><img src="/assets/overview/${key}.svg?v=1.0.0-overview8" alt="" width="320" height="320"></span></button><div class="overview-type-info" id="overview-type-${key}" role="group" aria-labelledby="overview-type-title-${key}" hidden><span class="overview-type-info-head"><strong id="overview-type-title-${key}">${item.label}</strong><span>${item.position}</span></span><span class="overview-type-description">${OVERVIEW_TYPE_DESCRIPTIONS[key]}</span><span class="overview-type-info-footer"><span>${item.meta.split(' · ')[1].replace('m',' 分钟')}</span><button class="overview-type-enter" type="button" data-nav="${key}" aria-label="进入${item.label}">进入复盘 ↗</button></span></div></div>`).join('');
   const cardSet=reelRecords.map((record,index)=>overviewRecordCard(record,index>=records.length,index)).join('');
   const reel=records.length?`<div class="overview-reel" id="overview-reel">
       <div class="overview-reel-window" aria-label="已完成复盘摘要"><div class="overview-reel-track" style="--reel-count:${reelRecords.length}">${cardSet}</div></div>
@@ -237,7 +240,6 @@ function renderOverview(){
     card.addEventListener('pointerleave',event=>{if(event.pointerType!=='touch'&&card.classList.contains('is-expanded')&&!(card.contains(document.activeElement)&&document.activeElement.matches(':focus-visible')))closeOverviewTypes()});
     card.addEventListener('focusin',event=>{if(event.target.matches(':focus-visible'))setOverviewType(button,true)});
     card.addEventListener('focusout',event=>{if(!card.contains(event.relatedTarget)&&!card.matches(':hover')&&card.classList.contains('is-expanded'))closeOverviewTypes()});
-    button.addEventListener('click',event=>setOverviewType(button,event.pointerType==='touch'?button.getAttribute('aria-expanded')!=='true':true));
   });
   bindOverviewArc();
 }
