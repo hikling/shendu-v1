@@ -8,7 +8,7 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 16
+- **Total Sessions**: 17
 - **Last Active**: 2026-10-27
 <!-- @@@/auto:current-status -->
 
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~375 | Active |
+| `journal-1.md` | ~397 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -29,6 +29,7 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 17 | 2026-10-27 | 已验证轮播全量去重并连续循环 | `3a8b6c2` | `main` |
 | 16 | 2026-10-27 | 修复轮播边角与来源并启用完整插画池 | `3608a73` | `main` |
 | 15 | 2026-10-27 | Display reel dates and full weekdays on separate lines | `2c2fcec` | `main` |
 | 14 | 2026-10-27 | Finish authorized emotion illustrations and review dates | `0fdbe10`, `b2d571b` | `main` |

@@ -373,3 +373,25 @@ Split day-based reel dates into year-month-day and full weekday lines, retained 
 ### Status
 
 [OK] **Completed**
+
+
+## Session 17: 已验证轮播全量去重并连续循环
+<!-- trellis-session: v=2 fp=2cc8ed3d0caee491 -->
+
+**Date**: 2026-10-27
+**Task**: 已验证轮播全量去重并连续循环
+**Branch**: `main`
+
+### Summary
+
+改为verified-only并优先显示验证结果；日周月自然季度年去重，重大事件按ID；全量完整轮次循环、动态副本与精确间距，无12条截断。21项测试与语法检查通过；桌面手机1/2/5/7/13/30条两轮244步进及60个接缝相位检查通过，resize副本点击、真实鼠标暂停恢复、静态阅读可用。README与预览同步。
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `3a8b6c2` | fix: loop all verified records in complete seamless rounds |
+
+### Status
+
+[OK] **Completed**
