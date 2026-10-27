@@ -184,11 +184,20 @@ function topbar(){
 function shell(content){if($('#right-rail.open'))setRailOverlayOpen(false);overviewReelObserver?.disconnect();overviewReelObserver=null;const overview=state.route==='overview';$('#app').innerHTML=`<div class="app-shell ${overview?'overview-shell':''}">${topbar()}<div class="workspace"><main class="main ${overview?'overview-main':''}" id="main-content">${content}</main>${rightRail()}</div><div class="rail-backdrop" id="rail-backdrop" aria-hidden="true" hidden></div></div>`;bindCommon()}
 
 function overviewText(value,limit){const text=String(value??'').replace(/\s+/g,' ').trim(),points=Array.from(text);return points.length>limit?points.slice(0,limit).join('')+'…':text}
+function overviewRecordAppearance(record){
+  let seed=2166136261;
+  for(const character of String(record.id))seed=Math.imul(seed^character.codePointAt(0),16777619)>>>0;
+  return{art:`reel-${String(seed%6+1).padStart(2,'0')}`,layout:(seed>>>8)%2?'story':'note'};
+}
 function overviewRecordCard(record,duplicate=false,index=0){
-  const title=overviewText(record.title||formatDate(record.period),58),summary=overviewText(recordSummary(record),106);
-  return `<button type="button" class="overview-record-card type-${record.type}" ${duplicate?'aria-hidden="true" tabindex="-1"':''} style="--reel-order:${index}" data-overview-record="${esc(record.id)}">
-    <span class="overview-record-surface"><span class="overview-record-meta"><span class="overview-record-glyph" aria-hidden="true">${TYPE_ICONS[record.type]}</span><span>${esc(TYPES[record.type].label)}</span><time>${esc(formatDate(record.period))}</time></span>
-    <strong>${esc(title)}</strong><span class="overview-record-summary">${esc(summary)}</span><span class="overview-record-open" aria-hidden="true">查看原记录 <span>↗</span></span></span>
+  const title=overviewText(record.title||formatDate(record.period),58),summary=overviewText(recordSummary(record),106),appearance=overviewRecordAppearance(record);
+  return `<button type="button" class="overview-record-card type-${record.type} record-layout-${appearance.layout}" ${duplicate?'aria-hidden="true" tabindex="-1"':''} style="--reel-order:${index}" data-overview-record="${esc(record.id)}">
+    <span class="overview-record-surface">
+      <span class="overview-record-top"><span class="overview-record-category"><span class="overview-record-glyph" aria-hidden="true">${TYPE_ICONS[record.type]}</span><span>${esc(TYPES[record.type].label)}</span></span><span class="overview-record-status"><i aria-hidden="true"></i>${STATUS[record.status]}</span></span>
+      <span class="overview-record-content"><span class="overview-record-copy"><time class="overview-record-date">${esc(formatDate(record.period))}</time><strong class="overview-record-title">${esc(title)}</strong></span><span class="overview-record-art" aria-hidden="true"><img src="/assets/reel/${appearance.art}.svg?v=1.0.0-overview10" alt="" width="120" height="120"></span></span>
+      <span class="overview-record-summary">${esc(summary)}</span>
+      <span class="overview-record-footer" aria-hidden="true"><span>${esc(TYPES[record.type].position)}</span><span class="overview-record-open">翻开这页 <span>↗</span></span></span>
+    </span>
   </button>`;
 }
 function overviewRecords(){
@@ -223,7 +232,7 @@ function overviewBurst(){
 function renderOverview(){
   const records=overviewRecords();
   const reelRecords=records.length?Array.from({length:Math.max(12,records.length)},(_,index)=>records[index%records.length]):[];
-  const categories=Object.entries(TYPES).map(([key,item])=>`<div class="overview-type-card type-${key}"><button class="overview-type-trigger" type="button" data-overview-type="${key}" data-nav="${key}" aria-expanded="false" aria-controls="overview-type-${key}" aria-label="进入${item.label}" aria-describedby="overview-type-description-${key}">${overviewBurst()}<span class="overview-type-motion" aria-hidden="true"><span class="overview-type-mark" aria-hidden="true"><img src="/assets/overview/${key}.svg?v=1.0.0-overview9" alt="" width="320" height="320"></span></span></button><div class="overview-type-info" id="overview-type-${key}" role="group" aria-labelledby="overview-type-title-${key}" hidden><strong class="overview-type-info-title" id="overview-type-title-${key}">${item.label}</strong><p class="overview-type-description" id="overview-type-description-${key}">${OVERVIEW_TYPE_DESCRIPTIONS[key]}</p></div></div>`).join('');
+  const categories=Object.entries(TYPES).map(([key,item])=>`<div class="overview-type-card type-${key}"><button class="overview-type-trigger" type="button" data-overview-type="${key}" data-nav="${key}" aria-expanded="false" aria-controls="overview-type-${key}" aria-label="进入${item.label}" aria-describedby="overview-type-description-${key}">${overviewBurst()}<span class="overview-type-mark" aria-hidden="true"><img src="/assets/overview/${key}.svg?v=1.0.0-overview10" alt="" width="320" height="320"></span></button><div class="overview-type-info" id="overview-type-${key}" role="group" aria-labelledby="overview-type-title-${key}" hidden><span class="overview-type-info-head"><strong id="overview-type-title-${key}">${item.label}</strong><span>${item.position}</span></span><p class="overview-type-description" id="overview-type-description-${key}">${OVERVIEW_TYPE_DESCRIPTIONS[key]}</p><span class="overview-type-info-footer"><span>${item.meta.split(' · ')[1].replace('m',' 分钟')}</span><button class="overview-type-enter" type="button" data-nav="${key}" aria-label="进入${item.label}">进入复盘 ↗</button></span></div></div>`).join('');
   const cardSet=reelRecords.map((record,index)=>overviewRecordCard(record,index>=records.length,index)).join('');
   const reel=records.length?`<div class="overview-reel" id="overview-reel">
       <div class="overview-reel-window" aria-label="已完成复盘摘要"><div class="overview-reel-track" style="--reel-count:${reelRecords.length}">${cardSet}</div></div>
