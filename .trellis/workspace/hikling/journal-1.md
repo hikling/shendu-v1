@@ -395,3 +395,25 @@ Split day-based reel dates into year-month-day and full weekday lines, retained 
 ### Status
 
 [OK] **Completed**
+
+
+## Session 18: 精简顶部栏并将阶段日历改为按需打开
+<!-- trellis-session: v=2 fp=00b5dc7d8766820f -->
+
+**Date**: 2026-10-27
+**Task**: 精简顶部栏并将阶段日历改为按需打开
+**Branch**: `main`
+
+### Summary
+
+共享顶部栏桌面60px手机56px，页面和轮播适度上移；阶段与日历仅由顶部按钮打开，关闭时hidden/inert且不占右栏。桌面手机六类复盘和日历切月、嵌套弹窗、焦点均检查通过；修复负边距透明轨道遮挡分类底部点击；21项轮播测试、语法及静态审查通过无新增问题，README和合成预览同步。
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `d855c2c` | refactor: compact navigation and hide the closed calendar rail |
+
+### Status
+
+[OK] **Completed**
