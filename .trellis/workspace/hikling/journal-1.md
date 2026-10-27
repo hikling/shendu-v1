@@ -417,3 +417,25 @@ Split day-based reel dates into year-month-day and full weekday lines, retained 
 ### Status
 
 [OK] **Completed**
+
+
+## Session 19: 每日复盘分步填写与日历统计
+<!-- trellis-session: v=2 fp=bfbe2904959e147d -->
+
+**Date**: 2026-10-27
+**Task**: 每日复盘分步填写与日历统计
+**Branch**: `main`
+
+### Summary
+
+居中引导与四步每日复盘；保留输入、手动保存、验证和只读规则；统计收进日历弹框。54项测试与语法检查通过，真实隔离后端验证保存/完成失败重试、慢请求保护、键盘焦点、320/390/820/1280布局和白色自定义主题。README、设计、规范与合成截图同步。
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `c29a0e7` | feat: guide daily review through four focused steps |
+
+### Status
+
+[OK] **Completed**
