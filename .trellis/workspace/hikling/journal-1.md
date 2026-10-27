@@ -306,3 +306,26 @@ Removed category tumble, restored duration and enter action, redesigned the arc 
 ### Status
 
 [OK] **Completed**
+
+
+## Session 14: Finish authorized emotion illustrations and review dates
+<!-- trellis-session: v=2 fp=94d169698542703c -->
+
+**Date**: 2026-10-27
+**Task**: Finish authorized emotion illustrations and review dates
+**Branch**: `main`
+
+### Summary
+
+Finished the previously partial calendar and reel task, normalized legacy date titles, added 15 user-authorized illustrations and private local keyword matching, corrected WebP MIME type, and verified 33 tests and desktop/mobile browser behavior.
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `0fdbe10` | fix: deduplicate reel dates and restyle stage calendar |
+| `b2d571b` | fix: normalize review dates and match authorized illustrations |
+
+### Status
+
+[OK] **Completed**
