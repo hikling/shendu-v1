@@ -1,0 +1,2 @@
+{"file": ".trellis/spec/frontend/architecture.md", "reason": "渲染与缓存约定"}
+{"file": ".trellis/spec/frontend/state-and-data.md", "reason": "复盘数据与隐私"}

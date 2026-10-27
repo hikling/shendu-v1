@@ -665,7 +665,6 @@ body.rail-dialog-open{overflow:hidden}
 body.rail-dialog-open .modal-backdrop{z-index:110}
 .app-shell .right-rail.open{position:fixed;inset:50% auto auto 50%;z-index:90;width:min(900px,calc(100vw - 40px));height:auto;max-height:calc(100dvh - 64px);display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:18px;overflow:auto;overscroll-behavior:contain;padding:26px;border:1px solid #dce5df;border-radius:28px;background:#f7f9f6;box-shadow:0 32px 90px rgba(15,40,35,.28),0 5px 18px rgba(15,40,35,.08);transform:translate(-50%,-50%);animation:rail-dialog-enter .24s cubic-bezier(.2,.8,.2,1)}
 .right-rail.open .rail-dialog-header{display:flex;grid-column:1/-1;align-items:flex-start;justify-content:space-between;gap:18px;padding:0 2px 8px}
-.rail-dialog-header small{display:block;margin-bottom:7px;color:#327268;font:700 .62rem/1.4 "Noto Sans SC","Microsoft YaHei",system-ui,sans-serif;letter-spacing:.14em}
 .rail-dialog-header h2{margin:0;color:#233d36;font:700 1.5rem/1.25 "Noto Serif SC","Songti SC",serif;letter-spacing:.05em}
 .rail-dialog-header p{margin:8px 0 0;color:#677b73;font:500 .72rem/1.65 "Noto Sans SC","Microsoft YaHei",system-ui,sans-serif}
 #rail-close{display:grid;place-items:center;flex:0 0 36px;width:36px;height:36px;padding:0;border:1px solid #dce5df;border-radius:50%;background:#fff;color:#4b655b;font-size:1.2rem;line-height:1;transition:background .18s,transform .18s}
@@ -780,4 +779,35 @@ body.reduce-motion .overview-type-burst{display:none}
   .overview-record-card[aria-hidden="true"]{display:none}
   .overview-type-card,.overview-type-info,.overview-type-mark,.overview-record-card,.overview-record-surface,.overview-record-open>span,.shendu-header button,.header-chevron,.header-mobile-trigger span,#rail-close{transition:none}
   .header-menu-panel,.header-mobile-nav,.overview-type-info,.rail-backdrop,.app-shell .right-rail.open{animation:none}
+}
+
+/* Stage dialog: soft calendar paper and six familiar category illustrations. */
+.rail-side-decor{position:absolute;inset:0;pointer-events:none}
+.rail-side-decor img{position:absolute;width:clamp(50px,7vw,92px);height:auto;border-radius:19%;box-shadow:0 12px 28px #173d3530}
+.rail-side-decor img:nth-child(-n+3){left:max(12px,calc(50% - 570px))}
+.rail-side-decor img:nth-child(n+4){right:max(12px,calc(50% - 570px))}
+.rail-side-decor img:nth-child(3n+1){top:calc(50% - 168px);transform:rotate(-9deg)}
+.rail-side-decor img:nth-child(3n+2){top:calc(50% - 46px);transform:rotate(7deg)}
+.rail-side-decor img:nth-child(3n){top:calc(50% + 76px);transform:rotate(-6deg)}
+.rail-compact-decor{display:none}
+.right-rail.open .rail-calendar{background:linear-gradient(155deg,#eef8f4,#eaf2f9);border-color:#d3e6e0;box-shadow:inset 0 1px #fff,0 9px 24px #315c5012}
+.right-rail.open .calendar-head{color:#244f4a}
+.right-rail.open .calendar-head strong{font-size:.95rem;letter-spacing:.04em}
+.right-rail.open .calendar-head .icon-btn{border-color:#d2e5df;background:#fff;color:#21685c;box-shadow:0 3px 10px #1d695312}
+.right-rail.open .cal-grid .dow{color:#50746a;font-weight:750;background:#dceee8;border-radius:8px}
+.right-rail.open .cal-day{background:#ffffffad;color:#5a716b;border-color:#ffffffa8;opacity:1}
+.right-rail.open .cal-day:disabled:hover{background:#ffffffad}
+.right-rail.open .cal-day.completed{background:#bfe5d5;color:#135c4b;border-color:#97d0b9;font-weight:800}
+.right-rail.open .cal-day.draft{background:#f9dfb5;color:#79511f;border-color:#e8c893;font-weight:750}
+.right-rail.open .cal-day.today,.right-rail.open .cal-day.today.completed,.right-rail.open .cal-day.today.draft{background:#ad4e43;color:#fff;border-color:#ad4e43;font-weight:800}
+.right-rail.open .cal-day:not(:disabled):hover{outline:2px solid #489582;outline-offset:2px}
+@media(max-width:1100px){
+  .rail-side-decor{display:none}
+  .rail-compact-decor{display:flex;gap:5px;margin-top:12px}
+  .rail-compact-decor img{display:block;width:36px;height:36px;border-radius:8px;box-shadow:0 3px 8px #24584618}
+}
+@media(max-width:1100px){
+  .right-rail.open .rail-dialog-header>div{flex:1;min-width:0}
+  .rail-compact-decor img{width:clamp(24px,8vw,36px);height:auto}
+  .rail-compact-decor img:nth-child(4){margin-left:auto}
 }
