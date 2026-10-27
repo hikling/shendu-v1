@@ -1,0 +1,2 @@
+{"file": ".trellis/spec/frontend/ui-quality.md", "reason": "检查动态全周期裁切和交互"}
+{"file": ".trellis/spec/frontend/state-and-data.md", "reason": "检查来源过滤和完整图池"}

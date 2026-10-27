@@ -1,4 +1,4 @@
-import {overviewRecordAppearance,overviewRecordTitle,overviewDateParts} from './overview-reel.js?v=1.0.0-overview13';
+import {overviewRecordAppearances,overviewCompletedRecords,overviewRecordTitle,overviewDateParts} from './overview-reel.js?v=1.0.0-overview14';
 const $ = (s, root = document) => root.querySelector(s);
 const $$ = (s, root = document) => [...root.querySelectorAll(s)];
 const esc = (v = '') => String(v).replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
@@ -186,8 +186,8 @@ function railDecor(){return Object.keys(TYPES).map(key=>`<img src="/assets/overv
 function shell(content){if($('#right-rail.open'))setRailOverlayOpen(false);overviewReelObserver?.disconnect();overviewReelObserver=null;const overview=state.route==='overview';$('#app').innerHTML=`<div class="app-shell ${overview?'overview-shell':''}">${topbar()}<div class="workspace"><main class="main ${overview?'overview-main':''}" id="main-content">${content}</main>${rightRail()}</div><div class="rail-backdrop" id="rail-backdrop" aria-hidden="true" hidden><div class="rail-side-decor">${railDecor()}</div></div></div>`;bindCommon()}
 
 function overviewText(value,limit){const text=String(value??'').replace(/\s+/g,' ').trim(),points=Array.from(text);return points.length>limit?points.slice(0,limit).join('')+'…':text}
-function overviewRecordCard(record,duplicate=false,index=0){
-  const day=overviewDateParts(record.period),date=day?day.full:formatDate(record.period),display=overviewRecordTitle(record,date,TYPES[record.type].label),summary=overviewText(recordSummary(record),106),appearance=overviewRecordAppearance(record);
+function overviewRecordCard(record,appearance,duplicate=false,index=0){
+  const day=overviewDateParts(record.period),date=day?day.full:formatDate(record.period),display=overviewRecordTitle(record,date,TYPES[record.type].label),summary=overviewText(recordSummary(record),106);
   const customTitle=day&&!display.showDate?display.title.replace(date,'').replace(/^[\s·•:：|—–-]+|[\s·•:：|—–-]+$/g,''):display.title;
   const title=overviewText(customTitle,58),dateOnly=day?!title:display.title===date,layout=dateOnly?'note':appearance.layout;
   const copy=day?`<time class="overview-record-date ${dateOnly?'overview-record-date-primary':''}" datetime="${esc(record.period)}"><span>${esc(day.calendarDate)}</span><span>${esc(day.weekday)}</span></time>${title?`<strong class="overview-record-title">${esc(title)}</strong>`:''}`:`${display.showDate?`<time class="overview-record-date">${esc(date)}</time>`:''}<strong class="overview-record-title">${esc(title)}</strong>`;
@@ -201,7 +201,7 @@ function overviewRecordCard(record,duplicate=false,index=0){
   </button>`;
 }
 function overviewRecords(){
-  const records=state.records.filter(record=>TYPES[record.type]&&(record.status==='completed'||record.status==='verified')).slice();
+  const records=overviewCompletedRecords(state.records,TYPES);
   for(let i=records.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[records[i],records[j]]=[records[j],records[i]]}
   return records.slice(0,12);
 }
@@ -210,7 +210,25 @@ function bindOverviewArc(){
   if(!window||!track)return;
   const cards=$$('.overview-record-card',track),curve=document.createElementNS('http://www.w3.org/2000/svg','path');
   const layout=()=>{
-    const width=window.clientWidth,cardWidth=cards[0].offsetWidth,gap=parseFloat(getComputedStyle(track).columnGap)||0,rise=Math.min(150,Math.max(78,width*.115)),edge=60;
+    const width=window.clientWidth,cardWidth=cards[0].offsetWidth,cardHeight=cards[0].offsetHeight,gap=parseFloat(getComputedStyle(track).columnGap)||0,rise=Math.min(150,Math.max(78,width*.115));
+    const style=getComputedStyle(cards[0]),scale=parseFloat(style.getPropertyValue('--record-hover-scale')),lift=parseFloat(style.getPropertyValue('--record-hover-lift'));
+    let minY=Infinity,maxY=-Infinity;
+    // Include tilted corners and the lifted surface, but only where they enter the viewport.
+    // This keeps the reel compact without chopping cards at its top or bottom edges.
+    for(let step=0;step<=96;step++){
+      const t=step/96,x=-cardWidth+(width+2*cardWidth)*t,y=4*rise*t*(1-t),angle=Math.atan2(4*rise*(1-2*t),width+2*cardWidth),cos=Math.cos(angle),sin=Math.sin(angle);
+      for(const [zoom,raise] of [[1,0],[scale,lift]]){
+        const halfWidth=cardWidth*zoom/2,top=-cardHeight/2-raise-(zoom-1)*cardHeight,bottom=cardHeight/2-raise;
+        const corners=[[-halfWidth,top],[halfWidth,top],[halfWidth,bottom],[-halfWidth,bottom]].map(([cx,cy])=>({x:x+cx*cos-cy*sin,y:y+cx*sin+cy*cos}));
+        const visible=corners.filter(point=>point.x>=0&&point.x<=width);
+        corners.forEach((point,index)=>{
+          const next=corners[(index+1)%corners.length];
+          for(const boundary of [0,width])if(boundary>Math.min(point.x,next.x)&&boundary<Math.max(point.x,next.x))visible.push({y:point.y+(next.y-point.y)*(boundary-point.x)/(next.x-point.x)});
+        });
+        for(const point of visible){minY=Math.min(minY,point.y);maxY=Math.max(maxY,point.y)}
+      }
+    }
+    const edge=Math.ceil(24-minY);
     const arc=`M ${-cardWidth} ${edge} Q ${width/2} ${edge+rise*2} ${width+cardWidth} ${edge}`;
     curve.setAttribute('d',arc);
     // Extra travel stays outside the viewport so many records never overlap on the visible arc.
@@ -219,7 +237,7 @@ function bindOverviewArc(){
     curve.setAttribute('d',path);
     track.style.setProperty('--reel-path',`path('${path}')`);
     track.style.setProperty('--reel-duration',`${curve.getTotalLength()/42}s`);
-    window.style.setProperty('--reel-height',`${edge+rise+cards[0].offsetHeight/2+40}px`);
+    window.style.setProperty('--reel-height',`${Math.ceil(edge+maxY+56)}px`);
   };
   const observer=new ResizeObserver(()=>{if(window.isConnected)layout();else observer.disconnect()});
   overviewReelObserver=observer;
@@ -231,9 +249,10 @@ function overviewBurst(){
 }
 function renderOverview(){
   const records=overviewRecords();
+  const appearances=overviewRecordAppearances(records);
   const reelRecords=records.length?Array.from({length:Math.max(12,records.length)},(_,index)=>records[index%records.length]):[];
   const categories=Object.entries(TYPES).map(([key,item])=>`<div class="overview-type-card type-${key}"><button class="overview-type-trigger" type="button" data-overview-type="${key}" data-nav="${key}" aria-expanded="false" aria-controls="overview-type-${key}" aria-label="进入${item.label}" aria-describedby="overview-type-description-${key}">${overviewBurst()}<span class="overview-type-mark" aria-hidden="true"><img src="/assets/overview/${key}.svg?v=1.0.0-overview13" alt="" width="320" height="320"></span></button><div class="overview-type-info" id="overview-type-${key}" role="group" aria-labelledby="overview-type-title-${key}" hidden><span class="overview-type-info-head"><strong id="overview-type-title-${key}">${item.label}</strong><span>${item.position}</span></span><p class="overview-type-description" id="overview-type-description-${key}">${OVERVIEW_TYPE_DESCRIPTIONS[key]}</p><span class="overview-type-info-footer"><span>${item.meta.split(' · ')[1].replace('m',' 分钟')}</span><button class="overview-type-enter" type="button" data-nav="${key}" aria-label="进入${item.label}">进入复盘 ↗</button></span></div></div>`).join('');
-  const cardSet=reelRecords.map((record,index)=>overviewRecordCard(record,index>=records.length,index)).join('');
+  const cardSet=reelRecords.map((record,index)=>overviewRecordCard(record,appearances.get(record.id),index>=records.length,index)).join('');
   const reel=records.length?`<div class="overview-reel" id="overview-reel">
       <div class="overview-reel-window" aria-label="已完成复盘摘要"><div class="overview-reel-track" style="--reel-count:${reelRecords.length}">${cardSet}</div></div>
     </div>`:`<section class="overview-empty" aria-labelledby="overview-empty-title"><h2 id="overview-empty-title">从第一份复盘开始</h2><p>完成一份记录后，这里会出现属于你的回看卡片。</p><button type="button" data-nav="daily">开始每日复盘 <span aria-hidden="true">↗</span></button></section>`;

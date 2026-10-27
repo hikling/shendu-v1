@@ -17,13 +17,31 @@ const EMOTION_RULES=[
   {id:15,terms:['等下班','期待下班','等待下班','下班倒计时']}
 ];
 function recordSeed(id){let seed=2166136261;for(const character of String(id))seed=Math.imul(seed^character.codePointAt(0),16777619)>>>0;return seed}
-function recordWords(record){const data=record.data||{},answers=Object.values(data.answers||{}).flat(Infinity),metrics=Array.isArray(data.metrics)?data.metrics.flatMap(item=>[item?.name,item?.action,item?.status]):[];return [record.title,...answers,...metrics,data.action,data.ifCondition,data.ifThen,data.journal,data.risk,record.verification?.result,record.verification?.adjustment].filter(value=>typeof value==='string').join(' ').slice(0,30000).toLowerCase()}
+function recordWords(record){const data=record.data||{},answers=Object.values(data.answers||{}).flat(Infinity),metrics=Array.isArray(data.metrics)?data.metrics.flatMap(item=>[item?.name,item?.action,item?.status]):[];return [record.title,...answers,...metrics,data.action,data.ifCondition,data.ifThen,data.journal,data.risk].filter(value=>typeof value==='string').join(' ').slice(0,30000).toLowerCase()}
 function hasPositiveTerm(text,term){let index=text.indexOf(term);while(index>=0){const before=text.slice(Math.max(0,index-8),index);if(!/(?:不|没|未|别|无需|避免|戒掉|停止|摆脱|戒除|告别)(?:再|有|要|去|想|继续)?\s*$/.test(before))return true;index=text.indexOf(term,index+term.length)}return false}
-export function overviewRecordAppearance(record){
-  const seed=recordSeed(record.id),text=recordWords(record),matches=EMOTION_RULES.map(rule=>({id:rule.id,score:rule.terms.filter(term=>hasPositiveTerm(text,term)).length}));
+function matchingIllustrations(record){
+  const text=recordWords(record),matches=EMOTION_RULES.map(rule=>({id:rule.id,score:rule.terms.filter(term=>hasPositiveTerm(text,term)).length}));
   const best=Math.max(0,...matches.map(item=>item.score)),leaders=matches.filter(item=>best>0&&item.score===best);
-  const art=leaders.length===1?leaders[0].id:seed%EMOTION_RULES.length+1;
-  return{art:`emotion-${String(art).padStart(2,'0')}`,layout:(seed>>>8)%2?'story':'note'};
+  return leaders.map(item=>item.id);
+}
+export function overviewCompletedRecords(records,types){
+  return records.filter(record=>Object.hasOwn(types,record.type)&&record.status==='completed');
+}
+// Allocate once per render so loop copies agree; fallback art can change on the next visit.
+export function overviewRecordAppearances(records,random=Math.random){
+  const entries=[...new Map(records.map(record=>[record.id,record])).values()].map(record=>({record,matches:matchingIllustrations(record)}));
+  const appearances=new Map(),used=new Set(),all=EMOTION_RULES.map(rule=>rule.id);
+  const assign=(entry,candidates)=>{
+    const unused=candidates.filter(id=>!used.has(id)),pool=unused.length?unused:candidates;
+    const art=pool[Math.floor(random()*pool.length)];
+    used.add(art);
+    appearances.set(entry.record.id,{art:`emotion-${String(art).padStart(2,'0')}`,layout:(recordSeed(entry.record.id)>>>8)%2?'story':'note'});
+  };
+  // Reserve clear content matches before assigning ambiguous or unrelated records.
+  for(const entry of entries.filter(item=>item.matches.length===1))assign(entry,entry.matches);
+  for(const entry of entries.filter(item=>item.matches.length>1))assign(entry,entry.matches);
+  for(const entry of entries.filter(item=>!item.matches.length))assign(entry,all);
+  return appearances;
 }
 
 // A day-based reel period has a separate, full weekday line.
