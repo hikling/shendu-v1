@@ -8,7 +8,7 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 14
+- **Total Sessions**: 15
 - **Last Active**: 2026-10-27
 <!-- @@@/auto:current-status -->
 
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~331 | Active |
+| `journal-1.md` | ~353 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -29,6 +29,7 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 15 | 2026-10-27 | Display reel dates and full weekdays on separate lines | `2c2fcec` | `main` |
 | 14 | 2026-10-27 | Finish authorized emotion illustrations and review dates | `0fdbe10`, `b2d571b` | `main` |
 | 13 | 2026-10-27 | Restore category info and illustrated overview reel | `7c068ce` | `main` |
 | 12 | 2026-10-27 | 六类纯文字介绍与悬停翻滚 | `72cd2dc` | `main` |

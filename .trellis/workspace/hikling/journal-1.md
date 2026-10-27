@@ -329,3 +329,25 @@ Finished the previously partial calendar and reel task, normalized legacy date t
 ### Status
 
 [OK] **Completed**
+
+
+## Session 15: Display reel dates and full weekdays on separate lines
+<!-- trellis-session: v=2 fp=d9e67561f9342118 -->
+
+**Date**: 2026-10-27
+**Task**: Display reel dates and full weekdays on separate lines
+**Branch**: `main`
+
+### Summary
+
+Split day-based reel dates into year-month-day and full weekday lines, retained custom titles and non-day periods, verified all weekdays and mobile layout, and updated documentation previews.
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `2c2fcec` | fix: show reel dates and weekdays on separate lines |
+
+### Status
+
+[OK] **Completed**
