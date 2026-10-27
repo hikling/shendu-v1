@@ -303,7 +303,7 @@ function spacePageHead(route,{title,description,action=''}){const meta=SPACE_PAG
 
 function stageProgress(){const start=isoDate(state.stage.startDate),current=isoDate(today()),day=Math.max(1,Math.floor((current-start)/86400000)+1),days=Number(state.stage.days||90);return{day:Math.min(day,days),days,pct:Math.min(100,Math.max(0,day/days*100))}}
 function calendarHtml(){const selected=/^\d{4}-\d{2}$/.test(state.calendarMonth)?state.calendarMonth:today().slice(0,7),[year,month]=selected.split('-').map(Number),first=new Date(Date.UTC(year,month-1,1,12)),last=new Date(Date.UTC(year,month,0,12)),lead=(first.getUTCDay()+6)%7;let days='';for(let i=0;i<lead;i++)days+='<span aria-hidden="true"></span>';for(let d=1;d<=last.getUTCDate();d++){const p=`${year}-${String(month).padStart(2,'0')}-${String(d).padStart(2,'0')}`,r=state.records.find(x=>x.type==='daily'&&x.period===p),cls=[p===today()?'today':'',r?.status==='draft'?'draft':r?'completed':''].filter(Boolean).join(' '),action=r?`data-calendar-record="${esc(r.id)}"`:p===today()?`data-calendar="${p}"`:'disabled aria-disabled="true"';days+=`<button class="cal-day ${cls}" ${action} aria-label="${formatDate(p)}${r?`，${STATUS[r.status]}`:p===today()?'，填写今日复盘':'，无记录'}">${d}</button>`}return `<div class="calendar-head"><button class="icon-btn" type="button" data-calendar-shift="-1" aria-label="上个月"><span class="chevron-icon left" aria-hidden="true"></span></button><strong>${year} 年 ${month} 月</strong><button class="icon-btn" type="button" data-calendar-shift="1" aria-label="下个月"><span class="chevron-icon right" aria-hidden="true"></span></button></div><div class="cal-grid">${['一','二','三','四','五','六','日'].map(x=>`<span class="dow">${x}</span>`).join('')}${days}</div>`}
-function rightRail(){const p=stageProgress(),pending=state.records.filter(r=>r.status==='completed').sort((a,b)=>String(a.data.verifyDate).localeCompare(String(b.data.verifyDate))).slice(0,2);return `<aside class="right-rail ${state.railOpen?'open':''}" id="right-rail">
+function rightRail(){const p=stageProgress(),pending=state.records.filter(r=>r.status==='completed').sort((a,b)=>String(a.data.verifyDate).localeCompare(String(b.data.verifyDate))).slice(0,2);return `<aside class="right-rail ${state.railOpen?'open':''}" id="right-rail" ${state.railOpen?'':'hidden inert'}>
   <header class="rail-dialog-header"><div><h2 id="rail-dialog-title">阶段与日历</h2><p>看见这一阶段的方向，也留意每一天的足迹。</p><div class="rail-compact-decor" aria-hidden="true">${railDecor()}</div></div><button class="modal-close" id="rail-close" type="button" aria-label="关闭阶段与日历">×</button></header>
   <section class="card rail-card rail-stage"><div class="stage-title"><span class="help">当前阶段</span><span class="badge">${p.day} / ${p.days} 天</span></div><b>${esc(state.stage.name)}</b><p>${esc(state.stage.focus)}</p><div class="progress"><i style="width:${p.pct}%"></i></div><button class="rail-link" data-modal="stage">编辑阶段设置</button></section>
   <section class="card rail-card rail-calendar" id="rail-calendar">${calendarHtml()}</section>
@@ -571,7 +571,8 @@ function setRailOverlayOpen(open,restoreFocus=false){
   if(!rail||!trigger)return;
   state.railOpen=open;
   rail.classList.toggle('open',open);
-  rail.inert=false;
+  rail.hidden=!open;
+  rail.inert=!open;
   document.body.classList.toggle('rail-dialog-open',open);
   const backdrop=$('#rail-backdrop');if(backdrop)backdrop.hidden=!open;
   trigger.setAttribute('aria-expanded',String(open));
