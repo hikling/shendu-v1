@@ -351,3 +351,25 @@ Split day-based reel dates into year-month-day and full weekday lines, retained 
 ### Status
 
 [OK] **Completed**
+
+
+## Session 16: 修复轮播边角与来源并启用完整插画池
+<!-- trellis-session: v=2 fp=b80435d07ba161ed -->
+
+**Date**: 2026-10-27
+**Task**: 修复轮播边角与来源并启用完整插画池
+**Branch**: `main`
+
+### Summary
+
+修复弧线卡片旋转和悬停时的上下裁切；轮播只显示六类completed记录；完整15张授权插画按正文匹配和未用池随机回退，循环副本一致。13项单元和语法检查通过，1660/1280/390px浏览器普通及悬停几何、过滤空态、键盘/减少动态效果通过；README和全部插画预览同步。
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `3608a73` | fix: prevent reel clipping and diversify review illustrations |
+
+### Status
+
+[OK] **Completed**
