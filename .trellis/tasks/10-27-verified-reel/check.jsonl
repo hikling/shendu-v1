@@ -1,0 +1,2 @@
+{"file": ".trellis/spec/frontend/state-and-data.md", "reason": "筛选去重、顺序和全量覆盖"}
+{"file": ".trellis/spec/frontend/ui-quality.md", "reason": "连续循环与可视覆盖"}

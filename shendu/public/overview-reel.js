@@ -1,4 +1,4 @@
-// Private, local-only illustration selection for completed review cards.
+// Private, local-only selection and presentation for verified review cards.
 const EMOTION_RULES=[
   {id:1,terms:['精疲力尽','筋疲力尽','疲惫','疲劳','很累','累坏','累瘫','没有力气']},
   {id:2,terms:['熬夜','失眠','晚睡','通宵','睡眠不足','睡不着','没睡好']},
@@ -20,12 +20,43 @@ function recordSeed(id){let seed=2166136261;for(const character of String(id))se
 function recordWords(record){const data=record.data||{},answers=Object.values(data.answers||{}).flat(Infinity),metrics=Array.isArray(data.metrics)?data.metrics.flatMap(item=>[item?.name,item?.action,item?.status]):[];return [record.title,...answers,...metrics,data.action,data.ifCondition,data.ifThen,data.journal,data.risk].filter(value=>typeof value==='string').join(' ').slice(0,30000).toLowerCase()}
 function hasPositiveTerm(text,term){let index=text.indexOf(term);while(index>=0){const before=text.slice(Math.max(0,index-8),index);if(!/(?:不|没|未|别|无需|避免|戒掉|停止|摆脱|戒除|告别)(?:再|有|要|去|想|继续)?\s*$/.test(before))return true;index=text.indexOf(term,index+term.length)}return false}
 function matchingIllustrations(record){
-  const text=recordWords(record),matches=EMOTION_RULES.map(rule=>({id:rule.id,score:rule.terms.filter(term=>hasPositiveTerm(text,term)).length}));
-  const best=Math.max(0,...matches.map(item=>item.score)),leaders=matches.filter(item=>best>0&&item.score===best);
-  return leaders.map(item=>item.id);
+  const verified=[record.verification?.result,record.verification?.adjustment].filter(value=>typeof value==='string').join(' ').slice(0,30000).toLowerCase();
+  for(const text of [verified,recordWords(record)]){
+    const matches=EMOTION_RULES.map(rule=>({id:rule.id,score:rule.terms.filter(term=>hasPositiveTerm(text,term)).length}));
+    const best=Math.max(0,...matches.map(item=>item.score)),leaders=matches.filter(item=>best>0&&item.score===best);
+    if(leaders.length)return leaders.map(item=>item.id);
+  }
+  return [];
 }
-export function overviewCompletedRecords(records,types){
-  return records.filter(record=>Object.hasOwn(types,record.type)&&record.status==='completed');
+function verificationTime(value){const stamp=typeof value==='string'?Date.parse(value):NaN;return Number.isFinite(stamp)?stamp:null}
+function recordVerificationTime(record){
+  const verified=[record.verified_at,record.verification?.actualAt].map(verificationTime).filter(stamp=>stamp!==null);
+  return verified.length?Math.max(...verified):verificationTime(record.updated_at)??verificationTime(record.created_at)??0;
+}
+function overviewRecordKey(record){
+  if(record.type==='decision')return `decision:${record.id}`;
+  let period=String(record.period||'');
+  if(record.type==='quarterly'&&overviewDateParts(period)){const [year,month]=period.split('-');period=`${year}-Q${Math.ceil(Number(month)/3)}`}
+  return `${record.type}:${period}`;
+}
+export function overviewVerifiedRecords(records,types){
+  const selected=new Map();
+  for(const record of records){
+    if(!Object.hasOwn(types,record.type)||record.status!=='verified')continue;
+    const key=overviewRecordKey(record),previous=selected.get(key);
+    const newer=previous?recordVerificationTime(record)-recordVerificationTime(previous)||verificationTime(record.updated_at)-verificationTime(previous.updated_at):1;
+    if(!previous||newer>0||(newer===0&&String(record.id)>String(previous.id)))selected.set(key,record);
+  }
+  return [...selected.values()];
+}
+export function overviewRecordExcerpt(record,fallback=''){
+  return [record.verification?.result,record.verification?.adjustment,fallback].find(value=>typeof value==='string'&&value.trim())?.trim()||'';
+}
+// Every visual loop is made of whole record groups and exactly spaced card centers.
+export function overviewLoopMetrics(recordCount,arcLength,cardWidth,gap){
+  if(!recordCount)return{groups:0,slots:0,pitch:0,length:0,extension:0};
+  const pitch=cardWidth+gap,groups=Math.max(1,Math.ceil(arcLength/(recordCount*pitch))),slots=groups*recordCount,length=slots*pitch;
+  return{groups,slots,pitch,length,extension:(length-arcLength)/2};
 }
 // Allocate once per render so loop copies agree; fallback art can change on the next visit.
 export function overviewRecordAppearances(records,random=Math.random){

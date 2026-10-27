@@ -1,4 +1,4 @@
-import {overviewRecordAppearances,overviewCompletedRecords,overviewRecordTitle,overviewDateParts} from './overview-reel.js?v=1.0.0-overview14';
+import {overviewRecordAppearances,overviewVerifiedRecords,overviewRecordExcerpt,overviewLoopMetrics,overviewRecordTitle,overviewDateParts} from './overview-reel.js?v=1.0.0-overview15';
 const $ = (s, root = document) => root.querySelector(s);
 const $$ = (s, root = document) => [...root.querySelectorAll(s)];
 const esc = (v = '') => String(v).replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
@@ -187,7 +187,7 @@ function shell(content){if($('#right-rail.open'))setRailOverlayOpen(false);overv
 
 function overviewText(value,limit){const text=String(value??'').replace(/\s+/g,' ').trim(),points=Array.from(text);return points.length>limit?points.slice(0,limit).join('')+'…':text}
 function overviewRecordCard(record,appearance,duplicate=false,index=0){
-  const day=overviewDateParts(record.period),date=day?day.full:formatDate(record.period),display=overviewRecordTitle(record,date,TYPES[record.type].label),summary=overviewText(recordSummary(record),106);
+  const day=overviewDateParts(record.period),date=day?day.full:formatDate(record.period),display=overviewRecordTitle(record,date,TYPES[record.type].label),summary=overviewText(overviewRecordExcerpt(record,recordSummary(record)),106);
   const customTitle=day&&!display.showDate?display.title.replace(date,'').replace(/^[\s·•:：|—–-]+|[\s·•:：|—–-]+$/g,''):display.title;
   const title=overviewText(customTitle,58),dateOnly=day?!title:display.title===date,layout=dateOnly?'note':appearance.layout;
   const copy=day?`<time class="overview-record-date ${dateOnly?'overview-record-date-primary':''}" datetime="${esc(record.period)}"><span>${esc(day.calendarDate)}</span><span>${esc(day.weekday)}</span></time>${title?`<strong class="overview-record-title">${esc(title)}</strong>`:''}`:`${display.showDate?`<time class="overview-record-date">${esc(date)}</time>`:''}<strong class="overview-record-title">${esc(title)}</strong>`;
@@ -201,17 +201,18 @@ function overviewRecordCard(record,appearance,duplicate=false,index=0){
   </button>`;
 }
 function overviewRecords(){
-  const records=overviewCompletedRecords(state.records,TYPES);
+  const records=overviewVerifiedRecords(state.records,TYPES);
   for(let i=records.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[records[i],records[j]]=[records[j],records[i]]}
-  return records.slice(0,12);
+  return records;
 }
 function bindOverviewArc(){
   const window=$('.overview-reel-window'),track=$('.overview-reel-track');
   if(!window||!track)return;
-  const cards=$$('.overview-record-card',track),curve=document.createElementNS('http://www.w3.org/2000/svg','path');
+  const originals=$$('.overview-record-card:not([aria-hidden="true"])',track),curve=document.createElementNS('http://www.w3.org/2000/svg','path');
   const layout=()=>{
-    const width=window.clientWidth,cardWidth=cards[0].offsetWidth,cardHeight=cards[0].offsetHeight,gap=parseFloat(getComputedStyle(track).columnGap)||0,rise=Math.min(150,Math.max(78,width*.115));
-    const style=getComputedStyle(cards[0]),scale=parseFloat(style.getPropertyValue('--record-hover-scale')),lift=parseFloat(style.getPropertyValue('--record-hover-lift'));
+    const width=window.clientWidth,cardWidth=originals[0].offsetWidth,cardHeight=originals[0].offsetHeight,gap=parseFloat(getComputedStyle(track).columnGap)||0,rise=Math.min(150,Math.max(78,width*.115));
+    const style=getComputedStyle(originals[0]),scale=parseFloat(style.getPropertyValue('--record-hover-scale')),lift=parseFloat(style.getPropertyValue('--record-hover-lift'));
+    const elapsed=originals[0].getAnimations().find(animation=>animation.animationName==='overview-flow')?.currentTime||0;
     let minY=Infinity,maxY=-Infinity;
     // Include tilted corners and the lifted surface, but only where they enter the viewport.
     // This keeps the reel compact without chopping cards at its top or bottom edges.
@@ -231,12 +232,22 @@ function bindOverviewArc(){
     const edge=Math.ceil(24-minY);
     const arc=`M ${-cardWidth} ${edge} Q ${width/2} ${edge+rise*2} ${width+cardWidth} ${edge}`;
     curve.setAttribute('d',arc);
-    // Extra travel stays outside the viewport so many records never overlap on the visible arc.
-    const extension=Math.max(0,(cards.length*(cardWidth+gap)-curve.getTotalLength())/2);
+    const metrics=overviewLoopMetrics(originals.length,curve.getTotalLength(),cardWidth,gap),extension=metrics.extension;
+    if(track.children.length!==metrics.slots){
+      $$('.overview-record-card[aria-hidden="true"]',track).forEach(card=>card.remove());
+      const copies=document.createDocumentFragment();
+      for(let group=1;group<metrics.groups;group++)for(const original of originals){const copy=original.cloneNode(true);copy.setAttribute('aria-hidden','true');copy.tabIndex=-1;copies.append(copy)}
+      track.append(copies);
+    }
+    const cards=$$('.overview-record-card',track);
+    cards.forEach((card,index)=>card.style.setProperty('--reel-order',index));
     const path=`M ${-cardWidth-extension} ${edge} L ${-cardWidth} ${edge} Q ${width/2} ${edge+rise*2} ${width+cardWidth} ${edge} L ${width+cardWidth+extension} ${edge}`;
     curve.setAttribute('d',path);
+    track.style.setProperty('--reel-count',metrics.slots);
     track.style.setProperty('--reel-path',`path('${path}')`);
-    track.style.setProperty('--reel-duration',`${curve.getTotalLength()/42}s`);
+    track.style.setProperty('--reel-duration',`${metrics.length/42}s`);
+    // Newly added loop copies share the originals' clock after a resize.
+    cards.forEach(card=>card.getAnimations().filter(animation=>animation.animationName==='overview-flow').forEach(animation=>{animation.currentTime=elapsed}));
     window.style.setProperty('--reel-height',`${Math.ceil(edge+maxY+56)}px`);
   };
   const observer=new ResizeObserver(()=>{if(window.isConnected)layout();else observer.disconnect()});
@@ -250,18 +261,17 @@ function overviewBurst(){
 function renderOverview(){
   const records=overviewRecords();
   const appearances=overviewRecordAppearances(records);
-  const reelRecords=records.length?Array.from({length:Math.max(12,records.length)},(_,index)=>records[index%records.length]):[];
   const categories=Object.entries(TYPES).map(([key,item])=>`<div class="overview-type-card type-${key}"><button class="overview-type-trigger" type="button" data-overview-type="${key}" data-nav="${key}" aria-expanded="false" aria-controls="overview-type-${key}" aria-label="进入${item.label}" aria-describedby="overview-type-description-${key}">${overviewBurst()}<span class="overview-type-mark" aria-hidden="true"><img src="/assets/overview/${key}.svg?v=1.0.0-overview13" alt="" width="320" height="320"></span></button><div class="overview-type-info" id="overview-type-${key}" role="group" aria-labelledby="overview-type-title-${key}" hidden><span class="overview-type-info-head"><strong id="overview-type-title-${key}">${item.label}</strong><span>${item.position}</span></span><p class="overview-type-description" id="overview-type-description-${key}">${OVERVIEW_TYPE_DESCRIPTIONS[key]}</p><span class="overview-type-info-footer"><span>${item.meta.split(' · ')[1].replace('m',' 分钟')}</span><button class="overview-type-enter" type="button" data-nav="${key}" aria-label="进入${item.label}">进入复盘 ↗</button></span></div></div>`).join('');
-  const cardSet=reelRecords.map((record,index)=>overviewRecordCard(record,appearances.get(record.id),index>=records.length,index)).join('');
+  const cardSet=records.map((record,index)=>overviewRecordCard(record,appearances.get(record.id),false,index)).join('');
   const reel=records.length?`<div class="overview-reel" id="overview-reel">
-      <div class="overview-reel-window" aria-label="已完成复盘摘要"><div class="overview-reel-track" style="--reel-count:${reelRecords.length}">${cardSet}</div></div>
-    </div>`:`<section class="overview-empty" aria-labelledby="overview-empty-title"><h2 id="overview-empty-title">从第一份复盘开始</h2><p>完成一份记录后，这里会出现属于你的回看卡片。</p><button type="button" data-nav="daily">开始每日复盘 <span aria-hidden="true">↗</span></button></section>`;
+      <div class="overview-reel-window" aria-label="已验证复盘摘要"><div class="overview-reel-track" style="--reel-count:${records.length}">${cardSet}</div></div>
+    </div>`:`<section class="overview-empty" aria-labelledby="overview-empty-title"><h2 id="overview-empty-title">还没有已验证的复盘</h2><p>写下行动的实际结果后，这里会出现你的回看卡片。</p><button type="button" data-nav="actions">去行动验证 <span aria-hidden="true">↗</span></button></section>`;
   shell(`<div class="overview-page">
     <section class="overview-hero" aria-labelledby="overview-title"><h1 id="overview-title">言寡尤，行寡悔<br><em>慎独存诚</em></h1><p>把事实、调整与验证，留成一份不会被情绪改写的记录。</p></section>
     <section class="overview-types" aria-labelledby="overview-types-title"><div class="overview-types-heading"><h2 id="overview-types-title">从哪里开始复盘？</h2></div><div class="overview-type-grid">${categories}</div></section>
     ${reel}
   </div>`);
-  $$('[data-overview-record]').forEach(button=>button.addEventListener('click',()=>attemptNavigate(()=>{const record=state.records.find(item=>item.id===button.dataset.overviewRecord);if(!record||record.status==='draft')return;state.route=record.type;state.current=record;document.title=`${TYPES[record.type].label} · 慎独`;renderReview(record.type,record.period,false,record)})));
+  $('.overview-reel-track')?.addEventListener('click',event=>{const button=event.target.closest('[data-overview-record]');if(button)attemptNavigate(()=>{const record=records.find(item=>item.id===button.dataset.overviewRecord);if(!record||record.status!=='verified')return;state.route=record.type;state.current=record;document.title=`${TYPES[record.type].label} · 慎独`;renderReview(record.type,record.period,false,record)})});
   $$('[data-overview-type]').forEach(button=>{
     const card=button.closest('.overview-type-card');
     card.addEventListener('pointerenter',event=>{if(event.pointerType!=='touch')setOverviewType(button,true)});
