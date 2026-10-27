@@ -284,3 +284,25 @@
 ### Status
 
 [OK] **Completed**
+
+
+## Session 13: Restore category info and illustrated overview reel
+<!-- trellis-session: v=2 fp=573361136a4a2252 -->
+
+**Date**: 2026-10-27
+**Task**: Restore category info and illustrated overview reel
+**Branch**: `main`
+
+### Summary
+
+Removed category tumble, restored duration and enter action, redesigned the arc reel with two layouts and six recolored Iconfont illustrations. Verified desktop/mobile/long text, pause/resume, keyboard and reduced motion; synchronized source attribution, specs and README screenshots. Syntax/context checks pass; strict UI audit has the same 15 pre-existing findings and no new ones.
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `7c068ce` | feat: redesign overview reel with varied illustrations |
+
+### Status
+
+[OK] **Completed**

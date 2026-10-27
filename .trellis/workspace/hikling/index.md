@@ -8,7 +8,7 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 12
+- **Total Sessions**: 13
 - **Last Active**: 2026-10-27
 <!-- @@@/auto:current-status -->
 
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~286 | Active |
+| `journal-1.md` | ~308 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -29,6 +29,7 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 13 | 2026-10-27 | Restore category info and illustrated overview reel | `7c068ce` | `main` |
 | 12 | 2026-10-27 | 六类纯文字介绍与悬停翻滚 | `72cd2dc` | `main` |
 | 11 | 2026-10-27 | 六类四周散开动效与图标直达 | `9e4c834` | `main` |
 | 10 | 2026-10-27 | 六类入口悬停自动展开 | `c65c5a8` | `main` |
