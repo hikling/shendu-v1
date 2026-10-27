@@ -439,3 +439,25 @@ Split day-based reel dates into year-month-day and full weekday lines, retained 
 ### Status
 
 [OK] **Completed**
+
+
+## Session 20: 每日复盘逐题沉浸与打字引导
+<!-- trellis-session: v=2 fp=296c1387044797e2 -->
+
+**Date**: 2026-10-28
+**Task**: 每日复盘逐题沉浸与打字引导
+**Branch**: `main`
+
+### Summary
+
+每日复盘引导大字与可取消的打字机；写作隐藏导航、零占位，默认13题按睡眠/精力/指标/事实/原因/行动字段逐题呈现。保留保存、脏状态、完成锁定、历史实际指标及401重登录。58项测试与浏览器桌面/手机/减少动态效果验证通过，README/规范/截图同步。
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `499fd33` | feat: make daily review immersive one question at a time |
+
+### Status
+
+[OK] **Completed**
