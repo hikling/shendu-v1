@@ -1,7 +1,26 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {overviewRecordAppearance,overviewRecordTitle} from '../public/overview-reel.js';
+import {overviewRecordAppearance,overviewRecordTitle,overviewDateParts} from '../public/overview-reel.js';
 
+test('day periods use a separate full weekday line for every weekday',()=>{
+  const cases=[['2026-09-13','星期日'],['2026-09-14','星期一'],['2026-09-15','星期二'],['2026-09-16','星期三'],['2026-09-17','星期四'],['2026-09-18','星期五'],['2026-09-19','星期六']];
+  for(const [period,weekday] of cases){
+    const parts=overviewDateParts(period);
+    assert.equal(parts.calendarDate,`2026年9月${Number(period.slice(-2))}日`);
+    assert.equal(parts.weekday,weekday);
+    assert.equal(parts.full,parts.calendarDate+weekday);
+  }
+  assert.equal(overviewDateParts('2026-W40'),null);
+  assert.equal(overviewDateParts('2026-09'),null);
+  assert.equal(overviewDateParts('2025'),null);
+  assert.equal(overviewDateParts('2026-02-30'),null);
+});
+test('old short weekdays and dotted defaults normalize to the full weekday',()=>{
+  const date=overviewDateParts('2026-09-16').full;
+  for(const title of ['每日复盘 · 2026.09.16','2026年9月16日周三','2026年9月16日星期三']){
+    assert.deepEqual(overviewRecordTitle({period:'2026-09-16',title},date,'每日复盘'),{title:date,showDate:false});
+  }
+});
 const daily={id:'record-1',type:'daily',period:'2026-09-16',data:{answers:{},action:''}};
 const date='2026年9月16日周三',label='每日复盘';
 test('legacy default titles, dates and empty titles render the same period once',()=>{

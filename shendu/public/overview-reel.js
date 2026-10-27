@@ -26,6 +26,17 @@ export function overviewRecordAppearance(record){
   return{art:`emotion-${String(art).padStart(2,'0')}`,layout:(seed>>>8)%2?'story':'note'};
 }
 
+// A day-based reel period has a separate, full weekday line.
+export function overviewDateParts(period){
+  const match=/^(\d{4})-(\d{2})-(\d{2})$/.exec(String(period||''));
+  if(!match)return null;
+  const year=Number(match[1]),month=Number(match[2]),day=Number(match[3]);
+  const value=new Date(Date.UTC(year,month-1,day,12));
+  if(value.getUTCFullYear()!==year||value.getUTCMonth()!==month-1||value.getUTCDate()!==day)return null;
+  const calendarDate=`${year}年${month}月${day}日`,weekday=`星期${'日一二三四五六'[value.getUTCDay()]}`;
+  return{calendarDate,weekday,full:calendarDate+weekday};
+}
+
 // Normalize only occurrences of this record's period; preserve different dates and custom wording.
 export function overviewRecordTitle(record,date,label){
   let title=String(record.title||'').replace(/\s+/g,' ').trim();

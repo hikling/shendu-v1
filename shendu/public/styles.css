@@ -638,6 +638,8 @@ body.reduce-motion *,body.reduce-motion *:before,body.reduce-motion *:after{anim
 .overview-record-content{position:relative;display:grid;grid-template-columns:minmax(0,1fr) 88px;align-items:center;gap:10px;min-width:0;min-height:0}
 .overview-record-copy{display:block;min-width:0;align-self:start;padding-top:3px}
 .overview-record-date{display:block;color:var(--overview-muted);font-size:.55rem;line-height:1.45;overflow-wrap:anywhere}
+.overview-record-date span{display:block}
+.overview-record-date-primary{color:var(--overview-ink);font:750 .98rem/1.38 "Noto Sans SC","Microsoft YaHei",system-ui,sans-serif}
 .overview-record-title{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;margin:8px 0 0;font:750 .98rem/1.38 "Noto Sans SC","Microsoft YaHei",system-ui,sans-serif;overflow-wrap:anywhere}
 .overview-record-art{position:relative;display:grid;place-items:center;width:88px;height:94px;pointer-events:none}
 .overview-record-art:before{content:"";position:absolute;inset:8px 0 3px;border-radius:48% 52% 58% 42%;background:color-mix(in srgb,var(--record-color) 7%,white);transform:rotate(-12deg)}
@@ -652,6 +654,9 @@ body.reduce-motion *,body.reduce-motion *:before,body.reduce-motion *:after{anim
 .record-layout-note .overview-record-art{position:absolute;right:16px;bottom:54px;width:94px;height:100px}
 .record-layout-note .overview-record-art:before{inset:12px 0 0;border-radius:60% 40% 40% 60%;background:color-mix(in srgb,var(--record-color) 8%,white);transform:rotate(12deg)}
 .record-layout-note .overview-record-title{-webkit-line-clamp:2}
+.record-has-weekday.record-has-title.record-layout-note .overview-record-surface{grid-template-rows:26px 88px minmax(0,1fr) 30px}
+.record-has-weekday.record-has-title.record-layout-note .overview-record-art{width:82px;height:76px}
+.record-has-weekday.record-has-title.record-layout-note .overview-record-summary{width:calc(100% - 82px)}
 .record-layout-note .overview-record-summary{width:calc(100% - 92px);-webkit-line-clamp:3;font-size:.65rem;line-height:1.6}
 .overview-empty{max-width:1092px;margin:clamp(48px,5vw,74px) auto 70px;padding:30px;border:1px solid var(--overview-line);border-radius:22px;background:var(--overview-surface)}
 .overview-empty p{margin:7px 0 18px}
@@ -759,7 +764,7 @@ body.rail-dialog-open .modal-backdrop{z-index:110}
   .overview-record-surface{padding:16px;gap:12px}
   .overview-record-content{grid-template-columns:minmax(0,1fr) 76px;gap:9px}
   .overview-record-art{width:76px;height:86px}
-  .overview-record-title{font-size:.9rem}
+  .overview-record-title,.overview-record-date-primary{font-size:.9rem}
   .overview-record-category{font-size:.61rem;gap:6px}
   .overview-record-status{font-size:.53rem}
   .record-layout-note .overview-record-art{right:13px;bottom:54px;width:86px;height:94px}
