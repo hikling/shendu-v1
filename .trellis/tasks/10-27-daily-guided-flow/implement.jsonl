@@ -1,0 +1,3 @@
+{"file": ".trellis/spec/frontend/architecture.md", "reason": "渲染与缓存边界；旧dailySection描述需更新"}
+{"file": ".trellis/spec/frontend/state-and-data.md", "reason": "保存脏状态模板快照"}
+{"file": ".trellis/spec/frontend/ui-quality.md", "reason": "键盘主题日历弹框"}

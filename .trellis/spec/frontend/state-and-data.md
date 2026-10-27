@@ -14,6 +14,8 @@ Use `request()` for JSON API operations. It sends same-origin credentials and ha
 - `validateCurrent()` checks required answers before `completeCurrent()` confirms and locks the record. Completed and historical records are read-only. The server also enforces period, version, and status rules.
 - `attemptNavigate()` and `beforeunload` warn about unsaved changes. A local section switch must retain unsaved input and must not be treated as route departure.
 
+Daily-specific section switching keeps all inputs mounted and collects before advancing. Local switches never write to the server. Step validation follows the original domain requirements: evidence/journal optional, reflection requires a nonblank today answer, action requires action/ifCondition/ifThen and a valid date no earlier than today. Final completion still runs the full check and server validation. A failure must reveal and focus the corresponding step; save or complete network failures retain data/step for retry. Busy writes disable competing controls. Read-only records bypass writing validation for next/previous and show the original verification or pending-action content at the end. Do not change the other five forms' validation or payloads when adjusting daily progression.
+
 Dates use `Asia/Shanghai` in `today()`, `defaultPeriod()`, and related frontend helpers, matching `currentPeriodFor()` in `server.mjs`. Preserve record shape, `version`, `draft/completed/verified` statuses, and template snapshots unless an API migration is explicitly planned.
 
 ## Overview read contract
