@@ -1118,7 +1118,7 @@ function staticFile(req, res, pathname) {
   let relative;try{relative=pathname==='/'?'index.html':decodeURIComponent(pathname.slice(1))}catch{throw Object.assign(new Error('页面地址格式不正确'),{status:400})}
   const file = resolve(PUBLIC_DIR, relative);
   if (!file.startsWith(`${PUBLIC_DIR}${sep}`) || !existsSync(file) || statSync(file).isDirectory()) return false;
-  const types = { '.html':'text/html; charset=utf-8','.css':'text/css; charset=utf-8','.js':'text/javascript; charset=utf-8','.svg':'image/svg+xml','.png':'image/png','.ico':'image/x-icon','.ttf':'font/ttf','.woff2':'font/woff2' };
+  const types = { '.html':'text/html; charset=utf-8','.css':'text/css; charset=utf-8','.js':'text/javascript; charset=utf-8','.svg':'image/svg+xml','.png':'image/png','.webp':'image/webp','.ico':'image/x-icon','.ttf':'font/ttf','.woff2':'font/woff2' };
   const isHtml = extname(file) === '.html';
   res.writeHead(200, { 'Content-Type': types[extname(file)] || 'application/octet-stream', 'Cache-Control': isHtml ? 'no-cache' : 'public, max-age=31536000, immutable' });
   if(req.method==='HEAD')res.end();else createReadStream(file).pipe(res);return true;

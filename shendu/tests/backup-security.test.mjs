@@ -85,6 +85,14 @@ after(async () => {
   rmSync(root, { recursive: true, force: true });
 });
 
+test('轮播 WebP 素材以正确的媒体类型提供', async () => {
+  const response = await fetch(base + '/assets/reel-emotions/emotion-01.webp');
+  assert.equal(response.status, 200);
+  assert.equal(response.headers.get('content-type'), 'image/webp');
+  const bytes = Buffer.from(await response.arrayBuffer());
+  assert.equal(bytes.toString('ascii', 0, 4), 'RIFF');
+  assert.equal(bytes.toString('ascii', 8, 12), 'WEBP');
+});
 test('个人与整站备份不暴露正文或用户名；数据库正文和验证结果使用密文', () => {
   for (const text of [accountBackup, siteBackup]) { assert.ok(!text.includes(secretText)); assert.ok(!text.includes('audit_owner')); }
   const db = new DatabaseSync(join(dataDir, 'shendu.db'), { readOnly: true });
