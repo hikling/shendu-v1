@@ -1,0 +1,4 @@
+{"file": ".trellis/spec/frontend/architecture.md", "reason": "每日流程渲染和缓存"}
+{"file": ".trellis/spec/frontend/state-and-data.md", "reason": "保留草稿模板保存规则"}
+{"file": ".trellis/spec/frontend/ui-quality.md", "reason": "键盘主题和沉浸恢复"}
+{"file": ".trellis/tasks/10-27-daily-immersive-prompts/research/lifecycle.md", "reason": "真实导航重认证与动画清理路径"}

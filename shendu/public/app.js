@@ -1,5 +1,5 @@
 import {overviewRecordAppearances,overviewVerifiedRecords,overviewRecordExcerpt,overviewLoopMetrics,overviewRecordTitle,overviewDateParts} from './overview-reel.js?v=1.0.0-overview15';
-import {DAILY_STEPS,dailyStepIssues} from './daily-flow.js?v=1.0.0-overview17';
+import {DAILY_STEPS,dailyStepIssues,dailyPrompts,dailyPromptIssues,dailyPromptNeighbor} from './daily-flow.js?v=1.0.0-overview18';
 const $ = (s, root = document) => root.querySelector(s);
 const $$ = (s, root = document) => [...root.querySelectorAll(s)];
 const esc = (v = '') => String(v).replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
@@ -90,9 +90,10 @@ function templatesForRecord(record){
 }
 function currentTemplateSnapshot(type){return{version:1,review:clone(currentReviewTemplate(type)),action:clone(currentActionTemplate())}}
 
-const state = { user:null, stage:null, theme:null, records:[], stats:{week:0,pending:0,total:0}, route:'overview', current:null, dirty:false, saving:false, navOpen:false, railOpen:false, reauthOpen:false, calendarMonth:null, dailySection:'intro' };
+const state = { user:null, stage:null, theme:null, records:[], stats:{week:0,pending:0,total:0}, route:'overview', current:null, dirty:false, saving:false, navOpen:false, railOpen:false, reauthOpen:false, calendarMonth:null, dailySection:'intro', dailyPrompt:null };
 let modalReturnFocus=null;
 let overviewReelObserver=null;
+let dailyTypingTimer=null,dailyTypingCleanup=null;
 async function request(path, options = {}) {
   const opts = { credentials:'same-origin', ...options, headers:{ ...(options.body && !(options.body instanceof Blob) && !(options.body instanceof ArrayBuffer) ? {'Content-Type':'application/json'} : {}), ...(options.headers||{}) } };
   if (opts.body && opts.headers['Content-Type']==='application/json' && typeof opts.body !== 'string') opts.body = JSON.stringify(opts.body);
@@ -102,7 +103,7 @@ async function request(path, options = {}) {
 function sessionExpired(){state.reauthOpen=true;openModal(`<div class="modal-head"><div><h2>登录已失效</h2><p>重新登录后，页面中尚未保存的内容仍会保留。</p></div></div><form id="reauth-form"><div class="field"><label>用户名</label><input name="username" value="${esc(state.user.username)}" readonly></div><div class="field"><label>密码</label><input name="password" type="password" minlength="15" required autocomplete="current-password"></div><div class="modal-actions"><button class="btn btn-primary">重新登录</button></div></form>`,'',true);$('#reauth-form').addEventListener('submit',async e=>{e.preventDefault();const res=await fetch('/api/auth/login',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify(Object.fromEntries(new FormData(e.currentTarget)))});const data=await res.json();if(!res.ok){toast(data.message||'登录失败','error');return}state.reauthOpen=false;closeModal(true);toast('已重新登录，请再次保存')})}
 function toast(message, kind='success') { const el=document.createElement('div');el.className=`toast ${kind}`;el.textContent=message;$('#toast-root').append(el);setTimeout(()=>el.remove(),3200); }
 function contrastFor(hex){const h=String(hex).replace('#','');if(!/^[0-9a-f]{6}$/i.test(h))return'#fff';const [r,g,b]=[0,2,4].map(i=>parseInt(h.slice(i,i+2),16)/255).map(v=>v<=.03928?v/12.92:((v+.055)/1.055)**2.4);return .2126*r+.7152*g+.0722*b>.52?'#201d19':'#fff'}
-function applyTheme(theme){const t=theme||state.theme||{},fallback=PALETTES['潮汐青'],r=document.documentElement;['primary','secondary','tertiary'].forEach((k,index)=>{const color=/^#[0-9a-f]{6}$/i.test(String(t[k]||''))?t[k]:fallback[index];r.style.setProperty(`--${k}`,color);r.style.setProperty(`--${k}-contrast`,contrastFor(color))});document.body.classList.toggle('reduce-motion',!!t.reduceMotion)}
+function applyTheme(theme){const t=theme||state.theme||{},fallback=PALETTES['潮汐青'],r=document.documentElement;['primary','secondary','tertiary'].forEach((k,index)=>{const color=/^#[0-9a-f]{6}$/i.test(String(t[k]||''))?t[k]:fallback[index];r.style.setProperty(`--${k}`,color);r.style.setProperty(`--${k}-contrast`,contrastFor(color))});document.body.classList.toggle('reduce-motion',!!t.reduceMotion);if(t.reduceMotion)cancelDailyTypewriter()}
 const BEIJING_TIME_ZONE='Asia/Shanghai';
 function beijingDateParts(value=new Date()){const parts=new Intl.DateTimeFormat('en-US',{timeZone:BEIJING_TIME_ZONE,year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(value);const result=Object.fromEntries(parts.filter(x=>x.type!=='literal').map(x=>[x.type,x.value]));return{year:Number(result.year),month:Number(result.month),day:Number(result.day),iso:`${result.year}-${result.month}-${result.day}`}}
 function today(){return beijingDateParts().iso}
@@ -129,6 +130,7 @@ function recordFor(type,period){return state.records.find(r=>r.type===type&&r.pe
 function newRecord(type,period){const data={answers:{},action:'',ifCondition:'',ifThen:'',verifyDate:'',journal:'',metrics:[],sleep:'',energy:'',risk:'',templateSnapshot:currentTemplateSnapshot(type)};return {id:null,type,period,title:'',data,status:'draft',version:0}}
 
 function renderAuth(info={}){
+  cancelDailyTypewriter();setDailyImmersive(false);
   state.user=null;$('#app').innerHTML=`<main class="auth-shell">
     <section class="auth-art"><div class="brand-lockup"><div class="brand-row"><div class="seal">慎</div><div class="brand-cn">慎獨</div></div></div>
       <div class="auth-quote">“言寡尤，行寡悔，慎独存诚。”<small>把事实、调整与验证，留成一份不会被情绪改写的记录。</small></div></section>
@@ -184,7 +186,7 @@ function topbar(){
   </header>`;
 }
 function railDecor(){return Object.keys(TYPES).map(key=>`<img src="/assets/overview/${key}.svg?v=1.0.0-overview13" alt="" width="84" height="84">`).join('')}
-function shell(content){if($('#right-rail.open'))setRailOverlayOpen(false);overviewReelObserver?.disconnect();overviewReelObserver=null;const overview=state.route==='overview';$('#app').innerHTML=`<div class="app-shell ${overview?'overview-shell':''}">${topbar()}<div class="workspace"><main class="main ${overview?'overview-main':''}" id="main-content">${content}</main>${rightRail()}</div><div class="rail-backdrop" id="rail-backdrop" aria-hidden="true" hidden><div class="rail-side-decor">${railDecor()}</div></div></div>`;bindCommon()}
+function shell(content){cancelDailyTypewriter();setDailyImmersive(false);if($('#right-rail.open'))setRailOverlayOpen(false);overviewReelObserver?.disconnect();overviewReelObserver=null;const overview=state.route==='overview';$('#app').innerHTML=`<div class="app-shell ${overview?'overview-shell':''}">${topbar()}<div class="workspace"><main class="main ${overview?'overview-main':''}" id="main-content">${content}</main>${rightRail()}</div><div class="rail-backdrop" id="rail-backdrop" aria-hidden="true" hidden><div class="rail-side-decor">${railDecor()}</div></div></div>`;bindCommon()}
 
 function overviewText(value,limit){const text=String(value??'').replace(/\s+/g,' ').trim(),points=Array.from(text);return points.length>limit?points.slice(0,limit).join('')+'…':text}
 function overviewRecordCard(record,appearance,duplicate=false,index=0){
@@ -325,59 +327,91 @@ function actionFields(data,locked,template){return `<div class="question"><div c
 function folioHead(number,word,title,subtitle,badge,tone,extra=''){return `<div class="folio-head ${tone}"><span class="folio-word" aria-hidden="true">${word}</span><div class="folio-title"><span class="folio-number">${number}</span><div><h2>${title}</h2><p><i></i>${subtitle}</p></div></div><div class="folio-badge"><i></i>${badge}</div>${extra}</div>`}
 function gaugeCard(kind,label,en,value,target,max,unit,low,middle,high,locked){const hasValue=value!==''&&value!==null&&value!==undefined,n=Math.min(max,Math.max(0,Number(value)||0)),pct=n/max*100,targetPct=Math.min(100,Math.max(0,Number(target)||0)/max*100),good=hasValue&&Number(value)>=Number(target),inputMax=kind==='sleep'?24:max;return `<div class="gauge-card ${kind}" data-gauge-kind="${kind}" data-gauge-target="${target}" data-gauge-max="${max}" data-gauge-unit="${unit}"><div class="gauge-title"><span class="gauge-icon">${kind==='sleep'?'月':'气'}</span><span><b>${label}</b><small>${en}</small></span><em>基线 ${target}${unit}</em></div><div class="gauge-reading"><label><input type="number" data-simple="${kind}" data-gauge-input min="0" max="${inputMax}" step="${kind==='sleep'?'.5':'5'}" value="${esc(value??'')}" ${locked?'disabled':''} aria-label="${label}" placeholder="—"></label><small data-gauge-reading>${unit}${hasValue?` · ${good?'达标':'待恢复'}`:''}</small><b data-gauge-status class="${good?'good':''}">${!hasValue?'等待记录':kind==='sleep'?`${Number(value)-Number(target)>=0?'+':''}${(Number(value)-Number(target)).toFixed(1)}h ${good?'充沛达标':'尚需恢复'}`:good?'身心气韵充盈':'低于个人警戒线'}</b></div><div class="gauge"><span data-gauge-fill style="width:${pct}%"></span><i style="left:${targetPct}%" title="个人基线"></i><b data-gauge-knob style="left:${pct}%"></b></div><div class="gauge-scale"><span>${low}</span><span>${middle}</span><span>${high}</span></div></div>`}
 function updateGauge(input){const card=input.closest('[data-gauge-kind]');if(!card)return;const raw=input.value.trim(),hasValue=raw!==''&&Number.isFinite(Number(raw)),max=Number(card.dataset.gaugeMax),target=Number(card.dataset.gaugeTarget),kind=card.dataset.gaugeKind,n=hasValue?Math.min(max,Math.max(0,Number(raw))):0,pct=n/max*100,good=hasValue&&Number(raw)>=target;card.querySelector('[data-gauge-fill]').style.width=`${pct}%`;card.querySelector('[data-gauge-knob]').style.left=`${pct}%`;const reading=card.querySelector('[data-gauge-reading]'),status=card.querySelector('[data-gauge-status]');reading.textContent=hasValue?`${card.dataset.gaugeUnit} · ${good?'达标':'待恢复'}`:card.dataset.gaugeUnit;status.classList.toggle('good',good);if(!hasValue)status.textContent='等待记录';else if(kind==='sleep'){const delta=Number(raw)-target;status.textContent=`${delta>=0?'+':''}${delta.toFixed(1)}h ${good?'充沛达标':'尚需恢复'}`}else status.textContent=good?'身心气韵充盈':'低于个人警戒线'}
-function dailyEvidence(data,locked){const metrics=(data.metrics?.length?data.metrics:state.stage.metrics.map(m=>({name:m.name,target:m.target,action:'',status:''})));return `<section class="card section-card folio-card daily-evidence-card">${folioHead('01','One','今日证据','先记录身体状态和三项行动，空着也可以继续。','身心衡器','tone-one')}
-  <div class="gauge-grid">${gaugeCard('sleep','昨夜睡眠测度','SLEEP CHRONO',data.sleep,state.stage.sleepTarget,10,'h','4.0h 亏空区','7.0h 基准线','10.0h 充沛',locked)}${gaugeCard('energy','主观精力值刻度','ENERGY INDEX',data.energy,state.stage.energyTarget,100,' / 100','0 枯竭','70 警戒线','100 圆满',locked)}</div>
-  <div class="metric-heading"><span><i></i>阶段三项行动 · 选填</span><button type="button" id="example-toggle" ${locked?'disabled':''}>填写提示</button></div>
-  <div class="metric-example hidden" id="example-panel"><b>【文房自律实录准则】</b><ul><li>健身与身体执行：训练日完成预定组数；休息日严格执行恢复安排也算达标。</li><li>收入能力行动：必须包含可交付的实际成果，避免“研究了一下午”这类模糊描述。</li><li>财务秩序：当日收支睡前录入，不新增无计划透支消费。</li></ul></div>
-  <div class="metric-ledger">${metrics.map((m,i)=>`<div class="metric-row metric-${i}"><i></i><div class="metric-copy"><b>${esc(m.name)}</b><small>${esc(m.target)}</small><textarea data-metric-action="${i}" aria-label="${esc(m.name)}：今天的具体行动" maxlength="6000" placeholder="今天的具体行动" ${locked?'disabled':''}>${esc(m.action||'')}</textarea></div><div class="metric-status-control"><select data-metric-status="${i}" aria-label="${esc(m.name)}完成状态" ${locked?'disabled':''}><option value="">未记录</option>${['已达标','部分达标','未达标','计划休息'].map(x=>`<option ${m.status===x?'selected':''}>${x}</option>`).join('')}</select><span class="metric-status-chevron" aria-hidden="true"></span></div></div>`).join('')}</div>
-  <div class="risk-note"><span>!</span><div><b>风险信号与偏离对策</b><input data-simple="risk" aria-label="风险信号与偏离对策" maxlength="6000" value="${esc(data.risk||'')}" ${locked?'disabled':''} placeholder="记录具体偏离或风险信号，以及次日应对动作"></div></div></section>`}
+function dailyEvidence(data,locked){const metrics=data.metrics||[];return `<section class="card section-card folio-card daily-evidence-card">
+  <div class="daily-prompt" data-daily-prompt="sleep" hidden>${gaugeCard('sleep','昨夜睡眠测度','SLEEP CHRONO',data.sleep,state.stage.sleepTarget,10,'h','4.0h 亏空区','7.0h 基准线','10.0h 充沛',locked)}</div>
+  <div class="daily-prompt" data-daily-prompt="energy" hidden>${gaugeCard('energy','主观精力值刻度','ENERGY INDEX',data.energy,state.stage.energyTarget,100,' / 100','0 枯竭','70 警戒线','100 圆满',locked)}</div>
+  ${metrics.map((m,i)=>`<div class="daily-prompt metric-ledger" data-daily-prompt="metric-${i}" hidden><div class="metric-row metric-${i}"><i></i><div class="metric-copy"><b>${esc(m.name)}</b><small>${esc(m.target)}</small><textarea data-metric-action="${i}" aria-label="${esc(m.name)}：今天的具体行动" maxlength="6000" placeholder="今天的具体行动" ${locked?'disabled':''}>${esc(m.action||'')}</textarea></div><div class="metric-status-control"><select data-metric-status="${i}" aria-label="${esc(m.name)}完成状态" ${locked?'disabled':''}><option value="">未记录</option>${['已达标','部分达标','未达标','计划休息'].map(x=>`<option ${m.status===x?'selected':''}>${x}</option>`).join('')}</select><span class="metric-status-chevron" aria-hidden="true"></span></div></div></div>`).join('')}
+  <div class="daily-prompt" data-daily-prompt="risk" hidden><div class="risk-note"><span>!</span><div><b>风险信号与偏离对策</b><input data-simple="risk" aria-label="风险信号与偏离对策" maxlength="6000" value="${esc(data.risk||'')}" ${locked?'disabled':''} placeholder="记下具体偏离，以及准备怎样应对"></div></div></div></section>`}
 
-function dailyReflection(data,locked,template){return `<section class="card section-card folio-card">${folioHead('02','Two','事实与原因','留下一件真实发生的事，再看看它为什么发生。','格物求真','tone-two')}
-  <div class="reflection-question"><div class="reflection-label"><b class="bracket-title">【${esc(template.today)}】</b><small>先写事实 · 再述心绪</small></div><p>不记流水账，只挑拨动心绪或改变行动走势的关键节点。</p>${itemInputs('today','',true,data.answers?.today,locked,template.today)}</div>
-  <div class="reflection-question"><div class="reflection-label"><b class="bracket-title">【${esc(template.cause)}】</b><small>选填 · 提炼可复用做法</small></div><p>究竟是外力偶然还是系统设计带来的必然？提炼可复用的行为定式。</p>${itemInputs('cause','',false,data.answers?.cause,locked,template.cause)}</div></section>`}
+function dailyReflection(data,locked,template){return `<section class="card section-card folio-card">
+  <div class="daily-prompt reflection-question" data-daily-prompt="today" hidden>${itemInputs('today','',true,data.answers?.today,locked,template.today)}</div>
+  <div class="daily-prompt reflection-question" data-daily-prompt="cause" hidden>${itemInputs('cause','',false,data.answers?.cause,locked,template.cause)}</div></section>`}
 
-function dailyActionFields(data,locked,template){const action=data.action||data.answers?.tomorrow?.[0]||'';return `<section class="card section-card folio-card">${folioHead('03','Three','明日行动','选一个具体动作，给可能的阻碍准备好应对。','行动锁定','tone-three')}
-  <div class="action-lock focus-lock"><div class="action-label"><b class="bracket-title">【${esc(template.actionTitle)}】</b><span>唯一焦点 · 不可分心</span></div><p>如果明天只能完成一件事，哪件事能让整天变得有价值？</p><input data-simple="action" aria-label="${esc(template.actionTitle)}" maxlength="6000" value="${esc(action)}" ${locked?'disabled':''} placeholder="写下一个具体、可开始的动作"></div>
-  <div class="action-lock"><div class="action-label"><b class="bracket-title">【${esc(template.obstacleTitle)}】</b><span>条件—行动预案</span></div><p>提前为意志力崩溃或外界干扰写好自动化应对机制。</p><div class="if-then"><input data-simple="ifCondition" maxlength="6000" value="${esc(data.ifCondition||'')}" ${locked?'disabled':''} aria-label="如果遇到的阻碍" placeholder="如果……"><i>→</i><input data-simple="ifThen" maxlength="6000" value="${esc(data.ifThen||'')}" ${locked?'disabled':''} aria-label="那么采取的行动" placeholder="那么我就……"></div></div>
-  <div class="action-lock verify-lock"><div><b>◷ ${esc(template.verifyDateTitle)}</b><p>设定闭环检测锚点，实际验证时间会在提交结果时自动记录。</p></div><input type="date" min="${today()}" data-simple="verifyDate" value="${esc(data.verifyDate||'')}" ${locked?'disabled':''} aria-label="${esc(template.verifyDateTitle)}"><span>到期回看</span></div></section>`}
+function dailyActionFields(data,locked,template){const action=data.action||data.answers?.tomorrow?.[0]||'';return `<section class="card section-card folio-card">
+  <div class="daily-prompt action-lock focus-lock" data-daily-prompt="action" hidden><input data-simple="action" aria-label="${esc(template.actionTitle)}" maxlength="6000" value="${esc(action)}" ${locked?'disabled':''} placeholder="写下一个具体、可开始的动作"></div>
+  <div class="daily-prompt action-lock" data-daily-prompt="ifCondition" hidden><input data-simple="ifCondition" maxlength="6000" value="${esc(data.ifCondition||'')}" ${locked?'disabled':''} aria-label="如果遇到的阻碍" placeholder="如果……"></div>
+  <div class="daily-prompt action-lock" data-daily-prompt="ifThen" hidden><input data-simple="ifThen" maxlength="6000" value="${esc(data.ifThen||'')}" ${locked?'disabled':''} aria-label="那么采取的行动" placeholder="那么我就……"></div>
+  <div class="daily-prompt action-lock verify-lock" data-daily-prompt="verifyDate" hidden><input type="date" min="${today()}" data-simple="verifyDate" value="${esc(data.verifyDate||'')}" ${locked?'disabled':''} aria-label="${esc(template.verifyDateTitle)}"></div></section>`}
 
-function dailyJournal(data,locked){return `<section class="card section-card folio-card">${folioHead('04','Four','今天的日记','选填。想说的话，可以慢慢写在这里。','私密手札','tone-four')}<div class="journal-paper"><div class="journal-meta"><span><b>慎独斋</b> 夜读随想手札</span><small>${esc(formatDate(state.current.period))} · 案前独坐</small></div><textarea data-simple="journal" aria-label="今天的日记（选填）" maxlength="6000" rows="8" ${locked?'disabled':''} placeholder="选填。这里不需要结论。">${esc(data.journal||'')}</textarea><div class="journal-foot"><span>私人空间加密存储 · <strong id="journal-count">${(data.journal||'').length} 字</strong></span><b>${esc(state.user.displayName.slice(0,2))}</b></div></div></section>`}
+function dailyJournal(data,locked){return `<section class="card section-card folio-card"><div class="daily-prompt journal-paper" data-daily-prompt="journal" hidden><textarea data-simple="journal" aria-label="今天的日记（选填）" maxlength="6000" rows="8" ${locked?'disabled':''} placeholder="选填。这里不需要结论。">${esc(data.journal||'')}</textarea><div class="journal-foot"><span>私人空间加密存储 · <strong id="journal-count">${(data.journal||'').length} 字</strong></span><b>${esc(state.user.displayName.slice(0,2))}</b></div></div></section>`}
 
 function reviewAfterword(locked,data,actionTemplate){return `${locked&&state.current.status==='completed'?`<section class="card section-card"><h2 style="margin-top:0">${esc(actionTemplate.lockedPendingTitle)}</h2><p class="help">${esc(actionTemplate.expectedDateLabel)}：${esc(data.verifyDate||actionTemplate.expectedMissingText)}。${esc(actionTemplate.lockedPendingIntro)}</p><button class="btn btn-primary" data-open-action="${esc(state.current.id)}">${esc(actionTemplate.lockedPendingButton)}</button></section>`:''}${state.current.status==='verified'?verificationRead(state.current):''}`}
 function dailyReviewHtml(period,locked,data,templates){
   const panes=[dailyEvidence(data,locked),dailyReflection(data,locked,templates.review),dailyActionFields(data,locked,templates.review),dailyJournal(data,locked)];
   const saved=locked?(period!==defaultPeriod('daily')?'非当前日期，仅可查看':'这份复盘已锁定'):state.dirty?'有未保存内容':state.current.updated_at?`${beijingTime(state.current.updated_at)} 草稿已保存`:'草稿尚未保存';
-  return `<div class="daily-flow"><section class="daily-intro" id="daily-intro" aria-label="每日复盘引导"><p id="daily-intro-text">${esc(quoteFor('daily',period))}</p><button type="button" class="btn btn-primary" id="daily-start" aria-describedby="daily-intro-text">${locked?'查看复盘':state.current.id||state.dirty?'继续复盘':'开始复盘'} <span aria-hidden="true">→</span></button></section>
+  const quote=quoteFor('daily',period);
+  return `<div class="daily-flow"><section class="daily-intro" id="daily-intro" aria-label="每日复盘引导"><p id="daily-intro-text"><span class="sr-only">${esc(quote)}</span><span class="daily-typewriter" aria-hidden="true">${Array.from(quote).map(character=>`<span class="daily-glyph">${esc(character)}</span>`).join('')}</span></p><button type="button" class="btn btn-primary" id="daily-start">${locked?'查看复盘':state.current.id||state.dirty?'继续复盘':'开始复盘'} <span aria-hidden="true">→</span></button></section>
     <section class="daily-editor" id="daily-editor" aria-labelledby="daily-flow-title" data-daily-locked="${locked}" hidden><h1 class="sr-only" id="daily-flow-title">每日复盘</h1>
-      <header class="daily-flow-head"><div><span>每日复盘</span><time datetime="${esc(period)}">${esc(formatDate(period))}</time></div><button type="button" class="daily-intro-return" data-daily-intro>回到引导</button></header>
-      <ol class="daily-progress" aria-label="复盘步骤">${DAILY_STEPS.map((step,index)=>`<li data-daily-progress="${step.id}"><span aria-hidden="true">${String(index+1).padStart(2,'0')}</span>${step.label}</li>`).join('')}</ol><p class="sr-only" id="daily-step-status" aria-live="polite"></p>
+      <header class="daily-flow-head"><button type="button" class="daily-exit" data-daily-exit>← 退出复盘</button><time datetime="${esc(period)}">${esc(formatDate(period))}</time><button type="button" class="daily-intro-return" data-daily-intro>回到引导</button></header>
+      <div class="daily-question-progress"><span id="daily-current-group"></span><span id="daily-question-count"></span></div><p class="sr-only" id="daily-step-status" aria-live="polite"></p>
+      <div class="daily-question-heading"><h2 id="daily-prompt-title" tabindex="-1"></h2><p id="daily-prompt-description"></p></div>
       <p class="daily-flow-error" id="daily-flow-error" role="alert" hidden></p>
       ${DAILY_STEPS.map((step,index)=>`<div class="daily-pane" data-daily-pane="${step.id}" hidden>${panes[index]}${index===3?`<div class="daily-afterword">${reviewAfterword(locked,data,templates.action)}</div>`:''}</div>`).join('')}
       <div class="daily-step-note"><span id="daily-step-hint"></span>${locked?`<span class="status-chip done">${STATUS[state.current.status]}</span>`:''}</div>
-      <footer class="daily-flow-footer"><button type="button" class="btn btn-ghost" data-daily-back>上一步</button><p class="save-state" role="status">${saved}</p><div class="daily-flow-actions">${!locked?`<button type="button" class="btn toolbar-save" id="save-draft">保存草稿</button><button type="button" class="btn btn-red" id="complete-record" hidden>完成并锁定</button>`:`<button type="button" class="btn btn-ghost" id="daily-finish" data-nav="history" hidden>回到历史记录</button>`}<button type="button" class="btn btn-primary" data-daily-next>${locked?'下一节':'下一步'} <span aria-hidden="true">→</span></button></div></footer>
+      <footer class="daily-flow-footer"><button type="button" class="btn btn-ghost" data-daily-back>上一步</button><p class="save-state" role="status">${saved}</p><div class="daily-flow-actions">${!locked?`<button type="button" class="btn toolbar-save" id="save-draft">保存草稿</button><button type="button" class="btn btn-red" id="complete-record" hidden>完成并锁定</button>`:`<button type="button" class="btn btn-ghost" id="daily-finish" data-nav="history" hidden>回到历史记录</button>`}<button type="button" class="btn btn-primary" data-daily-next>下一题 <span aria-hidden="true">→</span></button></div></footer>
     </section></div>`;
 }
 function sizeDailyTextareas(pane){$$('textarea',pane).forEach(input=>{input.style.height='auto';input.style.height=`${input.scrollHeight}px`})}
-function showDailySection(section,focus=false){
-  const index=DAILY_STEPS.findIndex(step=>step.id===section),intro=index<0;
-  state.dailySection=intro?'intro':section;
+function cancelDailyTypewriter(reveal=true){
+  if(dailyTypingTimer!==null){clearTimeout(dailyTypingTimer);dailyTypingTimer=null}
+  dailyTypingCleanup?.();dailyTypingCleanup=null;
+  if(reveal)$('#daily-intro-text')?.classList.remove('is-typing');
+}
+function startDailyTypewriter(){
+  cancelDailyTypewriter();const intro=$('#daily-intro'),text=$('#daily-intro-text');if(!intro||intro.hidden||!text)return;
+  const media=matchMedia('(prefers-reduced-motion: reduce)');
+  if(intro.dataset.typingStarted||state.theme?.reduceMotion||document.body.classList.contains('reduce-motion')||media.matches)return;
+  intro.dataset.typingStarted='true';const glyphs=$$('.daily-glyph',text);glyphs.forEach(glyph=>glyph.classList.remove('is-visible'));text.classList.add('is-typing');
+  const onMotionChange=event=>{if(event.matches)cancelDailyTypewriter()};media.addEventListener('change',onMotionChange);dailyTypingCleanup=()=>media.removeEventListener('change',onMotionChange);
+  let index=0;const reveal=()=>{if(!text.isConnected||intro.hidden){cancelDailyTypewriter();return}if(index>=glyphs.length){cancelDailyTypewriter();return}const glyph=glyphs[index++];glyph.classList.add('is-visible');dailyTypingTimer=setTimeout(reveal,/[，。！？；]/.test(glyph.textContent)?150:45)};
+  dailyTypingTimer=setTimeout(reveal,120);
+}
+function setDailyImmersive(open){
+  if(open){closeHeaderMenus();if($('#right-rail.open'))setRailOverlayOpen(false)}
+  $('.app-shell')?.classList.toggle('daily-immersive',open);
+  const header=$('#site-header');if(header){header.hidden=open;header.inert=open||!!$('#right-rail.open')}
+}
+function currentDailyPrompts(){return dailyPrompts(state.current.data.metrics?.length||0)}
+function dailyPromptCopy(prompt){
+  const template=templatesForRecord(state.current).review,metric=prompt.id.startsWith('metric-')?state.current.data.metrics[Number(prompt.id.slice(7))]:null;
+  if(metric)return{title:`${metric.name||'这项行动'}，今天做了什么？`,description:metric.target?`阶段目标：${metric.target}。记录具体行动，再选一个符合实际的状态。`:'记录具体行动，再选一个符合实际的状态。'};
+  const copy={sleep:['昨夜，你睡了多久？','记下实际睡眠时间。暂时不想记录，也可以直接继续。'],energy:['此刻的精力状态如何？','用 0—100 记录你的感受，不需要为了达标而修改。'],risk:['有没有需要留意的风险或偏离？','选填。写下具体信号，以及准备怎样应对。'],today:[template.today,'至少留下一件真实发生的事。不记流水账，也不急着下结论。'],cause:[template.cause,'选填。看看哪些条件促成了它，哪些方法可以再用一次。'],action:[template.actionTitle,'如果明天只能完成一件事，你会选什么？把开始的动作写具体。'],ifCondition:['什么情况最容易让行动受阻？',template.obstacleTitle],ifThen:['遇到这个情况，你准备怎么做？','为刚才的阻碍写一个具体、容易开始的应对动作。'],verifyDate:[template.verifyDateTitle,'选定回看这次行动的日期。实际验证时间会在提交结果时自动记录。'],journal:['今天，还有什么想留下？','选填。这里不需要结论，几句话或一整页都可以。']};
+  return{title:copy[prompt.id][0],description:copy[prompt.id][1]};
+}
+function showDailyPrompt(promptId,focus=false){
+  const prompts=currentDailyPrompts(),index=prompts.findIndex(prompt=>prompt.id===promptId),intro=index<0,prompt=prompts[index];
+  state.dailySection=intro?'intro':prompt.step;state.dailyPrompt=intro?null:prompt.id;
   $('#daily-intro').hidden=!intro;$('#daily-editor').hidden=intro;
-  $$('[data-daily-pane]').forEach(pane=>pane.hidden=intro||pane.dataset.dailyPane!==section);
-  $$('[data-daily-progress]').forEach(item=>{if(!intro&&item.dataset.dailyProgress===section)item.setAttribute('aria-current','step');else item.removeAttribute('aria-current')});
+  $$('[data-daily-pane]').forEach(pane=>pane.hidden=intro||pane.dataset.dailyPane!==prompt.step);
+  $$('[data-daily-prompt]').forEach(question=>question.hidden=intro||question.dataset.dailyPrompt!==promptId);
+  setDailyImmersive(!intro);
   $('#daily-start').firstChild.textContent=$('#daily-editor').dataset.dailyLocked==='true'?'查看复盘 ':state.current.id||state.dirty?'继续复盘 ':'开始复盘 ';
   if(!intro){
-    const locked=$('#daily-editor').dataset.dailyLocked==='true',last=index===DAILY_STEPS.length-1;
-    $('[data-daily-back]').textContent=index===0?'回到引导':locked?'上一节':'上一步';
+    cancelDailyTypewriter();const locked=$('#daily-editor').dataset.dailyLocked==='true',last=index===prompts.length-1,group=DAILY_STEPS.findIndex(step=>step.id===prompt.step),copy=dailyPromptCopy(prompt);
+    $('[data-daily-back]').textContent=index===0?'回到引导':'上一题';
     $('[data-daily-next]').hidden=last;
     if($('#complete-record'))$('#complete-record').hidden=!last;
     if($('#daily-finish'))$('#daily-finish').hidden=!last;
-    $('#daily-step-status').textContent=`第 ${index+1} 步，共 ${DAILY_STEPS.length} 步：${DAILY_STEPS[index].label}`;
-    $('#daily-step-hint').textContent=locked?'这份记录只供查看。':DAILY_STEPS[index].optional?(last?'这一节选填，留空也可以完成。':'这一节选填，可以直接继续。'):'写下这一节的必填内容后继续。';
-    const pane=$(`[data-daily-pane="${section}"]`);sizeDailyTextareas(pane);
-    const heading=$('.folio-title h2',pane);
-    if(heading){heading.tabIndex=-1;if(focus){heading.focus({preventScroll:true});$('#daily-editor').scrollIntoView({block:'start',behavior:'auto'})}}
-  }else if(focus){$('#daily-start').focus({preventScroll:true});$('#daily-intro').scrollIntoView({block:'start',behavior:'auto'})}
+    $('#daily-current-group').textContent=`${String(group+1).padStart(2,'0')} · ${DAILY_STEPS[group].label}`;$('#daily-question-count').textContent=`第 ${index+1} / ${prompts.length} 题`;
+    $('#daily-prompt-title').textContent=copy.title;$('#daily-prompt-description').textContent=copy.description;
+    $('#daily-step-status').textContent=`${DAILY_STEPS[group].label}，第 ${index+1} 题，共 ${prompts.length} 题`;
+    const required=['today','action','ifCondition','ifThen','verifyDate'].includes(prompt.id);
+    $('#daily-step-hint').textContent=locked?'这份记录只供查看。':required?'填写这一题后继续。':last?'这一题选填，留空也可以完成。':'这一题选填，可以直接继续。';
+    sizeDailyTextareas($(`[data-daily-prompt="${promptId}"]`));
+    if(focus){$('#daily-prompt-title').focus({preventScroll:true});$('#daily-editor').scrollIntoView({block:'start',behavior:'auto'})}
+  }else{startDailyTypewriter();if(focus){$('#daily-start').focus({preventScroll:true});$('#daily-intro').scrollIntoView({block:'start',behavior:'auto'})}}
 }
+function showDailySection(section,focus=false){const prompts=currentDailyPrompts(),current=prompts.find(prompt=>prompt.id===state.dailyPrompt&&prompt.step===section);showDailyPrompt(section==='intro'?null:(current?.id||prompts.find(prompt=>prompt.step===section)?.id),focus)}
 function clearDailyIssues(){
   $$('[aria-describedby]').filter(control=>control.getAttribute('aria-describedby').split(' ').includes('daily-flow-error')).forEach(control=>{control.removeAttribute('aria-invalid');const ids=control.getAttribute('aria-describedby').split(' ').filter(id=>id!=='daily-flow-error');if(ids.length)control.setAttribute('aria-describedby',ids.join(' '));else control.removeAttribute('aria-describedby')});
   if($('#daily-flow-error'))$('#daily-flow-error').hidden=true;
@@ -385,27 +419,28 @@ function clearDailyIssues(){
 function dailyIssueLabel(issue){const template=templatesForRecord(state.current).review;return {today:template.today,action:template.actionTitle,ifCondition:'如果遇到的阻碍',ifThen:template.obstacleTitle,verifyDate:`${template.verifyDateTitle}（不能早于今天）`}[issue.field]}
 function showDailyIssues(issues){
   clearDailyIssues();if(!issues.length)return;
-  showDailySection(issues[0].step);
+  showDailyPrompt(issues[0].field);
   const error=$('#daily-flow-error');error.textContent=`请填写：${issues.map(dailyIssueLabel).join('、')}`;error.hidden=false;
   let first;
   for(const issue of issues){const field=$(issue.field==='today'?'[data-answer="today"]':`[data-simple="${issue.field}"]`);if(field){field.setAttribute('aria-invalid','true');const ids=new Set((field.getAttribute('aria-describedby')||'').split(' ').filter(Boolean));ids.add('daily-flow-error');field.setAttribute('aria-describedby',[...ids].join(' '));first ||= field}}
   first?.focus();first?.scrollIntoView({block:'center',behavior:'auto'});
 }
 function bindDailyFlow(){
-  const move=section=>{if(state.saving)return;if($('#daily-editor').dataset.dailyLocked!=='true')collectCurrent();clearDailyIssues();showDailySection(section,true)};
-  $('#daily-start').addEventListener('click',()=>move(DAILY_STEPS[0].id));
-  $('[data-daily-intro]').addEventListener('click',()=>move('intro'));
-  $('[data-daily-back]').addEventListener('click',()=>{const index=DAILY_STEPS.findIndex(step=>step.id===state.dailySection);move(index>0?DAILY_STEPS[index-1].id:'intro')});
-  $('[data-daily-next]').addEventListener('click',()=>{if(state.saving)return;const index=DAILY_STEPS.findIndex(step=>step.id===state.dailySection);if($('#daily-editor').dataset.dailyLocked!=='true'){collectCurrent();const issues=dailyStepIssues(state.current.data,state.dailySection,today());if(issues.length){showDailyIssues(issues);return}}if(index>=0&&index<DAILY_STEPS.length-1)move(DAILY_STEPS[index+1].id)});
+  const move=prompt=>{if(state.saving)return;if($('#daily-editor').dataset.dailyLocked!=='true')collectCurrent();clearDailyIssues();showDailyPrompt(prompt,true)};
+  $('#daily-start').addEventListener('click',()=>move(currentDailyPrompts()[0].id));
+  $('[data-daily-intro]').addEventListener('click',()=>move(null));
+  $('[data-daily-exit]').addEventListener('click',()=>attemptNavigate(()=>navigate('overview')));
+  $('[data-daily-back]').addEventListener('click',()=>move(dailyPromptNeighbor(currentDailyPrompts(),state.dailyPrompt,-1)));
+  $('[data-daily-next]').addEventListener('click',()=>{if(state.saving)return;if($('#daily-editor').dataset.dailyLocked!=='true'){collectCurrent();const issues=dailyPromptIssues(state.current.data,state.dailyPrompt,today());if(issues.length){showDailyIssues(issues);return}}const next=dailyPromptNeighbor(currentDailyPrompts(),state.dailyPrompt,1);if(next)move(next)});
   showDailySection(state.dailySection);
 }
 
 function renderReview(type,period=state.current?.type===type?state.current.period:defaultPeriod(type),forceNew=false,draftOverride=null,options={}){
   let rec=draftOverride||(!forceNew?state.records.find(r=>r.type===type&&r.period===period):null);
   if(type==='decision'&&!state.current?.id&&forceNew)rec=null;
-  state.current=rec?clone(rec):newRecord(type,period);state.dirty=!!options.dirty;state.dailySection=type==='daily'?(options.dailySection||'intro'):'intro';
+  state.current=rec?clone(rec):newRecord(type,period);state.dirty=!!options.dirty;state.dailySection=type==='daily'?(options.dailySection||'intro'):'intro';state.dailyPrompt=type==='daily'?(options.dailyPrompt||null):null;
   const locked=state.current.status!=='draft'||period!==defaultPeriod(type),data=state.current.data||{},templates=templatesForRecord(state.current),reviewTemplate=templates.review,actionTemplate=templates.action,questions=QUESTIONS[type].map(([key,label,required])=>[key,reviewTemplate[key]||label,required]);
-  if(type==='daily'&&!data.metrics?.length)data.metrics=state.stage.metrics.map(m=>({name:m.name,target:m.target,action:'',status:''}));
+  if(type==='daily'){if(!Array.isArray(data.metrics))data.metrics=[];if(!locked&&!data.metrics.length)data.metrics=state.stage.metrics.map(m=>({name:m.name,target:m.target,action:'',status:''}))}
   const content=type==='daily'?dailyReviewHtml(period,locked,data,templates):`<div class="stack">${introHtml(type,period)}${reviewToolbar(type,period,locked)}
     <section class="card section-card folio-card">${folioHead('01','One',type==='decision'?'决定前记录':'看见事实 <span>·</span> 也看见原因','每个问题最多记录 5 项，每项最多 6000 字。',type==='decision'?'决策依据':'深度归因','tone-one')}${questions.map(q=>itemInputs(q[0],q[1],q[2],data.answers?.[q[0]],locked)).join('')}</section><section class="card section-card folio-card">${folioHead('02','Two',type==='decision'?'把决定接到行动':'把洞察变成下一步行动','让承诺有动作、有预案，也有回看的时间。','行动锁定','tone-two')}${actionFields(data,locked,reviewTemplate)}</section>${reviewAfterword(locked,data,actionTemplate)}</div>`;
   shell(content);bindReview();
@@ -422,7 +457,7 @@ function bindReview(){
   $('#complete-record')?.addEventListener('click',completeCurrent);
   if(state.current.type==='daily')bindDailyFlow();
 }
-function renderReviewFromCurrent(){const keep=clone(state.current);renderReview(keep.type,keep.period,false,keep,{dailySection:state.dailySection,dirty:true})}
+function renderReviewFromCurrent(){const keep=clone(state.current);renderReview(keep.type,keep.period,false,keep,{dailySection:state.dailySection,dailyPrompt:state.dailyPrompt,dirty:true})}
 function collectCurrent(){if(!state.current)return;const d=state.current.data||(state.current.data={});d.answers=d.answers||{};$$('[data-answer]').forEach(el=>{const k=el.dataset.answer,i=Number(el.dataset.index);d.answers[k]=d.answers[k]||[];d.answers[k][i]=el.value});$$('[data-simple]').forEach(el=>d[el.dataset.simple]=el.value);$$('[data-metric-action]').forEach(el=>{const i=Number(el.dataset.metricAction);d.metrics[i].action=el.value});$$('[data-metric-status]').forEach(el=>{const i=Number(el.dataset.metricStatus);d.metrics[i].status=el.value});if($('#record-title'))state.current.title=$('#record-title').value;if(state.current.status==='draft')d.templateSnapshot=currentTemplateSnapshot(state.current.type)}
 function validateCurrent(){collectCurrent();const r=state.current,d=r.data,missing=[],template=templatesForRecord(r).review;if(r.type==='daily'){const issues=dailyStepIssues(d,null,today());if(issues.length)showDailyIssues(issues);return issues.map(dailyIssueLabel)}for(const [k,label,required] of QUESTIONS[r.type])if(required&&!(d.answers?.[k]||[]).some(v=>String(v).trim()))missing.push(template[k]||label);if(r.type==='decision'&&!r.title.trim())missing.push(template.recordTitle);if(!String(d.action||'').trim())missing.push(template.actionTitle);if(!String(d.ifThen||'').trim())missing.push(template.obstacleTitle);if(!d.verifyDate||d.verifyDate<today())missing.push(`${template.verifyDateTitle}（不能早于今天）`);return missing}
 function setReviewBusy(busy){
@@ -444,7 +479,7 @@ async function completeCurrent(){
   openModal(`<div class="modal-head"><div><h2>${state.current.type==='decision'?'完成并封存依据？':'完成并永久锁定？'}</h2><p>锁定后，正文、标题、日期、日记和行动都不能修改。</p></div><button class="modal-close" data-close>×</button></div><div class="lock-summary">复盘周期：${esc(state.current.period)}<br>预期验证日期：${esc(state.current.data.verifyDate)}<br>可提前或到期后提交，系统会自动记录实际验证时间。</div><div class="modal-actions"><button class="btn btn-ghost" data-close>再检查一下</button><button class="btn btn-red" id="confirm-complete">确认完成并锁定</button></div>`);
   $('#confirm-complete').addEventListener('click',async event=>{
     if(state.saving)return;const button=event.currentTarget,modal=button.closest('.modal');button.disabled=true;button.textContent='正在锁定…';modal.dataset.reviewLockBusy='true';modal.setAttribute('aria-busy','true');$$('[data-close]',modal).forEach(control=>control.setAttribute('aria-disabled','true'));
-    try{if(!state.current.id||state.dirty)await saveCurrent(true);state.saving=true;setReviewBusy(true);const {record}=await request(`/api/records/${state.current.id}/complete`,{method:'POST'});const i=state.records.findIndex(x=>x.id===record.id);if(i>=0)state.records[i]=record;else state.records.push(record);state.current=record;closeModal(true);await refreshStats().catch(()=>{});toast('复盘已完成并锁定');renderReview(record.type,record.period,false,record,{dailySection:'journal'})}
+    try{if(!state.current.id||state.dirty)await saveCurrent(true);state.saving=true;setReviewBusy(true);const {record}=await request(`/api/records/${state.current.id}/complete`,{method:'POST'});const i=state.records.findIndex(x=>x.id===record.id);if(i>=0)state.records[i]=record;else state.records.push(record);state.current=record;closeModal(true);await refreshStats().catch(()=>{});toast('复盘已完成并锁定');renderReview(record.type,record.period,false,record,{dailySection:'journal',dailyPrompt:'journal'})}
     catch(e){toast(e.message,'error')}
     finally{state.saving=false;setReviewBusy(false);if(modal.isConnected){delete modal.dataset.reviewLockBusy;modal.removeAttribute('aria-busy');$$('[data-close]',modal).forEach(control=>control.removeAttribute('aria-disabled'))}if(button.isConnected){button.disabled=false;button.textContent='确认完成并锁定'}}
   });
@@ -622,7 +657,7 @@ function openTheme(){const original=clone(state.theme);openModal(`<div class="mo
 
 function openAccount(){openModal(`<div class="modal-head"><div><h2>账户与安全</h2><p>${esc(state.user.displayName)} · ${esc(state.user.username)}</p></div><button class="modal-close" data-close>×</button></div><form id="password-form"><div class="field"><label>当前密码</label><input name="currentPassword" type="password" required autocomplete="current-password"></div><div class="field"><label>新密码</label><input name="newPassword" type="password" minlength="15" maxlength="128" required autocomplete="new-password"></div><button class="btn btn-soft" type="submit">修改密码</button></form><div class="danger-zone subsection"><h3>退出当前账户</h3><p class="help">如有未保存的复盘，系统会先阻止退出。</p><button class="btn btn-danger" id="logout">安全退出</button></div>`);$('#password-form').addEventListener('submit',async e=>{e.preventDefault();try{await request('/api/me/password',{method:'POST',body:Object.fromEntries(new FormData(e.currentTarget))});toast('密码已修改，请重新登录');setTimeout(init,500)}catch(err){toast(err.message,'error')}});$('#logout').addEventListener('click',async()=>{if(state.dirty){toast('请先保存或放弃当前修改','error');return}await request('/api/auth/logout',{method:'POST'});closeModal();init()})}
 
-function openModal(content,size='',persistent=false){const root=$('#modal-root');if(!root.children.length)modalReturnFocus=document.activeElement;root.dataset.persistent=persistent?'1':'0';const parentRail=$('#right-rail.open');if(parentRail)parentRail.inert=true;root.innerHTML=`<div class="modal-backdrop"><div class="modal ${size}" role="dialog" aria-modal="true">${content}</div></div>`;const modal=$('.modal',root),title=$('.modal-head h2',root);if(title){title.id='modal-title';modal.setAttribute('aria-labelledby','modal-title')}$$('.modal-close',root).forEach(button=>button.setAttribute('aria-label','关闭弹窗'));if(!persistent){$$('[data-close]',root).forEach(b=>b.addEventListener('click',()=>closeModal()));$('.modal-backdrop',root).addEventListener('mousedown',e=>{if(e.target===e.currentTarget)closeModal()})}setTimeout(()=>$('.modal input,.modal textarea,.modal button',root)?.focus(),0)}
+function openModal(content,size='',persistent=false){cancelDailyTypewriter();const root=$('#modal-root');if(!root.children.length)modalReturnFocus=document.activeElement;root.dataset.persistent=persistent?'1':'0';const parentRail=$('#right-rail.open');if(parentRail)parentRail.inert=true;root.innerHTML=`<div class="modal-backdrop"><div class="modal ${size}" role="dialog" aria-modal="true">${content}</div></div>`;const modal=$('.modal',root),title=$('.modal-head h2',root);if(title){title.id='modal-title';modal.setAttribute('aria-labelledby','modal-title')}$$('.modal-close',root).forEach(button=>button.setAttribute('aria-label','关闭弹窗'));if(!persistent){$$('[data-close]',root).forEach(b=>b.addEventListener('click',()=>closeModal()));$('.modal-backdrop',root).addEventListener('mousedown',e=>{if(e.target===e.currentTarget)closeModal()})}setTimeout(()=>$('.modal input,.modal textarea,.modal button',root)?.focus(),0)}
 function closeModal(force=false){const root=$('#modal-root');if(!force&&(root.dataset.persistent==='1'||$('.modal[data-review-lock-busy]',root)))return;root.innerHTML='';root.dataset.persistent='0';const parentRail=$('#right-rail.open');if(parentRail)parentRail.inert=false;if(modalReturnFocus?.isConnected)modalReturnFocus.focus();modalReturnFocus=null}
 function attemptNavigate(next){if(state.saving){toast('正在保存，请稍后再切换页面。','info');return}if(!state.dirty){next();return}openModal(`<div class="modal-head"><div><h2>这页还有未保存内容</h2><p>可以继续填写，或放弃刚才的修改。</p></div></div><div class="modal-actions"><button class="btn btn-primary" data-close>继续填写</button><button class="btn btn-danger" id="discard-change">放弃修改</button></div>`);$('#discard-change').addEventListener('click',()=>{state.dirty=false;closeModal();next()})}
 
@@ -648,6 +683,7 @@ function setHeaderMenu(button,open){
 function setRailOverlayOpen(open,restoreFocus=false){
   const rail=$('#right-rail'),trigger=$('#rail-toggle');
   if(!rail||!trigger)return;
+  if(open)cancelDailyTypewriter();
   state.railOpen=open;
   rail.classList.toggle('open',open);
   rail.hidden=!open;
@@ -683,8 +719,8 @@ function bindCommon(){
 function navigate(route){state.route=route;state.navOpen=false;state.railOpen=false;document.title=`${TYPES[route]?.label||({overview:'概览',history:'历史复盘',actions:currentActionTemplate().pageTitle,backup:'数据备份',users:'账户管理'}[route]||'慎独')} · 慎独`;if(route==='overview')return renderOverview();if(TYPES[route])return renderReview(route,defaultPeriod(route),route==='decision');if(route==='history')return renderHistory();if(route==='actions')return renderActions();if(route==='backup')return renderBackup();if(route==='users')return renderUsers();renderReview('daily')}
 async function refreshStats(){state.stats=await request('/api/stats')}
 async function refreshData(){const [me,rec,stats]=await Promise.all([request('/api/me'),request('/api/records'),request('/api/stats')]);state.user=me.user;state.stage=me.stage;state.theme=me.theme;state.records=rec.records;state.stats=stats;applyTheme(state.theme)}
-async function boot(user){state.user=user;$('#app').innerHTML=`<div class="auth-panel"><div class="auth-card"><div class="skeleton" style="height:30px;margin-bottom:14px"></div><div class="skeleton" style="height:180px"></div></div></div>`;try{await refreshData();navigate('overview')}catch(e){if(e.status===401)return init();$('#app').innerHTML=`<div class="auth-panel"><div class="auth-card"><h1>暂时无法打开复盘室</h1><p>${esc(e.message)}</p><button class="btn btn-primary" id="retry">重试</button></div></div>`;$('#retry').addEventListener('click',()=>boot(user))}}
-async function init(){try{const info=await request('/api/auth/state');if(info.user)await boot(info.user);else renderAuth(info)}catch(e){$('#app').innerHTML=`<div class="auth-panel"><div class="auth-card"><h1>服务器连接失败</h1><p>请确认服务已经启动，然后再试一次。</p><button class="btn btn-primary" id="reconnect">重新连接</button></div></div>`;$('#reconnect').addEventListener('click',()=>location.reload())}}
+async function boot(user){cancelDailyTypewriter();setDailyImmersive(false);state.user=user;$('#app').innerHTML=`<div class="auth-panel"><div class="auth-card"><div class="skeleton" style="height:30px;margin-bottom:14px"></div><div class="skeleton" style="height:180px"></div></div></div>`;try{await refreshData();navigate('overview')}catch(e){if(e.status===401)return init();$('#app').innerHTML=`<div class="auth-panel"><div class="auth-card"><h1>暂时无法打开复盘室</h1><p>${esc(e.message)}</p><button class="btn btn-primary" id="retry">重试</button></div></div>`;$('#retry').addEventListener('click',()=>boot(user))}}
+async function init(){cancelDailyTypewriter();setDailyImmersive(false);try{const info=await request('/api/auth/state');if(info.user)await boot(info.user);else renderAuth(info)}catch(e){$('#app').innerHTML=`<div class="auth-panel"><div class="auth-card"><h1>服务器连接失败</h1><p>请确认服务已经启动，然后再试一次。</p><button class="btn btn-primary" id="reconnect">重新连接</button></div></div>`;$('#reconnect').addEventListener('click',()=>location.reload())}}
 
 document.addEventListener('pointerdown',event=>{if(!event.target.closest('.overview-type-card'))closeOverviewTypes();if(!event.target.closest('.header-menu')&&!event.target.closest('#menu-toggle')&&!event.target.closest('#mobile-nav'))closeHeaderMenus()});
 

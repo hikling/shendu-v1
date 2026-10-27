@@ -813,7 +813,9 @@ body.reduce-motion .overview-type-burst{display:none}
 .daily-flow{--daily-accent:color-mix(in srgb,var(--primary) 30%,var(--ink));--muted:#6f685e;width:100%;max-width:860px;margin:0 auto}
 .daily-flow :focus-visible{outline-color:var(--daily-accent)}
 .daily-intro{min-height:calc(100dvh - var(--header-height) - 52px);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:30px;padding:48px 32px 100px;text-align:center}
-.daily-intro p{max-width:620px;margin:0;color:var(--ink);font:500 clamp(1.2rem,2vw,1.5rem)/1.9 "Noto Serif SC","Songti SC","STSong",serif;letter-spacing:.035em;text-wrap:balance}
+.daily-intro p{max-width:840px;margin:0;color:var(--ink);font:550 clamp(42px,3.2vw,54px)/1.6 "Noto Serif SC","Songti SC","STSong",serif;letter-spacing:.035em;text-wrap:balance}
+.daily-glyph{opacity:1;transition:opacity .14s ease}
+.daily-intro p.is-typing .daily-glyph:not(.is-visible){opacity:0}
 .daily-intro .btn{min-height:44px;padding:11px 24px;border-radius:12px;font-family:"Noto Sans SC","Microsoft YaHei",sans-serif;box-shadow:none}
 .daily-intro .btn span{margin-left:12px}
 .daily-intro[hidden],.daily-editor[hidden],.daily-pane[hidden]{display:none!important}
@@ -879,7 +881,7 @@ body.reduce-motion .overview-type-burst{display:none}
 .rail-week-marks i.filled{background:var(--stat-tone)}
 @media(max-width:680px){
   .daily-intro{min-height:calc(100dvh - var(--header-height) - 42px);padding:38px 15px 90px;gap:25px}
-  .daily-intro p{font-size:1.2rem;line-height:1.95}
+  .daily-intro p{font-size:clamp(28px,7.7vw,34px);line-height:1.7;letter-spacing:.025em}
   .daily-editor{padding-top:0}
   .daily-flow-head{margin-bottom:18px;gap:8px}
   .daily-flow-head>div{gap:5px 10px}
@@ -906,6 +908,60 @@ body.reduce-motion .overview-type-burst{display:none}
 }
 @media(prefers-reduced-motion:reduce){.rail-stat{transition:none}}
 body.reduce-motion .rail-stat{transition:none}
+
+/* The writing flow owns the full viewport; only its small exit remains. */
+.shendu-header[hidden]{display:none!important}
+.daily-immersive .workspace{padding-top:0}
+.daily-immersive .main{padding-top:24px;scroll-margin-top:24px}
+.daily-immersive .daily-flow{max-width:780px}
+.daily-immersive .daily-editor{display:flex;flex-direction:column;min-height:calc(100dvh - 54px);padding-top:0;padding-bottom:0;scroll-margin-top:24px}
+.daily-flow-head>.daily-exit,.daily-flow-head>.daily-intro-return{min-height:42px;padding:7px 0;border:0;background:transparent;color:var(--muted);font:.68rem/1.4 "Noto Sans SC","Microsoft YaHei",sans-serif}
+.daily-flow-head>.daily-exit:hover,.daily-flow-head>.daily-intro-return:hover{color:var(--daily-accent)}
+.daily-flow-head>time{color:var(--muted);font:.65rem/1.5 "Noto Sans SC","Microsoft YaHei",sans-serif}
+.daily-question-progress{display:flex;align-items:center;justify-content:space-between;gap:18px;margin:24px 0 22px;font:.68rem/1.5 "Noto Sans SC","Microsoft YaHei",sans-serif}
+#daily-current-group{color:var(--daily-accent);font-weight:700}
+#daily-question-count{color:var(--muted);font-variant-numeric:tabular-nums}
+.daily-question-heading{margin:0 0 28px}
+.daily-question-heading h2{margin:0 0 12px;color:var(--ink);font:650 clamp(28px,2.5vw,38px)/1.5 "Noto Serif SC","Songti SC","STSong",serif;letter-spacing:.025em;overflow-wrap:anywhere}
+.daily-question-heading>p{margin:0;color:var(--muted);font:.76rem/1.8 "Noto Sans SC","Microsoft YaHei",sans-serif;overflow-wrap:anywhere}
+.daily-prompt[hidden]{display:none!important}
+.daily-immersive .daily-editor .folio-card{padding:0;border:0;border-radius:0;background:transparent;box-shadow:none}
+.daily-immersive .daily-editor .gauge-card{padding:25px 28px;border:1px solid var(--line);border-radius:20px;background:var(--sheet)}
+.daily-immersive .daily-editor .gauge-reading input{font-size:3rem}
+.daily-immersive .daily-editor .metric-ledger{margin:0}
+.daily-immersive .daily-editor .metric-row{display:flex;flex-direction:column;gap:18px;margin:0;padding:0;border:0;background:transparent}
+.daily-immersive .metric-row>i,.daily-immersive .metric-copy>b,.daily-immersive .metric-copy>small{display:none}
+.daily-immersive .metric-copy{width:100%}
+.daily-immersive .metric-status-control{width:min(240px,100%);align-self:flex-end}
+.daily-immersive .daily-editor .daily-prompt textarea{min-height:156px;padding:18px;font-size:.9rem;line-height:1.8}
+.daily-immersive .daily-editor .daily-prompt textarea[data-simple="journal"]{min-height:240px}
+.daily-immersive .daily-editor .reflection-question+.reflection-question{margin-top:0}
+.daily-immersive .daily-editor .action-lock{margin:0;padding:0;border:0;background:transparent;box-shadow:none}
+.daily-immersive .daily-editor .action-lock input{width:100%;min-height:58px;padding:15px 18px;border:1px solid var(--line);border-radius:15px;background:var(--sheet);font:.9rem/1.7 "Noto Sans SC","Microsoft YaHei",sans-serif}
+.daily-immersive .daily-editor .verify-lock input{width:100%;max-width:320px}
+.daily-immersive .daily-editor .risk-note{margin:0;padding:0;border:0;background:transparent}
+.daily-immersive .risk-note>span,.daily-immersive .risk-note b{display:none}
+.daily-immersive .risk-note>div{width:100%}
+.daily-immersive .risk-note input{min-height:58px;padding:15px 18px;border:1px solid var(--line);border-radius:15px;background:var(--sheet);font-size:.9rem}
+.daily-immersive .daily-flow-footer{margin-top:auto;padding-top:22px}
+.daily-immersive .daily-step-note{margin-bottom:30px}
+@media(max-width:680px){
+  .daily-immersive .main{padding-top:12px}
+  .daily-immersive .daily-editor{min-height:calc(100dvh - 29px);scroll-margin-top:12px}
+  .daily-flow-head>time{font-size:.57rem}
+  .daily-flow-head>.daily-exit,.daily-flow-head>.daily-intro-return{font-size:.61rem}
+  .daily-question-progress{margin:17px 0 20px;font-size:.61rem}
+  .daily-question-heading{margin-bottom:24px}
+  .daily-question-heading h2{font-size:27px;line-height:1.55}
+  .daily-question-heading>p{font-size:.7rem}
+  .daily-immersive .daily-editor .gauge-card{padding:21px 18px}
+  .daily-immersive .daily-editor .gauge-reading input{font-size:2.6rem}
+  .daily-immersive .daily-editor .daily-prompt textarea{padding:15px;font-size:.83rem}
+  .daily-immersive .daily-editor .action-lock input,.daily-immersive .risk-note input{font-size:.83rem}
+}
+@media(prefers-reduced-motion:reduce){.daily-intro p.is-typing .daily-glyph:not(.is-visible){opacity:1}.daily-glyph{transition:none}}
+body.reduce-motion .daily-intro p.is-typing .daily-glyph:not(.is-visible){opacity:1}
+body.reduce-motion .daily-glyph{transition:none}
 @media(max-width:1100px){
   .rail-side-decor{display:none}
   .rail-compact-decor{display:flex;gap:5px;margin-top:12px}
