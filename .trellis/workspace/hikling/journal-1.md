@@ -461,3 +461,25 @@ Split day-based reel dates into year-month-day and full weekday lines, retained 
 ### Status
 
 [OK] **Completed**
+
+
+## Session 21: 每日复盘蓝墨艺术画布
+<!-- trellis-session: v=2 fp=fb0a5697577d8324 -->
+
+**Date**: 2026-10-28
+**Task**: 每日复盘蓝墨艺术画布
+**Branch**: `main`
+
+### Summary
+
+重做每日引导及逐题场景为全幅蓝墨艺术画布，保留表单数据与保护规则；修正手机数值排版和对比，更新README及四张合成截图。独立审查、58项测试通过，320/390/720/820屏宽和只读保存失败已验证。
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `d74677a` | feat: redesign daily review as a blue ink art canvas |
+
+### Status
+
+[OK] **Completed**
