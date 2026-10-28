@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 640" width="600" height="640">
+<title>换个角度，仔细看一件发生过的事</title>
+<g stroke="#2C4655" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M98 413C45 324 101 216 207 181C312 146 464 193 503 307C544 425 445 521 329 525C226 529 140 485 98 413Z" fill="#B8CEF4" stroke="none"/>
+  <circle cx="170" cy="174" r="61" fill="#E2C579" stroke="none"/>
+  <!-- Loose records on a stand, with lines enlarged through a real lens. -->
+  <path d="M333 246L489 232L510 429L345 442Z" fill="#DD8E79"/>
+  <path d="M316 235L474 221L494 421L328 434Z" fill="#FFF9ED"/>
+  <path d="M347 269L447 260M348 286L432 279M351 321L456 313M354 338L433 331M359 377L462 369M360 394L432 388" fill="none" stroke="#7B91A1"/>
+  <path d="M330 434L318 520M485 422L504 520" fill="none"/>
+  <path d="M80 524H526" fill="none"/>
+  <path d="M128 349L228 347L231 441L123 444Z" fill="#DD8E79"/>
+  <path d="M134 444L122 524M216 442L228 524" fill="none"/>
+  <path d="M153 373C175 356 202 356 225 372L291 429L271 451L208 420L203 500L169 500L157 429L133 414Z" fill="#FFF9ED"/>
+  <path d="M205 418L216 391M271 451L290 431" fill="none"/>
+  <path d="M170 496L203 496L219 518C221 525 205 527 194 525L159 525Z" fill="#397B72"/>
+  <path d="M272 444L291 425L317 440C323 443 319 451 312 454L283 463Z" fill="#7198C7"/>
+  <path d="M173 249L210 252C225 274 229 322 237 365L191 394L142 377C147 330 150 285 173 249Z" fill="#397B72"/>
+  <path d="M174 274L163 348L189 370M148 370L178 383" fill="none" stroke="#FFF9ED"/>
+  <path d="M184 251L190 224L217 223L218 264Z" fill="#FFF9ED"/>
+  <path d="M180 194C181 173 198 160 216 166C235 171 237 192 236 211L244 218L233 223C230 240 214 244 201 235L181 220Z" fill="#FFF9ED"/>
+  <path d="M179 218C161 203 167 175 187 163C207 151 232 162 238 181L207 181L199 204L190 199L189 224Z" fill="#2C4655"/>
+  <path d="M218 218L228 219M226 195L228 200" fill="none"/>
+  <path d="M211 270C225 263 239 275 244 293L252 321L285 304L299 322C273 351 246 362 232 347L210 318Z" fill="#397B72"/>
+  <path d="M284 305L294 289L311 290L322 302L313 315L299 322Z" fill="#FFF9ED"/>
+  <path d="M309 296L333 266L345 277L320 310Z" fill="#E2C579"/>
+  <circle cx="366" cy="238" r="58" fill="#B8D1C7"/>
+  <circle cx="366" cy="238" r="47" fill="#FFF9ED"/>
+  <path d="M335 222L394 218M336 240L402 235M339 258L382 255" fill="none" stroke="#7B91A1" stroke-width="2"/>
+  <path d="M343 205C351 201 360 199 371 200" fill="none" stroke="#FFF" stroke-width="4"/>
+  <path d="M99 486L108 522H136L144 486Z" fill="#E2C579"/>
+  <path d="M121 488V440M121 466C103 462 96 449 98 436C114 440 124 450 121 466M121 453C124 434 136 429 149 431C146 446 135 454 121 453" fill="#397B72"/>
+</g>
+</svg>

@@ -1,0 +1,3 @@
+{"file": ".trellis/spec/frontend/architecture.md", "reason": "Template/scene/cache ownership"}
+{"file": ".trellis/spec/frontend/state-and-data.md", "reason": "Preserve mounted fields, save, dirty and locked rules"}
+{"file": ".trellis/spec/frontend/ui-quality.md", "reason": "Art, brand, responsive/accessibility/reduced-motion contracts"}
