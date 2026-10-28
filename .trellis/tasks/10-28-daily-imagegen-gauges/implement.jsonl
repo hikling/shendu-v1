@@ -1,0 +1,3 @@
+{"file": ".trellis/spec/frontend/architecture.md", "reason": "每日渲染与场景归属"}
+{"file": ".trellis/spec/frontend/state-and-data.md", "reason": "原生输入和保存状态"}
+{"file": ".trellis/spec/frontend/ui-quality.md", "reason": "可辨输入品牌与移动端"}

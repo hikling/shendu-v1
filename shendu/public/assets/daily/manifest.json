@@ -1,0 +1,106 @@
+[
+  {
+    "scene": "action",
+    "width": 1254,
+    "height": 1254,
+    "alpha_range": [
+      0,
+      255
+    ],
+    "source_sha256": "7c7504a3ede711f84de8c6564a89f13b23f488b3f859b59c2bef216b8b5383c3",
+    "webp_sha256": "888aa569c2fa734d22eeaf77778f0a4a9d573e14f5be13bff87473afa0c81622",
+    "png_bytes": 651729,
+    "webp_bytes": 396776
+  },
+  {
+    "scene": "calendar",
+    "width": 1254,
+    "height": 1254,
+    "alpha_range": [
+      0,
+      255
+    ],
+    "source_sha256": "b8ed061ea348bf5ab01537a6ae12026a3de95a14f0da8cc51eac4e00b7794565",
+    "webp_sha256": "21b2a9882f792fd13cb7618d1ad2df2ab6b01872017f5e5d8b8e4c4fa0f507ce",
+    "png_bytes": 741405,
+    "webp_bytes": 453202
+  },
+  {
+    "scene": "energy",
+    "width": 1254,
+    "height": 1254,
+    "alpha_range": [
+      0,
+      255
+    ],
+    "source_sha256": "85c4bb92e6bc3b8a836d7b3271c7284e334659ccbceff3c126bee0bb3ff33648",
+    "webp_sha256": "970db41a8228c5cbd67fbb3d088c2b995f3b356e82e05c7ba94f7135e77caebe",
+    "png_bytes": 543675,
+    "webp_bytes": 327356
+  },
+  {
+    "scene": "evidence",
+    "width": 1254,
+    "height": 1254,
+    "alpha_range": [
+      0,
+      255
+    ],
+    "source_sha256": "250d865607351009fa7c573d8cbed6870c37dd02de3231bfe8206d1d6974faa7",
+    "webp_sha256": "d70d9744d2b8100e062cc88786109a2fcd782982869afede4dec3933a3d2f6df",
+    "png_bytes": 707025,
+    "webp_bytes": 421256
+  },
+  {
+    "scene": "intro",
+    "width": 1254,
+    "height": 1254,
+    "alpha_range": [
+      0,
+      255
+    ],
+    "source_sha256": "493cb7e9a69a71bf620d3655eab95cab3427cf4dad732cb889a7a9970b1385d1",
+    "webp_sha256": "b6242517c82d2327792f3b0b7d831bb1caafd6522d98c43805238f02bd3585f0",
+    "png_bytes": 702549,
+    "webp_bytes": 432552
+  },
+  {
+    "scene": "journal",
+    "width": 1254,
+    "height": 1254,
+    "alpha_range": [
+      0,
+      255
+    ],
+    "source_sha256": "eed4aabb70b0fb1aec57d60f7812843fb223f188d587b30d87d162b6fa606d17",
+    "webp_sha256": "8d30d23870a8b0629d960f389cbfa38e5ad0ad4c10efe7aff5c2a750a1c2715f",
+    "png_bytes": 734516,
+    "webp_bytes": 460554
+  },
+  {
+    "scene": "reflection",
+    "width": 1254,
+    "height": 1254,
+    "alpha_range": [
+      0,
+      255
+    ],
+    "source_sha256": "ee48f6aecacb2ea9d9cd4395ff5ba6a05ed076ba759448caa915fa620b9faa6b",
+    "webp_sha256": "35c65a74e1177190297dcaf8a0f5ad3eca73d1bfc8e6358e7359244dee4c9a20",
+    "png_bytes": 739142,
+    "webp_bytes": 449456
+  },
+  {
+    "scene": "sleep",
+    "width": 1254,
+    "height": 1254,
+    "alpha_range": [
+      0,
+      255
+    ],
+    "source_sha256": "4f4ba692134982cf904c768de5bfc8be06abce1f49376b23ae2ac97e8cae579e",
+    "webp_sha256": "158bb853b0d5b5a07759ac658fd8739bd653a8f1c30b7397a929cb4232324296",
+    "png_bytes": 840373,
+    "webp_bytes": 506328
+  }
+]

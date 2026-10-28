@@ -1,0 +1,41 @@
+{
+  "generator": "built-in image_gen",
+  "date": "2026-10-28",
+  "transparent_background": true,
+  "use_case": "illustration-story",
+  "style_reference": "Six-category daily.svg rendered unchanged; only style reference, not edit target. All seven follow-ups also reference the generated sleep image.",
+  "common_prompt": "Use case: illustration-story. Generate ONE finished square website illustration on a TRUE TRANSPARENT background. Image1 is our existing daily-category STYLE REFERENCE; Image2 is the approved sleep scene in this new family: match its elongated cream face, minute gray-green linework, deep forest teal/cream/mint palette, eccentric very slender adult, tiny expressive profile with long nose, comically large hands/feet and oversized geometric props. Sparse elegant editorial flat vector appearance, very fine muted gray-green contours, clean simple geometry, much closer to Image1 than generic modern cartoons. Colors ONLY deep teal #15584E, teal #1E8F83, pale mint #A9D9CC, cream #FFFBEA, a little pale gold. NO thick outlines, blue blob/circle backdrop, gradients, texture, 3D or realistic light. Subject and composition: ",
+  "suffix": " Keep the entire subject well inside middle82% with transparent breathing room all around; simple flat ground line allowed. No card/background panel, no title, no badge, no letters/numbers, no text/watermark. Artwork only, no UI. Maintain the same visual family as both reference images.",
+  "subjects": [
+    [
+      "intro",
+      "a long-limbed adult sitting on a tiny mint stool thoughtfully writing with an oversized pen on a very large angled cream notebook/page. Exaggerated but elegant geometry and clouds-of-fingers hands, generous negative space. This illustrates entering a private reflection journal."
+    ],
+    [
+      "energy",
+      "a single very slender adult raising both long arms in a relaxed morning stretch beside a simple oversized pale-gold sun and small cream floor mat. The pose must clearly suggest waking energy, character proportions identical to the reference, not athletic realism."
+    ],
+    [
+      "evidence",
+      "a tall thin adult leaning toward and marking an oversized cream checklist on a narrow easel, one huge dark-teal pencil and three simple unlabeled check marks. The adult and paper dominate; this illustrates recording actual daily actions."
+    ],
+    [
+      "reflection",
+      "a very slender adult bending to inspect an oversized cream page through a very large mint magnifying glass; exaggerated cloudlike cream fingers hold the glass and a few thin unlabeled lines on the page suggest studying what really happened. Readable silhouette, generous open space, no circle behind the scene."
+    ],
+    [
+      "action",
+      "one long-limbed adult making a determined step upward onto three broad cream geometric steps, holding a simple rolled plan, small teal flag at the top and a thin route line along the steps. Exaggerated elegant limbs and oversize soft angular shoes. This illustrates a small concrete next action, not winning a sporting contest."
+    ],
+    [
+      "calendar",
+      "a long-limbed slender adult on the left reaching with an oversized teal pencil toward a very large upright cream desk calendar on the right, plain grid without letters or numbers, one day circled pale gold. Minimal architecture and clear date-planning meaning."
+    ],
+    [
+      "journal",
+      "a slender elongated adult sitting beside and writing in a giant open cream journal, one large teal pen, small simple reading lamp on a tiny mint stool. Facing inward toward book, calm private diary meaning, playful large hands and feet. Distinct from the intro angled upright notebook: this book opens flat in a wide V."
+    ]
+  ],
+  "prompt_construction": "For intro/energy/evidence/reflection/action/calendar/journal, concatenate common_prompt + subject + suffix; sleep uses sleep_prompt verbatim.",
+  "sleep_prompt": "Use case: illustration-story. Create ONE finished website illustration, square canvas, TRUE TRANSPARENT background. The attached image is a STYLE REFERENCE ONLY (our existing daily category illustration). Match its visual grammar closely: extraordinarily thin muted gray-green contour, cream/off-white flat fills, tall slender eccentric adult with tiny elongated nose/profile and simple face, oversized geometric everyday objects, angular/comically large hands and feet, sparse architectural line details, elegant minimal editorial vector appearance with generous negative space. Main colors deep forest teal #15584E, medium teal #1E8F83, pale mint #A9D9CC, cream #FFFBEA and a SMALL pale gold moon. No thick dark strokes, no blue circle/blob backdrop, no gradients, no texture, no realistic rendering, no rounded cartoon character. Subject: sleep and recovery, one slender adult asleep under a cream duvet on an oversized simply drawn bed, tiny bedside stool, tall open window with crescent moon. Cozy understated absurd proportions matching the reference; clear sleeping silhouette at small size. All art must fit within middle 82% of square, clean transparent outer margin, no clipping, no surrounding card, no colored background, no badge, no letters, no numbers, no text or watermark. This will sit to the right of a Chinese sleep question on a pale mist-blue canvas. Produce artwork only, not a UI mockup."
+}

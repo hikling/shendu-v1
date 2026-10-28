@@ -1,5 +1,5 @@
 import {overviewRecordAppearances,overviewVerifiedRecords,overviewRecordExcerpt,overviewLoopMetrics,overviewRecordTitle,overviewDateParts} from './overview-reel.js?v=1.0.0-overview15';
-import {DAILY_STEPS,dailyStepIssues,dailyPrompts,dailyPromptIssues,dailyPromptNeighbor} from './daily-flow.js?v=1.0.0-overview20';
+import {DAILY_STEPS,dailyStepIssues,dailyPrompts,dailyPromptIssues,dailyPromptNeighbor} from './daily-flow.js?v=1.0.0-overview21';
 const $ = (s, root = document) => root.querySelector(s);
 const $$ = (s, root = document) => [...root.querySelectorAll(s)];
 const esc = (v = '') => String(v).replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
@@ -326,11 +326,35 @@ function itemInputs(key,label,required,values=[''],locked=false,accessibleLabel=
 function actionFields(data,locked,template){return `<div class="question"><div class="question-label">${esc(template.actionTitle)}</div><textarea class="control" aria-label="${esc(template.actionTitle)}" data-simple="action" maxlength="6000" ${locked?'disabled':''}>${esc(data.action||'')}</textarea></div><div class="question"><div class="question-label">${esc(template.obstacleTitle)}</div><textarea class="control" aria-label="${esc(template.obstacleTitle)}" data-simple="ifThen" maxlength="6000" ${locked?'disabled':''}>${esc(data.ifThen||'')}</textarea></div><div class="field"><label>${esc(template.verifyDateTitle)}</label><input type="date" min="${today()}" aria-label="${esc(template.verifyDateTitle)}" data-simple="verifyDate" value="${esc(data.verifyDate||'')}" ${locked?'disabled':''}></div>`}
 
 function folioHead(number,word,title,subtitle,badge,tone,extra=''){return `<div class="folio-head ${tone}"><span class="folio-word" aria-hidden="true">${word}</span><div class="folio-title"><span class="folio-number">${number}</span><div><h2>${title}</h2><p><i></i>${subtitle}</p></div></div><div class="folio-badge"><i></i>${badge}</div>${extra}</div>`}
-function gaugeCard(kind,label,en,value,target,max,unit,low,middle,high,locked){const hasValue=value!==''&&value!==null&&value!==undefined,n=Math.min(max,Math.max(0,Number(value)||0)),pct=n/max*100,targetPct=Math.min(100,Math.max(0,Number(target)||0)/max*100),good=hasValue&&Number(value)>=Number(target),inputMax=kind==='sleep'?24:max;return `<div class="gauge-card ${kind}" data-gauge-kind="${kind}" data-gauge-target="${target}" data-gauge-max="${max}" data-gauge-unit="${unit}"><div class="gauge-title"><span class="gauge-icon">${kind==='sleep'?'月':'气'}</span><span><b>${label}</b><small>${en}</small></span><em>基线 ${target}${unit}</em></div><div class="gauge-reading"><label><input type="number" data-simple="${kind}" data-gauge-input min="0" max="${inputMax}" step="${kind==='sleep'?'.5':'5'}" value="${esc(value??'')}" ${locked?'disabled':''} aria-label="${label}" placeholder="—"></label><small data-gauge-reading>${unit}${hasValue?` · ${good?'达标':'待恢复'}`:''}</small><b data-gauge-status class="${good?'good':''}">${!hasValue?'等待记录':kind==='sleep'?`${Number(value)-Number(target)>=0?'+':''}${(Number(value)-Number(target)).toFixed(1)}h ${good?'充沛达标':'尚需恢复'}`:good?'身心气韵充盈':'低于个人警戒线'}</b></div><div class="gauge"><span data-gauge-fill style="width:${pct}%"></span><i style="left:${targetPct}%" title="个人基线"></i><b data-gauge-knob style="left:${pct}%"></b></div><div class="gauge-scale"><span>${low}</span><span>${middle}</span><span>${high}</span></div></div>`}
-function updateGauge(input){const card=input.closest('[data-gauge-kind]');if(!card)return;const raw=input.value.trim(),hasValue=raw!==''&&Number.isFinite(Number(raw)),max=Number(card.dataset.gaugeMax),target=Number(card.dataset.gaugeTarget),kind=card.dataset.gaugeKind,n=hasValue?Math.min(max,Math.max(0,Number(raw))):0,pct=n/max*100,good=hasValue&&Number(raw)>=target;card.querySelector('[data-gauge-fill]').style.width=`${pct}%`;card.querySelector('[data-gauge-knob]').style.left=`${pct}%`;const reading=card.querySelector('[data-gauge-reading]'),status=card.querySelector('[data-gauge-status]');reading.textContent=hasValue?`${card.dataset.gaugeUnit} · ${good?'达标':'待恢复'}`:card.dataset.gaugeUnit;status.classList.toggle('good',good);if(!hasValue)status.textContent='等待记录';else if(kind==='sleep'){const delta=Number(raw)-target;status.textContent=`${delta>=0?'+':''}${delta.toFixed(1)}h ${good?'充沛达标':'尚需恢复'}`}else status.textContent=good?'身心气韵充盈':'低于个人警戒线'}
+function gaugePresentation(kind,value,target,max){
+  // Native number can keep an invalid editing buffer ("-", "1e+") while its value is empty.
+  const raw=String(value??'').trim(),hasValue=raw!==''&&Number.isFinite(Number(raw)),n=hasValue?Number(raw):0,pct=Math.min(max,Math.max(0,n))/max*100,delta=n-Number(target),unit=kind==='sleep'?'小时':'分',inputCh=hasValue?Array.from(raw).reduce((width,character)=>width+(character==='.'?.5:1),.12):4.12;
+  if(!hasValue)return{hasValue,pct,inputCh,reading:'等待填写',status:kind==='sleep'?'记录实际时长，也可以跳过。':'记录此刻的感受，也可以跳过。'};
+  const amount=kind==='sleep'?Math.abs(delta).toFixed(1):String(Number(Math.abs(delta).toFixed(1)));
+  return{hasValue,pct,inputCh,reading:delta===0?'与个人基线一致':delta>0?'高于个人基线':'低于个人基线',status:delta===0?`个人基线 ${target} ${unit}`:`比基线${delta>0?'多':'少'} ${amount} ${unit}`};
+}
+function gaugeCard(kind,label,value,target,locked){
+  const sleep=kind==='sleep',max=sleep?24:100,unit=sleep?'小时':'/ 100',title=sleep?'睡眠时长':'精力分值',ticks=sleep?[0,6,12,18,24]:[0,25,50,75,100],view=gaugePresentation(kind,value,target,max),targetPct=Math.min(100,Math.max(0,Number(target)||0)/max*100),id=`daily-gauge-${kind}`;
+  return `<div class="gauge-card ${kind}" data-gauge-kind="${kind}" data-gauge-target="${esc(target)}" data-gauge-max="${max}">
+    <div class="gauge-title"><label for="${id}">${title}</label><span>选填</span></div>
+    <div class="gauge-reading"><label class="gauge-number-field" for="${id}"><input id="${id}" type="number" data-simple="${kind}" data-gauge-input min="0" max="${max}" step="${sleep?'.5':'5'}" value="${esc(value??'')}" style="--gauge-input-width:${view.inputCh}ch" ${locked?'disabled':''} aria-label="${title}，${label}" aria-describedby="${id}-hint ${id}-status" placeholder="${sleep?'输入时长':'输入分值'}"><span class="gauge-unit" aria-hidden="true">${unit}</span></label></div>
+    <div class="gauge-state" id="${id}-status"><strong data-gauge-reading>${view.reading}</strong><span data-gauge-status>${esc(view.status)}</span></div>
+    <div class="gauge-reference"><div class="gauge-reference-head"><span>${sleep?'时长参考（小时）':'精力参考'}</span><span class="gauge-baseline"><i aria-hidden="true"></i>个人基线 ${esc(target)}${sleep?' 小时':' 分'}</span></div>
+      <div class="gauge" aria-hidden="true"><span data-gauge-fill style="width:${view.pct}%" ${view.hasValue?'':'hidden'}></span>${ticks.map((_,index)=>`<em class="gauge-tick" style="left:${index*25}%"></em>`).join('')}<i style="left:${targetPct}%"></i><b data-gauge-knob style="left:${view.pct}%" ${view.hasValue?'':'hidden'}></b></div>
+      <div class="gauge-scale" aria-hidden="true">${ticks.map((tick,index)=>`<span style="left:${index*25}%">${tick}</span>`).join('')}</div>
+    </div><p class="gauge-input-hint" id="${id}-hint">${sleep?'可输入 0—24 小时':'可输入 0—100 分'}，刻度仅作对照。</p>
+  </div>`;
+}
+function updateGauge(input){
+  const card=input.closest('[data-gauge-kind]');if(!card)return;
+  const view=gaugePresentation(card.dataset.gaugeKind,input.value,card.dataset.gaugeTarget,Number(card.dataset.gaugeMax)),fill=$('[data-gauge-fill]',card),knob=$('[data-gauge-knob]',card);
+  input.style.setProperty('--gauge-input-width',`${view.inputCh}ch`);
+  fill.hidden=!view.hasValue;fill.style.width=`${view.pct}%`;knob.hidden=!view.hasValue;knob.style.left=`${view.pct}%`;
+  $('[data-gauge-reading]',card).textContent=view.reading;$('[data-gauge-status]',card).textContent=view.status;
+}
 function dailyEvidence(data,locked){const metrics=data.metrics||[];return `<section class="card section-card folio-card daily-evidence-card">
-  <div class="daily-prompt" data-daily-prompt="sleep" hidden>${gaugeCard('sleep','昨夜睡眠测度','SLEEP CHRONO',data.sleep,state.stage.sleepTarget,10,'h','4.0h 亏空区','7.0h 基准线','10.0h 充沛',locked)}</div>
-  <div class="daily-prompt" data-daily-prompt="energy" hidden>${gaugeCard('energy','主观精力值刻度','ENERGY INDEX',data.energy,state.stage.energyTarget,100,' / 100','0 枯竭','70 警戒线','100 圆满',locked)}</div>
+  <div class="daily-prompt" data-daily-prompt="sleep" hidden>${gaugeCard('sleep','昨夜睡眠测度',data.sleep,state.stage.sleepTarget,locked)}</div>
+  <div class="daily-prompt" data-daily-prompt="energy" hidden>${gaugeCard('energy','主观精力值刻度',data.energy,state.stage.energyTarget,locked)}</div>
   ${metrics.map((m,i)=>`<div class="daily-prompt metric-ledger" data-daily-prompt="metric-${i}" hidden><div class="metric-row metric-${i}"><i></i><div class="metric-copy"><b>${esc(m.name)}</b><small>${esc(m.target)}</small><textarea data-metric-action="${i}" aria-label="${esc(m.name)}：今天的具体行动" maxlength="6000" placeholder="今天的具体行动" ${locked?'disabled':''}>${esc(m.action||'')}</textarea></div><div class="metric-status-control"><select data-metric-status="${i}" aria-label="${esc(m.name)}完成状态" ${locked?'disabled':''}><option value="">未记录</option>${['已达标','部分达标','未达标','计划休息'].map(x=>`<option ${m.status===x?'selected':''}>${x}</option>`).join('')}</select><span class="metric-status-chevron" aria-hidden="true"></span></div></div></div>`).join('')}
   <div class="daily-prompt" data-daily-prompt="risk" hidden><div class="risk-note"><span>!</span><div><b>风险信号与偏离对策</b><input data-simple="risk" aria-label="风险信号与偏离对策" maxlength="6000" value="${esc(data.risk||'')}" ${locked?'disabled':''} placeholder="记下具体偏离，以及准备怎样应对"></div></div></div></section>`}
 
@@ -348,16 +372,16 @@ function dailyJournal(data,locked){return `<section class="card section-card fol
 
 function reviewAfterword(locked,data,actionTemplate){return `${locked&&state.current.status==='completed'?`<section class="card section-card"><h2 style="margin-top:0">${esc(actionTemplate.lockedPendingTitle)}</h2><p class="help">${esc(actionTemplate.expectedDateLabel)}：${esc(data.verifyDate||actionTemplate.expectedMissingText)}。${esc(actionTemplate.lockedPendingIntro)}</p><button class="btn btn-primary" data-open-action="${esc(state.current.id)}">${esc(actionTemplate.lockedPendingButton)}</button></section>`:''}${state.current.status==='verified'?verificationRead(state.current):''}`}
 // These local scenes are decorative; only the real prompt chooses the image.
-function dailySceneArt(){return `<div class="daily-scene-art" aria-hidden="true">${['intro','sleep','energy','evidence','reflection','action','calendar','journal'].map(scene=>`<img class="daily-scene-image" data-daily-art="${scene}" src="/assets/daily/${scene}.svg?v=1.0.0-overview20" alt="" width="600" height="640" draggable="false">`).join('')}</div>`}
+function dailySceneArt(){return `<div class="daily-scene-art" aria-hidden="true">${['intro','sleep','energy','evidence','reflection','action','calendar','journal'].map(scene=>`<img class="daily-scene-image" data-daily-art="${scene}" src="/assets/daily/${scene}.webp?v=1.0.0-overview21" alt="" width="1254" height="1254" draggable="false">`).join('')}</div>`}
 function dailyReviewHtml(period,locked,data,templates){
   const panes=[dailyEvidence(data,locked),dailyReflection(data,locked,templates.review),dailyActionFields(data,locked,templates.review),dailyJournal(data,locked)];
   const saved=locked?(period!==defaultPeriod('daily')?'非当前日期，仅可查看':'这份复盘已锁定'):state.dirty?'有未保存内容':state.current.updated_at?`${beijingTime(state.current.updated_at)} 草稿已保存`:'草稿尚未保存';
   const quote=quoteFor('daily',period);
   return `<div class="daily-flow daily-art-flow" data-daily-scene="intro" data-daily-side="right" data-daily-current-prompt="intro">${dailySceneArt()}
-    <header class="daily-flow-head"><div class="daily-canvas-brand"><div class="header-brand">${headerBrandContent()}</div><span class="daily-brand-divider" aria-hidden="true"></span><span class="daily-brand-label">每日复盘</span></div><time datetime="${esc(period)}">${esc(formatDate(period))}</time><div class="daily-top-actions"><button type="button" class="daily-intro-return" data-daily-intro hidden>回到引导</button><button type="button" class="daily-exit" data-daily-exit>退出复盘 <span aria-hidden="true">↗</span></button></div></header>
+    <header class="daily-flow-head"><div class="daily-canvas-brand"><div class="header-brand">${headerBrandContent()}</div><span class="daily-brand-divider" aria-hidden="true"></span><span class="daily-brand-label">每日复盘</span></div><time datetime="${esc(period)}">${esc(formatDate(period))}</time><div class="daily-top-actions"><button type="button" class="daily-exit" data-daily-exit>退出复盘 <span aria-hidden="true">↗</span></button></div></header>
     <section class="daily-intro" id="daily-intro" aria-label="每日复盘引导"><div class="daily-intro-copy"><p class="daily-intro-kicker">把这一刻，留给自己。</p><p id="daily-intro-text"><span class="sr-only">${esc(quote)}</span><span class="daily-typewriter" aria-hidden="true">${Array.from(quote).map(character=>`<span class="daily-glyph">${esc(character)}</span>`).join('')}</span></p><button type="button" class="btn btn-primary" id="daily-start">${locked?'查看复盘':state.current.id||state.dirty?'继续复盘':'开始复盘'} <span aria-hidden="true">→</span></button></div></section>
     <section class="daily-editor" id="daily-editor" aria-labelledby="daily-flow-title" data-daily-locked="${locked}" hidden><h1 class="sr-only" id="daily-flow-title">每日复盘</h1>
-      <div class="daily-question-progress"><span id="daily-current-group"></span><span id="daily-question-count"></span></div><p class="sr-only" id="daily-step-status" aria-live="polite"></p>
+      <div class="daily-question-progress"><span id="daily-current-group"></span></div><p class="sr-only" id="daily-step-status" aria-live="polite"></p>
       <div class="daily-question-heading"><h2 id="daily-prompt-title" tabindex="-1"></h2><p id="daily-prompt-description"></p></div>
       <p class="daily-flow-error" id="daily-flow-error" role="alert" hidden></p>
       ${DAILY_STEPS.map((step,index)=>`<div class="daily-pane" data-daily-pane="${step.id}" hidden>${panes[index]}${index===3?`<div class="daily-afterword">${reviewAfterword(locked,data,templates.action)}</div>`:''}</div>`).join('')}
@@ -402,7 +426,6 @@ function showDailyPrompt(promptId,focus=false){
   const scene=intro?'intro':prompt.id==='sleep'?'sleep':prompt.id==='energy'?'energy':prompt.step==='evidence'?'evidence':prompt.step==='reflection'?'reflection':prompt.id==='verifyDate'?'calendar':prompt.step==='action'?'action':'journal';
   $('.daily-art-flow').dataset.dailyScene=scene;$('.daily-art-flow').dataset.dailyCurrentPrompt=intro?'intro':prompt.id;
   $('.daily-art-flow').dataset.dailySide=!intro&&['reflection','journal'].includes(prompt.step)?'left':'right';
-  $('[data-daily-intro]').hidden=intro;
   $('#daily-start').firstChild.textContent=$('#daily-editor').dataset.dailyLocked==='true'?'查看复盘 ':state.current.id||state.dirty?'继续复盘 ':'开始复盘 ';
   if(!intro){
     cancelDailyTypewriter();const locked=$('#daily-editor').dataset.dailyLocked==='true',last=index===prompts.length-1,group=DAILY_STEPS.findIndex(step=>step.id===prompt.step),copy=dailyPromptCopy(prompt);
@@ -410,9 +433,9 @@ function showDailyPrompt(promptId,focus=false){
     $('[data-daily-next]').hidden=last;
     if($('#complete-record'))$('#complete-record').hidden=!last;
     if($('#daily-finish'))$('#daily-finish').hidden=!last;
-    $('#daily-current-group').textContent=`${String(group+1).padStart(2,'0')} · ${DAILY_STEPS[group].label}`;$('#daily-question-count').textContent=`第 ${index+1} / ${prompts.length} 题`;
+    $('#daily-current-group').textContent=`${String(group+1).padStart(2,'0')} · ${DAILY_STEPS[group].label}`;
     $('#daily-prompt-title').textContent=copy.title;$('#daily-prompt-description').textContent=copy.description;
-    $('#daily-step-status').textContent=`${DAILY_STEPS[group].label}，第 ${index+1} 题，共 ${prompts.length} 题`;
+    $('#daily-step-status').textContent=`${DAILY_STEPS[group].label}，${copy.title}`;
     const required=['today','action','ifCondition','ifThen','verifyDate'].includes(prompt.id);
     $('#daily-step-hint').textContent=locked?'这份记录只供查看。':required?'填写这一题后继续。':last?'这一题选填，留空也可以完成。':'这一题选填，可以直接继续。';
     sizeDailyTextareas($(`[data-daily-prompt="${promptId}"]`));
@@ -436,7 +459,6 @@ function showDailyIssues(issues){
 function bindDailyFlow(){
   const move=prompt=>{if(state.saving)return;if($('#daily-editor').dataset.dailyLocked!=='true')collectCurrent();clearDailyIssues();showDailyPrompt(prompt,true)};
   $('#daily-start').addEventListener('click',()=>move(currentDailyPrompts()[0].id));
-  $('[data-daily-intro]').addEventListener('click',()=>move(null));
   $('[data-daily-exit]').addEventListener('click',()=>attemptNavigate(()=>navigate('overview')));
   $('[data-daily-back]').addEventListener('click',()=>move(dailyPromptNeighbor(currentDailyPrompts(),state.dailyPrompt,-1)));
   $('[data-daily-next]').addEventListener('click',()=>{if(state.saving)return;if($('#daily-editor').dataset.dailyLocked!=='true'){collectCurrent();const issues=dailyPromptIssues(state.current.data,state.dailyPrompt,today());if(issues.length){showDailyIssues(issues);return}}const next=dailyPromptNeighbor(currentDailyPrompts(),state.dailyPrompt,1);if(next)move(next)});
