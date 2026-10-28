@@ -1,5 +1,5 @@
 import {overviewRecordAppearances,overviewVerifiedRecords,overviewRecordExcerpt,overviewLoopMetrics,overviewRecordTitle,overviewDateParts} from './overview-reel.js?v=1.0.0-overview15';
-import {DAILY_STEPS,dailyStepIssues,dailyPrompts,dailyPromptIssues,dailyPromptNeighbor} from './daily-flow.js?v=1.0.0-overview18';
+import {DAILY_STEPS,dailyStepIssues,dailyPrompts,dailyPromptIssues,dailyPromptNeighbor} from './daily-flow.js?v=1.0.0-overview19';
 const $ = (s, root = document) => root.querySelector(s);
 const $$ = (s, root = document) => [...root.querySelectorAll(s)];
 const esc = (v = '') => String(v).replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
@@ -346,13 +346,57 @@ function dailyActionFields(data,locked,template){const action=data.action||data.
 function dailyJournal(data,locked){return `<section class="card section-card folio-card"><div class="daily-prompt journal-paper" data-daily-prompt="journal" hidden><textarea data-simple="journal" aria-label="今天的日记（选填）" maxlength="6000" rows="8" ${locked?'disabled':''} placeholder="选填。这里不需要结论。">${esc(data.journal||'')}</textarea><div class="journal-foot"><span>私人空间加密存储 · <strong id="journal-count">${(data.journal||'').length} 字</strong></span><b>${esc(state.user.displayName.slice(0,2))}</b></div></div></section>`}
 
 function reviewAfterword(locked,data,actionTemplate){return `${locked&&state.current.status==='completed'?`<section class="card section-card"><h2 style="margin-top:0">${esc(actionTemplate.lockedPendingTitle)}</h2><p class="help">${esc(actionTemplate.expectedDateLabel)}：${esc(data.verifyDate||actionTemplate.expectedMissingText)}。${esc(actionTemplate.lockedPendingIntro)}</p><button class="btn btn-primary" data-open-action="${esc(state.current.id)}">${esc(actionTemplate.lockedPendingButton)}</button></section>`:''}${state.current.status==='verified'?verificationRead(state.current):''}`}
+function dailyInkArt(){return `<div class="daily-ink-art" aria-hidden="true">
+  <svg class="daily-ink-print" viewBox="0 0 760 900" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="daily-ink-wash" x1="190" y1="70" x2="640" y2="770" gradientUnits="userSpaceOnUse"><stop stop-color="var(--daily-blue)"/><stop offset=".58" stop-color="var(--daily-cobalt)"/><stop offset="1" stop-color="var(--daily-deep)"/></linearGradient>
+      <filter id="daily-ink-grain" x="-5%" y="-5%" width="110%" height="110%"><feTurbulence type="fractalNoise" baseFrequency=".68" numOctaves="3" stitchTiles="stitch" result="noise"/><feColorMatrix in="noise" type="saturate" values="0"/><feComponentTransfer><feFuncA type="linear" slope=".22"/></feComponentTransfer><feComposite in2="SourceAlpha" operator="in"/><feBlend in="SourceGraphic" mode="multiply"/></filter>
+    </defs>
+    <g class="daily-ink-scene ink-solitude">
+      <path class="ink-underprint" d="M461 29C595 44 705 173 711 309C718 431 643 478 662 594C684 729 588 859 452 866C313 874 224 758 200 643C180 551 91 502 112 383C131 272 243 250 259 148C270 78 362 18 461 29Z"/>
+      <path class="ink-body" filter="url(#daily-ink-grain)" fill-rule="evenodd" d="M454 49C573 45 679 154 684 278C690 393 608 462 641 573C670 671 618 796 512 828C413 857 309 793 270 702C230 608 148 559 151 449C153 348 227 311 277 234C321 165 317 56 454 49ZM459 230C395 241 370 310 356 366C342 423 308 478 329 539C351 604 416 655 476 627C540 597 524 517 503 460C480 397 552 333 521 273C510 250 486 226 459 230Z"/>
+      <path class="ink-contour" d="M464 6C620 26 738 172 738 316C738 446 674 491 690 595C712 745 594 883 458 891M273 160C253 251 151 285 129 380C100 501 188 582 208 655C238 768 323 854 407 870M453 190C380 215 350 287 330 355C311 416 283 484 309 550C336 618 404 690 474 659"/>
+      <path class="ink-scratch" d="M577 90C618 133 638 181 640 219M602 116C635 158 648 190 653 232M619 142C645 181 654 210 657 242M279 661C303 728 351 774 408 792M290 654C315 717 355 756 409 777"/>
+    </g>
+    <g class="daily-ink-scene ink-sleep">
+      <path class="ink-underprint" d="M522 33C680 73 744 243 715 410C689 555 571 589 565 711C559 805 462 864 353 832C199 787 150 662 169 510C184 397 229 384 245 263C259 141 386 10 522 33Z"/>
+      <path class="ink-body" filter="url(#daily-ink-grain)" d="M522 70C648 97 710 237 685 375C664 492 554 545 544 674C535 774 453 821 359 795C246 764 191 650 207 523C221 410 270 374 280 273C291 160 380 74 475 67C379 162 364 268 402 351C439 431 509 457 549 483C481 517 408 501 367 463C342 543 367 653 441 667C503 678 527 603 550 548C596 444 631 426 636 330C640 242 594 123 522 70Z"/>
+      <path class="ink-contour" d="M531 34C692 82 753 250 718 417C689 552 581 599 581 711C581 800 480 868 370 836M485 122C429 205 419 276 443 337C460 381 498 416 542 432M465 139C415 213 409 278 431 339C446 380 478 413 513 434"/>
+      <path class="ink-scratch" d="M262 561C251 639 288 711 339 745M275 566C271 630 298 695 346 729M286 574C285 632 308 681 352 715"/>
+    </g>
+    <g class="daily-ink-scene ink-energy">
+      <path class="ink-underprint" d="M422 96L497 29L529 117L637 88L635 191L735 223L687 307L755 383L666 438L712 545L608 568L592 689L482 658L405 760L339 663L224 693L225 577L111 531L169 435L103 344L205 285L182 169L298 180L334 72Z"/>
+      <path class="ink-body" filter="url(#daily-ink-grain)" fill-rule="evenodd" d="M425 139C493 101 545 100 595 141C647 183 625 235 666 285C717 346 714 409 666 463C617 520 648 580 578 625C522 660 479 620 420 653C359 688 288 653 275 594C262 532 187 521 194 445C199 386 239 357 234 301C227 226 291 189 345 187C378 186 393 157 425 139ZM453 286C390 274 327 319 322 384C317 446 357 505 421 516C483 526 537 481 544 419C554 353 516 298 453 286Z"/>
+      <path class="ink-contour" d="M432 98C508 63 568 82 615 124C660 163 661 231 690 268C755 350 740 430 693 483C652 529 667 607 587 655C524 694 474 662 425 690C349 734 260 683 246 611M454 251C374 235 295 298 289 378C283 463 336 534 417 547C493 559 565 506 576 426"/>
+      <path class="ink-scratch" d="M350 126L336 96M598 198L628 181M651 367L690 366M599 552L625 580M409 604L406 641M256 463L225 481"/>
+    </g>
+    <g class="daily-ink-scene ink-reflection">
+      <path class="ink-underprint" d="M341 62C458 13 663 133 692 260C716 366 596 417 609 516C620 604 733 650 676 759C621 865 453 852 340 792C226 732 167 645 204 539C237 447 147 389 183 288C216 194 265 94 341 62Z"/>
+      <path class="ink-body" filter="url(#daily-ink-grain)" d="M345 99C451 51 615 131 653 243C690 352 554 385 571 494C585 590 688 645 642 730C598 811 469 818 362 762C256 706 205 630 239 540C273 449 186 377 220 294C244 236 294 123 345 99Z"/>
+      <path class="ink-paper-cut" d="M207 404C307 320 393 386 482 343C561 305 626 323 707 269L722 312C629 373 565 344 487 384C393 431 313 361 222 449Z"/>
+      <path class="ink-contour" d="M339 58C454 13 654 122 690 258M208 537C171 650 242 747 343 796C470 857 626 859 678 759M228 392C323 323 398 378 483 341C564 306 620 325 691 281M225 458C323 383 410 444 494 397C569 355 630 385 706 333"/>
+      <path class="ink-scratch" d="M337 154C401 115 470 147 501 174M329 167C391 134 450 156 486 180M286 600C289 655 330 701 384 723M298 599C306 650 340 688 388 708"/>
+    </g>
+    <g class="daily-ink-scene ink-action">
+      <path class="ink-underprint" d="M620 40L735 149L584 358L625 393L500 547L544 568L320 855L189 777L336 524L299 489L438 309L410 273Z"/>
+      <path class="ink-body" filter="url(#daily-ink-grain)" d="M626 79L695 151L544 360L584 392L458 550L494 571L311 809L227 766L375 516L340 487L477 309L451 275Z"/>
+      <path class="ink-contour" d="M598 67L421 276L449 307L310 488L346 522L196 771M724 149L573 357L612 391L487 548L526 569L334 834M642 153L491 349M629 157L478 351M617 162L465 354M433 590L309 755M420 595L296 758"/>
+      <path class="ink-paper-cut" d="M348 472L535 367L543 382L368 507ZM376 531L469 508L453 533L365 553Z"/>
+    </g>
+    <g class="daily-ink-scene ink-journal">
+      <path class="ink-underprint" d="M609 20C714 104 693 244 614 347C550 431 601 515 661 584C732 665 672 815 549 865C399 924 212 818 213 674C214 551 323 516 303 410C286 316 211 241 266 143C327 35 486-23 609 20Z"/>
+      <path class="ink-body" filter="url(#daily-ink-grain)" fill-rule="evenodd" d="M589 52C685 122 660 244 587 339C516 430 561 522 626 598C691 676 631 785 532 825C410 875 256 790 254 674C252 562 364 518 342 406C323 311 253 242 301 162C354 72 483 11 589 52ZM502 133C411 151 353 209 373 276C394 350 446 371 433 462C419 561 322 608 338 691C354 780 470 802 532 744C593 688 555 636 513 579C448 491 447 422 498 348C558 260 596 190 551 151C535 137 519 129 502 133Z"/>
+      <path class="ink-contour" d="M606 18C716 99 697 249 616 351C555 430 595 505 661 584C738 678 668 818 551 866C400 928 212 818 213 674M499 98C388 122 316 207 341 287C361 355 408 391 394 460C376 547 286 604 301 697C321 805 463 840 549 771"/>
+    </g>
+  </svg><span class="daily-art-glyph">独</span></div>`}
 function dailyReviewHtml(period,locked,data,templates){
   const panes=[dailyEvidence(data,locked),dailyReflection(data,locked,templates.review),dailyActionFields(data,locked,templates.review),dailyJournal(data,locked)];
   const saved=locked?(period!==defaultPeriod('daily')?'非当前日期，仅可查看':'这份复盘已锁定'):state.dirty?'有未保存内容':state.current.updated_at?`${beijingTime(state.current.updated_at)} 草稿已保存`:'草稿尚未保存';
   const quote=quoteFor('daily',period);
-  return `<div class="daily-flow"><section class="daily-intro" id="daily-intro" aria-label="每日复盘引导"><p id="daily-intro-text"><span class="sr-only">${esc(quote)}</span><span class="daily-typewriter" aria-hidden="true">${Array.from(quote).map(character=>`<span class="daily-glyph">${esc(character)}</span>`).join('')}</span></p><button type="button" class="btn btn-primary" id="daily-start">${locked?'查看复盘':state.current.id||state.dirty?'继续复盘':'开始复盘'} <span aria-hidden="true">→</span></button></section>
+  return `<div class="daily-flow daily-art-flow" data-daily-scene="intro" data-daily-current-prompt="intro">${dailyInkArt()}
+    <header class="daily-flow-head"><div class="daily-canvas-brand"><span class="seal" aria-hidden="true">慎</span><span class="brand-cn">慎獨</span><span class="daily-brand-divider" aria-hidden="true"></span><span class="daily-brand-label">每日复盘</span></div><time datetime="${esc(period)}">${esc(formatDate(period))}</time><div class="daily-top-actions"><button type="button" class="daily-intro-return" data-daily-intro hidden>回到引导</button><button type="button" class="daily-exit" data-daily-exit>退出复盘 <span aria-hidden="true">↗</span></button></div></header>
+    <section class="daily-intro" id="daily-intro" aria-label="每日复盘引导"><div class="daily-intro-copy"><p class="daily-intro-kicker">把这一刻，留给自己。</p><p id="daily-intro-text"><span class="sr-only">${esc(quote)}</span><span class="daily-typewriter" aria-hidden="true">${Array.from(quote).map(character=>`<span class="daily-glyph">${esc(character)}</span>`).join('')}</span></p><button type="button" class="btn btn-primary" id="daily-start">${locked?'查看复盘':state.current.id||state.dirty?'继续复盘':'开始复盘'} <span aria-hidden="true">→</span></button></div></section>
     <section class="daily-editor" id="daily-editor" aria-labelledby="daily-flow-title" data-daily-locked="${locked}" hidden><h1 class="sr-only" id="daily-flow-title">每日复盘</h1>
-      <header class="daily-flow-head"><button type="button" class="daily-exit" data-daily-exit>← 退出复盘</button><time datetime="${esc(period)}">${esc(formatDate(period))}</time><button type="button" class="daily-intro-return" data-daily-intro>回到引导</button></header>
       <div class="daily-question-progress"><span id="daily-current-group"></span><span id="daily-question-count"></span></div><p class="sr-only" id="daily-step-status" aria-live="polite"></p>
       <div class="daily-question-heading"><h2 id="daily-prompt-title" tabindex="-1"></h2><p id="daily-prompt-description"></p></div>
       <p class="daily-flow-error" id="daily-flow-error" role="alert" hidden></p>
@@ -394,7 +438,11 @@ function showDailyPrompt(promptId,focus=false){
   $('#daily-intro').hidden=!intro;$('#daily-editor').hidden=intro;
   $$('[data-daily-pane]').forEach(pane=>pane.hidden=intro||pane.dataset.dailyPane!==prompt.step);
   $$('[data-daily-prompt]').forEach(question=>question.hidden=intro||question.dataset.dailyPrompt!==promptId);
-  setDailyImmersive(!intro);
+  setDailyImmersive(true);
+  const scene=intro?'intro':prompt.id==='sleep'?'sleep':prompt.id==='energy'?'energy':prompt.step==='evidence'?'evidence':prompt.id==='cause'?'cause':prompt.step==='reflection'?'reflection':prompt.step==='action'?'action':'journal';
+  $('.daily-art-flow').dataset.dailyScene=scene;$('.daily-art-flow').dataset.dailyCurrentPrompt=intro?'intro':prompt.id;
+  $('.daily-art-glyph').textContent={intro:'独',sleep:'眠',energy:'息',evidence:prompt?.id==='risk'?'察':'证',reflection:'觉',cause:'因',action:'行',journal:'记'}[scene];
+  $('[data-daily-intro]').hidden=intro;
   $('#daily-start').firstChild.textContent=$('#daily-editor').dataset.dailyLocked==='true'?'查看复盘 ':state.current.id||state.dirty?'继续复盘 ':'开始复盘 ';
   if(!intro){
     cancelDailyTypewriter();const locked=$('#daily-editor').dataset.dailyLocked==='true',last=index===prompts.length-1,group=DAILY_STEPS.findIndex(step=>step.id===prompt.step),copy=dailyPromptCopy(prompt);

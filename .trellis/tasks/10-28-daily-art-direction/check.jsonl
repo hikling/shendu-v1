@@ -1,0 +1,2 @@
+{"file": ".trellis/spec/frontend/state-and-data.md", "reason": "复盘数据不可损失"}
+{"file": ".trellis/spec/frontend/ui-quality.md", "reason": "装饰命中和恢复边界"}
