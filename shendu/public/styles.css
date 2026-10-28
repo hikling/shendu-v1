@@ -728,10 +728,15 @@ body.rail-dialog-open .modal-backdrop{z-index:110}
 }
 @media(max-width:820px){.main{padding-top:12px}}
 @media(max-width:1280px){
-  .overview-type-grid{max-width:550px;margin:auto;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;justify-items:center}
   .overview-type-card{--type-size:96px}
   .overview-type-mark{border-radius:18px}
   .overview-type-info{width:220px}
+}
+@media(min-width:701px) and (max-width:760px){.overview-type-grid{gap:8px}}
+@media(min-width:961px) and (max-width:1150px){
+  .overview-type-card:first-child .overview-type-info{left:calc(100% + 14px);right:auto;transform-origin:left center}
+  .overview-type-card:first-child .overview-type-info:after{left:-22px;right:auto}
+  .overview-type-card:first-child .overview-type-info:before{left:-5px;right:auto;transform:rotate(-135deg)}
 }
 @media(max-width:960px){
   .overview-type-info{left:50%;right:auto;top:calc(100% + 21px);width:220px;transform:translateX(-50%);transform-origin:top center;animation:overview-info-drop .23s ease-out}
@@ -743,6 +748,9 @@ body.rail-dialog-open .modal-backdrop{z-index:110}
   .overview-type-card:nth-child(3n) .overview-type-info:before{left:auto;right:38px}
   @keyframes overview-info-drop{from{opacity:0;transform:translate(-50%,-10px)}to{opacity:1;transform:translate(-50%,0)}}
   @keyframes overview-info-edge-drop{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
+}
+@media(max-width:700px){
+  .overview-type-grid{max-width:550px;margin:auto;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;justify-items:center}
 }
 @media(max-width:540px){
   .header-inner{gap:8px;padding:0 12px}
@@ -845,11 +853,16 @@ body.reduce-motion .overview-type-burst{display:none}
 .daily-art-flow[data-daily-scene="calendar"] [data-daily-art="calendar"],
 .daily-art-flow[data-daily-scene="journal"] [data-daily-art="journal"]{display:block}
 .daily-art-flow[data-daily-side="left"] .daily-scene-art{right:auto;left:4%}
-.daily-art-flow[data-daily-side="left"] :is(.daily-question-progress,.daily-question-heading,.daily-pane,.daily-step-note,.daily-flow-error){margin-left:auto}
+.daily-art-flow[data-daily-side="left"] :is(.daily-question-heading,.daily-pane,.daily-step-note,.daily-flow-error){margin-left:auto}
 .daily-intro{display:flex;align-items:center;min-height:calc(100dvh - 104px);padding:30px clamp(32px,7.5vw,132px) 12vh;scroll-margin-top:0}
 .daily-intro-copy{width:51%;max-width:750px;position:relative;z-index:1}
 .daily-intro-kicker{margin:0 0 30px;color:var(--ink-2);font-size:.76rem;letter-spacing:.24em}
 #daily-intro-text{margin:0;color:var(--daily-ink);font:500 clamp(40px,4.25vw,70px)/1.5 "Noto Serif SC","Songti SC","STSong",serif;letter-spacing:.045em;text-wrap:balance;overflow-wrap:anywhere}
+.daily-typewriter,.daily-intro-line{display:block}
+@media(min-width:821px){
+  .daily-intro-copy{container-type:inline-size}
+  #daily-intro-text{font-size:min(clamp(40px,4.25vw,70px),calc(100cqw / var(--daily-intro-columns)));text-wrap:wrap}
+}
 .daily-glyph{opacity:1;transition:opacity .16s ease}
 #daily-intro-text.is-typing .daily-glyph:not(.is-visible){opacity:0}
 .daily-art-flow .btn-primary{background:var(--daily-deep);color:#fff;box-shadow:none}
@@ -858,7 +871,6 @@ body.reduce-motion .overview-type-burst{display:none}
 .daily-intro .btn span{display:inline-block;margin-left:22px;font-size:1.15rem;transition:transform .2s}
 .daily-intro .btn:hover span{transform:translateX(4px)}
 .daily-editor{display:flex;flex-direction:column;min-height:calc(100dvh - 104px);padding:30px clamp(32px,7.5vw,132px) 26px;scroll-margin-top:0}
-.daily-question-progress{display:flex;align-items:center;justify-content:space-between;gap:18px;width:52%;max-width:720px;margin:0 0 29px;font-size:.66rem;letter-spacing:.06em}
 #daily-current-group{color:var(--daily-accent);font-weight:600}
 .daily-question-heading{width:52%;max-width:720px;margin:0 0 32px;animation:daily-question-enter .45s ease-out both}
 .daily-question-heading h2{margin:0 0 17px;color:var(--daily-ink);font:500 clamp(32px,3.05vw,49px)/1.4 "Noto Serif SC","Songti SC","STSong",serif;letter-spacing:.025em;overflow-wrap:anywhere;text-wrap:balance}
@@ -868,9 +880,6 @@ body.reduce-motion .overview-type-burst{display:none}
 .daily-editor .daily-prompt{margin:0;padding:0;border:0;border-radius:0;background:transparent;box-shadow:none}
 /* One number-entry surface, including its unit, state and labelled reference ruler. */
 .daily-editor .gauge-card{--gauge:#176b67;--gauge-baseline:#875b21;width:100%;padding:22px 26px 18px;border:1px solid #a8b9d2;border-radius:20px;background:var(--daily-white);box-shadow:0 12px 32px #152b5407}
-.daily-editor .gauge-title{display:flex;align-items:center;justify-content:space-between;gap:14px;margin:0 0 14px;padding:0;border:0;color:var(--daily-ink);font-size:.72rem;line-height:1.6}
-.daily-editor .gauge-title label{font-weight:600}
-.daily-editor .gauge-title>span{color:var(--muted);font-size:.62rem}
 .daily-editor .gauge-reading{margin:0}
 .daily-editor .gauge-number-field{display:flex;align-items:center;gap:12px;min-width:0;width:100%;min-height:130px;padding:14px 20px;border:1px solid #7487a3;border-radius:12px;background:#fff;box-shadow:inset 0 2px 8px #152b5403;cursor:text;transition:border-color .2s,box-shadow .2s}
 .daily-editor .gauge-number-field:hover:not(:has(input:disabled)){border-color:var(--daily-accent)}
@@ -957,12 +966,11 @@ body.reduce-motion .overview-type-burst{display:none}
 @media(max-width:1100px){
   .daily-flow-head{padding-inline:32px;gap:16px}
   .daily-top-actions{gap:18px}
-  .daily-brand-divider,.daily-brand-label{display:none}
   .daily-intro,.daily-editor{padding-inline:48px}
   .daily-intro-copy{width:54%}
   .daily-scene-art{width:42%;right:2%;top:160px}
   .daily-art-flow[data-daily-side="left"] .daily-scene-art{left:2%}
-  .daily-question-progress,.daily-question-heading,.daily-pane,.daily-step-note,.daily-flow-error{width:54%}
+  .daily-question-heading,.daily-pane,.daily-step-note,.daily-flow-error{width:54%}
 }
 @media(max-width:820px){
   .daily-art-flow{display:flex;flex-direction:column}
@@ -980,8 +988,8 @@ body.reduce-motion .overview-type-burst{display:none}
   .daily-intro .btn{min-height:52px;margin-top:34px;padding:12px 23px;font-size:.7rem}
   .daily-intro .btn span{margin-left:20px}
   .daily-editor{order:2;min-height:calc(100dvh - 250px);padding:22px 30px 24px}
-  .daily-question-progress,.daily-question-heading,.daily-pane,.daily-step-note,.daily-flow-error{width:100%;max-width:none}
-  .daily-question-progress{margin-bottom:28px;font-size:.6rem}
+  .daily-question-heading,.daily-pane,.daily-step-note,.daily-flow-error{width:100%;max-width:none}
+  .daily-brand-label{font-size:.6rem;letter-spacing:.04em}
   .daily-question-heading{margin-bottom:27px}
   .daily-question-heading h2{max-width:13em;font-size:clamp(28px,5.8vw,38px);line-height:1.5;margin-bottom:14px}
   .daily-question-heading>p{max-width:38em;font-size:.68rem;line-height:1.9}
@@ -1002,6 +1010,9 @@ body.reduce-motion .overview-type-burst{display:none}
 }
 @media(max-width:390px){
   .daily-flow-head{padding-inline:20px}
+  .daily-canvas-brand{gap:7px}
+  .daily-brand-divider{margin-inline:0}
+  .daily-brand-label{font-size:.54rem;letter-spacing:.02em}
   .daily-top-actions{gap:13px}
   .daily-intro,.daily-editor{padding-inline:24px}
   #daily-intro-text{font-size:34px}
@@ -1013,7 +1024,6 @@ body.reduce-motion .overview-type-burst{display:none}
   .daily-editor .gauge-unit{font-size:.75rem}
   .daily-editor .gauge-state{display:grid;gap:3px;min-height:70px;padding:13px 0 16px}
   .daily-editor .gauge-reference-head{display:grid;gap:5px;margin-bottom:16px}
-  .daily-editor .gauge-title{font-size:.68rem}
   .daily-editor .gauge-input-hint{font-size:.56rem}
   .daily-scene-art,.daily-art-flow[data-daily-side="left"] .daily-scene-art{width:160px;height:150px;margin-right:20px}
   .daily-flow-actions{gap:13px}

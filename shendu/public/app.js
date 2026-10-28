@@ -1,5 +1,5 @@
 import {overviewRecordAppearances,overviewVerifiedRecords,overviewRecordExcerpt,overviewLoopMetrics,overviewRecordTitle,overviewDateParts} from './overview-reel.js?v=1.0.0-overview15';
-import {DAILY_STEPS,dailyStepIssues,dailyPrompts,dailyPromptIssues,dailyPromptNeighbor} from './daily-flow.js?v=1.0.0-overview21';
+import {DAILY_STEPS,dailyStepIssues,dailyPrompts,dailyPromptIssues,dailyPromptNeighbor} from './daily-flow.js?v=1.0.0-overview22';
 const $ = (s, root = document) => root.querySelector(s);
 const $$ = (s, root = document) => [...root.querySelectorAll(s)];
 const esc = (v = '') => String(v).replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
@@ -336,7 +336,6 @@ function gaugePresentation(kind,value,target,max){
 function gaugeCard(kind,label,value,target,locked){
   const sleep=kind==='sleep',max=sleep?24:100,unit=sleep?'小时':'/ 100',title=sleep?'睡眠时长':'精力分值',ticks=sleep?[0,6,12,18,24]:[0,25,50,75,100],view=gaugePresentation(kind,value,target,max),targetPct=Math.min(100,Math.max(0,Number(target)||0)/max*100),id=`daily-gauge-${kind}`;
   return `<div class="gauge-card ${kind}" data-gauge-kind="${kind}" data-gauge-target="${esc(target)}" data-gauge-max="${max}">
-    <div class="gauge-title"><label for="${id}">${title}</label><span>选填</span></div>
     <div class="gauge-reading"><label class="gauge-number-field" for="${id}"><input id="${id}" type="number" data-simple="${kind}" data-gauge-input min="0" max="${max}" step="${sleep?'.5':'5'}" value="${esc(value??'')}" style="--gauge-input-width:${view.inputCh}ch" ${locked?'disabled':''} aria-label="${title}，${label}" aria-describedby="${id}-hint ${id}-status" placeholder="${sleep?'输入时长':'输入分值'}"><span class="gauge-unit" aria-hidden="true">${unit}</span></label></div>
     <div class="gauge-state" id="${id}-status"><strong data-gauge-reading>${view.reading}</strong><span data-gauge-status>${esc(view.status)}</span></div>
     <div class="gauge-reference"><div class="gauge-reference-head"><span>${sleep?'时长参考（小时）':'精力参考'}</span><span class="gauge-baseline"><i aria-hidden="true"></i>个人基线 ${esc(target)}${sleep?' 小时':' 分'}</span></div>
@@ -372,16 +371,17 @@ function dailyJournal(data,locked){return `<section class="card section-card fol
 
 function reviewAfterword(locked,data,actionTemplate){return `${locked&&state.current.status==='completed'?`<section class="card section-card"><h2 style="margin-top:0">${esc(actionTemplate.lockedPendingTitle)}</h2><p class="help">${esc(actionTemplate.expectedDateLabel)}：${esc(data.verifyDate||actionTemplate.expectedMissingText)}。${esc(actionTemplate.lockedPendingIntro)}</p><button class="btn btn-primary" data-open-action="${esc(state.current.id)}">${esc(actionTemplate.lockedPendingButton)}</button></section>`:''}${state.current.status==='verified'?verificationRead(state.current):''}`}
 // These local scenes are decorative; only the real prompt chooses the image.
-function dailySceneArt(){return `<div class="daily-scene-art" aria-hidden="true">${['intro','sleep','energy','evidence','reflection','action','calendar','journal'].map(scene=>`<img class="daily-scene-image" data-daily-art="${scene}" src="/assets/daily/${scene}.webp?v=1.0.0-overview21" alt="" width="1254" height="1254" draggable="false">`).join('')}</div>`}
+function dailySceneArt(){return `<div class="daily-scene-art" aria-hidden="true">${['intro','sleep','energy','evidence','reflection','action','calendar','journal'].map(scene=>`<img class="daily-scene-image" data-daily-art="${scene}" src="/assets/daily/${scene}.webp?v=1.0.0-overview22" alt="" width="1254" height="1254" draggable="false">`).join('')}</div>`}
+function dailyIntroLines(quote){return String(quote).split(/(?<=[，。])/).filter(Boolean)}
 function dailyReviewHtml(period,locked,data,templates){
   const panes=[dailyEvidence(data,locked),dailyReflection(data,locked,templates.review),dailyActionFields(data,locked,templates.review),dailyJournal(data,locked)];
   const saved=locked?(period!==defaultPeriod('daily')?'非当前日期，仅可查看':'这份复盘已锁定'):state.dirty?'有未保存内容':state.current.updated_at?`${beijingTime(state.current.updated_at)} 草稿已保存`:'草稿尚未保存';
-  const quote=quoteFor('daily',period);
+  const quote=quoteFor('daily',period),lines=dailyIntroLines(quote),columns=Math.max(1,...lines.map(line=>Array.from(line).length))*1.045+.15;
   return `<div class="daily-flow daily-art-flow" data-daily-scene="intro" data-daily-side="right" data-daily-current-prompt="intro">${dailySceneArt()}
-    <header class="daily-flow-head"><div class="daily-canvas-brand"><div class="header-brand">${headerBrandContent()}</div><span class="daily-brand-divider" aria-hidden="true"></span><span class="daily-brand-label">每日复盘</span></div><time datetime="${esc(period)}">${esc(formatDate(period))}</time><div class="daily-top-actions"><button type="button" class="daily-exit" data-daily-exit>退出复盘 <span aria-hidden="true">↗</span></button></div></header>
-    <section class="daily-intro" id="daily-intro" aria-label="每日复盘引导"><div class="daily-intro-copy"><p class="daily-intro-kicker">把这一刻，留给自己。</p><p id="daily-intro-text"><span class="sr-only">${esc(quote)}</span><span class="daily-typewriter" aria-hidden="true">${Array.from(quote).map(character=>`<span class="daily-glyph">${esc(character)}</span>`).join('')}</span></p><button type="button" class="btn btn-primary" id="daily-start">${locked?'查看复盘':state.current.id||state.dirty?'继续复盘':'开始复盘'} <span aria-hidden="true">→</span></button></div></section>
+    <header class="daily-flow-head"><div class="daily-canvas-brand"><div class="header-brand">${headerBrandContent()}</div><span class="daily-brand-divider" aria-hidden="true" hidden></span><span class="daily-brand-label" id="daily-current-group" hidden></span></div><time datetime="${esc(period)}">${esc(formatDate(period))}</time><div class="daily-top-actions"><button type="button" class="daily-exit" data-daily-exit>退出复盘 <span aria-hidden="true">↗</span></button></div></header>
+    <section class="daily-intro" id="daily-intro" aria-label="每日复盘引导"><div class="daily-intro-copy" style="--daily-intro-columns:${columns}"><p class="daily-intro-kicker">把这一刻，留给自己。</p><p id="daily-intro-text"><span class="sr-only">${esc(quote)}</span><span class="daily-typewriter" aria-hidden="true">${lines.map(line=>`<span class="daily-intro-line">${Array.from(line).map(character=>`<span class="daily-glyph">${esc(character)}</span>`).join('')}</span>`).join('')}</span></p><button type="button" class="btn btn-primary" id="daily-start">${locked?'查看复盘':state.current.id||state.dirty?'继续复盘':'开始复盘'} <span aria-hidden="true">→</span></button></div></section>
     <section class="daily-editor" id="daily-editor" aria-labelledby="daily-flow-title" data-daily-locked="${locked}" hidden><h1 class="sr-only" id="daily-flow-title">每日复盘</h1>
-      <div class="daily-question-progress"><span id="daily-current-group"></span></div><p class="sr-only" id="daily-step-status" aria-live="polite"></p>
+      <p class="sr-only" id="daily-step-status" aria-live="polite"></p>
       <div class="daily-question-heading"><h2 id="daily-prompt-title" tabindex="-1"></h2><p id="daily-prompt-description"></p></div>
       <p class="daily-flow-error" id="daily-flow-error" role="alert" hidden></p>
       ${DAILY_STEPS.map((step,index)=>`<div class="daily-pane" data-daily-pane="${step.id}" hidden>${panes[index]}${index===3?`<div class="daily-afterword">${reviewAfterword(locked,data,templates.action)}</div>`:''}</div>`).join('')}
@@ -426,6 +426,8 @@ function showDailyPrompt(promptId,focus=false){
   const scene=intro?'intro':prompt.id==='sleep'?'sleep':prompt.id==='energy'?'energy':prompt.step==='evidence'?'evidence':prompt.step==='reflection'?'reflection':prompt.id==='verifyDate'?'calendar':prompt.step==='action'?'action':'journal';
   $('.daily-art-flow').dataset.dailyScene=scene;$('.daily-art-flow').dataset.dailyCurrentPrompt=intro?'intro':prompt.id;
   $('.daily-art-flow').dataset.dailySide=!intro&&['reflection','journal'].includes(prompt.step)?'left':'right';
+  $('#daily-current-group').hidden=intro;$('.daily-brand-divider').hidden=intro;
+  if(intro)$('#daily-current-group').textContent='';
   $('#daily-start').firstChild.textContent=$('#daily-editor').dataset.dailyLocked==='true'?'查看复盘 ':state.current.id||state.dirty?'继续复盘 ':'开始复盘 ';
   if(!intro){
     cancelDailyTypewriter();const locked=$('#daily-editor').dataset.dailyLocked==='true',last=index===prompts.length-1,group=DAILY_STEPS.findIndex(step=>step.id===prompt.step),copy=dailyPromptCopy(prompt);
@@ -439,8 +441,8 @@ function showDailyPrompt(promptId,focus=false){
     const required=['today','action','ifCondition','ifThen','verifyDate'].includes(prompt.id);
     $('#daily-step-hint').textContent=locked?'这份记录只供查看。':required?'填写这一题后继续。':last?'这一题选填，留空也可以完成。':'这一题选填，可以直接继续。';
     sizeDailyTextareas($(`[data-daily-prompt="${promptId}"]`));
-    if(focus){$('#daily-prompt-title').focus({preventScroll:true});$('#daily-editor').scrollIntoView({block:'start',behavior:'auto'})}
-  }else{startDailyTypewriter();if(focus){$('#daily-start').focus({preventScroll:true});$('#daily-intro').scrollIntoView({block:'start',behavior:'auto'})}}
+    if(focus){$('#daily-prompt-title').focus({preventScroll:true});$('.daily-flow-head').scrollIntoView({block:'start',behavior:'auto'})}
+  }else{startDailyTypewriter();if(focus){$('#daily-start').focus({preventScroll:true});$('.daily-flow-head').scrollIntoView({block:'start',behavior:'auto'});$('#daily-start').scrollIntoView({block:'nearest',behavior:'auto'})}}
 }
 function showDailySection(section,focus=false){const prompts=currentDailyPrompts(),current=prompts.find(prompt=>prompt.id===state.dailyPrompt&&prompt.step===section);showDailyPrompt(section==='intro'?null:(current?.id||prompts.find(prompt=>prompt.step===section)?.id),focus)}
 function clearDailyIssues(){

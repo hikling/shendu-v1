@@ -1,0 +1,3 @@
+{"file": ".trellis/spec/frontend/architecture.md", "reason": "审查展示边界"}
+{"file": ".trellis/spec/frontend/state-and-data.md", "reason": "输入行为"}
+{"file": ".trellis/spec/frontend/ui-quality.md", "reason": "UI审查"}
