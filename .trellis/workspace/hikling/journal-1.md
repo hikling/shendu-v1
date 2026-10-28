@@ -505,3 +505,25 @@ Split day-based reel dates into year-month-day and full weekday lines, retained 
 ### Status
 
 [OK] **Completed**
+
+
+## Session 23: 内置imagegen统一每日插画与数值面板
+<!-- trellis-session: v=2 fp=c873e4ce6c345539 -->
+
+**Date**: 2026-10-28
+**Task**: 内置imagegen统一每日插画与数值面板
+**Branch**: `main`
+
+### Summary
+
+使用内置imagegen以六类图标作参照生成8场景，保存PNG/无损WebP/提示词/哈希并替换旧SVG；删除题数与顶部回引导。数值单位紧随、状态与标注刻度一体化，sleep24与energy100完整；修正label-in-name及原生数字非法缓冲零宽。桌面320/390、清空0、基线/失败重试/锁定/自定义主题验证通过，check与daily-flow10/10、helper23例及图片16哈希验证通过。README六图与规范同步，CI40662565507成功。
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `01815bd` | feat: unify daily illustrations and redesign number entry |
+
+### Status
+
+[OK] **Completed**

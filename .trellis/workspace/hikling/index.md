@@ -8,7 +8,7 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 22
+- **Total Sessions**: 23
 - **Last Active**: 2026-10-28
 <!-- @@@/auto:current-status -->
 
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~507 | Active |
+| `journal-1.md` | ~529 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -29,6 +29,7 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 23 | 2026-10-28 | 内置imagegen统一每日插画与数值面板 | `01815bd` | `main` |
 | 22 | 2026-10-28 | 每日复盘交错构图与语义插画 | `8853a3b` | `main` |
 | 21 | 2026-10-28 | 每日复盘蓝墨艺术画布 | `d74677a` | `main` |
 | 20 | 2026-10-28 | 每日复盘逐题沉浸与打字引导 | `499fd33` | `main` |
