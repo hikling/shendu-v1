@@ -527,3 +527,25 @@ Split day-based reel dates into year-month-day and full weekday lines, retained 
 ### Status
 
 [OK] **Completed**
+
+
+## Session 24: 恢复概览单排与每日文字布局
+<!-- trellis-session: v=2 fp=ef35081fbd67626a -->
+
+**Date**: 2026-10-29
+**Task**: 恢复概览单排与每日文字布局
+**Branch**: `main`
+
+### Summary
+
+恢复桌面六类同排，保留图标与轮播；每日短句按中文标点分行并适配长句，删除数值标题行，当前01—04移到品牌旁且手机可见。CUA桌面/320/390、保存重载、只读及减少动态验证通过；check和daily-flow10/10通过，独立审查无新增问题。README六图及概览单排截图同步；CI40732293526成功。
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `c61a572` | fix: restore overview row and refine daily text layout |
+
+### Status
+
+[OK] **Completed**
