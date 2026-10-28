@@ -576,14 +576,14 @@ body.reduce-motion *,body.reduce-motion *:before,body.reduce-motion *:after{anim
 .overview-shell .header-rail-button{display:inline-flex}
 .overview-page{min-height:calc(100dvh - var(--header-height));overflow:hidden;background:var(--overview-bg);color:var(--overview-ink);font-family:"Noto Sans SC","Microsoft YaHei","PingFang SC",system-ui,sans-serif}
 .overview-hero{max-width:1100px;margin:auto;padding:clamp(24px,2.5vw,36px) 24px 0;text-align:center}
-.overview-hero h1{max-width:1000px;margin:0 auto 17px;color:var(--overview-ink);font:700 clamp(2.5rem,5.2vw,4.4rem)/1.28 "Songti SC","Noto Serif SC","STSong",serif;letter-spacing:.045em;text-wrap:balance}
+.overview-hero h1{max-width:1000px;margin:0 auto 17px;color:var(--overview-ink);font:700 clamp(3rem,6.2vw,5.2rem)/1.28 "Songti SC","Noto Serif SC","STSong",serif;letter-spacing:.045em;text-wrap:balance}
 .overview-hero h1 em{font-style:normal;color:var(--primary)}
 .overview-hero p{margin:0 auto;max-width:690px;color:var(--overview-muted);font-size:clamp(.82rem,1.4vw,.98rem);line-height:1.8}
 .overview-types{position:relative;z-index:20;max-width:1140px;margin:clamp(28px,3vw,42px) auto 0;padding:0 24px}
 .overview-types-heading{text-align:center}
 .overview-types-heading h2{margin:7px 0 21px;font:700 .9rem/1.4 "Noto Sans SC","Microsoft YaHei",system-ui,sans-serif;color:var(--overview-ink)}
 .overview-type-grid{display:flex;align-items:center;justify-content:center;gap:18px}
-.overview-type-card{--type-size:112px;--type-color:#15584e;--type-soft:#ecf8f1;--type-accent:#1e8f83;position:relative;flex:0 0 var(--type-size);width:var(--type-size);height:var(--type-size);color:var(--overview-ink)}
+.overview-type-card{--type-size:128px;--type-color:#15584e;--type-soft:#ecf8f1;--type-accent:#1e8f83;position:relative;flex:0 0 var(--type-size);width:var(--type-size);height:var(--type-size);color:var(--overview-ink)}
 .overview-type-card.is-expanded{z-index:25}
 .overview-type-trigger{position:relative;isolation:isolate;display:block;width:100%;height:100%;padding:0;border:0;border-radius:20px;background:transparent}
 .overview-type-burst{position:absolute;inset:0;z-index:-1;pointer-events:none}
@@ -728,12 +728,12 @@ body.rail-dialog-open .modal-backdrop{z-index:110}
 }
 @media(max-width:820px){.main{padding-top:12px}}
 @media(max-width:1280px){
-  .overview-type-card{--type-size:96px}
+  .overview-type-card{--type-size:112px}
   .overview-type-mark{border-radius:18px}
   .overview-type-info{width:220px}
 }
-@media(min-width:701px) and (max-width:760px){.overview-type-grid{gap:8px}}
-@media(min-width:961px) and (max-width:1150px){
+@media(min-width:701px) and (max-width:820px){.overview-type-grid{gap:8px}.overview-type-card{--type-size:clamp(98px,calc((100vw - 104px)/6),112px)}}
+@media(min-width:961px) and (max-width:1400px){
   .overview-type-card:first-child .overview-type-info{left:calc(100% + 14px);right:auto;transform-origin:left center}
   .overview-type-card:first-child .overview-type-info:after{left:-22px;right:auto}
   .overview-type-card:first-child .overview-type-info:before{left:-5px;right:auto;transform:rotate(-135deg)}
@@ -762,11 +762,12 @@ body.rail-dialog-open .modal-backdrop{z-index:110}
   .header-rail-button:before{content:"阶段";font-size:.65rem}
   .mobile-nav-main{grid-template-columns:repeat(3,minmax(0,1fr))}
   .mobile-nav-group>div{grid-template-columns:repeat(2,minmax(0,1fr))}
-  .overview-hero{padding:24px 20px 0}
-  .overview-hero h1{font-size:clamp(2.03rem,9vw,2.8rem);letter-spacing:.025em}
+  .overview-hero{padding:24px 16px 0}
+  .overview-hero h1{font-size:min(clamp(2.2rem,11vw,3.3rem),calc((100vw - 44px)/7.2));letter-spacing:.025em}
   .overview-hero p{font-size:.78rem}
   .overview-types{margin-top:28px;padding:0 16px}
-  .overview-type-card{--type-size:84px}
+  .overview-type-grid{gap:12px 8px}
+  .overview-type-card{--type-size:clamp(88px,calc((100vw - 63px)/3),96px)}
   .overview-type-mark{border-radius:17px}
   .overview-record-card{--record-width:240px}
   .overview-record-surface{padding:16px;gap:12px}
@@ -857,11 +858,11 @@ body.reduce-motion .overview-type-burst{display:none}
 .daily-intro{display:flex;align-items:center;min-height:calc(100dvh - 104px);padding:30px clamp(32px,7.5vw,132px) 12vh;scroll-margin-top:0}
 .daily-intro-copy{width:51%;max-width:750px;position:relative;z-index:1}
 .daily-intro-kicker{margin:0 0 30px;color:var(--ink-2);font-size:.76rem;letter-spacing:.24em}
-#daily-intro-text{margin:0;color:var(--daily-ink);font:500 clamp(40px,4.25vw,70px)/1.5 "Noto Serif SC","Songti SC","STSong",serif;letter-spacing:.045em;text-wrap:balance;overflow-wrap:anywhere}
+#daily-intro-text{margin:0;color:var(--daily-ink);font:500 clamp(52px,5.6vw,88px)/1.5 "Noto Serif SC","Songti SC","STSong",serif;letter-spacing:.045em;text-wrap:balance;overflow-wrap:anywhere}
 .daily-typewriter,.daily-intro-line{display:block}
 @media(min-width:821px){
   .daily-intro-copy{container-type:inline-size}
-  #daily-intro-text{font-size:min(clamp(40px,4.25vw,70px),calc(100cqw / var(--daily-intro-columns)));text-wrap:wrap}
+  #daily-intro-text{font-size:min(clamp(52px,5.6vw,88px),calc(100cqw / var(--daily-intro-columns)));text-wrap:wrap}
 }
 .daily-glyph{opacity:1;transition:opacity .16s ease}
 #daily-intro-text.is-typing .daily-glyph:not(.is-visible){opacity:0}
@@ -929,7 +930,7 @@ body.reduce-motion .overview-type-burst{display:none}
 .daily-editor .daily-prompt textarea:focus-visible,.daily-editor .action-lock input:focus-visible,.daily-editor .risk-note input:focus-visible{outline:2px solid var(--daily-accent);outline-offset:4px;border-color:var(--daily-accent);background:#fff;box-shadow:0 0 0 4px #b8cef440}
 .daily-editor .action-lock input,.daily-editor .risk-note input{min-height:96px}
 .daily-editor .verify-lock input{width:100%;max-width:360px;min-height:84px;font:400 clamp(22px,2vw,32px)/1.5 "Noto Sans SC","Microsoft YaHei",sans-serif;letter-spacing:.035em}
-.daily-editor .reflection-question .item-list{gap:24px}
+.daily-editor .reflection-question .item-list{gap:12px}
 .daily-editor .reflection-question .item-row{gap:14px;min-width:0}
 .daily-editor .reflection-question .item-row:before{display:none}
 .daily-editor .item-row textarea{flex:1;min-width:0}
@@ -937,6 +938,23 @@ body.reduce-motion .overview-type-burst{display:none}
 .daily-editor .remove-btn:hover{background:#d5dff0;border-color:var(--daily-accent)}
 .daily-editor .add-item{margin-top:18px;padding:9px 0;border:0;border-radius:0;background:none;color:var(--daily-accent);font-size:.68rem;letter-spacing:.03em}
 .daily-editor .add-item:hover{text-decoration:underline;text-underline-offset:6px}
+.daily-answer{min-width:0;border:1px solid #a8b9d2;border-radius:14px;background:var(--daily-white);box-shadow:0 5px 16px #152b5405}
+.daily-answer>summary{display:flex;align-items:center;gap:12px;min-height:72px;padding:15px 18px;color:var(--daily-ink);list-style:none;cursor:pointer}
+.daily-answer>summary::-webkit-details-marker{display:none}
+.daily-answer>summary:hover{background:#dce5f440;border-radius:inherit}
+.daily-answer>summary:focus-visible{outline:2px solid var(--daily-accent);outline-offset:4px;border-radius:inherit}
+.daily-answer-number{flex:0 0 auto;color:#425576;font:500 .61rem/1.5 "Noto Sans SC","Microsoft YaHei",sans-serif;letter-spacing:.05em}
+.daily-answer-preview{display:-webkit-box;min-width:0;flex:1;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;overflow-wrap:anywhere;font:400 .8rem/1.65 "Noto Serif SC","Songti SC",serif}
+.daily-answer-toggle{display:flex;align-items:center;gap:9px;margin-left:auto;flex:0 0 auto;color:var(--daily-accent);font:500 .63rem/1.5 "Noto Sans SC","Microsoft YaHei",sans-serif}
+.daily-answer-toggle i{width:7px;height:7px;margin-top:-4px;border-right:1.5px solid currentColor;border-bottom:1.5px solid currentColor;transform:rotate(45deg)}
+.daily-answer[open] .daily-answer-toggle i{margin-top:4px;transform:rotate(225deg)}
+.daily-answer .answer-open-copy,.daily-answer[open] .answer-closed-copy,.daily-answer[open] .daily-answer-preview{display:none}
+.daily-answer[open] .answer-open-copy{display:inline}
+.daily-answer[open]>summary{min-height:52px;padding-block:12px}
+.daily-editor .daily-answer>.item-row{padding:0 18px 18px}
+.daily-contingency-field+ .daily-contingency-field{margin-top:25px}
+.daily-contingency-field>label{display:block;margin-bottom:11px;color:var(--daily-ink);font:500 .84rem/1.65 "Noto Sans SC","Microsoft YaHei",sans-serif;overflow-wrap:anywhere}
+.daily-editor .daily-contingency input{min-height:84px}
 .daily-editor .journal-paper{padding:0;border:0;border-radius:0;background:transparent;box-shadow:none}
 .daily-editor .daily-prompt textarea[data-simple="journal"]{min-height:254px}
 .daily-editor .journal-foot{padding-top:16px;border:0;color:var(--muted);font-size:.59rem}
@@ -984,7 +1002,7 @@ body.reduce-motion .overview-type-burst{display:none}
   .daily-intro{order:2;min-height:calc(100dvh - 250px);padding:22px 30px 64px;align-items:flex-start}
   .daily-intro-copy{width:100%;max-width:530px}
   .daily-intro-kicker{margin-bottom:24px;font-size:.66rem;letter-spacing:.18em}
-  #daily-intro-text{max-width:10.5em;font-size:clamp(35px,7.3vw,52px);line-height:1.6;letter-spacing:.04em;text-wrap:pretty}
+  #daily-intro-text{max-width:10.5em;font-size:clamp(44px,7.3vw,58px);line-height:1.5;letter-spacing:.04em;text-wrap:pretty}
   .daily-intro .btn{min-height:52px;margin-top:34px;padding:12px 23px;font-size:.7rem}
   .daily-intro .btn span{margin-left:20px}
   .daily-editor{order:2;min-height:calc(100dvh - 250px);padding:22px 30px 24px}
@@ -1015,7 +1033,12 @@ body.reduce-motion .overview-type-burst{display:none}
   .daily-brand-label{font-size:.54rem;letter-spacing:.02em}
   .daily-top-actions{gap:13px}
   .daily-intro,.daily-editor{padding-inline:24px}
-  #daily-intro-text{font-size:34px}
+  #daily-intro-text{font-size:40px}
+  .daily-answer>summary{gap:9px;padding-inline:12px}
+  .daily-answer-number{font-size:.56rem}
+  .daily-answer-toggle{gap:7px;font-size:.59rem}
+  .daily-editor .daily-answer>.item-row{gap:9px;padding:0 12px 14px}
+  .daily-contingency-field>label{font-size:.78rem}
   .daily-editor .gauge-card{padding:18px 17px 16px;border-radius:17px}
   .daily-editor .gauge-number-field{min-height:110px;padding:12px 14px;gap:9px}
   .daily-editor .gauge-reading input{height:84px;font-size:72px}

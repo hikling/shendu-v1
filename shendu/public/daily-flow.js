@@ -5,17 +5,20 @@ export const DAILY_STEPS=[
   {id:'journal',label:'日记',optional:true}
 ];
 
+// Both stored contingency fields share one writing screen.
+export function dailyPromptOwner(field){return field==='ifThen'?'ifCondition':field}
+
 export function dailyPrompts(metricCount=3){
   return [
     {id:'sleep',step:'evidence'},{id:'energy',step:'evidence'},
     ...Array.from({length:metricCount},(_,index)=>({id:`metric-${index}`,step:'evidence'})),
     {id:'risk',step:'evidence'},{id:'today',step:'reflection'},{id:'cause',step:'reflection'},
-    {id:'action',step:'action'},{id:'ifCondition',step:'action'},{id:'ifThen',step:'action'},
+    {id:'action',step:'action'},{id:'ifCondition',step:'action'},
     {id:'verifyDate',step:'action'},{id:'journal',step:'journal'}
   ];
 }
 export function dailyPromptNeighbor(prompts,current,direction){
-  const index=prompts.findIndex(prompt=>prompt.id===current),next=index+direction;
+  const index=prompts.findIndex(prompt=>prompt.id===dailyPromptOwner(current)),next=index+direction;
   return index>=0&&next>=0&&next<prompts.length?prompts[next].id:null;
 }
 
@@ -37,5 +40,5 @@ export function dailyStepIssues(data={},step=null,today){
 }
 
 export function dailyPromptIssues(data,promptId,today){
-  return dailyStepIssues(data,null,today).filter(issue=>issue.field===promptId);
+  return dailyStepIssues(data,null,today).filter(issue=>dailyPromptOwner(issue.field)===dailyPromptOwner(promptId));
 }

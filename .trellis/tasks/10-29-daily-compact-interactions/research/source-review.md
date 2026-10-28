@@ -1,0 +1,33 @@
+# Independent source review — compact daily interactions
+
+2026-10-29. Baseline `7edd1be`; branch `codex/daily-compact-interactions`. Reviewed the full PRD/design/implementation/check context, the frontend index and all three referenced specs, maintained product/UX/design context, and the complete application/module/test/CSS diff. No browser was operated by this reviewer. Root owns the real-browser evidence and screenshots.
+
+## Findings fixed
+
+None. No source defect requiring a reviewer-local patch was found; the reviewer did not change application code or tests.
+
+## Source conclusions
+
+- Overview edits are local to hero type, category dimensions, gap and first-panel collision breakpoints. The six-entry flex row remains outside <=700px. The larger128/112px sizes and fluid701—820px/phone rules consume the existing `--type-size`; internal hover scale, fixed trigger geometry, palettes, SVG assets, navigation handlers, particle feedback and reel ownership are unchanged. The extended961—1400px first-panel placement also moves its arrow and transparent bridge, preserving access to the information button. Bounds remain a browser responsibility, not a conclusion from CSS alone.
+- Only `QUOTES.daily` changes. All14 entries contain two clauses with5 codepoints each, and every other category's quote pool matches the baseline. Existing punctuation splitting, escaped glyph/full semantic copy, mounted layout, timer cancellation and reduced-motion implementation remain. Type sizes increase through existing intro owners without changing brand or scene assets.
+- `itemInputs()` gates disclosures to daily `today`/`cause`; the shared row/add helpers preserve the original textarea, data-answer/index, names, maxlength, disabled and remove-button markup. Independently ran the actual-source smoke over400 non-daily combinations: generated HTML is byte-identical to the baseline. All saved answer controls stay mounted inside native details, so the unchanged `collectCurrent()` still reads closed answers.
+- Native summaries provide keyboard-operable disclosure and visible modify/view language. Initial render opens only the last row. The toggle handler checks current `entry.open` before closing siblings; queued close events cannot reopen an old row. `openDailyAnswer()` reveals the selected row and recalculates its textarea size; add/remove collect before redraw and then open/focus the added or retained target. No disclosure handler sets dirty, saves, or rewrites record data by itself. Preview text is codepoint-bounded/whitespace-normalized, escaped at initial render and assigned with textContent after edits. Full input text remains available on expansion.
+- Read-only inputs/removal controls remain disabled and the add/save controls remain absent; native summaries can still be expanded to read complete text. Busy handling continues disabling all original input/select/textarea/button controls. Disclosure changes only presentation, so permitting summary reading while a write is pending adds no competing mutation or API path. Shared save, first-save identity, dirty guards, reauthentication and server-error handling are unchanged.
+- The combined contingency panel mounts exactly one `ifCondition` and one `ifThen` input under the stable `ifCondition` prompt. Both have visible associated labels, original independent payload keys, original maxlength and locked attributes. `dailyPromptOwner()` is used by current-screen validation, neighbor traversal, `showDailyPrompt()` and restored-section selection. An `ifThen` issue therefore reveals the paired owner, then `showDailyIssues()` marks/focuses the exact original input. No separate response stop survives in `dailyPrompts()`. The next stop is the original date prompt.
+- Final `dailyStepIssues()` requirements are unchanged: one nonblank fact, action, both contingency values and a valid date no earlier than today. Optional evidence/cause/journal, metric counts, template snapshots and backend enforcement are unchanged. The meaningful new tests cover both-empty/each-empty/both-filled pair validation, unchanged final requirements, non-mutating validation and forward/back navigation including an old `ifThen` prompt identity.
+- `showDailyIssues()` now opens a closed fact entry before focus, avoiding focus on a hidden textarea. Existing error association/aria-invalid, prompt status and exact-field error behavior remain. The added helper has no effect for ordinary inputs outside disclosure rows.
+- Entry HTML JS/CSS, the changed daily-flow import and scene cache references consistently use overview23. No dependency, backend, persistence schema, illustration content, brand owner, other five review form lifecycle, or overview-reel data/animation code was changed.
+- Current architecture/state/UI-quality documentation reflects the paired owner, disclosure collection/focus contract and new sizes. The UX contract scopes the new disclosure behavior to daily and retains the original domain fields. Root is synchronizing README and actual image evidence.
+
+## Verification
+
+- `npm run check`: PASS. This is the repository's configured JavaScript syntax gate; no separate linter or TypeScript type-check command exists.
+- `node --test tests/daily-flow.test.mjs`: PASS12/12.
+- `node tmp/compact-source-smoke.mjs`: PASS400 non-daily byte-equivalent cases;14 two-clause quotes/max5 codepoints; unchanged five other quote pools; escaped disclosure template with both textareas mounted and one initially open.
+- `git diff --check`: PASS; Git only reports its existing LF/CRLF checkout notices.
+- Manually traced add/remove/edit/toggle, collection, first save, failure/busy/reauth, exact-field validation, prompt restoration and locked rendering against the actual current source. These are source conclusions, not rendering/assistive-technology measurements.
+- The root reports final strict audit17 findings against baseline18 with no new rule/file/message, plus DESIGN lint0 errors/7 existing warnings. This reviewer does not label the strict static audit clean. Existing native-control/delegated-button/textarea/scrollbar audit limitations and baseline native confirm elsewhere were not expanded by this task.
+
+## Findings not fixed / limits
+
+No unresolved source-code defect introduced by this task was found. No design or module-boundary change is recommended. Browser-specific summary keyboard/toggle timing, responsive hit testing, actual saved/retried/locked states, color contrast and screenshot acceptance remain the root's independent runtime checks. Source checks do not replace those checks; no alternate browser automation was used here.

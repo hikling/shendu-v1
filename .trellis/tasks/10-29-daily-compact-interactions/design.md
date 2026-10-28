@@ -1,0 +1,13 @@
+# Boundary and design
+
+Existing native JS/CSS owners remain canonical. No framework or asset migration. Root owns docs/QA; implement agent owns app.js/styles.css/index.html/daily-flow.js and focused daily tests.
+
+Overview size change lives in .overview-hero h1 and --type-size breakpoints. Target about16—20% larger:128px large desktop,112px small desktop, fluid near701—820px to preserve one row; phone use largest safe three-column icons. Adjust only local gap/panel collision as required. First information panel may need right-side placement through a larger breakpoint as row width increases. Keep scroll/reel logic unchanged; test category corners and expanded panels.
+
+Daily only QUOTES.daily becomes14 short two-clause entries (prefer<=6 codepoints including punctuation per clause), with existing quoteFor selection. Example 记下今天，想清明天。 Raise intro type toward clamp(52px,5.6vw,88px), phone40—44px, retaining the existing safe container fit and mounted glyphs. Do not touch other category quotes, canonical branding or art.
+
+Only daily today/cause itemInputs gain local accessible disclosure rows. All native textarea nodes and data-answer/index attributes stay mounted; summaries show escaped compact previews. Adding collects before redraw, collapses prior rows and opens/focuses the added answer. Editing opens one row at a time; summary labels reflect edits. Deleting opens/focuses retained neighbor. Validation must reveal a collapsed target before focus; read-only disclosures remain readable while fields/add/remove stay disabled. Non-daily item markup and behavior stay unchanged. Collapsing is UI-only and never changes dirty/payload by itself.
+
+Represent obstacle/response as one visible prompt with two labelled native fields retaining data-simple=ifCondition/ifThen. Prefer stable ifCondition as combined prompt ID; map ifThen validation/errors/restored prompt to its owner. dailyPrompts omits the separate ifThen stop; dailyPromptIssues checks both fields at combined stop, dailyStepIssues and backend contract stay unchanged. showDailyIssues must show combined panel then focus exact missing field. Both labels remain visible simultaneously. Scene remains03/action; paired inputs stack with clear spacing on phones.
+
+Cache entry assets and changed daily module together (overview23). Keep stage metric counts, template snapshots, field IDs, collect/save/dirty/busy/401/readonly paths intact. Add meaningful tests for paired validation and traversal, not visual implementation snapshots. Existing reusable helpers and server requirements reviewed before implementation; no extra skill installation is needed for these local JS/CSS changes.

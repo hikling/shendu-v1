@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {dailyStepIssues,dailyPrompts,dailyPromptIssues,dailyPromptNeighbor} from '../public/daily-flow.js';
+import {dailyStepIssues,dailyPrompts,dailyPromptIssues,dailyPromptNeighbor,dailyPromptOwner} from '../public/daily-flow.js';
 
 const today='2026-10-27';
 const complete={answers:{today:['记录一件真实发生的事'],cause:[]},action:'明天先完成一页',ifCondition:'遇到手机消息',ifThen:'打开专注模式',verifyDate:today};
@@ -33,16 +33,16 @@ test('validation is read-only and retains draft whitespace and optional content'
   dailyStepIssues(data,null,today);
   assert.deepEqual(data,snapshot);
 });
-test('daily prompts show sleep and energy separately, then each metric and remaining questions',()=>{
+test('daily prompts keep sleep and energy separate but pair obstacle and response',()=>{
   const prompts=dailyPrompts(3);
-  assert.deepEqual(prompts.map(prompt=>prompt.id),['sleep','energy','metric-0','metric-1','metric-2','risk','today','cause','action','ifCondition','ifThen','verifyDate','journal']);
-  assert.deepEqual(prompts.map(prompt=>prompt.step),['evidence','evidence','evidence','evidence','evidence','evidence','reflection','reflection','action','action','action','action','journal']);
+  assert.deepEqual(prompts.map(prompt=>prompt.id),['sleep','energy','metric-0','metric-1','metric-2','risk','today','cause','action','ifCondition','verifyDate','journal']);
+  assert.deepEqual(prompts.map(prompt=>prompt.step),['evidence','evidence','evidence','evidence','evidence','evidence','reflection','reflection','action','action','action','journal']);
 });
 test('historical metric counts determine the exact set of questions',()=>{
   for(const count of [0,1,2,5]){
     const prompts=dailyPrompts(count),metrics=prompts.filter(prompt=>prompt.id.startsWith('metric-'));
     assert.equal(metrics.length,count);
-    assert.equal(prompts.length,10+count);
+    assert.equal(prompts.length,9+count);
     assert.equal(prompts.at(-1).id,'journal');
   }
 });
@@ -58,10 +58,33 @@ test('previous and next traverse every question and stop at the intro and final 
 test('a question validates its own existing requirement without asking for later fields',()=>{
   for(const prompt of ['sleep','energy','metric-0','risk','cause','journal'])assert.deepEqual(dailyPromptIssues({},prompt,today),[],prompt);
   assert.deepEqual(dailyPromptIssues({action:'具体动作'},'action',today),[]);
-  assert.deepEqual(dailyPromptIssues({ifCondition:'遇到阻碍'},'ifCondition',today),[]);
-  assert.deepEqual(dailyPromptIssues({ifThen:'执行应对'},'ifThen',today),[]);
-  for(const field of ['today','action','ifCondition','ifThen','verifyDate']){
+  for(const field of ['today','action','verifyDate']){
     const issues=dailyPromptIssues({},field,today);
     assert.equal(issues.length,1);assert.equal(issues[0].field,field);
   }
+});
+
+test('the shared contingency screen requires both original fields without checking future dates',()=>{
+  const missing=field=>({step:'action',field,reason:'required'});
+  assert.deepEqual(dailyPromptIssues({},'ifCondition',today),[missing('ifCondition'),missing('ifThen')]);
+  assert.deepEqual(dailyPromptIssues({ifCondition:'遇到消息'},'ifCondition',today),[missing('ifThen')]);
+  assert.deepEqual(dailyPromptIssues({ifThen:'先开专注模式'},'ifCondition',today),[missing('ifCondition')]);
+  const pair={ifCondition:'  遇到消息  ',ifThen:' 先开专注模式 '},snapshot=structuredClone(pair);
+  assert.deepEqual(dailyPromptIssues(pair,'ifCondition',today),[]);
+  assert.deepEqual(pair,snapshot,'screen validation does not trim or rewrite stored data');
+  assert.deepEqual(dailyStepIssues(pair,'action',today).map(issue=>issue.field),['action','verifyDate'],'completion retains the separate action and date requirements');
+});
+
+test('response errors and restored legacy prompt identities resolve to the paired screen',()=>{
+  assert.equal(dailyPromptOwner('ifThen'),'ifCondition');
+  assert.equal(dailyPromptOwner('ifCondition'),'ifCondition');
+  assert.equal(dailyPromptOwner('today'),'today');
+  assert.equal(dailyPromptOwner(null),null);
+  assert.deepEqual(dailyPromptIssues({ifCondition:'遇到消息'},'ifThen',today),[{step:'action',field:'ifThen',reason:'required'}]);
+  const prompts=dailyPrompts(2);
+  assert.equal(dailyPromptNeighbor(prompts,'action',1),'ifCondition');
+  assert.equal(dailyPromptNeighbor(prompts,'ifCondition',1),'verifyDate');
+  assert.equal(dailyPromptNeighbor(prompts,'verifyDate',-1),'ifCondition');
+  assert.equal(dailyPromptNeighbor(prompts,'ifThen',1),'verifyDate');
+  assert.equal(dailyPromptNeighbor(prompts,'ifThen',-1),'action');
 });
