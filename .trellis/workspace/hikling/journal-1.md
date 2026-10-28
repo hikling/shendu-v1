@@ -549,3 +549,25 @@ Split day-based reel dates into year-month-day and full weekday lines, retained 
 ### Status
 
 [OK] **Completed**
+
+
+## Session 25: 放大主视觉并精简每日复盘交互
+<!-- trellis-session: v=2 fp=b2e631bd64bef34f -->
+
+**Date**: 2026-10-29
+**Task**: 放大主视觉并精简每日复盘交互
+**Branch**: `main`
+
+### Summary
+
+放大概览主句与六类图标并保留桌面单排；每日14条开场精简为大字双句。02条目自动折叠并可展开修改，原字段完整保存；阻碍和应对同页并一起验证。12项流程测试、400种其他表单等价检查及独立审查通过；CUA完成桌面/手机、保存失败重试与重载、必填展开定位、最终锁定和只读、减少动态验收。README六张相关截图及规范同步，CI40785213063成功。
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `c6383ea` | feat: simplify daily reflection and enlarge overview |
+
+### Status
+
+[OK] **Completed**

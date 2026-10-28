@@ -8,7 +8,7 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 24
+- **Total Sessions**: 25
 - **Last Active**: 2026-10-29
 <!-- @@@/auto:current-status -->
 
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~551 | Active |
+| `journal-1.md` | ~573 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -29,6 +29,7 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 25 | 2026-10-29 | 放大主视觉并精简每日复盘交互 | `c6383ea` | `main` |
 | 24 | 2026-10-29 | 恢复概览单排与每日文字布局 | `c61a572` | `main` |
 | 23 | 2026-10-28 | 内置imagegen统一每日插画与数值面板 | `01815bd` | `main` |
 | 22 | 2026-10-28 | 每日复盘交错构图与语义插画 | `8853a3b` | `main` |
