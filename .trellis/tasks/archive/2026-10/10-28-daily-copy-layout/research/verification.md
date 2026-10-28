@@ -24,4 +24,4 @@
 
 ## Publication
 
-Work commit and exact-revision repository CI will be recorded after push. No new deployment is claimed by this task.
+Work commit `c61a572791c8049095f5b4d05b9c9bfdaf4a58ce` pushed to origin/main. Exact-revision Verify build run40732293526 completed successfully: https://github.com/hikling/shendu-v1/actions/runs/40732293526 . README's19 local references all resolve. No new deployment is claimed by this task. Finish-work bookkeeping follows this accepted work commit.
