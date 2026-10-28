@@ -23,4 +23,4 @@
 
 ## Publication
 
-Awaiting reviewed work commit and exact-revision repository CI; record after push, then archive and journal.
+Work commit c6383ea12821734105fa98a1f50f58b8c690a932 fast-forwarded to main and pushed. Exact-revision Verify build run40785213063 completed successfully: https://github.com/hikling/shendu-v1/actions/runs/40785213063 . Temporary QA process tree24700/32780 was verified and stopped; browser viewport reset and owned tab closed. Finish-work archive/journal follows the accepted work commit. No deployment claimed.
