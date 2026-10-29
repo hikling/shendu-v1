@@ -95,7 +95,6 @@ const state = { user:null, stage:null, theme:null, records:[], stats:{week:0,pen
 let modalReturnFocus=null;
 let overviewReelObserver=null;
 let dailyTypingTimer=null,dailyTypingCleanup=null;
-let dailyArtBurstController=null;
 async function request(path, options = {}) {
   const opts = { credentials:'same-origin', ...options, headers:{ ...(options.body && !(options.body instanceof Blob) && !(options.body instanceof ArrayBuffer) ? {'Content-Type':'application/json'} : {}), ...(options.headers||{}) } };
   if (opts.body && opts.headers['Content-Type']==='application/json' && typeof opts.body !== 'string') opts.body = JSON.stringify(opts.body);
@@ -105,7 +104,7 @@ async function request(path, options = {}) {
 function sessionExpired(){state.reauthOpen=true;openModal(`<div class="modal-head"><div><h2>登录已失效</h2><p>重新登录后，页面中尚未保存的内容仍会保留。</p></div></div><form id="reauth-form"><div class="field"><label>用户名</label><input name="username" value="${esc(state.user.username)}" readonly></div><div class="field"><label>密码</label><input name="password" type="password" minlength="15" required autocomplete="current-password"></div><div class="modal-actions"><button class="btn btn-primary">重新登录</button></div></form>`,'',true);$('#reauth-form').addEventListener('submit',async e=>{e.preventDefault();const res=await fetch('/api/auth/login',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify(Object.fromEntries(new FormData(e.currentTarget)))});const data=await res.json();if(!res.ok){toast(data.message||'登录失败','error');return}state.reauthOpen=false;closeModal(true);toast('已重新登录，请再次保存')})}
 function toast(message, kind='success') { const el=document.createElement('div');el.className=`toast ${kind}`;el.textContent=message;$('#toast-root').append(el);setTimeout(()=>el.remove(),3200); }
 function contrastFor(hex){const h=String(hex).replace('#','');if(!/^[0-9a-f]{6}$/i.test(h))return'#fff';const [r,g,b]=[0,2,4].map(i=>parseInt(h.slice(i,i+2),16)/255).map(v=>v<=.03928?v/12.92:((v+.055)/1.055)**2.4);return .2126*r+.7152*g+.0722*b>.52?'#201d19':'#fff'}
-function applyTheme(theme){const t=theme||state.theme||{},fallback=PALETTES['潮汐青'],r=document.documentElement;['primary','secondary','tertiary'].forEach((k,index)=>{const color=/^#[0-9a-f]{6}$/i.test(String(t[k]||''))?t[k]:fallback[index];r.style.setProperty(`--${k}`,color);r.style.setProperty(`--${k}-contrast`,contrastFor(color))});document.body.classList.toggle('reduce-motion',!!t.reduceMotion);if(t.reduceMotion){cancelDailyTypewriter();cancelDailyArtBurst()}}
+function applyTheme(theme){const t=theme||state.theme||{},fallback=PALETTES['潮汐青'],r=document.documentElement;['primary','secondary','tertiary'].forEach((k,index)=>{const color=/^#[0-9a-f]{6}$/i.test(String(t[k]||''))?t[k]:fallback[index];r.style.setProperty(`--${k}`,color);r.style.setProperty(`--${k}-contrast`,contrastFor(color))});document.body.classList.toggle('reduce-motion',!!t.reduceMotion);if(t.reduceMotion)cancelDailyTypewriter()}
 const BEIJING_TIME_ZONE='Asia/Shanghai';
 function beijingDateParts(value=new Date()){const parts=new Intl.DateTimeFormat('en-US',{timeZone:BEIJING_TIME_ZONE,year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(value);const result=Object.fromEntries(parts.filter(x=>x.type!=='literal').map(x=>[x.type,x.value]));return{year:Number(result.year),month:Number(result.month),day:Number(result.day),iso:`${result.year}-${result.month}-${result.day}`}}
 function today(){return beijingDateParts().iso}
@@ -261,8 +260,8 @@ function bindOverviewArc(){
   observer.observe(window);
   layout();
 }
-function overviewBurst(className='overview-type-burst'){
-  return `<span class="${className}" aria-hidden="true">${Array.from({length:16},(_,index)=>{const angle=index*Math.PI/8,reach=.84+(index%3)*.1;return `<i style="--burst-x:${(Math.sin(angle)*reach).toFixed(3)};--burst-y:${(-Math.cos(angle)*reach).toFixed(3)};--burst-turn:${index*67}deg;--burst-delay:${index%4*18}ms"></i>`}).join('')}</span>`;
+function overviewBurst(){
+  return `<span class="overview-type-burst" aria-hidden="true">${Array.from({length:16},(_,index)=>{const angle=index*Math.PI/8,reach=.84+(index%3)*.1;return `<i style="--burst-x:${(Math.sin(angle)*reach).toFixed(3)};--burst-y:${(-Math.cos(angle)*reach).toFixed(3)};--burst-turn:${index*67}deg;--burst-delay:${index%4*18}ms"></i>`}).join('')}</span>`;
 }
 function renderOverview(){
   const records=overviewRecords();
@@ -406,32 +405,8 @@ function dailyActionFields(data,locked,template){const action=data.action||data.
 function dailyJournal(data,locked){return `<section class="card section-card folio-card"><div class="daily-prompt journal-paper" data-daily-prompt="journal" hidden><textarea data-simple="journal" aria-label="今天的日记（选填）" maxlength="6000" rows="8" ${locked?'disabled':''} placeholder="选填。这里不需要结论。">${esc(data.journal||'')}</textarea><div class="journal-foot"><span>私人空间加密存储 · <strong id="journal-count">${(data.journal||'').length} 字</strong></span><b>${esc(state.user.displayName.slice(0,2))}</b></div></div></section>`}
 
 function reviewAfterword(locked,data,actionTemplate){return `${locked&&state.current.status==='completed'?`<section class="card section-card"><h2 style="margin-top:0">${esc(actionTemplate.lockedPendingTitle)}</h2><p class="help">${esc(actionTemplate.expectedDateLabel)}：${esc(data.verifyDate||actionTemplate.expectedMissingText)}。${esc(actionTemplate.lockedPendingIntro)}</p><button class="btn btn-primary" data-open-action="${esc(state.current.id)}">${esc(actionTemplate.lockedPendingButton)}</button></section>`:''}${state.current.status==='verified'?verificationRead(state.current):''}`}
-function cancelDailyArtBurst(detach=false){
-  if(!dailyArtBurstController)return;
-  dailyArtBurstController.reset();
-  if(detach){dailyArtBurstController.dispose();dailyArtBurstController=null}
-}
-function bindDailyArtBurst(){
-  cancelDailyArtBurst(true);
-  const flow=$('.daily-art-flow');if(!flow)return;
-  const art=$('.daily-scene-art',flow);if(!art)return;
-  const motion=matchMedia('(prefers-reduced-motion: reduce)'),pointer=matchMedia('(hover: hover) and (pointer: fine)');
-  let entered=false,prompt='';
-  const reset=()=>{entered=false;prompt='';art.classList.remove('is-bursting')};
-  const move=event=>{
-    if(event.pointerType!=='mouse'||event.buttons||!pointer.matches||motion.matches||document.body.classList.contains('reduce-motion')){reset();return}
-    if(event.target.closest?.('input,textarea,select,button,a,summary,[contenteditable="true"],[role="button"],.daily-intro-copy,.daily-pane,.daily-question-heading,.daily-flow-head,.daily-flow-footer,.daily-step-note,.daily-flow-error')){reset();return}
-    const rect=art.getBoundingClientRect(),inside=rect.width>0&&event.clientX>=rect.left&&event.clientX<=rect.right&&event.clientY>=rect.top&&event.clientY<=rect.bottom;
-    if(!inside){reset();return}
-    const current=flow.dataset.dailyCurrentPrompt;
-    if(!entered||prompt!==current){entered=true;prompt=current;art.classList.add('is-bursting')}
-  };
-  flow.addEventListener('pointermove',move,{passive:true});flow.addEventListener('pointerleave',reset);
-  motion.addEventListener('change',reset);pointer.addEventListener('change',reset);window.addEventListener('blur',reset);
-  dailyArtBurstController={reset,dispose(){flow.removeEventListener('pointermove',move);flow.removeEventListener('pointerleave',reset);motion.removeEventListener('change',reset);pointer.removeEventListener('change',reset);window.removeEventListener('blur',reset)}};
-}
-// These local scenes remain pointer-inert; canvas tracking only decorates mouse entry.
-function dailySceneArt(){return `<div class="daily-scene-art" aria-hidden="true">${['intro','sleep','energy','evidence','reflection','action','calendar','journal'].map(scene=>`<img class="daily-scene-image" data-daily-art="${scene}" src="/assets/daily/${scene}.webp?v=1.0.0-overview25" alt="" width="1254" height="1254" draggable="false">`).join('')}${overviewBurst('daily-art-burst')}</div>`}
+// Each local scene is a pointer-inert illustration and a small static paper composition.
+function dailySceneArt(){return `<div class="daily-scene-art" aria-hidden="true"><span class="daily-scene-corner"></span><span class="daily-scene-signet"></span><span class="daily-scene-rule"></span>${['intro','sleep','energy','evidence','reflection','action','calendar','journal'].map(scene=>`<img class="daily-scene-image" data-daily-art="${scene}" src="/assets/daily/${scene}.webp?v=1.0.0-overview26" alt="" width="1254" height="1254" draggable="false">`).join('')}</div>`}
 function dailyIntroLines(quote){return String(quote).split(/(?<=[，。])/).filter(Boolean)}
 function dailyReviewHtml(period,locked,data,templates){
   const panes=[dailyEvidence(data,locked),dailyReflection(data,locked,templates.review),dailyActionFields(data,locked,templates.review),dailyJournal(data,locked)];
@@ -467,7 +442,6 @@ function startDailyTypewriter(){
   dailyTypingTimer=setTimeout(reveal,120);
 }
 function setDailyImmersive(open){
-  if(!open)cancelDailyArtBurst(true);
   if(open){closeHeaderMenus();if($('#right-rail.open'))setRailOverlayOpen(false)}
   $('.app-shell')?.classList.toggle('daily-immersive',open);
   const header=$('#site-header');if(header){header.hidden=open;header.inert=open||!!$('#right-rail.open')}
@@ -479,8 +453,15 @@ function dailyPromptCopy(prompt){
   const copy={sleep:['昨夜，你睡了多久？','记下实际睡眠时间。暂时不想记录，也可以直接继续。'],energy:['此刻的精力状态如何？','用 0—100 记录你的感受，不需要为了达标而修改。'],risk:['有没有需要留意的风险或偏离？','选填。写下具体信号，以及准备怎样应对。'],today:[template.today,'至少留下一件真实发生的事。不记流水账，也不急着下结论。'],cause:[template.cause,'选填。看看哪些条件促成了它，哪些方法可以再用一次。'],action:[template.actionTitle,'如果明天只能完成一件事，你会选什么？把开始的动作写具体。'],ifCondition:['如果受阻，怎样继续？',template.obstacleTitle],verifyDate:[template.verifyDateTitle,'选定回看这次行动的日期。实际验证时间会在提交结果时自动记录。'],journal:['今天，还有什么想留下？','选填。这里不需要结论，几句话或一整页都可以。']};
   return{title:copy[prompt.id][0],description:copy[prompt.id][1]};
 }
+function setDailyPromptHeading(title,prompt){
+  const heading=$('#daily-prompt-title'),metric=prompt.id.startsWith('metric-')?state.current.data.metrics[Number(prompt.id.slice(7))]:null;
+  const phrases={sleep:'睡了多久',energy:'精力状态',risk:'风险或偏离',today:'记下来',cause:'发生',action:'最重要的一件事',ifCondition:'受阻',verifyDate:'验证',journal:'想留下'};
+  const text=title==null?'':String(title),phrase=String(metric?.name||phrases[prompt.id]||''),start=phrase?text.indexOf(phrase):-1;
+  if(start<0){heading.textContent=text;return}
+  const accent=document.createElement('span');accent.className='daily-title-emphasis';accent.textContent=phrase;
+  heading.replaceChildren(text.slice(0,start),accent,text.slice(start+phrase.length));
+}
 function showDailyPrompt(promptId,focus=false){
-  cancelDailyArtBurst();
   promptId=dailyPromptOwner(promptId);
   const prompts=currentDailyPrompts(),index=prompts.findIndex(prompt=>prompt.id===promptId),intro=index<0,prompt=prompts[index];
   state.dailySection=intro?'intro':prompt.step;state.dailyPrompt=intro?null:prompt.id;
@@ -501,7 +482,7 @@ function showDailyPrompt(promptId,focus=false){
     if($('#complete-record'))$('#complete-record').hidden=!last;
     if($('#daily-finish'))$('#daily-finish').hidden=!last;
     $('#daily-current-group').textContent=`${String(group+1).padStart(2,'0')} · ${DAILY_STEPS[group].label}`;
-    $('#daily-prompt-title').textContent=copy.title;$('#daily-prompt-description').textContent=copy.description;
+    setDailyPromptHeading(copy.title,prompt);$('#daily-prompt-description').textContent=copy.description;
     $('#daily-step-status').textContent=`${DAILY_STEPS[group].label}，${copy.title}`;
     const required=['today','action','ifCondition','ifThen','verifyDate'].includes(prompt.id);
     $('#daily-step-hint').textContent=locked?'这份记录只供查看。':required?'填写这一题后继续。':last?'这一题选填，留空也可以完成。':'这一题选填，可以直接继续。';
@@ -526,7 +507,6 @@ function showDailyIssues(issues){
 }
 function bindDailyFlow(){
   bindDailyCalendar();
-  bindDailyArtBurst();
   const move=prompt=>{if(state.saving)return;if($('#daily-editor').dataset.dailyLocked!=='true')collectCurrent();clearDailyIssues();showDailyPrompt(prompt,true)};
   $('#daily-start').addEventListener('click',()=>move(currentDailyPrompts()[0].id));
   $('[data-daily-exit]').addEventListener('click',()=>attemptNavigate(()=>navigate('overview')));
