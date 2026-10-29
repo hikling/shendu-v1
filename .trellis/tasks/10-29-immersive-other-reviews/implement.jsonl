@@ -1,0 +1,6 @@
+{"file": ".trellis/spec/frontend/index.md", "reason": "Frontend pre-development checklist"}
+{"file": ".trellis/spec/frontend/architecture.md", "reason": "Shared review rendering and daily visual boundaries"}
+{"file": ".trellis/spec/frontend/state-and-data.md", "reason": "Draft, save, lock and template snapshot rules"}
+{"file": ".trellis/spec/frontend/ui-quality.md", "reason": "Immersive layout, accessibility and responsive quality"}
+{"file": ".trellis/tasks/10-29-immersive-other-reviews/research/imagegen-plan.md", "reason": "Future art slots and current placeholder boundary"}
+{"file": ".trellis/spec/frontend/extended-review-flow.md", "reason": "Five extended flow contracts and validation matrix"}

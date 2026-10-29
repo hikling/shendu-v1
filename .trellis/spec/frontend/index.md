@@ -10,6 +10,7 @@ Read the user-confirmed product direction in [`PRODUCT.md`](../../../PRODUCT.md)
 2. Read [State and data](./state-and-data.md) before changing forms, navigation, or save behavior.
 3. Read [UI quality](./ui-quality.md) before changing layout, themes, or dialogs.
 4. Trace any changed record payload or completion rule through `shendu/server.mjs`.
+5. For weekly, monthly, quarterly, yearly, or decision pages, read [Extended review flows](./extended-review-flow.md) before changing prompt order or validation.
 
 ## Quality check
 
@@ -23,3 +24,4 @@ Read the user-confirmed product direction in [`PRODUCT.md`](../../../PRODUCT.md)
 - [Architecture](./architecture.md)
 - [State and data](./state-and-data.md)
 - [UI quality](./ui-quality.md)
+- [Extended review flows](./extended-review-flow.md)

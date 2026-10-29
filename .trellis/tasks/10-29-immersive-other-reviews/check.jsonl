@@ -1,0 +1,6 @@
+{"file": ".trellis/spec/frontend/index.md", "reason": "Frontend quality gate"}
+{"file": ".trellis/spec/frontend/architecture.md", "reason": "Review flow and render boundary"}
+{"file": ".trellis/spec/frontend/state-and-data.md", "reason": "Persistence and read-only contracts"}
+{"file": ".trellis/spec/frontend/ui-quality.md", "reason": "Visual and interaction acceptance"}
+{"file": ".trellis/tasks/10-29-immersive-other-reviews/research/imagegen-plan.md", "reason": "Verify no generated-art claims and stable scene slots"}
+{"file": ".trellis/spec/frontend/extended-review-flow.md", "reason": "Five extended flow contracts and validation matrix"}
