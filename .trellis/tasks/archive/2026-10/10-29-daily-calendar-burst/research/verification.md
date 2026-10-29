@@ -20,4 +20,4 @@ Real isolated SQLite service on127.0.0.1:3188 with synthetic records only. CUA b
 
 ## Publication
 
-Work commit and exact-revision CI recorded after publication, before archive.
+Work commit aa3e506ba81a4ba3674218b8b1746d1aa5c13bf4 was pushed to main. Exact-revision full CI completed successfully: https://github.com/hikling/shendu-v1/actions/runs/40827404397 . README/screenshots/specs ship in the same work commit. Subsequent archive/journal commits contain bookkeeping only.
