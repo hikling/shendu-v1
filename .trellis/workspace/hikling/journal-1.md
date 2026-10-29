@@ -637,3 +637,39 @@ Refined daily verification date slip to352x351 with round32px dates; added one-s
 ### Status
 
 [OK] **Completed**
+
+
+## Session 29: 周月季年与决策沉浸式复盘
+<!-- trellis-session: v=2 fp=e4d25cfd53226a23 -->
+
+**Date**: 2026-10-29
+**Task**: 周月季年与决策沉浸式复盘
+**Branch**: `main`
+
+### Summary
+
+将已确认的每日复盘艺术画布与逐题流程延续到周、月、90天、年和重大决策；保留原字段、草稿、锁定和验证规则。五类目前使用不同的临时类别插画，专属场景插画待 imagegen 可用后补齐。
+
+### Main Changes
+
+- 新增五类配置驱动的引导、单题填写、阶段交错布局和内嵌日历。
+- 更新 README、产品与设计契约、Trellis 前端规范，并保存五类页面截图和16张插画计划。
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `1236db7` | feat: extend immersive review flow to five categories |
+
+### Testing
+
+- [OK] npm run check 通过；npm test 75/75；桌面与390/320像素界面、草稿恢复、锁定只读、可选阻碍条件通过浏览器验收。
+- [OK] GitHub Verify build #40841241384 通过。
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- 待 imagegen 工具可用后，按 docs/extended-illustrations.md 生成并替换16张专属插画。
