@@ -615,3 +615,25 @@ Refined daily verification date slip to352x351 with round32px dates; added one-s
 ### Status
 
 [OK] **Completed**
+
+
+## Session 28: 每日插画静态构图与排版
+<!-- trellis-session: v=2 fp=1d8ad06a770751d0 -->
+
+**Date**: 2026-10-29
+**Task**: 每日插画静态构图与排版
+**Branch**: `main`
+
+### Summary
+
+移除每日插画烟花，添加静态构图陪衬并强化宋体与颜色层级；更新九张截图及规范，69项测试和远端构建通过。
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `232305e` | feat: refine daily artwork and typography |
+
+### Status
+
+[OK] **Completed**

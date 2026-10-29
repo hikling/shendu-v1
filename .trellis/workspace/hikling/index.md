@@ -8,7 +8,7 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 27
+- **Total Sessions**: 28
 - **Last Active**: 2026-10-29
 <!-- @@@/auto:current-status -->
 
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~617 | Active |
+| `journal-1.md` | ~639 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -29,6 +29,7 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 28 | 2026-10-29 | 每日插画静态构图与排版 | `232305e` | `main` |
 | 27 | 2026-10-29 | Compact daily calendar and illustration fireworks | `aa3e506` | `main` |
 | 26 | 2026-10-29 | 每日验证日历与标题精修 | `23646b1` | `main` |
 | 25 | 2026-10-29 | 放大主视觉并精简每日复盘交互 | `c6383ea` | `main` |
