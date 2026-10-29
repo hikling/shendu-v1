@@ -593,3 +593,25 @@ Split day-based reel dates into year-month-day and full weekday lines, retained 
 ### Status
 
 [OK] **Completed**
+
+
+## Session 27: Compact daily calendar and illustration fireworks
+<!-- trellis-session: v=2 fp=b56354bd791cbcf4 -->
+
+**Date**: 2026-10-29
+**Task**: Compact daily calendar and illustration fireworks
+**Branch**: `main`
+
+### Summary
+
+Refined daily verification date slip to352x351 with round32px dates; added one-shot illustration hover particles with no input interception and reduced-motion guards. Native desktop/390/320 QA, historical readonly, keyboard/date persistence/failure retry and independent review passed;21 focused tests plus full work CI40827404397 success. README, real screenshots and specs synchronized.
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `aa3e506` | feat: refine daily calendar and add illustration bursts |
+
+### Status
+
+[OK] **Completed**
