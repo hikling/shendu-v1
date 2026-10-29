@@ -9,3 +9,5 @@ Multi-row mutations use explicit `BEGIN IMMEDIATE` / `COMMIT` with rollback on e
 Record title, data, verification, settings, and backup credentials are encrypted before persistence. `encryptDataWithKey()` uses AES-256-GCM with scoped AAD, and `dataScope()` ties ciphertext to owner and field. `initialiseMasterKey()` validates candidate keys against stored ciphertext before use and persists the chosen key through `atomicWriteFile()` (`server.mjs`, `scripts/backup-safety.mjs`). Never bypass these helpers, log plaintext, or regenerate a key over existing encrypted data.
 
 Review write periods use `Asia/Shanghai` via `todayDate()` and `currentPeriodFor()`. Matching frontend helpers live in `public/app.js`; keep both sides aligned when changing period rules.
+
+Verification date boundaries are shared by server and browser through `public/verification-policy.js`. Pass an already-computed Beijing YYYY-MM-DD date to `verificationMinimum()`; it uses UTC calendar arithmetic only to avoid host timezone drift. For actual verification of a completed record, derive the boundary from its completion timestamp, not from the day it is eventually submitted.

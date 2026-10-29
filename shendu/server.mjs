@@ -8,6 +8,7 @@ import { gzipSync, gunzipSync } from 'node:zlib';
 import { lookup } from 'node:dns/promises';
 import net from 'node:net';
 import { atomicWriteFile, validBase64 } from './scripts/backup-safety.mjs';
+import { verificationMinimum } from './public/verification-policy.js';
 
 process.umask(0o077);
 const PORT = Number(process.env.SHENDU_PORT || 3000);
@@ -195,8 +196,8 @@ const beijingParts = (value = new Date()) => {
   }).formatToParts(value);
   return Object.fromEntries(parts.filter(part => part.type !== 'literal').map(part => [part.type, part.value]));
 };
-const todayDate = () => {
-  const p = beijingParts();
+const todayDate = (value = new Date()) => {
+  const p = beijingParts(value);
   return `${p.year}-${p.month}-${p.day}`;
 };
 const isoWeekValue = value => {
@@ -1228,7 +1229,8 @@ async function api(req, res, url) {
     const id=path.split('/')[3], row=db.prepare(`SELECT * FROM records WHERE id=? AND user_id=?`).get(id,user.id); if(!row)return error(res,404,'记录不存在'); if(row.status!=='draft')return error(res,409,'记录已经完成');
     if(row.period!==currentPeriodFor(row.type))return error(res,400,currentPeriodMessage(row.type),'period_locked');
     const decoded=recordOut(row),data=decoded.data,required={daily:['today'],weekly:['plan','progress','nextThree'],monthly:['goalResult','change','bottleneck','experiment'],quarterly:['hope','evidence','choices','nextGoals'],yearly:['coordinates','expectations','keepRelease','nextYear'],decision:['decision','options','facts','expectation','failure','choice','firstStep']}[row.type]||[];
-    const missing=required.some(k=>!(data.answers?.[k]||[]).some(v=>String(v).trim()))||!String(data.action||'').trim()||(row.type==='daily'&&!String(data.ifCondition||'').trim())||!String(data.ifThen||'').trim()||!validIsoDate(data.verifyDate)||data.verifyDate<todayDate()||(row.type==='decision'&&!decoded.title.trim()); if(missing)return error(res,400,'请先完成所有必填项，并确认预期验证日期不早于今天');
+    const earliest=verificationMinimum(row.type,todayDate());
+    const missing=required.some(k=>!(data.answers?.[k]||[]).some(v=>String(v).trim()))||!String(data.action||'').trim()||(row.type==='daily'&&!String(data.ifCondition||'').trim())||!String(data.ifThen||'').trim()||!validIsoDate(data.verifyDate)||data.verifyDate<earliest||(row.type==='decision'&&!decoded.title.trim()); if(missing)return error(res,400,`请先完成所有必填项，并确认预期验证日期不早于 ${earliest}`);
     const normalizedSnapshot=normalizeTemplateSnapshot(data.templateSnapshot,row.type);
     if(!normalizedSnapshot){const stage=normalizeStage(setting(user.id,'stage',defaultStage()));data.templateSnapshot={version:1,review:stage.reviewTemplates[row.type],action:stage.actionTemplate}}
     else data.templateSnapshot=normalizedSnapshot;
@@ -1238,6 +1240,8 @@ async function api(req, res, url) {
   }
   if (/^\/api\/records\/[^/]+\/verify$/.test(path) && method === 'POST') {
     const id=path.split('/')[3],body=await readJson(req),row=db.prepare(`SELECT * FROM records WHERE id=? AND user_id=?`).get(id,user.id);if(!row)return error(res,404,'记录不存在');if(row.status!=='completed')return error(res,409,'只有待验证记录可以提交结果');
+    const earliest=verificationMinimum(row.type,todayDate(new Date(row.completed_at||row.created_at)));
+    if(todayDate()<earliest)return error(res,400,`最早可在 ${earliest} 提交验证结果`,'verification_too_early');
     if(!safeText(body.result).trim()||!safeText(body.adjustment).trim()||(row.type==='decision'&&(!['好','差'].includes(body.outcome)||!['好','差'].includes(body.process))))return error(res,400,'请完整填写验证结果');
     const stamp=now(),decoded=recordOut(row),verification=encryptData({result:safeText(body.result),adjustment:safeText(body.adjustment),outcome:body.outcome||null,process:body.process||null,expectedDate:decoded.data.verifyDate||null,actualAt:stamp},dataScope('record',user.id,id,'verification'));
     if(accountRecordBytes(user.id)-Buffer.byteLength(row.verification||'')+Buffer.byteLength(verification)>MAX_ACCOUNT_CONTENT_BYTES)return error(res,413,'账户复盘内容已达到存储上限','account_storage_limit');

@@ -1,0 +1,118 @@
+{
+  "generator": "built-in image_gen",
+  "reference": "../daily/evidence.png (style only)",
+  "assets": {
+    "weekly-recap": {
+      "png": "weekly-recap.png",
+      "webp": "weekly-recap.webp",
+      "pngSha256": "8697542bc942cfc413a8710dd18c892a12990bcdef69ac97f58382a526c6c6d8",
+      "webpSha256": "480d208d83feff49e310e7462a600f192e556c8caec6c656ec1e2d3603c2f47b",
+      "scene": "A person kneeling and arranging seven loose paper sheets in a broad fan, glancing back over the week; a coral ribbon connects the sheets. Warm ochre-red #8f4335 and coral #db7b61."
+    },
+    "weekly-pattern": {
+      "png": "weekly-pattern.png",
+      "webp": "weekly-pattern.webp",
+      "pngSha256": "e0e254574655ee495ac326da9f333ae4ca8d4c55b3678736f6dff15e40783e08",
+      "webpSha256": "9f44ed0b54c4e0bf77ec85aed4b60e862c48bd1b901009dda15383c0a20d03c1",
+      "scene": "A crouching investigator looks through a large magnifying glass at a loop of tiny footprints and repeating habit marks. Warm ochre-red #8f4335 and coral #db7b61."
+    },
+    "weekly-next": {
+      "png": "weekly-next.png",
+      "webp": "weekly-next.webp",
+      "pngSha256": "9a1c3054d49267dee2db00cc930858d5026843aed748521697374e48ae10b731",
+      "webpSha256": "acd2a1a5efa4c9cd1c3e5ca143adc7731c5344c5e1ce0150f164c6b1bf617b17",
+      "scene": "A standing person stacks three planning cards onto a small next-week desk calendar. Warm ochre-red #8f4335 and coral #db7b61."
+    },
+    "monthly-result": {
+      "png": "monthly-result.png",
+      "webp": "monthly-result.webp",
+      "pngSha256": "bc83f6b0b35d587719c01ab5cb26180fa2fab320bc5396819d7c2e11d12f36e8",
+      "webpSha256": "dfa81f1a0e71bdb93a34957370c716c210a5fcb268823171b375d387a05c22e6",
+      "scene": "A seated person opens a broad monthly calendar booklet and compares differently sized planned and achieved paper tabs. Deep amber #875b21 and gold #d79a34."
+    },
+    "monthly-bottleneck": {
+      "png": "monthly-bottleneck.png",
+      "webp": "monthly-bottleneck.webp",
+      "pngSha256": "d3ec41713009b38ded184a700dfb1a42eb3a6016c3d82ea9c5dd3d4254b3802f",
+      "webpSha256": "590adbcdd4810c55cd348314f28acdc026ef92dd82f784e08fb6dc1ea0f8ef30",
+      "scene": "A person carefully unties a sculptural knot made of amber and cream paper ribbons, freeing one end. Deep amber #875b21 and gold #d79a34."
+    },
+    "monthly-experiment": {
+      "png": "monthly-experiment.png",
+      "webp": "monthly-experiment.webp",
+      "pngSha256": "cc57dbdb78d20d0be7703476dac57cf24c43587b692931ecc15f2315bb49bd98",
+      "webpSha256": "f5a76964de517ca6e83b559df90ab67a49b5abbc1c40f07bbc4c13a26e5095e1",
+      "scene": "A person in an apron arranges small laboratory beakers beside a folded plan sheet on a low table. Deep amber #875b21 and gold #d79a34."
+    },
+    "quarterly-evidence": {
+      "png": "quarterly-evidence.png",
+      "webp": "quarterly-evidence.webp",
+      "pngSha256": "24210d32e62c0fd5fc525a849e091d5b71d61fe3d7eade72d71d22716f38fae1",
+      "webpSha256": "70788ae6b2b890e009e1a28030c010859ba727ac301ca4af249864b2aa615934",
+      "scene": "A traveler stands beside three differently shaped route markers, holding a small map and looking back at a winding path. Deep blue #345585 and cornflower #5c82c5."
+    },
+    "quarterly-direction": {
+      "png": "quarterly-direction.png",
+      "webp": "quarterly-direction.webp",
+      "pngSha256": "8f649711bc659809d133c49b46e178f1b5991110e04d5406fa035e4a0455cc7a",
+      "webpSha256": "6e01a155464187785228e329373953d1ae4ff71e19e02534deb8e3cb08d1fae6",
+      "scene": "A person braces a large freestanding compass and rotates its blue needle toward a new direction. Deep blue #345585 and cornflower #5c82c5."
+    },
+    "quarterly-next": {
+      "png": "quarterly-next.png",
+      "webp": "quarterly-next.webp",
+      "pngSha256": "5bf5389e49d24cc4c5915be2b12f599f7627526818e02e814dc522c3bfc92a34",
+      "webpSha256": "4a7892b989eb2801698a2fad7bccee48d2955ffce3881c32ad6115a37b0d8b3c",
+      "scene": "A person leans over a route map and plants three blue goal markers on the next winding path. Deep blue #345585 and cornflower #5c82c5."
+    },
+    "yearly-coordinate": {
+      "png": "yearly-coordinate.png",
+      "webp": "yearly-coordinate.webp",
+      "pngSha256": "22c70d001cb6e8da89e35ecc8bcce046e9dfd68f05cf3680f45f042b7148d077",
+      "webpSha256": "9e2f674a7d3d6a21497f57a2cf7ee8eac922eb4e37601560e08d6afe5580e4c0",
+      "scene": "A person unrolls a tall scroll; four different seasonal symbols suggest a year-long journey. Deep violet #624782 and lavender #9a73bd."
+    },
+    "yearly-release": {
+      "png": "yearly-release.png",
+      "webp": "yearly-release.webp",
+      "pngSha256": "326af39ab9c1b71fda076abce29c846e6a5d9887178cc9b9561104f29ed2e343",
+      "webpSha256": "420da7515b7a40943c4ac0dc46a4530bbf9bf346d9b84089ae8135c7065b4e7a",
+      "scene": "A seated person sets old loose pages to one side while holding one carefully selected keepsake handbook. Deep violet #624782 and lavender #9a73bd."
+    },
+    "yearly-next": {
+      "png": "yearly-next.png",
+      "webp": "yearly-next.webp",
+      "pngSha256": "328fce435688d1e0f7b574b0252e03fb625c8f869350b6f4e9221d39921718ec",
+      "webpSha256": "84479320af9d7830bd690f47089992b92d71bfd28698d3a2ca16cf10d8953271",
+      "scene": "A person opens the first blank leaf of a new bound book beside a large tree-ring clock. Deep violet #624782 and lavender #9a73bd."
+    },
+    "decision-question": {
+      "png": "decision-question.png",
+      "webp": "decision-question.webp",
+      "pngSha256": "b78eb8acb4258926dd296b254cde4404fcfb07c74e66f5e4d40e6764fb14b2c9",
+      "webpSha256": "0dce6987a6bc82183f7baa9e56c7c36a46672a53a1e610b9be895d91d776e7de",
+      "scene": "A person at the fork of two paper paths holds a folded question sheet and studies the choice. Olive #455f34 and leaf #759d58."
+    },
+    "decision-evidence": {
+      "png": "decision-evidence.png",
+      "webp": "decision-evidence.webp",
+      "pngSha256": "353b40da0abfbc329766e954bc3d2a2bd7dad1a40927881f4fa4b9579559527a",
+      "webpSha256": "95e7129b4c292a69a95bedaf791c67528b9d46f05fee5fc4d49c60382bec2663",
+      "scene": "A person leans across a balancing scale, placing fact sheets on one side and mystery tokens on the other. Olive #455f34 and leaf #759d58."
+    },
+    "decision-choice": {
+      "png": "decision-choice.png",
+      "webp": "decision-choice.webp",
+      "pngSha256": "d6d74f62438485950bc51494d06bf2fe5c5e31566363366b4c24f805cb5e75fa",
+      "webpSha256": "e980ab0c033dddd06c081729945d1a59f3af810375559770558e500bbd7c9636",
+      "scene": "A person reaches to place one option tile into an open olive-green decision box. Olive #455f34 and leaf #759d58."
+    },
+    "decision-review": {
+      "png": "decision-review.png",
+      "webp": "decision-review.webp",
+      "pngSha256": "d193d6f9973ce49335a27e3f3a85a808a44e1edb66dc64f6f30a418010a5a45b",
+      "webpSha256": "106716fbb981fd70d63763d16bf975b1549127723defdde38f4fa527db6e88c8",
+      "scene": "A person pins a bookmark to a future page on a freestanding paper calendar while looking back at a completed choice. Olive #455f34 and leaf #759d58."
+    }
+  }
+}

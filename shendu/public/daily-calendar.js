@@ -8,12 +8,12 @@ function dateValue(value){
 function iso(date){return date.toISOString().slice(0,10)}
 const LAST_DATE='9999-12-31';
 
-export function dailyCalendarModel(value,minimum,requestedMonth='',locked=false,focusDate=''){
+export function dailyCalendarModel(value,minimum,requestedMonth='',locked=false,focusDate='',actualToday=minimum){
   const selected=dateValue(value)?String(value):'',candidate=/^\d{4}-(0[1-9]|1[0-2])$/.test(requestedMonth)&&dateValue(`${requestedMonth}-01`)?requestedMonth:(selected||minimum).slice(0,7),month=!locked&&candidate<minimum.slice(0,7)?minimum.slice(0,7):candidate;
   const first=dateValue(`${month}-01`),year=first.getUTCFullYear(),monthNumber=first.getUTCMonth()+1,lead=(first.getUTCDay()+6)%7,last=new Date(Date.UTC(year,monthNumber,0,12)).getUTCDate();
   const dates=Array.from({length:last},(_,index)=>`${month}-${String(index+1).padStart(2,'0')}`),enabled=dates.filter(date=>!locked&&date>=minimum);
   const tabDate=[focusDate,selected,minimum,...enabled].find(date=>enabled.includes(date))||'';
-  return {month,year,monthNumber,selected,tabDate,previous:!locked&&month>minimum.slice(0,7),next:!locked&&month<'9999-12',cells:Array.from({length:42},(_,index)=>{const date=dates[index-lead];return date?{date,day:index-lead+1,today:date===minimum,selected:date===selected,disabled:locked||date<minimum}:null})};
+  return {month,year,monthNumber,selected,tabDate,previous:!locked&&month>minimum.slice(0,7),next:!locked&&month<'9999-12',cells:Array.from({length:42},(_,index)=>{const date=dates[index-lead];return date?{date,day:index-lead+1,today:date===actualToday,selected:date===selected,disabled:locked||date<minimum}:null})};
 }
 
 export function dailyCalendarKeyDate(value,key,minimum,shift=false){

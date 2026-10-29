@@ -1,0 +1,23 @@
+{
+  "generator": "built-in image_gen",
+  "reference": "../daily/evidence.png (style only)",
+  "sharedPrompt": "Use case: illustration-story. Transparent square cutout for Shendu private personal-review app. Match the reference's whimsical flat editorial person, cream paper body, thin deep-teal outlines, oversized hands and subtle paper texture; create a new pose and silhouette. Keep complete subject and props with generous transparent margin. No text, letters, numerals, logos, UI frame, watermark or opaque background.",
+  "scenes": {
+    "weekly-recap": "A person kneeling and arranging seven loose paper sheets in a broad fan, glancing back over the week; a coral ribbon connects the sheets. Warm ochre-red #8f4335 and coral #db7b61.",
+    "weekly-pattern": "A crouching investigator looks through a large magnifying glass at a loop of tiny footprints and repeating habit marks. Warm ochre-red #8f4335 and coral #db7b61.",
+    "weekly-next": "A standing person stacks three planning cards onto a small next-week desk calendar. Warm ochre-red #8f4335 and coral #db7b61.",
+    "monthly-result": "A seated person opens a broad monthly calendar booklet and compares differently sized planned and achieved paper tabs. Deep amber #875b21 and gold #d79a34.",
+    "monthly-bottleneck": "A person carefully unties a sculptural knot made of amber and cream paper ribbons, freeing one end. Deep amber #875b21 and gold #d79a34.",
+    "monthly-experiment": "A person in an apron arranges small laboratory beakers beside a folded plan sheet on a low table. Deep amber #875b21 and gold #d79a34.",
+    "quarterly-evidence": "A traveler stands beside three differently shaped route markers, holding a small map and looking back at a winding path. Deep blue #345585 and cornflower #5c82c5.",
+    "quarterly-direction": "A person braces a large freestanding compass and rotates its blue needle toward a new direction. Deep blue #345585 and cornflower #5c82c5.",
+    "quarterly-next": "A person leans over a route map and plants three blue goal markers on the next winding path. Deep blue #345585 and cornflower #5c82c5.",
+    "yearly-coordinate": "A person unrolls a tall scroll; four different seasonal symbols suggest a year-long journey. Deep violet #624782 and lavender #9a73bd.",
+    "yearly-release": "A seated person sets old loose pages to one side while holding one carefully selected keepsake handbook. Deep violet #624782 and lavender #9a73bd.",
+    "yearly-next": "A person opens the first blank leaf of a new bound book beside a large tree-ring clock. Deep violet #624782 and lavender #9a73bd.",
+    "decision-question": "A person at the fork of two paper paths holds a folded question sheet and studies the choice. Olive #455f34 and leaf #759d58.",
+    "decision-evidence": "A person leans across a balancing scale, placing fact sheets on one side and mystery tokens on the other. Olive #455f34 and leaf #759d58.",
+    "decision-choice": "A person reaches to place one option tile into an open olive-green decision box. Olive #455f34 and leaf #759d58.",
+    "decision-review": "A person pins a bookmark to a future page on a freestanding paper calendar while looking back at a completed choice. Olive #455f34 and leaf #759d58."
+  }
+}

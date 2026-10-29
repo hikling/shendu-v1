@@ -12,6 +12,7 @@ import { gzipSync, gunzipSync } from 'node:zlib';
 import { DatabaseSync } from 'node:sqlite';
 import { runInNewContext } from 'node:vm';
 import { atomicWriteFile } from '../scripts/backup-safety.mjs';
+import { verificationMinimum } from '../public/verification-policy.js';
 
 const appDir = fileURLToPath(new URL('../', import.meta.url));
 const root = mkdtempSync(join(tmpdir(), 'shendu-security-'));
@@ -350,7 +351,7 @@ test('密码文件保留首尾空格，不静默改变用户的备份密码', ()
 });
 test('整站备份可恢复完成后超过草稿上限的正文及旧版周期，个人备份仍可导入', async () => {
   const today = new Intl.DateTimeFormat('sv-SE', { timeZone: 'Asia/Shanghai' }).format(new Date());
-  const data = { answers: Object.fromEntries(['decision','options','facts','expectation','failure','choice','firstStep'].map(key => [key, ['内容']])), action: '行动', ifThen: '应对', verifyDate: today, journal: '' };
+  const data = { answers: Object.fromEntries(['decision','options','facts','expectation','failure','choice','firstStep'].map(key => [key, ['内容']])), action: '行动', ifThen: '应对', verifyDate: verificationMinimum('decision',today), journal: '' };
   data.journal = 'x'.repeat(1024 * 1024 - Buffer.byteLength(JSON.stringify(data)) - 64);
   const saved = await api('/api/records', { method: 'PUT', body: { type: 'decision', period: today, title: '接近上限的记录', data } });
   assert.equal(saved.status, 200, saved.text.slice(0, 500));

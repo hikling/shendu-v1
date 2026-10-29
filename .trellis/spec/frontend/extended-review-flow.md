@@ -9,14 +9,14 @@ This contract covers `weekly`, `monthly`, `quarterly`, `yearly`, and `decision` 
 - `EXTENDED_FLOW[type].stages` in `extended-flow.js` defines ordered stage IDs, labels, and field IDs.
 - `extendedPrompts(type, QUESTIONS[type])` returns ordered `{id,stage,stageIndex,phase,required,kind}` prompts. It throws if a question is missing from the flow or an unknown field is introduced.
 - `extendedPromptNeighbor(prompts,current,direction)` returns the adjacent ID or `null` at a boundary.
-- `extendedPromptIssues(data,title,prompt,beijingToday)` checks only the visible prompt; `extendedReviewIssues(data,title,prompts,beijingToday)` checks all prompts. Both return `{field,reason}` issues without mutating data.
+- `extendedPromptIssues(data,title,prompt,beijingToday)` checks only the visible prompt; `extendedReviewIssues(data,title,prompts,beijingToday)` checks all prompts. Both return `{field,reason}` issues without mutating data. Supply `verificationMinimum(type,beijingToday)` as the date boundary for extended types.
 - `renderReview()` mounts all inputs once through `extendedReviewHtml()`; `showExtendedPrompt()` only changes `hidden`, phase/side attributes and focus. `state.extendedPrompt` preserves the current question across answer redraw, save, and completion.
 
 ## 3. Contracts
 
 All five forms send the existing `PUT /api/records` payload: `title` (required for `decision`), `data.answers[questionKey]` as arrays of up to five strings, plus `data.action`, optional `data.ifCondition`, required `data.ifThen`, and `data.verifyDate` in `YYYY-MM-DD`. Their existing period, `status`, `version`, and `templateSnapshot` rules stay intact. The `ifThen` screen renders both `ifCondition` and `ifThen` together and collects both original keys. The inline calendar only changes `verifyDate` when a day is explicitly selected. A local next/back movement does not save. Daily is different: its original server rule requires both contingency fields.
 
-The art wrapper exposes `data-review-type` and `data-review-phase` with one of the 16 semantic slugs in `docs/extended-illustrations.md`; the intro uses that type's first phase. Each type currently displays its own `assets/overview/<type>.svg` as a temporary image. Art is `aria-hidden` and pointer inert. Replace each phase's asset mapping when its separately generated image exists; do not change the stored record or questions to select art.
+The art wrapper exposes `data-review-type` and `data-review-phase` with one of the 16 semantic slugs in `docs/extended-illustrations.md`; the intro uses that type's first phase. Each slug maps to one generated `assets/extended/<slug>.webp`, with exactly one image visible at a time. Art is `aria-hidden` and pointer inert. Phase changes select art without changing stored records or questions. Type-scoped paper, ink and decoration colors follow the matching overview icon palette; daily remains on its existing palette.
 
 ## 4. Validation and error matrix
 
@@ -27,10 +27,12 @@ The art wrapper exposes `data-review-type` and `data-review-phase` with one of t
 | Decision title empty | Stay on title input | Return `recordTitle` issue |
 | Optional `ifCondition` empty | Continue | Allowed for all five types |
 | Required `ifThen` empty | Stay on paired screen and focus response | Return `ifThen` issue |
-| Date missing, invalid, or before Beijing today | Stay on calendar and focus visible eligible day | Return `verifyDate` issue |
+| Date missing, invalid, or before the type's Beijing minimum | Stay on calendar and focus visible eligible day | Return `verifyDate` issue |
 | Completed, verified, or historical record | Bypass writing gate; controls disabled | Server state remains locked |
 
 `showExtendedIssues()` must reveal the issue's screen before focusing its input. A hidden answer never leaves keyboard focus in an invisible panel. Server validation remains the final authority.
+
+The shared `public/verification-policy.js` defines the earliest date: daily today, weekly next Monday, monthly next month's first, quarterly next calendar quarter's first, yearly next January 1, decision completion date plus three calendar months (clamp month-end). The inline calendar, prompt/final checks, completion endpoint and actual verification submission must use the same rule. A selected expected date later than the minimum does not forbid verification earlier than that selection once the category minimum is reached; the existing early/on-time/late timing still applies.
 
 ## 5. Good / base / bad cases
 

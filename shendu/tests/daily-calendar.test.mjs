@@ -12,6 +12,13 @@ test('opening an empty calendar does not select a value and starts at the first 
   assert.equal(model.cells.findIndex(cell=>cell?.date==='2026-10-01'),3,'Monday-first placement for Thursday');
 });
 
+test('a future category minimum is selectable but is not mislabeled as today',()=>{
+  const model=dailyCalendarModel('','2026-11-02','',false,'','2026-10-29');
+  assert.equal(model.month,'2026-11');assert.equal(model.tabDate,'2026-11-02');
+  assert.equal(model.cells.find(cell=>cell?.date==='2026-11-02')?.today,false);
+  assert.equal(model.cells.some(cell=>cell?.today),false);
+});
+
 test('month browsing preserves the actual selected value instead of choosing the first day',()=>{
   const model=dailyCalendarModel('2026-11-05',minimum,'2026-12');
   assert.equal(model.selected,'2026-11-05');assert.equal(model.month,'2026-12');assert.equal(model.tabDate,'2026-12-01');

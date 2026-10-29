@@ -1132,17 +1132,26 @@ body.reduce-motion #daily-intro-text.is-typing .daily-glyph:not(.is-visible){opa
 }
 
 /* The five long-form reviews share the daily writing canvas while keeping their own identity. */
-.extended-review-flow{--extended-tone:#17635b;--extended-line:#9cbeb3;--extended-spot:#a46c3d;--daily-emphasis:var(--extended-tone)}
-.extended-review-flow.type-weekly{--extended-tone:#8f4335;--extended-line:#c49d91;--extended-spot:#b97a57}
-.extended-review-flow.type-monthly{--extended-tone:#875b21;--extended-line:#c9b78c;--extended-spot:#aa863d}
-.extended-review-flow.type-quarterly{--extended-tone:#345585;--extended-line:#9aafc6;--extended-spot:#718eaf}
-.extended-review-flow.type-yearly{--extended-tone:#624782;--extended-line:#b5a5c4;--extended-spot:#9675aa}
-.extended-review-flow.type-decision{--extended-tone:#455f34;--extended-line:#a7b99d;--extended-spot:#8b9a59}
+.extended-review-flow{--extended-tone:#17635b;--extended-line:#9cbeb3;--extended-spot:#a46c3d;--daily-emphasis:var(--extended-tone);--daily-deep:var(--extended-tone);--daily-accent:var(--extended-tone);--line:var(--extended-line)}
+.extended-review-flow.type-weekly{--extended-tone:#8f4335;--extended-line:#c49d91;--extended-spot:#db7b61;--daily-paper:#f8ece8;--daily-white:#fffaf7;--daily-ink:#402d32;--ink-2:#6c4e4d;--muted:#755b5a}
+.extended-review-flow.type-monthly{--extended-tone:#875b21;--extended-line:#c9b78c;--extended-spot:#d79a34;--daily-paper:#f8f1df;--daily-white:#fffdf5;--daily-ink:#4b3a2a;--ink-2:#705a38;--muted:#786949}
+.extended-review-flow.type-quarterly{--extended-tone:#345585;--extended-line:#9aafc6;--extended-spot:#5c82c5;--daily-paper:#eaf0fa;--daily-white:#f8fbff;--daily-ink:#1c355b;--ink-2:#425c82;--muted:#5a6e8c}
+.extended-review-flow.type-yearly{--extended-tone:#624782;--extended-line:#b5a5c4;--extended-spot:#9a73bd;--daily-paper:#f0eaf7;--daily-white:#fdf9ff;--daily-ink:#3c2c53;--ink-2:#604e75;--muted:#716486}
+.extended-review-flow.type-decision{--extended-tone:#455f34;--extended-line:#a7b99d;--extended-spot:#759d58;--daily-paper:#edf3e7;--daily-white:#fbfef8;--daily-ink:#2e442d;--ink-2:#4b6344;--muted:#607657}
 .extended-review-flow .daily-stage-label,.extended-review-flow .daily-intro-kicker{color:var(--extended-tone)}
 .extended-review-flow .daily-scene-art{--scene-line:var(--extended-line);--scene-spot:var(--extended-spot);width:38%;max-width:560px}
 .extended-review-flow .daily-scene-art::before{background:linear-gradient(145deg,#fffdf8c9,color-mix(in srgb,var(--extended-tone) 11%,#f6f7ee) 72%,#e9edf700);border-radius:48% 52% 44% 56% / 54% 47% 53% 46%}
 .extended-review-flow .daily-scene-art::after{inset:7% 8% 15% 13%;transform:rotate(7deg)}
-.extended-review-flow .daily-scene-image{display:block;width:68%;height:68%;margin:16%;border-radius:18%;object-fit:contain;filter:drop-shadow(0 20px 24px #152b5420);transform:rotate(-4deg)}
+.extended-review-flow.type-weekly .daily-scene-art::before{border-radius:42% 58% 52% 48% / 63% 44% 56% 37%;transform:rotate(-12deg)}
+.extended-review-flow.type-monthly .daily-scene-art::before{border-radius:20% 62% 33% 67% / 52% 26% 74% 48%;transform:rotate(8deg)}
+.extended-review-flow.type-quarterly .daily-scene-art::before{border-radius:56% 44% 66% 34% / 40% 58% 42% 60%;transform:rotate(-6deg)}
+.extended-review-flow.type-yearly .daily-scene-art::before{border-radius:60% 32% 56% 38% / 31% 62% 36% 65%;transform:rotate(13deg)}
+.extended-review-flow.type-decision .daily-scene-art::before{border-radius:29% 64% 48% 51% / 53% 37% 65% 41%;transform:rotate(-2deg)}
+.extended-review-flow.type-monthly .daily-scene-art::after{inset:10% 3% 18% 21%;transform:rotate(-9deg)}
+.extended-review-flow.type-quarterly .daily-scene-art::after{inset:5% 14% 16% 4%;transform:rotate(15deg)}
+.extended-review-flow.type-yearly .daily-scene-art::after{inset:14% 4% 7% 16%;transform:rotate(-17deg)}
+.extended-review-flow.type-decision .daily-scene-art::after{inset:11% 12% 6% 7%;transform:rotate(4deg)}
+.extended-review-flow .daily-scene-image{display:block;width:82%;height:82%;margin:9%;object-fit:contain;filter:drop-shadow(0 18px 22px color-mix(in srgb,var(--extended-tone) 20%,transparent));transform:rotate(-4deg)}
 .extended-review-flow:is([data-review-phase="weekly-pattern"],[data-review-phase="monthly-bottleneck"],[data-review-phase="quarterly-direction"],[data-review-phase="yearly-release"],[data-review-phase="decision-evidence"]) .daily-scene-image{transform:rotate(4deg) translateY(5px)}
 .extended-review-flow:is([data-review-phase="weekly-next"],[data-review-phase="monthly-experiment"],[data-review-phase="quarterly-next"],[data-review-phase="yearly-next"],[data-review-phase="decision-choice"]) .daily-scene-image{transform:rotate(-2deg) translateY(-4px)}
 .extended-review-flow[data-review-phase="decision-review"] .daily-scene-image{transform:rotate(3deg) translateY(3px)}

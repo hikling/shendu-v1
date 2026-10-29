@@ -8,4 +8,6 @@ The outer server handler catches unexpected route failures and returns a generic
 
 `PUT /api/records` only writes the current allowed period, rejects edits to completed records, compares `version` to prevent overwrites, and enforces size limits. `POST /api/records/:id/complete` validates required fields and locks the record; verification is a later transition. UI reorganization must preserve these contracts unless an explicit API/data task changes them.
 
+Completion must reject a `verifyDate` earlier than `verificationMinimum(type, Beijing today)`. `POST /api/records/:id/verify` must also reject submission before the same minimum computed from that record's Beijing `completed_at` date (with `created_at` fallback for old rows). Daily can verify on the completion day. Use the shared pure module `public/verification-policy.js` and return a specific 400 error without changing the record. Keep the selected expected date separate from this absolute minimum so existing early/on-time/late classification remains meaningful.
+
 `staticFile()` serves from `shendu/public/`, rejects traversal, and uses no-cache for HTML with long immutable caching for other assets. Consider asset URL changes when updating deployment packaging.
