@@ -23,4 +23,4 @@
 
 ## Publication
 
-Pending work commit/push and exact-revision CI. No deployment claimed. Root will archive and journal after CI acceptance.
+Work commit23646b1c9d3ade18f74e74e6db1b25ba58470dd8 fast-forwarded to main and pushed. Exact-revision Verify build run40821924855 completed successfully: https://github.com/hikling/shendu-v1/actions/runs/40821924855 . README22local references all resolve. Browser viewport reset/owned tab closed; verified temporary helper67032 and children were stopped. Finish-work archive/journal follows the accepted work commit. No deployment claimed.
