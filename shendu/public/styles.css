@@ -842,8 +842,19 @@ body.reduce-motion .overview-type-burst{display:none}
 .daily-top-actions button:hover{color:var(--daily-accent);text-decoration:underline;text-underline-offset:6px}
 .daily-exit span{display:inline-block;margin-left:12px;font-size:1rem;transition:transform .2s}
 .daily-exit:hover span{transform:translate(2px,-2px)}
-.daily-scene-art{position:absolute;z-index:-1;top:132px;right:4%;width:43%;max-width:650px;aspect-ratio:1;pointer-events:none;user-select:none;contain:paint}
+.daily-scene-art{position:absolute;z-index:-1;top:132px;right:4%;width:43%;max-width:650px;aspect-ratio:1;pointer-events:none;user-select:none}
 .daily-scene-image{display:none;width:100%;height:100%;object-fit:contain;pointer-events:none;animation:daily-scene-enter .55s ease-out both}
+.daily-art-burst{position:absolute;inset:0;z-index:1;container-type:inline-size;pointer-events:none}
+.daily-art-burst:before{content:"";position:absolute;inset:12%;border:1.5px solid #94c9ba;border-radius:50%;opacity:0;transform:scale(.6);pointer-events:none}
+.daily-art-burst i{position:absolute;left:50%;top:50%;width:clamp(5px,1.4cqw,8px);height:clamp(10px,2.5cqw,15px);border-radius:3px;background:#78b8a4;opacity:0;transform:translate(-50%,-50%) scale(.2);pointer-events:none}
+.daily-art-burst i:nth-child(3n){width:clamp(7px,1.7cqw,10px);height:clamp(7px,1.7cqw,10px);border-radius:50%;background:#276e62}
+.daily-art-burst i:nth-child(3n+1){width:clamp(8px,1.9cqw,11px);height:clamp(8px,1.9cqw,11px);border:2px solid #78b8a4;border-radius:50%;background:transparent}
+.daily-art-burst i:nth-child(4n){background:#d4ae58}
+.daily-scene-art.is-bursting .daily-art-burst i{animation:daily-art-particle .9s cubic-bezier(.12,.7,.25,1) var(--burst-delay) both}
+.daily-scene-art.is-bursting .daily-art-burst:before{animation:daily-art-ring .75s ease-out both}
+@keyframes daily-art-particle{0%{opacity:0;transform:translate(-50%,-50%) scale(.2)}18%{opacity:1}65%{opacity:.9}100%{opacity:0;transform:translate(calc(-50% + var(--burst-x)*56cqw),calc(-50% + var(--burst-y)*56cqw)) rotate(var(--burst-turn)) scale(1)}}
+@keyframes daily-art-ring{0%{opacity:0;transform:scale(.6)}20%{opacity:.28}100%{opacity:0;transform:scale(1.3)}}
+@media(hover:none),(pointer:coarse){.daily-art-burst{display:none}}
 .daily-art-flow[data-daily-scene="intro"] [data-daily-art="intro"],
 .daily-art-flow[data-daily-scene="sleep"] [data-daily-art="sleep"],
 .daily-art-flow[data-daily-scene="energy"] [data-daily-art="energy"],
@@ -878,22 +889,28 @@ body.reduce-motion .overview-type-burst{display:none}
 .daily-pane{width:52%;max-width:720px;position:relative}
 .daily-editor .folio-card{margin:0;padding:0;overflow:visible;border:0;border-radius:0;background:transparent;box-shadow:none}
 .daily-editor .daily-prompt{margin:0;padding:0;border:0;border-radius:0;background:transparent;box-shadow:none}
-.daily-date-picker{width:100%;max-width:520px;padding:22px;border:1px solid #a8b9d2;border-radius:20px;background:var(--daily-white);box-shadow:0 12px 32px #152b5407}
-.daily-calendar-selection{min-height:29px;margin:0 0 16px;color:var(--daily-ink);font:600 .91rem/1.7 "Noto Sans SC","Microsoft YaHei",sans-serif}
-.daily-calendar-head{display:grid;grid-template-columns:36px minmax(0,1fr) 36px auto;align-items:center;gap:8px;margin-bottom:12px}
-.daily-calendar-head>strong{text-align:center;color:var(--daily-ink);font:600 .88rem/1.5 "Noto Sans SC","Microsoft YaHei",sans-serif;white-space:nowrap}
-.daily-calendar-head>button{display:grid;place-items:center;min-width:36px;min-height:36px;border:1px solid #b6c5da;border-radius:9px;background:#fff;color:var(--daily-ink);padding:5px;transition:background .18s,border-color .18s}
-.daily-calendar-head>.daily-calendar-today{display:block;min-width:48px;padding-inline:10px;font:500 .65rem/1.4 "Noto Sans SC","Microsoft YaHei",sans-serif}
-.daily-calendar-head>button:hover:not(:disabled){border-color:var(--daily-accent);background:#e4ebf8}
-.daily-calendar-table{width:100%;table-layout:fixed;border-collapse:separate;border-spacing:4px;margin:0 -4px}
-.daily-calendar-table th{height:29px;color:#425576;font:500 .64rem/1.4 "Noto Sans SC","Microsoft YaHei",sans-serif;text-align:center}
-.daily-calendar-table td{height:44px;padding:0;text-align:center}
-.daily-calendar-day{display:block;width:100%;height:42px;padding:0;border:1px solid transparent;border-radius:10px;background:transparent;color:var(--daily-ink);font:500 .8rem/1 "Noto Sans SC","Microsoft YaHei",sans-serif;font-variant-numeric:tabular-nums;transition:background .18s,border-color .18s}
-.daily-calendar-day:hover:not(:disabled){background:#dce6f7;border-color:#a6badb}
-.daily-calendar-day.is-today{border-color:#7487a3;font-weight:700}
-.daily-calendar-day[aria-pressed="true"],.daily-calendar-day[aria-pressed="true"]:disabled{background:var(--daily-deep);border-color:var(--daily-deep);color:#fff;opacity:1}
-.daily-calendar-day:disabled:not([aria-pressed="true"]){color:#8796ad;opacity:.55}
-.daily-calendar-help{margin:13px 0 0;color:#425576;font:400 .62rem/1.7 "Noto Sans SC","Microsoft YaHei",sans-serif}
+.daily-date-picker{width:100%;max-width:352px;padding:14px;border:1px solid #b6c7df;border-radius:18px;background:linear-gradient(155deg,#fcfdff,#f0f4fc);box-shadow:0 14px 30px -22px #152b5466,inset 0 1px #fff}
+.daily-calendar-selection{min-height:20px;margin:0 0 6px;color:#496080;font:500 .74rem/1.5 "Noto Sans SC","Microsoft YaHei",sans-serif;font-variant-numeric:tabular-nums}
+.daily-calendar-head{display:grid;grid-template-columns:32px minmax(0,1fr) 32px;align-items:center;gap:7px;margin-bottom:4px}
+.daily-calendar-head>strong{text-align:center;color:var(--daily-ink);font:700 1.18rem/1.35 "Songti SC","Noto Serif SC","SimSun",serif;white-space:nowrap}
+.daily-calendar-head>button{display:grid;place-items:center;width:32px;height:32px;padding:5px;border:1px solid transparent;border-radius:50%;background:transparent;color:#496080;transition:background .18s,border-color .18s}
+.daily-calendar-head>button:hover:not(:disabled){border-color:#c5d3e9;background:#e4ecf9}
+.daily-calendar-head>button:disabled{opacity:.35}
+.daily-calendar-table{width:100%;table-layout:fixed;border-collapse:separate;border-spacing:2px 1px;margin:0}
+.daily-calendar-table th{height:18px;padding:0;color:#566b8a;font:500 .62rem/1.4 "Noto Sans SC","Microsoft YaHei",sans-serif;text-align:center}
+.daily-calendar-table th:nth-last-child(-n+2){color:#6a7b94}
+.daily-calendar-table td{height:32px;padding:0;text-align:center}
+.daily-calendar-day{position:relative;display:block;width:min(100%,32px);height:32px;margin:auto;padding:0;border:1px solid transparent;border-radius:50%;background:transparent;color:var(--daily-ink);font:500 .76rem/1 "Noto Sans SC","Microsoft YaHei",sans-serif;font-variant-numeric:tabular-nums;transition:background .18s,border-color .18s,box-shadow .18s}
+.daily-calendar-day:hover:not(:disabled){background:#dde8f9;border-color:#a4bbdf}
+.daily-calendar-day.is-today{border-color:#8c9fbc;font-weight:700}
+.daily-calendar-day.is-today:after{content:"";position:absolute;bottom:3px;left:calc(50% - 1.5px);width:3px;height:3px;border-radius:50%;background:currentColor}
+.daily-calendar-day[aria-pressed="true"],.daily-calendar-day[aria-pressed="true"]:disabled{background:var(--daily-deep);border-color:var(--daily-deep);box-shadow:0 4px 9px #152b5425;color:#fff;opacity:1}
+.daily-calendar-day:disabled:not([aria-pressed="true"]){color:#8191a9;opacity:.55}
+.daily-calendar-foot{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:6px;padding-top:5px;border-top:1px solid #dce5f3}
+.daily-calendar-help{margin:0;color:#566b8a;font:400 .6rem/1.5 "Noto Sans SC","Microsoft YaHei",sans-serif}
+.daily-calendar-today{min-width:48px;min-height:28px;padding:4px 10px;border:1px solid #c5d3e9;border-radius:99px;background:#e8effb;color:var(--daily-ink);font:500 .64rem/1.4 "Noto Sans SC","Microsoft YaHei",sans-serif;transition:background .18s,border-color .18s}
+.daily-calendar-today:hover:not(:disabled){border-color:#9db4d6;background:#dce7f9}
+.daily-calendar-today:disabled{opacity:.45}
 /* One number-entry surface, including its unit, state and labelled reference ruler. */
 .daily-editor .gauge-card{--gauge:#176b67;--gauge-baseline:#875b21;width:100%;padding:22px 26px 18px;border:1px solid #a8b9d2;border-radius:20px;background:var(--daily-white);box-shadow:0 12px 32px #152b5407}
 .daily-editor .gauge-reading{margin:0}
@@ -1044,15 +1061,12 @@ body.reduce-motion .overview-type-burst{display:none}
 @media(max-width:390px){
   .daily-flow-head{padding-inline:20px}
   .daily-stage-label{font-size:.54rem;letter-spacing:.02em}
-  .daily-date-picker{padding:15px 12px;border-radius:17px}
-  .daily-calendar-head{grid-template-columns:32px minmax(0,1fr) 32px auto;gap:5px}
-  .daily-calendar-head>strong{font-size:.75rem}
-  .daily-calendar-head>button{min-width:32px;min-height:34px}
-  .daily-calendar-head>.daily-calendar-today{min-width:42px;padding-inline:6px;font-size:.6rem}
-  .daily-calendar-selection{font-size:.76rem}
-  .daily-calendar-table{border-spacing:2px;margin-inline:-2px}
-  .daily-calendar-table td{height:39px}
-  .daily-calendar-day{height:37px;font-size:.75rem;border-radius:8px}
+  .daily-date-picker{padding:12px;border-radius:17px}
+  .daily-calendar-head{gap:5px}
+  .daily-calendar-head>strong{font-size:1.06rem}
+  .daily-calendar-selection{font-size:.73rem}
+  .daily-calendar-foot{gap:7px}
+  .daily-calendar-today{min-width:44px;padding-inline:8px}
   .daily-top-actions{gap:13px}
   .daily-intro,.daily-editor{padding-inline:24px}
   #daily-intro-text{font-size:40px}
@@ -1077,11 +1091,13 @@ body.reduce-motion .overview-type-burst{display:none}
   .daily-flow-footer .btn-primary{min-width:104px;gap:13px}
 }
 @media(prefers-reduced-motion:reduce){
+  .daily-art-burst{display:none}
   .daily-scene-image,.daily-question-heading{animation:none}
   .daily-glyph,.daily-exit span,.daily-intro .btn span,.daily-editor .gauge>span,.daily-editor .gauge>b,.daily-art-flow input,.daily-art-flow textarea{transition:none}
   #daily-intro-text.is-typing .daily-glyph:not(.is-visible){opacity:1}
 }
 body.reduce-motion .daily-scene-image,body.reduce-motion .daily-question-heading{animation:none}
+body.reduce-motion .daily-art-burst{display:none}
 body.reduce-motion .daily-glyph,body.reduce-motion .daily-exit span,body.reduce-motion .daily-intro .btn span,body.reduce-motion .daily-editor .gauge>span,body.reduce-motion .daily-editor .gauge>b,body.reduce-motion .daily-art-flow input,body.reduce-motion .daily-art-flow textarea{transition:none}
 body.reduce-motion #daily-intro-text.is-typing .daily-glyph:not(.is-visible){opacity:1}
 .right-rail.open .rail-stats{grid-column:1/-1;grid-row:2;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}

@@ -1,6 +1,6 @@
 import {overviewRecordAppearances,overviewVerifiedRecords,overviewRecordExcerpt,overviewLoopMetrics,overviewRecordTitle,overviewDateParts} from './overview-reel.js?v=1.0.0-overview15';
-import {DAILY_STEPS,dailyStepIssues,dailyPrompts,dailyPromptIssues,dailyPromptNeighbor,dailyPromptOwner} from './daily-flow.js?v=1.0.0-overview24';
-import {dailyCalendarModel,dailyCalendarKeyDate,dailyCalendarDateLabel} from './daily-calendar.js?v=1.0.0-overview24';
+import {DAILY_STEPS,dailyStepIssues,dailyPrompts,dailyPromptIssues,dailyPromptNeighbor,dailyPromptOwner} from './daily-flow.js?v=1.0.0-overview25';
+import {dailyCalendarModel,dailyCalendarKeyDate,dailyCalendarDateLabel} from './daily-calendar.js?v=1.0.0-overview25';
 const $ = (s, root = document) => root.querySelector(s);
 const $$ = (s, root = document) => [...root.querySelectorAll(s)];
 const esc = (v = '') => String(v).replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
@@ -95,6 +95,7 @@ const state = { user:null, stage:null, theme:null, records:[], stats:{week:0,pen
 let modalReturnFocus=null;
 let overviewReelObserver=null;
 let dailyTypingTimer=null,dailyTypingCleanup=null;
+let dailyArtBurstController=null;
 async function request(path, options = {}) {
   const opts = { credentials:'same-origin', ...options, headers:{ ...(options.body && !(options.body instanceof Blob) && !(options.body instanceof ArrayBuffer) ? {'Content-Type':'application/json'} : {}), ...(options.headers||{}) } };
   if (opts.body && opts.headers['Content-Type']==='application/json' && typeof opts.body !== 'string') opts.body = JSON.stringify(opts.body);
@@ -104,7 +105,7 @@ async function request(path, options = {}) {
 function sessionExpired(){state.reauthOpen=true;openModal(`<div class="modal-head"><div><h2>登录已失效</h2><p>重新登录后，页面中尚未保存的内容仍会保留。</p></div></div><form id="reauth-form"><div class="field"><label>用户名</label><input name="username" value="${esc(state.user.username)}" readonly></div><div class="field"><label>密码</label><input name="password" type="password" minlength="15" required autocomplete="current-password"></div><div class="modal-actions"><button class="btn btn-primary">重新登录</button></div></form>`,'',true);$('#reauth-form').addEventListener('submit',async e=>{e.preventDefault();const res=await fetch('/api/auth/login',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify(Object.fromEntries(new FormData(e.currentTarget)))});const data=await res.json();if(!res.ok){toast(data.message||'登录失败','error');return}state.reauthOpen=false;closeModal(true);toast('已重新登录，请再次保存')})}
 function toast(message, kind='success') { const el=document.createElement('div');el.className=`toast ${kind}`;el.textContent=message;$('#toast-root').append(el);setTimeout(()=>el.remove(),3200); }
 function contrastFor(hex){const h=String(hex).replace('#','');if(!/^[0-9a-f]{6}$/i.test(h))return'#fff';const [r,g,b]=[0,2,4].map(i=>parseInt(h.slice(i,i+2),16)/255).map(v=>v<=.03928?v/12.92:((v+.055)/1.055)**2.4);return .2126*r+.7152*g+.0722*b>.52?'#201d19':'#fff'}
-function applyTheme(theme){const t=theme||state.theme||{},fallback=PALETTES['潮汐青'],r=document.documentElement;['primary','secondary','tertiary'].forEach((k,index)=>{const color=/^#[0-9a-f]{6}$/i.test(String(t[k]||''))?t[k]:fallback[index];r.style.setProperty(`--${k}`,color);r.style.setProperty(`--${k}-contrast`,contrastFor(color))});document.body.classList.toggle('reduce-motion',!!t.reduceMotion);if(t.reduceMotion)cancelDailyTypewriter()}
+function applyTheme(theme){const t=theme||state.theme||{},fallback=PALETTES['潮汐青'],r=document.documentElement;['primary','secondary','tertiary'].forEach((k,index)=>{const color=/^#[0-9a-f]{6}$/i.test(String(t[k]||''))?t[k]:fallback[index];r.style.setProperty(`--${k}`,color);r.style.setProperty(`--${k}-contrast`,contrastFor(color))});document.body.classList.toggle('reduce-motion',!!t.reduceMotion);if(t.reduceMotion){cancelDailyTypewriter();cancelDailyArtBurst()}}
 const BEIJING_TIME_ZONE='Asia/Shanghai';
 function beijingDateParts(value=new Date()){const parts=new Intl.DateTimeFormat('en-US',{timeZone:BEIJING_TIME_ZONE,year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(value);const result=Object.fromEntries(parts.filter(x=>x.type!=='literal').map(x=>[x.type,x.value]));return{year:Number(result.year),month:Number(result.month),day:Number(result.day),iso:`${result.year}-${result.month}-${result.day}`}}
 function today(){return beijingDateParts().iso}
@@ -260,8 +261,8 @@ function bindOverviewArc(){
   observer.observe(window);
   layout();
 }
-function overviewBurst(){
-  return `<span class="overview-type-burst" aria-hidden="true">${Array.from({length:16},(_,index)=>{const angle=index*Math.PI/8,reach=.84+(index%3)*.1;return `<i style="--burst-x:${(Math.sin(angle)*reach).toFixed(3)};--burst-y:${(-Math.cos(angle)*reach).toFixed(3)};--burst-turn:${index*67}deg;--burst-delay:${index%4*18}ms"></i>`}).join('')}</span>`;
+function overviewBurst(className='overview-type-burst'){
+  return `<span class="${className}" aria-hidden="true">${Array.from({length:16},(_,index)=>{const angle=index*Math.PI/8,reach=.84+(index%3)*.1;return `<i style="--burst-x:${(Math.sin(angle)*reach).toFixed(3)};--burst-y:${(-Math.cos(angle)*reach).toFixed(3)};--burst-turn:${index*67}deg;--burst-delay:${index%4*18}ms"></i>`}).join('')}</span>`;
 }
 function renderOverview(){
   const records=overviewRecords();
@@ -368,9 +369,9 @@ function dailyReflection(data,locked,template){return `<section class="card sect
 
 function dailyCalendarHtml(value,minimum,month,locked,focusDate=''){
   const model=dailyCalendarModel(value,minimum,month,locked,focusDate);
-  return `<div class="daily-calendar-head"><button type="button" data-verify-month="-1" aria-label="上个月" ${model.previous?'':'disabled'}><span class="chevron-icon left" aria-hidden="true"></span></button><strong>${model.year} 年 ${model.monthNumber} 月</strong><button type="button" data-verify-month="1" aria-label="下个月" ${model.next?'':'disabled'}><span class="chevron-icon right" aria-hidden="true"></span></button><button type="button" class="daily-calendar-today" data-verify-today ${locked?'disabled':''}>今天</button></div><table class="daily-calendar-table"><caption class="sr-only">${model.year}年${model.monthNumber}月，可选验证日期</caption><thead><tr>${['一','二','三','四','五','六','日'].map(day=>`<th scope="col" aria-label="星期${day}">${day}</th>`).join('')}</tr></thead><tbody>${Array.from({length:6},(_,week)=>`<tr>${model.cells.slice(week*7,week*7+7).map(cell=>cell?`<td><button type="button" class="daily-calendar-day ${cell.today?'is-today':''}" data-verify-day="${cell.date}" tabindex="${cell.date===model.tabDate?'0':'-1'}" aria-label="${dailyCalendarDateLabel(cell.date)}" aria-pressed="${cell.selected}" ${cell.today?'aria-current="date"':''} ${cell.disabled?'disabled':''}>${cell.day}</button></td>`:'<td></td>').join('')}</tr>`).join('')}</tbody></table>`;
+  return `<div class="daily-calendar-head"><button type="button" data-verify-month="-1" aria-label="上个月" ${model.previous?'':'disabled'}><span class="chevron-icon left" aria-hidden="true"></span></button><strong>${model.year} 年 ${model.monthNumber} 月</strong><button type="button" data-verify-month="1" aria-label="下个月" ${model.next?'':'disabled'}><span class="chevron-icon right" aria-hidden="true"></span></button></div><table class="daily-calendar-table"><caption class="sr-only">${model.year}年${model.monthNumber}月，可选验证日期</caption><thead><tr>${['一','二','三','四','五','六','日'].map(day=>`<th scope="col" aria-label="星期${day}">${day}</th>`).join('')}</tr></thead><tbody>${Array.from({length:6},(_,week)=>`<tr>${model.cells.slice(week*7,week*7+7).map(cell=>cell?`<td><button type="button" class="daily-calendar-day ${cell.today?'is-today':''}" data-verify-day="${cell.date}" tabindex="${cell.date===model.tabDate?'0':'-1'}" aria-label="${dailyCalendarDateLabel(cell.date)}" aria-pressed="${cell.selected}" ${cell.today?'aria-current="date"':''} ${cell.disabled?'disabled':''}>${cell.day}</button></td>`:'<td></td>').join('')}</tr>`).join('')}</tbody></table><div class="daily-calendar-foot"><span class="daily-calendar-help">${locked?'日期已锁定':'可选择今天及以后的日期'}</span><button type="button" class="daily-calendar-today" data-verify-today ${locked?'disabled':''}>今天</button></div>`;
 }
-function dailyVerificationCalendar(value,locked,label){const model=dailyCalendarModel(value,today(),'',locked);return `<div class="daily-date-picker" role="group" aria-label="${esc(label)}"><input type="hidden" data-simple="verifyDate" value="${esc(value||'')}" ${locked?'disabled':''}><p class="daily-calendar-selection" id="daily-verify-selection" aria-live="polite" aria-atomic="true">${esc(dailyCalendarDateLabel(value))}</p><div id="daily-verification-calendar" data-verify-month-value="${model.month}" data-verify-locked="${locked}">${dailyCalendarHtml(value,today(),model.month,locked)}</div><p class="daily-calendar-help">${locked?'已锁定，保留当时选定的日期。':'直接选择日期；过去的日期不可选。'}</p></div>`}
+function dailyVerificationCalendar(value,locked,label){const model=dailyCalendarModel(value,today(),'',locked);return `<div class="daily-date-picker" role="group" aria-label="${esc(label)}"><input type="hidden" data-simple="verifyDate" value="${esc(value||'')}" ${locked?'disabled':''}><p class="daily-calendar-selection" id="daily-verify-selection" aria-live="polite" aria-atomic="true">${esc(dailyCalendarDateLabel(value))}</p><div id="daily-verification-calendar" data-verify-month-value="${model.month}" data-verify-locked="${locked}">${dailyCalendarHtml(value,today(),model.month,locked)}</div></div>`}
 function renderDailyCalendar(month,focusDate='',focusMonth=''){
   const calendar=$('#daily-verification-calendar');if(!calendar)return;
   const input=$('[data-simple="verifyDate"]'),locked=calendar.dataset.verifyLocked==='true',model=dailyCalendarModel(input.value,today(),month,locked,focusDate);
@@ -405,8 +406,32 @@ function dailyActionFields(data,locked,template){const action=data.action||data.
 function dailyJournal(data,locked){return `<section class="card section-card folio-card"><div class="daily-prompt journal-paper" data-daily-prompt="journal" hidden><textarea data-simple="journal" aria-label="今天的日记（选填）" maxlength="6000" rows="8" ${locked?'disabled':''} placeholder="选填。这里不需要结论。">${esc(data.journal||'')}</textarea><div class="journal-foot"><span>私人空间加密存储 · <strong id="journal-count">${(data.journal||'').length} 字</strong></span><b>${esc(state.user.displayName.slice(0,2))}</b></div></div></section>`}
 
 function reviewAfterword(locked,data,actionTemplate){return `${locked&&state.current.status==='completed'?`<section class="card section-card"><h2 style="margin-top:0">${esc(actionTemplate.lockedPendingTitle)}</h2><p class="help">${esc(actionTemplate.expectedDateLabel)}：${esc(data.verifyDate||actionTemplate.expectedMissingText)}。${esc(actionTemplate.lockedPendingIntro)}</p><button class="btn btn-primary" data-open-action="${esc(state.current.id)}">${esc(actionTemplate.lockedPendingButton)}</button></section>`:''}${state.current.status==='verified'?verificationRead(state.current):''}`}
-// These local scenes are decorative; only the real prompt chooses the image.
-function dailySceneArt(){return `<div class="daily-scene-art" aria-hidden="true">${['intro','sleep','energy','evidence','reflection','action','calendar','journal'].map(scene=>`<img class="daily-scene-image" data-daily-art="${scene}" src="/assets/daily/${scene}.webp?v=1.0.0-overview24" alt="" width="1254" height="1254" draggable="false">`).join('')}</div>`}
+function cancelDailyArtBurst(detach=false){
+  if(!dailyArtBurstController)return;
+  dailyArtBurstController.reset();
+  if(detach){dailyArtBurstController.dispose();dailyArtBurstController=null}
+}
+function bindDailyArtBurst(){
+  cancelDailyArtBurst(true);
+  const flow=$('.daily-art-flow');if(!flow)return;
+  const art=$('.daily-scene-art',flow);if(!art)return;
+  const motion=matchMedia('(prefers-reduced-motion: reduce)'),pointer=matchMedia('(hover: hover) and (pointer: fine)');
+  let entered=false,prompt='';
+  const reset=()=>{entered=false;prompt='';art.classList.remove('is-bursting')};
+  const move=event=>{
+    if(event.pointerType!=='mouse'||event.buttons||!pointer.matches||motion.matches||document.body.classList.contains('reduce-motion')){reset();return}
+    if(event.target.closest?.('input,textarea,select,button,a,summary,[contenteditable="true"],[role="button"],.daily-intro-copy,.daily-pane,.daily-question-heading,.daily-flow-head,.daily-flow-footer,.daily-step-note,.daily-flow-error')){reset();return}
+    const rect=art.getBoundingClientRect(),inside=rect.width>0&&event.clientX>=rect.left&&event.clientX<=rect.right&&event.clientY>=rect.top&&event.clientY<=rect.bottom;
+    if(!inside){reset();return}
+    const current=flow.dataset.dailyCurrentPrompt;
+    if(!entered||prompt!==current){entered=true;prompt=current;art.classList.add('is-bursting')}
+  };
+  flow.addEventListener('pointermove',move,{passive:true});flow.addEventListener('pointerleave',reset);
+  motion.addEventListener('change',reset);pointer.addEventListener('change',reset);window.addEventListener('blur',reset);
+  dailyArtBurstController={reset,dispose(){flow.removeEventListener('pointermove',move);flow.removeEventListener('pointerleave',reset);motion.removeEventListener('change',reset);pointer.removeEventListener('change',reset);window.removeEventListener('blur',reset)}};
+}
+// These local scenes remain pointer-inert; canvas tracking only decorates mouse entry.
+function dailySceneArt(){return `<div class="daily-scene-art" aria-hidden="true">${['intro','sleep','energy','evidence','reflection','action','calendar','journal'].map(scene=>`<img class="daily-scene-image" data-daily-art="${scene}" src="/assets/daily/${scene}.webp?v=1.0.0-overview25" alt="" width="1254" height="1254" draggable="false">`).join('')}${overviewBurst('daily-art-burst')}</div>`}
 function dailyIntroLines(quote){return String(quote).split(/(?<=[，。])/).filter(Boolean)}
 function dailyReviewHtml(period,locked,data,templates){
   const panes=[dailyEvidence(data,locked),dailyReflection(data,locked,templates.review),dailyActionFields(data,locked,templates.review),dailyJournal(data,locked)];
@@ -442,6 +467,7 @@ function startDailyTypewriter(){
   dailyTypingTimer=setTimeout(reveal,120);
 }
 function setDailyImmersive(open){
+  if(!open)cancelDailyArtBurst(true);
   if(open){closeHeaderMenus();if($('#right-rail.open'))setRailOverlayOpen(false)}
   $('.app-shell')?.classList.toggle('daily-immersive',open);
   const header=$('#site-header');if(header){header.hidden=open;header.inert=open||!!$('#right-rail.open')}
@@ -454,6 +480,7 @@ function dailyPromptCopy(prompt){
   return{title:copy[prompt.id][0],description:copy[prompt.id][1]};
 }
 function showDailyPrompt(promptId,focus=false){
+  cancelDailyArtBurst();
   promptId=dailyPromptOwner(promptId);
   const prompts=currentDailyPrompts(),index=prompts.findIndex(prompt=>prompt.id===promptId),intro=index<0,prompt=prompts[index];
   state.dailySection=intro?'intro':prompt.step;state.dailyPrompt=intro?null:prompt.id;
@@ -499,6 +526,7 @@ function showDailyIssues(issues){
 }
 function bindDailyFlow(){
   bindDailyCalendar();
+  bindDailyArtBurst();
   const move=prompt=>{if(state.saving)return;if($('#daily-editor').dataset.dailyLocked!=='true')collectCurrent();clearDailyIssues();showDailyPrompt(prompt,true)};
   $('#daily-start').addEventListener('click',()=>move(currentDailyPrompts()[0].id));
   $('[data-daily-exit]').addEventListener('click',()=>attemptNavigate(()=>navigate('overview')));
