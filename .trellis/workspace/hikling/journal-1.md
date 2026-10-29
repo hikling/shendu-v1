@@ -571,3 +571,25 @@ Split day-based reel dates into year-month-day and full weekday lines, retained 
 ### Status
 
 [OK] **Completed**
+
+
+## Session 26: 每日验证日历与标题精修
+<!-- trellis-session: v=2 fp=dbbec09cc48d1e5e -->
+
+**Date**: 2026-10-29
+**Task**: 每日验证日历与标题精修
+**Branch**: `main`
+
+### Summary
+
+每日验证日期改为常驻中文月历，原verifyDate字段与校验保留；支持键盘、切月、今天、可见错误焦点、保存重载及只读。题目h2改700宋体，移除每日logo并保留阶段/日期/退出。check和每日12+日历9共21测试通过；独立审查修复旧值类型兼容，CUA桌面320/390、选日失败重试/锁定/白色主题与减少动态验证通过。README九张每日截图和规范同步，CI40821924855成功。
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `23646b1` | feat: show inline daily verification calendar |
+
+### Status
+
+[OK] **Completed**
