@@ -673,3 +673,25 @@ Refined daily verification date slip to352x351 with round32px dates; added one-s
 ### Next Steps
 
 - 待 imagegen 工具可用后，按 docs/extended-illustrations.md 生成并替换16张专属插画。
+
+
+## Session 30: 补齐五类复盘插画与跨周期验证
+<!-- trellis-session: v=2 fp=96dc9a32d08f9eba -->
+
+**Date**: 2026-10-29
+**Task**: 补齐五类复盘插画与跨周期验证
+**Branch**: `main`
+
+### Summary
+
+生成16张阶段插画并统一类别配色；前后端共享日期下限；78项测试、桌面及窄屏验收、GitHub Verify build 均通过。
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `91f20aa9c9636ad5745ba9fddedf1488d9fdc1cd` | Complete review art and enforce period verification dates |
+
+### Status
+
+[OK] **Completed**
