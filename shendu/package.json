@@ -7,7 +7,7 @@
   "scripts": {
     "start": "node server.mjs",
     "dev": "NODE_ENV=development node --watch server.mjs",
-    "check": "node --check server.mjs && node --check public/app.js && node --check public/overview-reel.js && node --check public/daily-flow.js && node --check scripts/admin-cli.mjs && node --check scripts/backup-safety.mjs",
+    "check": "node --check server.mjs && node --check public/app.js && node --check public/overview-reel.js && node --check public/daily-flow.js && node --check public/daily-calendar.js && node --check scripts/admin-cli.mjs && node --check scripts/backup-safety.mjs",
     "test": "node --test tests/*.test.mjs"
   },
   "engines": {

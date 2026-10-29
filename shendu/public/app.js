@@ -1,5 +1,6 @@
 import {overviewRecordAppearances,overviewVerifiedRecords,overviewRecordExcerpt,overviewLoopMetrics,overviewRecordTitle,overviewDateParts} from './overview-reel.js?v=1.0.0-overview15';
-import {DAILY_STEPS,dailyStepIssues,dailyPrompts,dailyPromptIssues,dailyPromptNeighbor,dailyPromptOwner} from './daily-flow.js?v=1.0.0-overview23';
+import {DAILY_STEPS,dailyStepIssues,dailyPrompts,dailyPromptIssues,dailyPromptNeighbor,dailyPromptOwner} from './daily-flow.js?v=1.0.0-overview24';
+import {dailyCalendarModel,dailyCalendarKeyDate,dailyCalendarDateLabel} from './daily-calendar.js?v=1.0.0-overview24';
 const $ = (s, root = document) => root.querySelector(s);
 const $$ = (s, root = document) => [...root.querySelectorAll(s)];
 const esc = (v = '') => String(v).replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
@@ -365,23 +366,54 @@ function dailyReflection(data,locked,template){return `<section class="card sect
   <div class="daily-prompt reflection-question" data-daily-prompt="today" hidden>${itemInputs('today','',true,data.answers?.today,locked,template.today)}</div>
   <div class="daily-prompt reflection-question" data-daily-prompt="cause" hidden>${itemInputs('cause','',false,data.answers?.cause,locked,template.cause)}</div></section>`}
 
+function dailyCalendarHtml(value,minimum,month,locked,focusDate=''){
+  const model=dailyCalendarModel(value,minimum,month,locked,focusDate);
+  return `<div class="daily-calendar-head"><button type="button" data-verify-month="-1" aria-label="上个月" ${model.previous?'':'disabled'}><span class="chevron-icon left" aria-hidden="true"></span></button><strong>${model.year} 年 ${model.monthNumber} 月</strong><button type="button" data-verify-month="1" aria-label="下个月" ${model.next?'':'disabled'}><span class="chevron-icon right" aria-hidden="true"></span></button><button type="button" class="daily-calendar-today" data-verify-today ${locked?'disabled':''}>今天</button></div><table class="daily-calendar-table"><caption class="sr-only">${model.year}年${model.monthNumber}月，可选验证日期</caption><thead><tr>${['一','二','三','四','五','六','日'].map(day=>`<th scope="col" aria-label="星期${day}">${day}</th>`).join('')}</tr></thead><tbody>${Array.from({length:6},(_,week)=>`<tr>${model.cells.slice(week*7,week*7+7).map(cell=>cell?`<td><button type="button" class="daily-calendar-day ${cell.today?'is-today':''}" data-verify-day="${cell.date}" tabindex="${cell.date===model.tabDate?'0':'-1'}" aria-label="${dailyCalendarDateLabel(cell.date)}" aria-pressed="${cell.selected}" ${cell.today?'aria-current="date"':''} ${cell.disabled?'disabled':''}>${cell.day}</button></td>`:'<td></td>').join('')}</tr>`).join('')}</tbody></table>`;
+}
+function dailyVerificationCalendar(value,locked,label){const model=dailyCalendarModel(value,today(),'',locked);return `<div class="daily-date-picker" role="group" aria-label="${esc(label)}"><input type="hidden" data-simple="verifyDate" value="${esc(value||'')}" ${locked?'disabled':''}><p class="daily-calendar-selection" id="daily-verify-selection" aria-live="polite" aria-atomic="true">${esc(dailyCalendarDateLabel(value))}</p><div id="daily-verification-calendar" data-verify-month-value="${model.month}" data-verify-locked="${locked}">${dailyCalendarHtml(value,today(),model.month,locked)}</div><p class="daily-calendar-help">${locked?'已锁定，保留当时选定的日期。':'直接选择日期；过去的日期不可选。'}</p></div>`}
+function renderDailyCalendar(month,focusDate='',focusMonth=''){
+  const calendar=$('#daily-verification-calendar');if(!calendar)return;
+  const input=$('[data-simple="verifyDate"]'),locked=calendar.dataset.verifyLocked==='true',model=dailyCalendarModel(input.value,today(),month,locked,focusDate);
+  calendar.dataset.verifyMonthValue=model.month;calendar.innerHTML=dailyCalendarHtml(input.value,today(),model.month,locked,focusDate);
+  $('#daily-verify-selection').textContent=dailyCalendarDateLabel(input.value);
+  if(!locked&&!$('#daily-flow-error').hidden&&dailyPromptIssues({verifyDate:input.value},'verifyDate',today()).length){const field=$('[data-verify-day][tabindex="0"]',calendar);field?.setAttribute('aria-invalid','true');field?.setAttribute('aria-describedby','daily-flow-error')}
+  if(state.saving)setReviewBusy(true);
+  const target=focusDate?$(`[data-verify-day="${model.tabDate}"]`,calendar):focusMonth?$(`[data-verify-month="${focusMonth}"]:not(:disabled)`,calendar):null;
+  (target||((focusDate||focusMonth)?$('[data-verify-day][tabindex="0"]',calendar):null))?.focus();
+}
+function bindDailyCalendar(){
+  const calendar=$('#daily-verification-calendar');if(!calendar)return;
+  const editable=()=>!state.saving&&calendar.dataset.verifyLocked!=='true';
+  const choose=date=>{if(!editable()||date<today())return;const input=$('[data-simple="verifyDate"]');if(input.value!==date){input.value=date;input.dispatchEvent(new Event('input',{bubbles:true}))}renderDailyCalendar(date.slice(0,7),date)};
+  calendar.addEventListener('click',event=>{
+    const button=event.target.closest('button');if(!button||!calendar.contains(button)||button.disabled||!editable())return;
+    if(button.hasAttribute('data-verify-day'))choose(button.dataset.verifyDay);
+    else if(button.hasAttribute('data-verify-today'))choose(today());
+    else if(button.hasAttribute('data-verify-month'))renderDailyCalendar(shiftMonth(calendar.dataset.verifyMonthValue,Number(button.dataset.verifyMonth)), '',button.dataset.verifyMonth);
+  });
+  calendar.addEventListener('keydown',event=>{
+    const button=event.target.closest('[data-verify-day]');if(!button||button.disabled||!editable()||event.altKey||event.ctrlKey||event.metaKey)return;
+    const target=dailyCalendarKeyDate(button.dataset.verifyDay,event.key,today(),event.shiftKey);if(!target)return;
+    event.preventDefault();renderDailyCalendar(target.slice(0,7),target);
+  });
+}
 function dailyActionFields(data,locked,template){const action=data.action||data.answers?.tomorrow?.[0]||'';return `<section class="card section-card folio-card">
   <div class="daily-prompt action-lock focus-lock" data-daily-prompt="action" hidden><input data-simple="action" aria-label="${esc(template.actionTitle)}" maxlength="6000" value="${esc(action)}" ${locked?'disabled':''} placeholder="写下一个具体、可开始的动作"></div>
   <div class="daily-prompt action-lock daily-contingency" data-daily-prompt="ifCondition" hidden><div class="daily-contingency-field"><label for="daily-if-condition">什么情况最容易让行动受阻？</label><input id="daily-if-condition" data-simple="ifCondition" maxlength="6000" value="${esc(data.ifCondition||'')}" ${locked?'disabled':''} aria-label="如果遇到的阻碍，什么情况最容易让行动受阻？" placeholder="如果……"></div><div class="daily-contingency-field"><label for="daily-if-then">遇到这个情况，你准备怎么做？</label><input id="daily-if-then" data-simple="ifThen" maxlength="6000" value="${esc(data.ifThen||'')}" ${locked?'disabled':''} aria-label="那么采取的行动，遇到这个情况，你准备怎么做？" placeholder="那么我就……"></div></div>
-  <div class="daily-prompt action-lock verify-lock" data-daily-prompt="verifyDate" hidden><input type="date" min="${today()}" data-simple="verifyDate" value="${esc(data.verifyDate||'')}" ${locked?'disabled':''} aria-label="${esc(template.verifyDateTitle)}"></div></section>`}
+  <div class="daily-prompt verify-lock" data-daily-prompt="verifyDate" hidden>${dailyVerificationCalendar(data.verifyDate,locked,template.verifyDateTitle)}</div></section>`}
 
 function dailyJournal(data,locked){return `<section class="card section-card folio-card"><div class="daily-prompt journal-paper" data-daily-prompt="journal" hidden><textarea data-simple="journal" aria-label="今天的日记（选填）" maxlength="6000" rows="8" ${locked?'disabled':''} placeholder="选填。这里不需要结论。">${esc(data.journal||'')}</textarea><div class="journal-foot"><span>私人空间加密存储 · <strong id="journal-count">${(data.journal||'').length} 字</strong></span><b>${esc(state.user.displayName.slice(0,2))}</b></div></div></section>`}
 
 function reviewAfterword(locked,data,actionTemplate){return `${locked&&state.current.status==='completed'?`<section class="card section-card"><h2 style="margin-top:0">${esc(actionTemplate.lockedPendingTitle)}</h2><p class="help">${esc(actionTemplate.expectedDateLabel)}：${esc(data.verifyDate||actionTemplate.expectedMissingText)}。${esc(actionTemplate.lockedPendingIntro)}</p><button class="btn btn-primary" data-open-action="${esc(state.current.id)}">${esc(actionTemplate.lockedPendingButton)}</button></section>`:''}${state.current.status==='verified'?verificationRead(state.current):''}`}
 // These local scenes are decorative; only the real prompt chooses the image.
-function dailySceneArt(){return `<div class="daily-scene-art" aria-hidden="true">${['intro','sleep','energy','evidence','reflection','action','calendar','journal'].map(scene=>`<img class="daily-scene-image" data-daily-art="${scene}" src="/assets/daily/${scene}.webp?v=1.0.0-overview23" alt="" width="1254" height="1254" draggable="false">`).join('')}</div>`}
+function dailySceneArt(){return `<div class="daily-scene-art" aria-hidden="true">${['intro','sleep','energy','evidence','reflection','action','calendar','journal'].map(scene=>`<img class="daily-scene-image" data-daily-art="${scene}" src="/assets/daily/${scene}.webp?v=1.0.0-overview24" alt="" width="1254" height="1254" draggable="false">`).join('')}</div>`}
 function dailyIntroLines(quote){return String(quote).split(/(?<=[，。])/).filter(Boolean)}
 function dailyReviewHtml(period,locked,data,templates){
   const panes=[dailyEvidence(data,locked),dailyReflection(data,locked,templates.review),dailyActionFields(data,locked,templates.review),dailyJournal(data,locked)];
   const saved=locked?(period!==defaultPeriod('daily')?'非当前日期，仅可查看':'这份复盘已锁定'):state.dirty?'有未保存内容':state.current.updated_at?`${beijingTime(state.current.updated_at)} 草稿已保存`:'草稿尚未保存';
   const quote=quoteFor('daily',period),lines=dailyIntroLines(quote),columns=Math.max(1,...lines.map(line=>Array.from(line).length))*1.045+.15;
   return `<div class="daily-flow daily-art-flow" data-daily-scene="intro" data-daily-side="right" data-daily-current-prompt="intro">${dailySceneArt()}
-    <header class="daily-flow-head"><div class="daily-canvas-brand"><div class="header-brand">${headerBrandContent()}</div><span class="daily-brand-divider" aria-hidden="true" hidden></span><span class="daily-brand-label" id="daily-current-group" hidden></span></div><time datetime="${esc(period)}">${esc(formatDate(period))}</time><div class="daily-top-actions"><button type="button" class="daily-exit" data-daily-exit>退出复盘 <span aria-hidden="true">↗</span></button></div></header>
+    <header class="daily-flow-head"><div class="daily-stage"><span class="daily-stage-label" id="daily-current-group" hidden></span></div><time datetime="${esc(period)}">${esc(formatDate(period))}</time><div class="daily-top-actions"><button type="button" class="daily-exit" data-daily-exit>退出复盘 <span aria-hidden="true">↗</span></button></div></header>
     <section class="daily-intro" id="daily-intro" aria-label="每日复盘引导"><div class="daily-intro-copy" style="--daily-intro-columns:${columns}"><p class="daily-intro-kicker">把这一刻，留给自己。</p><p id="daily-intro-text"><span class="sr-only">${esc(quote)}</span><span class="daily-typewriter" aria-hidden="true">${lines.map(line=>`<span class="daily-intro-line">${Array.from(line).map(character=>`<span class="daily-glyph">${esc(character)}</span>`).join('')}</span>`).join('')}</span></p><button type="button" class="btn btn-primary" id="daily-start">${locked?'查看复盘':state.current.id||state.dirty?'继续复盘':'开始复盘'} <span aria-hidden="true">→</span></button></div></section>
     <section class="daily-editor" id="daily-editor" aria-labelledby="daily-flow-title" data-daily-locked="${locked}" hidden><h1 class="sr-only" id="daily-flow-title">每日复盘</h1>
       <p class="sr-only" id="daily-step-status" aria-live="polite"></p>
@@ -432,7 +464,7 @@ function showDailyPrompt(promptId,focus=false){
   const scene=intro?'intro':prompt.id==='sleep'?'sleep':prompt.id==='energy'?'energy':prompt.step==='evidence'?'evidence':prompt.step==='reflection'?'reflection':prompt.id==='verifyDate'?'calendar':prompt.step==='action'?'action':'journal';
   $('.daily-art-flow').dataset.dailyScene=scene;$('.daily-art-flow').dataset.dailyCurrentPrompt=intro?'intro':prompt.id;
   $('.daily-art-flow').dataset.dailySide=!intro&&['reflection','journal'].includes(prompt.step)?'left':'right';
-  $('#daily-current-group').hidden=intro;$('.daily-brand-divider').hidden=intro;
+  $('#daily-current-group').hidden=intro;
   if(intro)$('#daily-current-group').textContent='';
   $('#daily-start').firstChild.textContent=$('#daily-editor').dataset.dailyLocked==='true'?'查看复盘 ':state.current.id||state.dirty?'继续复盘 ':'开始复盘 ';
   if(!intro){
@@ -447,6 +479,7 @@ function showDailyPrompt(promptId,focus=false){
     const required=['today','action','ifCondition','ifThen','verifyDate'].includes(prompt.id);
     $('#daily-step-hint').textContent=locked?'这份记录只供查看。':required?'填写这一题后继续。':last?'这一题选填，留空也可以完成。':'这一题选填，可以直接继续。';
     sizeDailyTextareas($(`[data-daily-prompt="${promptId}"]`));
+    if(promptId==='verifyDate')renderDailyCalendar($('#daily-verification-calendar').dataset.verifyMonthValue);
     if(focus){$('#daily-prompt-title').focus({preventScroll:true});$('.daily-flow-head').scrollIntoView({block:'start',behavior:'auto'})}
   }else{startDailyTypewriter();if(focus){$('#daily-start').focus({preventScroll:true});$('.daily-flow-head').scrollIntoView({block:'start',behavior:'auto'});$('#daily-start').scrollIntoView({block:'nearest',behavior:'auto'})}}
 }
@@ -461,10 +494,11 @@ function showDailyIssues(issues){
   showDailyPrompt(issues[0].field);
   const error=$('#daily-flow-error');error.textContent=`请填写：${issues.map(dailyIssueLabel).join('、')}`;error.hidden=false;
   let first;
-  for(const issue of issues){const field=$(issue.field==='today'?'[data-answer="today"]':`[data-simple="${issue.field}"]`);if(field){field.setAttribute('aria-invalid','true');const ids=new Set((field.getAttribute('aria-describedby')||'').split(' ').filter(Boolean));ids.add('daily-flow-error');field.setAttribute('aria-describedby',[...ids].join(' '));first ||= field}}
+  for(const issue of issues){const field=$(issue.field==='today'?'[data-answer="today"]':issue.field==='verifyDate'?'[data-verify-day][tabindex="0"]':`[data-simple="${issue.field}"]`);if(field){field.setAttribute('aria-invalid','true');const ids=new Set((field.getAttribute('aria-describedby')||'').split(' ').filter(Boolean));ids.add('daily-flow-error');field.setAttribute('aria-describedby',[...ids].join(' '));first ||= field}}
   openDailyAnswer(first);first?.focus();first?.scrollIntoView({block:'center',behavior:'auto'});
 }
 function bindDailyFlow(){
+  bindDailyCalendar();
   const move=prompt=>{if(state.saving)return;if($('#daily-editor').dataset.dailyLocked!=='true')collectCurrent();clearDailyIssues();showDailyPrompt(prompt,true)};
   $('#daily-start').addEventListener('click',()=>move(currentDailyPrompts()[0].id));
   $('[data-daily-exit]').addEventListener('click',()=>attemptNavigate(()=>navigate('overview')));
