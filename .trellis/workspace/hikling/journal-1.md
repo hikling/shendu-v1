@@ -695,3 +695,25 @@ Refined daily verification date slip to352x351 with round32px dates; added one-s
 ### Status
 
 [OK] **Completed**
+
+
+## Session 31: Category palette and review typography
+<!-- trellis-session: v=2 fp=0b7c61d11a795a6a -->
+
+**Date**: 2026-11-04
+**Task**: Category palette and review typography
+**Branch**: `main`
+
+### Summary
+
+Aligned nine weekly/monthly/quarterly illustrations to overview icon palettes; enlarged six review prompt titles and overview information copy; kept paired obstacle/response fields visible. Updated screenshots, README and specs. Passed 78 tests, syntax, asset hashes/alpha and desktop/mobile browser checks.
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `3390da6` | Align review illustrations with category palettes and strengthen typography |
+
+### Status
+
+[OK] **Completed**
