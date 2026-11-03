@@ -22,7 +22,7 @@
 
 [查看精力场景](docs/daily-energy.png) · [查看02事实书写](docs/daily-writing.png) · [查看03明日行动](docs/daily-action.png) · [查看04日记](docs/daily-journal.png) · [查看原因条目折叠](docs/daily-cause.png) · [查看阻碍与应对同页](docs/daily-plan.png) · [查看紧凑验证日历](docs/daily-calendar.png)
 
-[查看周复盘引导](docs/extended-weekly.png) · [查看月复盘引导](docs/extended-monthly.png) · [查看90天复盘引导](docs/extended-quarterly.png) · [查看年度复盘引导](docs/extended-yearly.png) · [查看重大决策引导](docs/extended-decision.png) · [查看完整 16 张阶段插画](docs/extended-art-sheet.png)。
+[查看周复盘题目](docs/extended-weekly-step.png) · [查看阻碍与应对](docs/extended-weekly-plan.png) · [查看周复盘引导](docs/extended-weekly.png) · [查看月复盘引导](docs/extended-monthly.png) · [查看90天复盘引导](docs/extended-quarterly.png) · [查看年度复盘引导](docs/extended-yearly.png) · [查看重大决策引导](docs/extended-decision.png) · [查看完整 16 张阶段插画](docs/extended-art-sheet.png)。
 
 ## 当前版本
 
@@ -38,6 +38,8 @@
 每日插画为内置imagegen生成的本地透明图片，保留PNG原图、无损WebP、完整提示词与SHA256；画风参照六类入口，主题与说明见[每日插画说明](shendu/public/assets/daily/README.md)。
 
 周、月、90 天、年度和重大决策的 16 张插画也由内置 imagegen 生成，保留 PNG、无损 WebP、提示词与哈希。场景和资源映射见[阶段插画说明](docs/extended-illustrations.md)。
+
+六类复盘的题目标题使用 900 字重宋体，桌面 40—64px、手机 32—44px；深墨正文、对应类别强调色和较轻的说明／状态文字形成层级。概览展开介绍同步加大类别标题、说明与时长，进入按钮以类别深色底和白字突出；六图标排布与既有交互保持原样。周、月、季九张阶段图已按对应概览图标重新校准全图色调，见[图标与阶段插画对照](docs/extended-palette-comparison.png)。
 
 本项目没有前端构建步骤，也没有第三方 npm 运行依赖。服务端要求 **Node.js 22.13 或更高版本**（推荐与容器一致的 Node.js 24）；生产部署推荐 Debian 12/13、Docker Compose 和项目自带的 Caddy 配置。
 

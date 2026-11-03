@@ -19,5 +19,53 @@
     "decision-evidence": "A person leans across a balancing scale, placing fact sheets on one side and mystery tokens on the other. Olive #455f34 and leaf #759d58.",
     "decision-choice": "A person reaches to place one option tile into an open olive-green decision box. Olive #455f34 and leaf #759d58.",
     "decision-review": "A person pins a bookmark to a future page on a freestanding paper calendar while looking back at a completed choice. Olive #455f34 and leaf #759d58."
-  }
+  },
+  "paletteRevision": {
+    "weekly-recap": {
+      "editTarget": "weekly-recap.png (original committed version)",
+      "styleReference": "../overview/weekly.svg",
+      "request": "Preserve the original scene, pose, props, silhouette and transparent alpha; match the corresponding overview icon flat editorial figure and fine contours. Recolor the entire scene to #8F4335 and #DB7B61 with warm ivory; warm coral and brown, no teal or green. No icon badge, text or tile."
+    },
+    "weekly-pattern": {
+      "editTarget": "weekly-pattern.png (original committed version)",
+      "styleReference": "../overview/weekly.svg",
+      "request": "Preserve the original scene, pose, props, silhouette and transparent alpha; match the corresponding overview icon flat editorial figure and fine contours. Recolor the entire scene to #8F4335 and #DB7B61 with warm ivory; warm coral and brown, no teal or green. No icon badge, text or tile."
+    },
+    "weekly-next": {
+      "editTarget": "weekly-next.png (original committed version)",
+      "styleReference": "../overview/weekly.svg",
+      "request": "Preserve the original scene, pose, props, silhouette and transparent alpha; match the corresponding overview icon flat editorial figure and fine contours. Recolor the entire scene to #8F4335 and #DB7B61 with warm ivory; warm coral and brown, no teal or green. No icon badge, text or tile."
+    },
+    "monthly-result": {
+      "editTarget": "monthly-result.png (original committed version)",
+      "styleReference": "../overview/monthly.svg",
+      "request": "Preserve the original scene, pose, props, silhouette and transparent alpha; match the corresponding overview icon flat editorial figure and fine contours. Recolor the entire scene to #875B21 and #D79A34 with warm ivory; gold and ochre, no teal or green clothing. No icon badge, text or tile."
+    },
+    "monthly-bottleneck": {
+      "editTarget": "monthly-bottleneck.png (original committed version)",
+      "styleReference": "../overview/monthly.svg",
+      "request": "Preserve the original scene, pose, props, silhouette and transparent alpha; match the corresponding overview icon flat editorial figure and fine contours. Recolor the entire scene to #875B21 and #D79A34 with warm ivory; gold and ochre, no teal or green clothing. No icon badge, text or tile."
+    },
+    "monthly-experiment": {
+      "editTarget": "monthly-experiment.png (original committed version)",
+      "styleReference": "../overview/monthly.svg",
+      "request": "Preserve the original scene, pose, props, silhouette and transparent alpha; match the corresponding overview icon flat editorial figure and fine contours. Recolor the entire scene to #875B21 and #D79A34 with warm ivory; gold and ochre, no teal or green clothing. No icon badge, text or tile."
+    },
+    "quarterly-evidence": {
+      "editTarget": "quarterly-evidence.png (original committed version)",
+      "styleReference": "../overview/quarterly.svg",
+      "request": "Preserve the original scene, pose, props, silhouette and transparent alpha; match the corresponding overview icon flat editorial figure and fine contours. Recolor the entire scene to #345585 and #5C82C5 with warm ivory; blue and pale blue, no teal or green foliage or maps. No icon badge, text or tile."
+    },
+    "quarterly-direction": {
+      "editTarget": "quarterly-direction.png (original committed version)",
+      "styleReference": "../overview/quarterly.svg",
+      "request": "Preserve the original scene, pose, props, silhouette and transparent alpha; match the corresponding overview icon flat editorial figure and fine contours. Recolor the entire scene to #345585 and #5C82C5 with warm ivory; blue and pale blue, no teal or green foliage or maps. No icon badge, text or tile."
+    },
+    "quarterly-next": {
+      "editTarget": "quarterly-next.png (original committed version)",
+      "styleReference": "../overview/quarterly.svg",
+      "request": "Preserve the original scene, pose, props, silhouette and transparent alpha; match the corresponding overview icon flat editorial figure and fine contours. Recolor the entire scene to #345585 and #5C82C5 with warm ivory; blue and pale blue, no teal or green foliage or maps. No icon badge, text or tile."
+    }
+  },
+  "revisionNote": "sharedPrompt records the original generation. For the nine weekly/monthly/quarterly images, paletteRevision is the final editing instruction and overrides the original deep-teal contour palette."
 }
