@@ -717,3 +717,25 @@ Aligned nine weekly/monthly/quarterly illustrations to overview icon palettes; e
 ### Status
 
 [OK] **Completed**
+
+
+## Session 32: 固定验证等待期与六类场景衬底
+<!-- trellis-session: v=2 fp=1e3e3e72ad461356 -->
+
+**Date**: 2026-11-04
+**Task**: 固定验证等待期与六类场景衬底
+**Branch**: `main`
+
+### Summary
+
+周月季年改为完成后7/30/90/250个北京时间日历日可验证；六类衬底造型分别设计，左上阶段文字跟随概览类别色。更新旧待验证状态兼容、README和规范。npm run check及78项测试通过；六类桌面与820/390/320px无溢出，周月季年日历边界实测正确。保留概览布局与插画素材，隔离测试数据已清理。已合并main并归档，远端CI随最终推送核对。
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `ac33e48` | Use fixed verification waits and distinct review scene backdrops |
+
+### Status
+
+[OK] **Completed**
