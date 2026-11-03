@@ -32,7 +32,7 @@ The art wrapper exposes `data-review-type` and `data-review-phase` with one of t
 
 `showExtendedIssues()` must reveal the issue's screen before focusing its input. A hidden answer never leaves keyboard focus in an invisible panel. Server validation remains the final authority.
 
-The shared `public/verification-policy.js` defines the earliest date: daily today, weekly next Monday, monthly next month's first, quarterly next calendar quarter's first, yearly next January 1, decision completion date plus three calendar months (clamp month-end). The inline calendar, prompt/final checks, completion endpoint and actual verification submission must use the same rule. A selected expected date later than the minimum does not forbid verification earlier than that selection once the category minimum is reached; the existing early/on-time/late timing still applies.
+The shared `public/verification-policy.js` defines the earliest date: daily today, weekly +7 calendar days, monthly +30, quarterly +90, yearly +250, decision completion date plus three calendar months (clamp month-end). The inline calendar, prompt/final checks, completion endpoint and actual verification submission must use the same rule. A selected expected date later than the minimum does not forbid verification earlier than that selection once the category minimum is reached; the existing early/on-time/late timing still applies.
 
 ## 5. Good / base / bad cases
 

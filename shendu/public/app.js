@@ -2,7 +2,7 @@ import {overviewRecordAppearances,overviewVerifiedRecords,overviewRecordExcerpt,
 import {DAILY_STEPS,dailyStepIssues,dailyPrompts,dailyPromptIssues,dailyPromptNeighbor,dailyPromptOwner} from './daily-flow.js?v=1.0.0-overview25';
 import {dailyCalendarModel,dailyCalendarKeyDate,dailyCalendarDateLabel} from './daily-calendar.js?v=1.0.0-art1';
 import {EXTENDED_FLOW,extendedPrompts,extendedPromptNeighbor,extendedPromptIssues,extendedReviewIssues} from './extended-flow.js?v=1.0.0-extended2';
-import {verificationMinimum} from './verification-policy.js?v=1.0.0-verification1';
+import {verificationMinimum} from './verification-policy.js?v=1.0.0-verification2';
 const $ = (s, root = document) => root.querySelector(s);
 const $$ = (s, root = document) => [...root.querySelectorAll(s)];
 const esc = (v = '') => String(v).replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
@@ -645,7 +645,7 @@ async function saveCurrent(silent=false){
 async function completeCurrent(){
   if(state.saving)return;
   const missing=validateCurrent();if(missing.length){toast(`请先填写：${missing.slice(0,3).join('、')}${missing.length>3?'等':''}`,'error');return}
-  openModal(`<div class="modal-head"><div><h2>${state.current.type==='decision'?'完成并封存依据？':'完成并永久锁定？'}</h2><p>锁定后，正文、标题、日期、日记和行动都不能修改。</p></div><button class="modal-close" data-close>×</button></div><div class="lock-summary">复盘周期：${esc(state.current.period)}<br>预期验证日期：${esc(state.current.data.verifyDate)}<br>可提前或到期后提交，系统会自动记录实际验证时间。</div><div class="modal-actions"><button class="btn btn-ghost" data-close>再检查一下</button><button class="btn btn-red" id="confirm-complete">确认完成并锁定</button></div>`);
+  openModal(`<div class="modal-head"><div><h2>${state.current.type==='decision'?'完成并封存依据？':'完成并永久锁定？'}</h2><p>锁定后，正文、标题、日期、日记和行动都不能修改。</p></div><button class="modal-close" data-close>×</button></div><div class="lock-summary">复盘周期：${esc(state.current.period)}<br>预期验证日期：${esc(state.current.data.verifyDate)}<br>达到最早验证日期后，可按实际情况提交，系统会自动记录实际验证时间。</div><div class="modal-actions"><button class="btn btn-ghost" data-close>再检查一下</button><button class="btn btn-red" id="confirm-complete">确认完成并锁定</button></div>`);
   $('#confirm-complete').addEventListener('click',async event=>{
     if(state.saving)return;const button=event.currentTarget,modal=button.closest('.modal');button.disabled=true;button.textContent='正在锁定…';modal.dataset.reviewLockBusy='true';modal.setAttribute('aria-busy','true');$$('[data-close]',modal).forEach(control=>control.setAttribute('aria-disabled','true'));
     try{if(!state.current.id||state.dirty)await saveCurrent(true);state.saving=true;setReviewBusy(true);const {record}=await request(`/api/records/${state.current.id}/complete`,{method:'POST'});const i=state.records.findIndex(x=>x.id===record.id);if(i>=0)state.records[i]=record;else state.records.push(record);state.current=record;closeModal(true);await refreshStats().catch(()=>{});toast('复盘已完成并锁定');renderReview(record.type,record.period,false,record,{dailySection:'journal',dailyPrompt:'journal',extendedPrompt:state.extendedPrompt})}
@@ -675,7 +675,7 @@ function renderHistory(filter={q:'',type:'all',year:'all',month:'all'},focusSear
 }
 function bindRecordOpen(){$$('[data-open-record]').forEach(b=>b.addEventListener('click',()=>{const r=state.records.find(x=>x.id===b.dataset.openRecord);state.route=r.type;state.current=r;renderReview(r.type,r.period)}))}
 
-function dueBadge(r,t=templatesForRecord(r).action){const d=r.data.verifyDate;if(!d)return[t.waitingStatus,''];if(d<today())return[t.overdueStatus,'overdue'];if(d===today())return[t.todayStatus,'today'];return[t.waitingStatus,'']}
+function dueBadge(r,t=templatesForRecord(r).action){const d=r.data.verifyDate;if(r.status==='completed'&&today()<earliestActualVerification(r))return[t.waitingStatus,''];if(!d)return[t.waitingStatus,''];if(d<today())return[t.overdueStatus,'overdue'];if(d===today())return[t.todayStatus,'today'];return[t.waitingStatus,'']}
 function earliestActualVerification(record){const source=record.completed_at||record.created_at;return verificationMinimum(record.type,source?beijingDateParts(new Date(source)).iso:today())}
 function verificationActualAt(r){return r.verified_at||r.verification?.actualAt||''}
 function verificationTiming(r,t=templatesForRecord(r).action){const expected=r.data?.verifyDate,actual=verificationActualAt(r);if(!expected||!actual)return null;const actualDate=beijingDateParts(new Date(actual)).iso,delta=Math.round((isoDate(actualDate)-isoDate(expected))/86400000),fill=(text,days)=>String(text).replaceAll('{days}',String(days));if(delta<0)return{label:fill(t.earlyTimingText,Math.abs(delta)),kind:'completed'};if(delta>0)return{label:fill(t.lateTimingText,delta),kind:'overdue'};return{label:t.onTimeText,kind:'today'}}
