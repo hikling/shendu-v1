@@ -850,3 +850,26 @@ Integrated CLI-sourced shadcn React component islands, Radix dialogs/menus/tabs,
 ### Status
 
 [OK] **Completed**
+
+
+## Session 38: Fix control visual conflicts and redesign stage calendar
+<!-- trellis-session: v=2 fp=8daa507311caa319 -->
+
+**Date**: 2026-11-05
+**Task**: Fix control visual conflicts and redesign stage calendar
+**Branch**: `main`
+
+### Summary
+
+Corrected duplicate select arrows, removed ghost/account/menu hover fills with current/focus text feedback, and shared safe punctuation line rendering across all six review headings. Replaced stage calendar with isolated compact folio, removed side-category templates and obsolete CSS, preserved tabs/stats/navigation/dialog ownership. Stabilized Calendar override component identities after real-browser month navigation exposed remount/focus loss. Build/check/test passed112/112; desktop/mobile/short-viewports, readonly record navigation, native popup and nested dialog focus checked; actual resource smoke and GitHub Linux/Docker run41869065402 passed at49227b4. QA screenshots/docs/specs updated. Theme persistence QA rejected by auto-review and canceled without bypass; supplemental premium strict audit15items retained/classified, no blanket compliance claim. No API/data/verification-policy changes. Final bookkeeping sync and CI are verified before handoff.
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `49227b4` | Fix shared control styling and redesign the stage calendar |
+| `226980c` | Record verified UI polish and Docker build results |
+
+### Status
+
+[OK] **Completed**
