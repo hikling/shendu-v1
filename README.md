@@ -20,6 +20,8 @@
 
 [查看历史复盘页](docs/history-overview.png) · [查看分类插画记录卡](docs/history-records.png) · [查看手机历史页](docs/history-mobile.png)
 
+[查看行动验证页](docs/actions-overview.png) · [查看验证记录卡](docs/actions-records.png) · [查看验证填写](docs/actions-verification.png) · [查看手机行动验证](docs/actions-mobile.png)
+
 [查看每日复盘引导](docs/daily-intro.png) · [查看分步填写](docs/daily-step.png)
 
 [查看精力场景](docs/daily-energy.png) · [查看02事实书写](docs/daily-writing.png) · [查看03明日行动](docs/daily-action.png) · [查看04日记](docs/daily-journal.png) · [查看原因条目折叠](docs/daily-cause.png) · [查看阻碍与应对同页](docs/daily-plan.png) · [查看紧凑验证日历](docs/daily-calendar.png)
@@ -48,6 +50,8 @@
 升级后，已有待验证记录按原完成日重新计算最早验证日期；原预期日期与已验证结果保留。
 
 阶段与日历采用更清楚的纸感月历，标出今天、草稿、已完成和已验证，附文字图例；六类装饰从弹窗边框后半露伸出。历史复盘改为分类插画记录卡，保留全文搜索、类型和年月筛选，以及草稿、锁定和已验证记录的原有打开方式。两处配图均使用已有本地素材，不向外部服务发送复盘内容。
+
+行动验证延续历史复盘的纸感与分类插画，分别呈现待验证和已验证记录，保留原行动、预期／实际日期及完整结果与调整。历史和行动验证共用24张现有本地插画，同类先用完图池再复用，筛选及切换页面保持配图稳定。另已准备每日30、每周7、每月12、每季4、每年6、重大决策6张，共65张独立插画的[生成清单](art/record-library/README.md)；**新图尚未生成**，待本机配置图像API密钥后继续。网站运行与部署不需要该密钥。
 
 本项目没有前端构建步骤，也没有第三方 npm 运行依赖。服务端要求 **Node.js 22.13 或更高版本**（推荐与容器一致的 Node.js 24）；生产部署推荐 Debian 12/13、Docker Compose 和项目自带的 Caddy 配置。
 

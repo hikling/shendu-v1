@@ -1,0 +1,3 @@
+{"file":".trellis/spec/frontend/architecture.md","reason":"Render/bind ownership and scope boundaries"}
+{"file":".trellis/spec/frontend/state-and-data.md","reason":"Record identity, template snapshots and unchanged verification rules"}
+{"file":".trellis/spec/frontend/ui-quality.md","reason":"Approved archive visual language, category palette, a11y, theme and mobile"}
