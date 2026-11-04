@@ -16,7 +16,7 @@
 - 新标题测试覆盖保留标点、跨分句强调、空值／数字兼容和 HTML 样式标题的安全文本处理。
 - 真实组件 DOM 测试覆盖阶段／验证两种日历的根节点与月份按钮身份、键盘焦点、连续跨年切月且不选择日期，以及三个持久页签、单统计页脚和无侧卡。
 - 原父子 Dialog、背景 inert、返回焦点、只读、字段／草稿、来源返回及日期等待规则测试保持通过。
-- `git diff --check`、本地健康与真实前端资源 smoke 通过；Docker 由推送后的 GitHub CI 核实。
+- `git diff --check`、本地健康与真实前端资源 smoke 通过；代码提交 `49227b4` 的 [GitHub CI](https://github.com/hikling/shendu-v1/actions/runs/41869065402) 已通过 Linux 测试、Compose 配置、Docker 镜像构建、容器启动与真实前端资源检查。
 
 补充的 premium 静态审计保留在 Trellis 任务研究目录。原始 strict 审计返回 15 项，并非全部通过：其中包括缺少机器声明、对原生监听／Radix 动作的误报，以及未由本次引入的 textarea／滚动条规则差异。分类报告逐项记录依据，不以该审计代替真实组件与浏览器检查。
 
