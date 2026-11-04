@@ -1,0 +1,4 @@
+{"file": ".trellis/spec/frontend/architecture.md", "reason": "Legacy rendering and lifecycle boundaries"}
+{"file": ".trellis/spec/frontend/state-and-data.md", "reason": "FormData/guards/API invariants"}
+{"file": ".trellis/spec/frontend/ui-quality.md", "reason": "Theme and keyboard contracts"}
+{"file": ".trellis/spec/frontend/extended-review-flow.md", "reason": "Six review preservation"}

@@ -1,6 +1,6 @@
 # Frontend Guidelines
 
-Shendu's browser UI is a native JavaScript single-page application. Read these guides before changing `shendu/public/`.
+Shendu's browser UI combines a native JavaScript single-page application with genuine shadcn React component islands. Read these guides before changing `shendu/public/` or `shendu/ui/`.
 
 Read the user-confirmed product direction in [`PRODUCT.md`](../../../PRODUCT.md) before planning new screens. This product brief defines outcomes; the files below describe current code conventions.
 
@@ -11,6 +11,7 @@ Read the user-confirmed product direction in [`PRODUCT.md`](../../../PRODUCT.md)
 3. Read [UI quality](./ui-quality.md) before changing layout, themes, or dialogs.
 4. Trace any changed record payload or completion rule through `shendu/server.mjs`.
 5. For weekly, monthly, quarterly, yearly, or decision pages, read [Extended review flows](./extended-review-flow.md) before changing prompt order or validation.
+6. Read [Component islands](./component-islands.md) before rendering, controls, dialogs, calendars, or build changes.
 
 ## Quality check
 
@@ -25,3 +26,4 @@ Read the user-confirmed product direction in [`PRODUCT.md`](../../../PRODUCT.md)
 - [State and data](./state-and-data.md)
 - [UI quality](./ui-quality.md)
 - [Extended review flows](./extended-review-flow.md)
+- [Component islands](./component-islands.md)

@@ -1,0 +1,95 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {JSDOM} from 'jsdom';
+
+const dom=new JSDOM('<!doctype html><body><button id="origin">打开</button><div id="surface"></div><div id="calendar"></div></body>',{url:'http://localhost'});
+const win=dom.window;
+for(const name of ['window','document','HTMLElement','HTMLInputElement','HTMLTextAreaElement','HTMLSelectElement','HTMLButtonElement','HTMLFormElement','Element','Node','NodeFilter','Event','CustomEvent','KeyboardEvent','MouseEvent','MutationObserver','getComputedStyle','FormData'])globalThis[name]=win[name];
+Object.defineProperty(globalThis,'navigator',{value:win.navigator,configurable:true});
+globalThis.requestAnimationFrame=callback=>setTimeout(callback,0);globalThis.cancelAnimationFrame=clearTimeout;
+globalThis.ResizeObserver=class{observe(){}unobserve(){}disconnect(){}};
+win.HTMLElement.prototype.scrollIntoView=function(){};
+const ui=await import('../public/ui/shadcn.js');
+const surface=document.getElementById('surface'),calendar=document.getElementById('calendar');
+const notifications=document.createElement('div');notifications.id='notifications';document.body.append(notifications);ui.initializeToasts(notifications);
+const settle=()=>new Promise(resolve=>setTimeout(resolve,30));
+
+test('real Dialog enhances opaque form fields and disposes nested roots before replacement',async()=>{
+  const origin=document.getElementById('origin');origin.focus();let closed=0;
+  const options={html:'<div class="modal-head"><h2>测试弹窗</h2><p>说明</p></div><form><label for="answer">回答</label><input id="answer" name="answer" value="原答案"></form>',title:'测试弹窗',description:'说明',returnFocus:origin,onClose:()=>closed++};
+  ui.showDialog(surface,options);await settle();
+  assert.ok(surface.querySelector('[data-slot="dialog-content"]'));
+  const input=surface.querySelector('#answer');assert.ok(input.hasAttribute('data-ui-component'));assert.equal(input.dataset.slot,'input');input.value='已修改';
+  assert.equal(new FormData(input.form).get('answer'),'已修改');
+  ui.showDialog(surface,{...options,html:'<div class="modal-head"><h2>另一个设置</h2></div><input id="other" value="下一页">'});
+  assert.equal(surface.querySelector('#answer'),null);assert.equal(surface.querySelector('#other').value,'下一页');
+  ui.dismissDialog(surface);await settle();assert.equal(document.querySelector('[data-slot="dialog-content"]'),null);assert.equal(surface.childElementCount,0);assert.equal(closed,0);
+});
+
+test('verification Calendar has six weeks, preserves date-only values and does not select on browse',async()=>{
+  const selections=[],months=[];
+  ui.showVerificationCalendar(calendar,{value:'2026-11-14',month:'2026-11',minimum:'2026-11-11',locked:false,today:'2026-11-04',onSelect:value=>selections.push(value),onMonthChange:value=>months.push(value)});
+  await settle();assert.equal(calendar.querySelectorAll('.rdp-week').length,6);assert.equal(calendar.querySelectorAll('[data-verify-day][tabindex="0"]').length,1);
+  assert.equal(calendar.querySelector('[data-verify-day="2026-11-10"]').disabled,true);
+  calendar.querySelector('[data-verify-day="2026-11-14"]').click();await settle();assert.deepEqual(selections,['2026-11-14']);
+  calendar.querySelector('[aria-label="下个月"]').click();await settle();assert.equal(months.at(-1),'2026-12');assert.equal(selections.length,1);
+  calendar.querySelector('[data-verify-today]').click();await settle();assert.equal(selections.at(-1),'2026-11-11');
+  ui.disposeUi(calendar);calendar.replaceChildren();
+  ui.showVerificationCalendar(calendar,{value:'2026-10-01',month:'2026-10',minimum:'2026-11-11',locked:true,today:'2026-11-04',onSelect:()=>assert.fail('readonly selection'),onMonthChange:()=>assert.fail('readonly browse')});
+  await settle();assert.ok([...calendar.querySelectorAll('[data-verify-day]')].every(button=>button.disabled));
+  assert.ok(calendar.querySelector('[data-verify-day="2026-10-01"]').dataset.selectedSingle==='true');
+  ui.disposeUi(calendar);calendar.replaceChildren();
+});
+
+test('stage Calendar preserves original record identity and only today or recorded days are actionable',async()=>{
+  const selected=[],records=[{id:'original-id',period:'2026-11-02',status:'verified'},{id:'later-duplicate',period:'2026-11-02',status:'draft'}];
+  ui.showStageCalendar(calendar,{month:'2026-11',today:'2026-11-04',records,statusLabels:{verified:'已验证'},onMonthChange(){},onSelect:(date,record)=>selected.push({date,id:record?.id})});
+  await settle();assert.equal(calendar.querySelectorAll('.rdp-week').length,6);
+  assert.equal(calendar.querySelector('[data-calendar-date="2026-11-03"]').disabled,true);
+  const record=calendar.querySelector('[data-calendar-date="2026-11-02"]');assert.equal(record.dataset.calendarRecord,'original-id');assert.ok(record.textContent.includes('✓'));record.click();await settle();assert.deepEqual(selected,[{date:'2026-11-02',id:'original-id'}]);
+  calendar.querySelector('[data-calendar-date="2026-11-04"]').click();await settle();assert.equal(selected.at(-1).date,'2026-11-04');assert.equal(selected.at(-1).id,undefined);
+  ui.disposeUi(calendar);calendar.replaceChildren();
+});
+
+test('rail uses linked real Tabs with force mounted panels and cleanup removes portal roots',async()=>{
+  ui.showRail(surface,{header:'<header class="rail-dialog-header"><h2 id="rail-dialog-title">阶段与日历</h2><button id="rail-close">关闭</button></header>',stats:'<section class="rail-stats">统计</section>',panels:[{id:'calendar',html:'<section id="test-calendar">日历</section>'},{id:'stage',html:'<section><input id="stage-field" value="保留"></section>'},{id:'pending',html:'<section>待验证</section>'}],decorHtml:'',onClose(){}});await settle();
+  const tabs=[...surface.querySelectorAll('[role="tab"]')];assert.equal(tabs.length,3);const field=surface.querySelector('#stage-field');field.value='保持内容';
+  tabs[1].dispatchEvent(new MouseEvent('mousedown',{bubbles:true,button:0}));tabs[1].click();await settle();assert.equal(tabs[1].getAttribute('aria-selected'),'true');assert.equal(surface.querySelector('#test-calendar').closest('[role="tabpanel"]').hidden,true);assert.equal(surface.querySelector('#stage-field'),field);assert.equal(field.value,'保持内容');
+  ui.dismissDialog(surface);await settle();assert.equal(document.querySelector('[role="tabpanel"]'),null);
+});
+
+test('DropdownMenu keyboard opening and item selection have one interaction owner',async()=>{
+  let selected=0;
+  ui.showMenu(surface,{trigger:{html:'账户菜单',className:'header-account-trigger',props:{type:'button','aria-label':'账户菜单'}},label:'我的空间',items:[{html:'设置',onSelect:()=>{selected++;assert.equal(document.activeElement.getAttribute('aria-label'),'账户菜单')}}]});
+  const trigger=surface.querySelector('[data-slot="dropdown-menu-trigger"]');
+  trigger.dispatchEvent(new KeyboardEvent('keydown',{key:'ArrowDown',bubbles:true}));await settle();
+  const menu=document.querySelector('[role="menu"]');assert.ok(menu);assert.equal(trigger.getAttribute('aria-expanded'),'true');
+  menu.querySelector('[role="menuitem"]').click();await settle();assert.equal(selected,1);assert.equal(document.querySelector('[role="menu"]'),null);
+});
+
+test('persistent and busy Dialog refuses Escape dismissal until the business guard permits it',async()=>{
+  let allowed=false,closed=0;
+  ui.showDialog(surface,{html:'<div class="modal-head"><h2>保存中</h2></div><input id="focus-target">',title:'保存中',canClose:()=>allowed,onClose:()=>closed++});await settle();
+  surface.querySelector('#focus-target').focus();
+  document.dispatchEvent(new KeyboardEvent('keydown',{key:'Escape',bubbles:true,cancelable:true}));await settle();assert.equal(closed,0);assert.ok(surface.querySelector('[role="dialog"]'));
+  allowed=true;document.dispatchEvent(new KeyboardEvent('keydown',{key:'Escape',bubbles:true,cancelable:true}));await settle();assert.equal(closed,1);
+});
+
+test('fresh nested dialog visit avoids the parent hideOthers snapshot and restores parent access',async()=>{
+  let child=document.createElement('div');child.id='nested-modal-root';document.body.append(child);
+  ui.showDialog(surface,{html:'<div class="modal-head"><h2>父弹窗</h2></div><button id="open-child">编辑阶段</button>',title:'父弹窗'});await settle();
+  assert.equal(child.getAttribute('aria-hidden'),'true');assert.equal(document.getElementById('origin').getAttribute('aria-hidden'),'true');
+  const parent=surface.querySelector('[role="dialog"]'),trigger=surface.querySelector('#open-child');
+  for(let visit=0;visit<2;visit++){
+    trigger.focus();const old=child;child=ui.prepareDialogContainer(child);assert.notEqual(child,old);
+    ui.showDialog(child,{html:'<div class="modal-head"><h2>阶段设置</h2></div><input name="stage">',title:'阶段设置',canClose:()=>visit===0});await settle();
+    assert.equal(child.querySelector('[role="dialog"]').closest('[aria-hidden="true"]'),null);assert.ok(parent.closest('[aria-hidden="true"]'));
+    ui.showToast(notifications,'弹窗内的首次通知','info');await settle();assert.equal(notifications.querySelector('[data-sonner-toaster]').closest('[aria-hidden="true"]'),null);
+    ui.dismissDialog(child);await settle();assert.equal(parent.closest('[aria-hidden="true"]'),null);trigger.focus();assert.equal(document.activeElement,trigger);
+  }
+  child.remove();
+});
+
+test.afterEach(()=>{ui.dismissDialog(surface);ui.disposeUi(calendar);calendar.replaceChildren()});
+
+test.after(()=>{ui.dismissDialog(surface);ui.disposeUi(calendar);ui.disposeUi(notifications);dom.window.close()});

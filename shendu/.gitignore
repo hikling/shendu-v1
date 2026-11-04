@@ -11,3 +11,6 @@ backups/
 *.shendu-site
 *.shendu-db
 .DS_Store
+
+node_modules/
+public/ui/

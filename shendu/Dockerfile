@@ -1,9 +1,19 @@
-FROM node:24-alpine
+FROM node:24-alpine AS ui-build
+WORKDIR /build
+COPY package.json package-lock.json ./
+RUN npm ci
+COPY components.json jsconfig.json vite.config.js ./
+COPY ui ./ui
+COPY scripts/ui-licenses.mjs ./scripts/ui-licenses.mjs
+RUN npm run build
+
+FROM node:24-alpine AS runtime
 RUN apk add --no-cache tini tzdata su-exec
 WORKDIR /app
 COPY package.json server.mjs ./
 COPY scripts ./scripts
 COPY public ./public
+COPY --from=ui-build /build/public/ui ./public/ui
 RUN mkdir -p /app/data /app/tmp \
   && chmod +x /app/scripts/docker-entrypoint.sh \
   && chown -R node:node /app
