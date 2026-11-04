@@ -1,4 +1,4 @@
-import {renderMarkup,enhanceUi,disposeUi,prepareDialogContainer,initializeToasts,showDialog,dismissDialog,showRail,showMenu,showVerificationCalendar,showStageCalendar,showToast} from './ui/shadcn.js?v=1.0.0-shadcn1';
+import {renderMarkup,enhanceUi,disposeUi,prepareDialogContainer,initializeToasts,showDialog,dismissDialog,showRail,showMenu,showVerificationCalendar,showStageCalendar,showToast} from './ui/shadcn.js?v=1.0.0-polish1';
 import {overviewRecordAppearances,overviewVerifiedRecords,overviewRecordExcerpt,overviewLoopMetrics,overviewRecordTitle,overviewDateParts} from './overview-reel.js?v=1.0.0-overview15';
 import {DAILY_STEPS,dailyStepIssues,dailyPrompts,dailyPromptIssues,dailyPromptNeighbor,dailyPromptOwner} from './daily-flow.js?v=1.0.0-overview25';
 import {dailyCalendarModel,dailyCalendarDateLabel} from './daily-calendar.js?v=1.0.0-art1';
@@ -199,7 +199,6 @@ function topbar(){
     </nav>
   </header>`;
 }
-function railDecor(){return Object.keys(TYPES).map(key=>`<img src="/assets/overview/${key}.svg?v=1.0.0-overview13" alt="" width="84" height="84">`).join('')}
 function shell(content){cancelDailyTypewriter();setDailyImmersive(false);if($('#right-rail.open'))setRailOverlayOpen(false);overviewReelObserver?.disconnect();overviewReelObserver=null;const overview=state.route==='overview';renderMarkup($('#app'),`<div class="app-shell ${overview?'overview-shell':''}">${topbar()}<div class="workspace"><main class="main ${overview?'overview-main':''}" id="main-content">${content}</main></div></div>`);bindCommon()}
 
 function overviewText(value,limit){const text=String(value??'').replace(/\s+/g,' ').trim(),points=Array.from(text);return points.length>limit?points.slice(0,limit).join('')+'…':text}
@@ -319,20 +318,18 @@ const SPACE_PAGE_META = {
 function spacePageHead(route,{title,description,action=''}){const meta=SPACE_PAGE_META[route];return `<header class="space-page-head space-head-${route}"><span class="space-head-watermark" aria-hidden="true">${meta.mark}</span><div class="space-head-mark" aria-hidden="true"><strong>${meta.mark}</strong></div><div class="space-head-copy"><h1>${esc(title)}</h1><p>${esc(description)}</p></div><div class="space-head-side"><small class="space-head-note">${meta.note}</small>${action?`<div class="space-head-action">${action}</div>`:''}</div></header>`}
 
 function stageProgress(){const start=isoDate(state.stage.startDate),current=isoDate(today()),day=Math.max(1,Math.floor((current-start)/86400000)+1),days=Number(state.stage.days||90);return{day:Math.min(day,days),days,pct:Math.min(100,Math.max(0,day/days*100))}}
-function rightRail(){const p=stageProgress(),pending=state.records.filter(r=>r.status==='completed').sort((a,b)=>String(a.data.verifyDate).localeCompare(String(b.data.verifyDate))).slice(0,2);return `<aside class="right-rail ${state.railOpen?'open':''}" id="right-rail" data-view="calendar" ${state.railOpen?'':'hidden inert'}>
-  <header class="rail-dialog-header"><div><h2 id="rail-dialog-title">阶段与日历</h2><p>看见这一阶段的方向，也留意每一天的足迹。</p><div class="rail-compact-decor" aria-hidden="true">${railDecor()}</div></div><button class="modal-close" id="rail-close" type="button" aria-label="关闭阶段与日历">×</button></header>
-  <div class="rail-view-switch" role="group" aria-label="阶段面板"><button type="button" data-rail-view="calendar" aria-pressed="true">每日足迹</button><button type="button" data-rail-view="stage" aria-pressed="false">当前阶段</button><button type="button" data-rail-view="pending" aria-pressed="false">待验证</button></div>
+function rightRail(){const p=stageProgress(),pending=state.records.filter(r=>r.status==='completed').sort((a,b)=>String(a.data.verifyDate).localeCompare(String(b.data.verifyDate))).slice(0,2),t=currentActionTemplate();return `<aside id="right-rail">
+  <header class="stage-folio-header rail-dialog-header"><div><p class="stage-folio-kicker">在日常中，看见自己</p><h2 id="rail-dialog-title">阶段与日历</h2></div><button class="stage-folio-close" id="rail-close" type="button" aria-label="关闭阶段与日历"><span>关闭</span><span aria-hidden="true">×</span></button></header>
   ${statsHtml()}
-  <section class="card rail-card rail-stage"><div class="stage-title"><span class="help">当前阶段</span><span class="badge">${p.day} / ${p.days} 天</span></div><b>${esc(state.stage.name)}</b><p>${esc(state.stage.focus)}</p><div class="progress"><i style="width:${p.pct}%"></i></div><button class="rail-link" data-modal="stage">编辑阶段设置</button></section>
-  <section class="card rail-card rail-calendar" id="rail-calendar"></section>
-  <section class="card rail-card rail-pending"><div class="stage-title"><h3>最近待验证</h3><span class="badge">${state.stats.pending} 项</span></div>${pending.length?pending.map(r=>`<button class="action-mini" data-open-action="${esc(r.id)}"><small><span>${esc(r.data.verifyDate||'未定日期')}</span><span>${esc(TYPES[r.type].label)}</span></small><p>${esc(r.data.action||'未填写行动')}</p></button>`).join(''):`<p>目前没有等待验证的行动。</p>`}</section>
+  <section class="stage-panel stage-panel-current rail-stage"><div class="stage-current-top"><span class="stage-panel-eyebrow">当前阶段</span><span class="stage-current-day">第 <strong>${p.day}</strong> / ${p.days} 天</span></div><h3>${esc(state.stage.name)}</h3><p class="stage-current-focus">${esc(state.stage.focus)}</p><div class="progress stage-current-progress" aria-label="当前阶段进度"><i style="width:${p.pct}%"></i></div><div class="stage-current-bottom"><span>${esc(formatDate(state.stage.startDate))} 起 · 共 ${p.days} 天</span><button type="button" class="stage-text-action" data-modal="stage">编辑阶段设置 <span aria-hidden="true">↗</span></button></div></section>
+  <section class="stage-panel stage-panel-calendar rail-calendar" id="rail-calendar"></section>
+  <section class="stage-panel stage-panel-pending rail-pending"><header class="stage-pending-header"><span class="stage-panel-eyebrow">最近待验证</span><span>${state.stats.pending} ${esc(t.countUnit)}</span></header>${pending.length?pending.map(r=>`<button type="button" class="stage-pending-item" data-open-action="${esc(r.id)}"><span class="stage-pending-meta"><span>${esc(TYPES[r.type].label)}</span><time>${esc(r.data.verifyDate||'未定日期')}</time></span><span class="stage-pending-copy">${esc(r.data.action||'未填写行动')}</span><span class="stage-pending-open" aria-hidden="true">↗</span></button>`).join(''):`<div class="stage-empty"><h3>暂时没有待验证行动</h3><p>完成复盘后，约定的行动会在这里等待回看。</p></div>`}<button type="button" class="stage-text-action stage-view-actions" data-nav="actions">查看全部行动 <span aria-hidden="true">→</span></button></section>
 </aside>`}
 
-function weekRecordDays(){const current=today(),offset=(isoDate(current).getUTCDay()+6)%7,start=shiftIsoDate(current,-offset);return Array.from({length:7},(_,i)=>shiftIsoDate(start,i))}
-function statsHtml(){const days=weekRecordDays(),filled=days.map(x=>state.records.some(r=>r.type==='daily'&&r.period===x&&r.status!=='draft')),due=state.records.filter(r=>r.status==='completed'&&r.data.verifyDate&&r.data.verifyDate<=today()).length,t=currentActionTemplate();return `<section class="rail-stats" aria-label="复盘概览">
-  <button type="button" class="rail-stat rail-stat-week" data-nav="daily"><span class="rail-stat-label">本周每日复盘 <span aria-hidden="true">↗</span></span><strong>${state.stats.week}<small> / 7 天</small></strong><span class="rail-week-marks" aria-hidden="true">${filled.map(x=>`<i class="${x?'filled':''}"></i>`).join('')}</span></button>
-  <button type="button" class="rail-stat rail-stat-action" data-nav="actions"><span class="rail-stat-label">${esc(t.pendingTitle)} <span aria-hidden="true">↗</span></span><strong>${state.stats.pending}<small> ${esc(t.countUnit)}</small></strong><span class="rail-stat-note">${due?`${due} ${esc(t.countUnit)}已到验证日期`:'查看行动与验证'}</span></button>
-  <button type="button" class="rail-stat rail-stat-history" data-nav="history"><span class="rail-stat-label">累计完成复盘 <span aria-hidden="true">↗</span></span><strong>${state.stats.total}<small> 篇</small></strong><span class="rail-stat-note">回看历史记录</span></button>
+function statsHtml(){const t=currentActionTemplate();return `<section class="stage-summary rail-stats" aria-label="复盘概览">
+  <button type="button" class="stage-summary-item stage-summary-first" data-nav="daily"><span class="stage-summary-label">本周每日复盘 <span aria-hidden="true">↗</span></span><strong>${state.stats.week}<small> / 7 天</small></strong></button>
+  <button type="button" class="stage-summary-item" data-nav="actions"><span class="stage-summary-label">${esc(t.pendingTitle)} <span aria-hidden="true">↗</span></span><strong>${state.stats.pending}<small> ${esc(t.countUnit)}</small></strong></button>
+  <button type="button" class="stage-summary-item" data-nav="history"><span class="stage-summary-label">累计完成复盘 <span aria-hidden="true">↗</span></span><strong>${state.stats.total}<small> 篇</small></strong></button>
 </section>`}
 function dailyAnswerPreview(value){const text=String(value).trim().replace(/\s+/g,' '),characters=Array.from(text);return characters.length>72?`${characters.slice(0,72).join('')}…`:text||'尚未填写'}
 function answerItemRow(key,label,value,index,locked){return `<div class="item-row"><textarea class="control" aria-label="${esc(label)}${index?`（补充 ${index+1}）`:''}" data-answer="${key}" data-index="${index}" maxlength="6000" ${locked?'disabled':''} placeholder="先写事实，再写判断。">${esc(value)}</textarea>${index?`<button class="remove-btn" aria-label="删除这一项" type="button" data-remove-item="${key}" data-index="${index}" ${locked?'disabled':''}>×</button>`:''}</div>`}
@@ -475,13 +472,24 @@ function dailyPromptCopy(prompt){
   const copy={sleep:['昨夜，你睡了多久？','记下实际睡眠时间。暂时不想记录，也可以直接继续。'],energy:['此刻的精力状态如何？','用 0—100 记录你的感受，不需要为了达标而修改。'],risk:['有没有需要留意的风险或偏离？','选填。写下具体信号，以及准备怎样应对。'],today:[template.today,'至少留下一件真实发生的事。不记流水账，也不急着下结论。'],cause:[template.cause,'选填。看看哪些条件促成了它，哪些方法可以再用一次。'],action:[template.actionTitle,'如果明天只能完成一件事，你会选什么？把开始的动作写具体。'],ifCondition:['如果受阻，怎样继续？',template.obstacleTitle],verifyDate:[template.verifyDateTitle,'选定回看这次行动的日期。实际验证时间会在提交结果时自动记录。'],journal:['今天，还有什么想留下？','选填。这里不需要结论，几句话或一整页都可以。']};
   return{title:copy[prompt.id][0],description:copy[prompt.id][1]};
 }
+function setReviewPromptHeading(heading,title,phrase=''){
+  const text=title==null?'':String(title),emphasis=String(phrase),start=emphasis?text.indexOf(emphasis):-1;
+  let offset=0;
+  const lines=dailyIntroLines(text).map(line=>{
+    const row=document.createElement('span');row.className='daily-prompt-line';
+    const from=Math.max(start,offset),to=Math.min(start+emphasis.length,offset+line.length);
+    if(start>=0&&from<to){
+      const accent=document.createElement('span');accent.className='daily-title-emphasis';accent.textContent=line.slice(from-offset,to-offset);
+      row.append(line.slice(0,from-offset),accent,line.slice(to-offset));
+    }else row.textContent=line;
+    offset+=line.length;return row;
+  });
+  heading.replaceChildren(...lines);
+}
 function setDailyPromptHeading(title,prompt){
   const heading=$('#daily-prompt-title'),metric=prompt.id.startsWith('metric-')?state.current.data.metrics[Number(prompt.id.slice(7))]:null;
   const phrases={sleep:'睡了多久',energy:'精力状态',risk:'风险或偏离',today:'记下来',cause:'发生',action:'最重要的一件事',ifCondition:'受阻',verifyDate:'验证',journal:'想留下'};
-  const text=title==null?'':String(title),phrase=String(metric?.name||phrases[prompt.id]||''),start=phrase?text.indexOf(phrase):-1;
-  if(start<0){heading.textContent=text;return}
-  const accent=document.createElement('span');accent.className='daily-title-emphasis';accent.textContent=phrase;
-  heading.replaceChildren(text.slice(0,start),accent,text.slice(start+phrase.length));
+  setReviewPromptHeading(heading,title,metric?.name||phrases[prompt.id]||'');
 }
 function showDailyPrompt(promptId,focus=false){
   promptId=dailyPromptOwner(promptId);
@@ -540,10 +548,7 @@ function bindDailyFlow(){
 function currentExtendedPrompts(){return extendedPrompts(state.current.type,QUESTIONS[state.current.type])}
 function setExtendedPromptHeading(title,prompt){
   const heading=$('#daily-prompt-title'),phrases={plan:'原本要完成什么',progress:'三个进展',patterns:'成功条件与阻碍',keepStop:'保留一件事',nextThree:'最重要的三件事',goalResult:'目标与现在的结果',change:'改善了生活',want:'仍然是我想要的吗',bottleneck:'一个瓶颈',experiment:'一个小实验',hope:'生活发生什么变化',evidence:'哪些变化有证据',worth:'值得继续吗',choices:'继续、调整、停止',nextGoals:'最多三个目标',coordinates:'五件事',expectations:'成为了现实',areas:'重要领域',decisions:'最重要的决定',keepRelease:'保留什么',nextYear:'明年的主题',recordTitle:'决定',decision:'什么决定',options:'哪些选项',facts:'哪些事实',expectation:'预期结果',failure:'最可能因为什么',choice:'最终选择',firstStep:'第一步行动',action:'具体要做什么',ifThen:'如果遇到阻碍',verifyDate:'验证'};
-  const text=title==null?'':String(title),phrase=phrases[prompt.id]||'',start=phrase?text.indexOf(phrase):-1;
-  if(start<0){heading.textContent=text;return}
-  const accent=document.createElement('span');accent.className='daily-title-emphasis';accent.textContent=phrase;
-  heading.replaceChildren(text.slice(0,start),accent,text.slice(start+phrase.length));
+  setReviewPromptHeading(heading,title,phrases[prompt.id]||'');
 }
 function showExtendedPrompt(promptId,focus=false){
   const type=state.current.type,config=EXTENDED_FLOW[type],prompts=currentExtendedPrompts(),index=prompts.findIndex(prompt=>prompt.id===promptId),intro=index<0,prompt=prompts[index],flow=$('.extended-review-flow');
@@ -910,7 +915,7 @@ function setRailOverlayOpen(open,restoreFocus=false){
  state.railOpen=open;trigger.setAttribute('aria-expanded',String(open));
  if(!open){dismissDialog(container);syncOverlayBackground();if(restoreFocus&&trigger.isConnected)trigger.focus({preventScroll:true});return}
  cancelDailyTypewriter();const template=document.createElement('template');template.innerHTML=rightRail();const rail=$('#right-rail',template.content);
- showRail(container,{header:$('.rail-dialog-header',rail).outerHTML,stats:$('.rail-stats',rail).outerHTML,panels:[['calendar','.rail-calendar'],['stage','.rail-stage'],['pending','.rail-pending']].map(([id,selector])=>({id,html:$(selector,rail).outerHTML})),decorHtml:railDecor(),onClose:()=>setRailOverlayOpen(false,true),returnFocus:trigger});
+ showRail(container,{header:$('.rail-dialog-header',rail).outerHTML,stats:$('.rail-stats',rail).outerHTML,panels:[['calendar','.rail-calendar'],['stage','.rail-stage'],['pending','.rail-pending']].map(([id,selector])=>({id,html:$(selector,rail).outerHTML})),onClose:()=>setRailOverlayOpen(false,true),returnFocus:trigger});
  syncOverlayBackground();
  const current=$('#right-rail');$('#rail-close').addEventListener('click',()=>setRailOverlayOpen(false,true));
  $$('[data-nav]',current).forEach(button=>button.addEventListener('click',()=>{setRailOverlayOpen(false,true);attemptNavigate(()=>navigate(button.dataset.nav))}));

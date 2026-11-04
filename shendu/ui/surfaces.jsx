@@ -10,6 +10,7 @@ import {Calendar,CalendarDayButton} from './components/ui/calendar';
 import {Toaster} from './components/ui/sonner';
 import {mountComponent,enhanceUi,disposeUi} from './runtime';
 import './surfaces.css';
+import './stage.css';
 
 // Date-only business values are converted with local fields, never UTC offsets.
 export function calendarDate(value){const [y,m,d]=String(value||'').split('-').map(Number);return y&&m&&d?new Date(y,m-1,d,12):undefined}
@@ -28,10 +29,10 @@ export function prepareDialogContainer(container){
 }
 
 /** The raw body is deliberately opaque to React. Business form bindings remain native. */
-export function showDialog(container,{html,className='',title='慎独',description='',canClose=()=>true,onClose=()=>{},returnFocus,decorHtml=''}){
+export function showDialog(container,{html,className='',title='慎独',description='',canClose=()=>true,onClose=()=>{},returnFocus}){
   clearDialog(container);
   mountComponent(container,<Dialog open onOpenChange={open=>{if(!open&&canClose())onClose()}}>
-    <DialogContent container={container} className={`sd-surface sd-dialog modal ${className}`} overlayClassName="sd-surface sd-dialog-overlay modal-backdrop" overlayChildren={decorHtml?<div className="rail-side-decor" aria-hidden dangerouslySetInnerHTML={raw(decorHtml)}/>:null} showCloseButton={false}
+    <DialogContent container={container} className={`sd-surface sd-dialog modal ${className}`} overlayClassName="sd-surface sd-dialog-overlay modal-backdrop" showCloseButton={false}
       onOpenAutoFocus={event=>event.preventDefault()}
       onCloseAutoFocus={event=>event.preventDefault()}
       onEscapeKeyDown={event=>{if(!canClose())event.preventDefault()}}
@@ -48,18 +49,18 @@ export function showDialog(container,{html,className='',title='慎独',descripti
   return body;
 }
 
-function RailSurface({container,header,stats,panels,decorHtml,onClose,returnFocus}){
+function RailSurface({container,header,stats,panels,onClose,returnFocus}){
   const [view,setView]=React.useState('calendar');
   return <Dialog open onOpenChange={open=>{if(!open)onClose()}}>
-    <DialogContent container={container} className="sd-surface sd-dialog sd-rail right-rail open" id="right-rail" data-view={view} overlayClassName="sd-surface sd-dialog-overlay rail-backdrop" overlayChildren={<div className="rail-side-decor" aria-hidden dangerouslySetInnerHTML={raw(decorHtml)}/>} showCloseButton={false} onOpenAutoFocus={event=>event.preventDefault()} onCloseAutoFocus={event=>event.preventDefault()}>
+    <DialogContent container={container} className="sd-surface sd-dialog stage-folio open" id="right-rail" data-view={view} overlayClassName="sd-surface sd-dialog-overlay rail-backdrop" showCloseButton={false} onOpenAutoFocus={event=>event.preventDefault()} onCloseAutoFocus={event=>event.preventDefault()}>
       <DialogTitle className="sr-only">阶段与日历</DialogTitle><DialogDescription className="sr-only">每日足迹、当前阶段与待验证行动。</DialogDescription>
-      <div data-legacy-rail="header" dangerouslySetInnerHTML={raw(header)}/>
-      <Tabs value={view} onValueChange={setView} className="sd-rail-tabs">
-        <TabsList className="rail-view-switch" aria-label="阶段面板">
-          {[['calendar','每日足迹'],['stage','当前阶段'],['pending','待验证']].map(([id,label])=><TabsTrigger key={id} value={id} data-rail-view={id} aria-pressed={view===id}>{label}</TabsTrigger>)}
+      <div className="stage-folio-heading" data-legacy-rail="header" dangerouslySetInnerHTML={raw(header)}/>
+      <Tabs value={view} onValueChange={setView} className="stage-folio-tabs">
+        <TabsList className="stage-folio-nav" aria-label="阶段面板">
+          {[['calendar','每日足迹'],['stage','当前阶段'],['pending','待验证']].map(([id,label])=><TabsTrigger key={id} value={id} className="stage-folio-tab" data-rail-view={id} aria-pressed={view===id}>{label}</TabsTrigger>)}
         </TabsList>
-        <div data-legacy-rail="stats" dangerouslySetInnerHTML={raw(stats)}/>
-        {panels.map(({id,html})=><TabsContent key={id} value={id} forceMount hidden={view!==id} data-legacy-rail={id} dangerouslySetInnerHTML={raw(html)}/>)}
+        <div className="stage-folio-pages">{panels.map(({id,html})=><TabsContent key={id} value={id} forceMount hidden={view!==id} className="stage-folio-page" data-legacy-rail={id} dangerouslySetInnerHTML={raw(html)}/>)}</div>
+        <div className="stage-folio-footer" data-legacy-rail="stats" dangerouslySetInnerHTML={raw(stats)}/>
       </Tabs>
     </DialogContent>
   </Dialog>;
@@ -94,15 +95,22 @@ function DateCalendar({value,month,minimum,locked,today,onSelect,onMonthChange,c
 }
 export function showVerificationCalendar(container,options){mountComponent(container,<DateCalendar key={`${options.value}|${options.month}|${options.locked}`} {...options}/>)}
 
+function StageCaptionLabel({children,className,...props}){
+  const match=/^(\d{4}) 年 (\d{1,2}) 月$/.exec(String(children));
+  return <span {...props} className={`${className||''} stage-month-caption`}>{match?<><span className="stage-month-number" aria-hidden>{match[2].padStart(2,'0')}<small>月</small></span><span className="stage-month-year" aria-hidden>{match[1]} 年</span><span className="sr-only">{children}</span></>:children}</span>;
+}
 function StageCalendar({month,today,records,statusLabels,onMonthChange,onSelect}){
   const [visible,setVisible]=React.useState(monthDate(month));
   const byDate=new Map();for(const record of records)if(!byDate.has(record.period))byDate.set(record.period,record);
-  const Day=React.useCallback(function StageDay(props){const value=calendarValue(props.day.date),record=byDate.get(value),status=record?.status||'',mark={verified:'✓',completed:'●',draft:'—'}[status]||'';return <CalendarDayButton {...props} className={`cal-day ${status} ${value===today?'today':''}`} data-calendar-date={value} data-calendar-record={record?.id} aria-label={`${props.day.date.getFullYear()}年${props.day.date.getMonth()+1}月${props.day.date.getDate()}日 星期${'日一二三四五六'[props.day.date.getDay()]}，${value===today?'今天，':''}${record?statusLabels[status]:'无记录'}`}><span className="cal-day-number">{props.day.date.getDate()}</span><span className="cal-day-mark" aria-hidden>{mark}</span></CalendarDayButton>},[records,today]);
+  const Day=React.useCallback(function StageDay(props){
+    const value=calendarValue(props.day.date),record=byDate.get(value),status=record?.status||'',mark={verified:'✓',completed:'●',draft:'—'}[status]||'';
+    return <CalendarDayButton {...props} className={`stage-day ${status?'stage-day-'+status:''} ${value===today?'stage-day-today':''}`} data-calendar-date={value} data-calendar-record={record?.id} aria-label={`${props.day.date.getFullYear()}年${props.day.date.getMonth()+1}月${props.day.date.getDate()}日 星期${'日一二三四五六'[props.day.date.getDay()]}，${value===today?'今天，':''}${record?statusLabels[status]:'无记录'}`}><span className="stage-day-number">{props.day.date.getDate()}</span>{mark&&<span className="stage-day-mark" aria-hidden>{mark}</span>}</CalendarDayButton>;
+  },[records,statusLabels,today]);
   const displayed=calendarValue(visible).slice(0,7),finished=records.filter(record=>record.period.startsWith(displayed)&&record.status!=='draft').length;
-  return <div className="sd-surface sd-calendar sd-stage-calendar">
-    <div className="calendar-caption"><span>每日足迹</span><Button type="button" variant="ghost" className="calendar-return" disabled={displayed===today.slice(0,7)} onClick={()=>{const date=monthDate(today.slice(0,7));setVisible(date);onMonthChange(today.slice(0,7))}}>回到本月 ↗</Button></div>
-    <Calendar mode="single" month={visible} onMonthChange={date=>{setVisible(date);onMonthChange(calendarValue(date).slice(0,7))}} onSelect={date=>{if(date)onSelect(calendarValue(date),byDate.get(calendarValue(date)))}} today={calendarDate(today)} locale={zhCN} weekStartsOn={1} fixedWeeks showOutsideDays={false} disabled={date=>calendarValue(date)!==today&&!byDate.has(calendarValue(date))} components={{DayButton:Day}} labels={calendarLabels} formatters={{formatCaption:date=>`${date.getFullYear()} 年 ${date.getMonth()+1} 月`,formatWeekdayName:date=>'一二三四五六日'[(date.getDay()+6)%7]}}/>
-    <div className="calendar-legend" aria-label="日历状态说明"><span><i className="legend-today" aria-hidden/>今天</span><span><i className="legend-draft" aria-hidden>—</i>草稿</span><span><i className="legend-completed" aria-hidden>●</i>已完成</span><span><i className="legend-verified" aria-hidden>✓</i>已验证</span></div><p className="calendar-month-note">本月已完成 <b>{finished}</b> 天复盘</p>
+  return <div className="sd-surface sd-calendar stage-calendar">
+    <Calendar mode="single" month={visible} onMonthChange={date=>{setVisible(date);onMonthChange(calendarValue(date).slice(0,7))}} onSelect={date=>{if(date)onSelect(calendarValue(date),byDate.get(calendarValue(date)))}} today={calendarDate(today)} locale={zhCN} weekStartsOn={1} fixedWeeks showOutsideDays={false} disabled={date=>calendarValue(date)!==today&&!byDate.has(calendarValue(date))} components={{DayButton:Day,CaptionLabel:StageCaptionLabel}} labels={calendarLabels} formatters={{formatCaption:date=>`${date.getFullYear()} 年 ${date.getMonth()+1} 月`,formatWeekdayName:date=>'一二三四五六日'[(date.getDay()+6)%7]}}/>
+    <div className="stage-calendar-foot"><p>本月已完成 <strong>{finished}</strong> 天复盘</p><Button type="button" variant="ghost" className="stage-return-month" disabled={displayed===today.slice(0,7)} onClick={()=>{const date=monthDate(today.slice(0,7));setVisible(date);onMonthChange(today.slice(0,7))}}>回到本月 <span aria-hidden>↗</span></Button></div>
+    <div className="stage-calendar-legend" aria-label="日历状态说明"><span><i className="stage-legend-today" aria-hidden/>今天</span><span><i className="stage-legend-draft" aria-hidden>—</i>草稿</span><span><i className="stage-legend-completed" aria-hidden>●</i>已完成</span><span><i className="stage-legend-verified" aria-hidden>✓</i>已验证</span></div>
   </div>;
 }
 export function showStageCalendar(container,options){mountComponent(container,<StageCalendar {...options}/>)}

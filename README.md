@@ -53,7 +53,7 @@
 
 通用界面采用本地维护的 **shadcn/ui + React + Radix UI** 组件，使用 Vite 和 Tailwind CSS 构建；原有业务流程由原生 JavaScript 管理。服务端要求 **Node.js 22.13 或更高版本**（推荐与容器一致的 Node.js 24）。组件源码与依赖锁文件随仓库提供，浏览器不加载远程 CDN。生产部署推荐 Debian 12/13、Docker Compose 和项目自带的 Caddy 配置；Docker 会自动安装构建依赖并编译前端。
 
-[组件覆盖与维护说明](docs/shadcn-adoption.md) · [本轮验收与桌面／手机截图](docs/shadcn-qa/README.md)。按钮、表单、菜单、弹窗、日历、面板切换和通知使用真实组件，保留原有红印章、宋体、六类配色、插画与弧形轮播。
+[组件覆盖与维护说明](docs/shadcn-adoption.md) · [组件迁移验收](docs/shadcn-qa/README.md) · [控件修正与新版阶段日历](docs/ui-polish-qa/README.md)。按钮、表单、菜单、弹窗、日历、面板切换和通知使用真实组件，保留原有红印章、宋体、六类配色、插画与弧形轮播。
 
 轮播使用本地装饰插画，无需上传复盘图片或把正文发送到外部服务；关键词匹配有局限，不代表对情绪的准确判断。素材来源和图案映射见[轮播素材说明](shendu/public/assets/reel-emotions/README.md)。
 

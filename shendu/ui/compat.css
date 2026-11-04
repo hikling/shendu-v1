@@ -2,7 +2,7 @@
    Legacy CSS owns page geometry; shadcn owns native controls and interaction. */
 .sd-ui-host { display: contents; }
 /* Header links retain their text-only navigation treatment in every Button state. */
-.shendu-header .sd-ui:is(.header-link,.header-menu-trigger,.header-rail-button,.header-account-trigger,.header-mobile-trigger) {
+.shendu-header :is(.header-link,.header-menu-trigger,.header-rail-button,.header-account-trigger,.header-mobile-trigger)[data-slot] {
   background: transparent;
   border: 0;
   border-radius: 0;
@@ -15,8 +15,14 @@
 .sd-ui[data-slot="card"] { gap: 0; }
 .sd-ui-host > [data-slot="native-select-wrapper"] { display: contents; }
 .sd-ui-host > [data-slot="native-select-wrapper"] > [data-slot="native-select-icon"] { display: none; }
-.sd-ui[data-slot="native-select"] { appearance: auto; }
-.history-type-filter .sd-ui[data-slot="native-select"] { appearance: none; }
+.sd-ui[data-slot="native-select"] { appearance: auto; -webkit-appearance: auto; }
+/* These compositions already own one chevron. Restoring browser appearance
+   here would put its native arrow beside the authored indicator. */
+:is(.history-filter-select,.history-type-filter,.metric-status-control) .sd-ui[data-slot="native-select"] { appearance: none; -webkit-appearance: none; }
+.history-filter-select:has(select:disabled) .select-chevron,
+.metric-status-control:has(select:disabled) .metric-status-chevron { opacity: .45; }
+.settings-menu-item[data-slot="button"]:hover { background: transparent; }
+.settings-menu-item[data-slot="button"]:hover strong { text-decoration: underline; text-underline-offset: 4px; }
 .sd-ui-host > [data-slot="table-container"] { width: 100%; }
 .sd-checkbox-native { position: absolute !important; width: 1px !important; height: 1px !important; padding: 0 !important; margin: -1px !important; overflow: hidden !important; clip-path: inset(50%); white-space: nowrap; border: 0 !important; opacity: 0; pointer-events: none; }
 .sd-checkbox { width: 18px; height: 18px; min-width: 18px; padding: 0; display: inline-grid; place-items: center; vertical-align: middle; color: var(--primary-contrast); background: var(--sheet); border: 1px solid var(--ink-2); border-radius: 5px; }

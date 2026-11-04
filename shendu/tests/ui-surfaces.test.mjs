@@ -42,19 +42,48 @@ test('verification Calendar has six weeks, preserves date-only values and does n
 });
 
 test('stage Calendar preserves original record identity and only today or recorded days are actionable',async()=>{
-  const selected=[],records=[{id:'original-id',period:'2026-11-02',status:'verified'},{id:'later-duplicate',period:'2026-11-02',status:'draft'}];
-  ui.showStageCalendar(calendar,{month:'2026-11',today:'2026-11-04',records,statusLabels:{verified:'已验证'},onMonthChange(){},onSelect:(date,record)=>selected.push({date,id:record?.id})});
+  const selected=[],months=[],records=[{id:'original-id',period:'2026-11-02',status:'verified'},{id:'later-duplicate',period:'2026-11-02',status:'draft'},{id:'draft-id',period:'2026-11-01',status:'draft'},{id:'completed-id',period:'2026-11-05',status:'completed'}];
+  ui.showStageCalendar(calendar,{month:'2026-11',today:'2026-11-04',records,statusLabels:{verified:'已验证',completed:'已完成',draft:'草稿'},onMonthChange:value=>months.push(value),onSelect:(date,record)=>selected.push({date,id:record?.id})});
   await settle();assert.equal(calendar.querySelectorAll('.rdp-week').length,6);
+  assert.equal(calendar.querySelector('.stage-month-number').textContent,'11月');assert.equal(calendar.querySelector('.stage-month-year').textContent,'2026 年');
+  assert.ok(calendar.querySelector('[data-calendar-date="2026-11-01"]').classList.contains('stage-day-draft'));assert.ok(calendar.querySelector('[data-calendar-date="2026-11-05"]').classList.contains('stage-day-completed'));
   assert.equal(calendar.querySelector('[data-calendar-date="2026-11-03"]').disabled,true);
+  calendar.querySelector('[data-calendar-date="2026-11-03"]').click();assert.equal(selected.length,0);
   const record=calendar.querySelector('[data-calendar-date="2026-11-02"]');assert.equal(record.dataset.calendarRecord,'original-id');assert.ok(record.textContent.includes('✓'));record.click();await settle();assert.deepEqual(selected,[{date:'2026-11-02',id:'original-id'}]);
+  assert.match(record.getAttribute('aria-label'),/2026年11月2日 星期一，已验证/);
   calendar.querySelector('[data-calendar-date="2026-11-04"]').click();await settle();assert.equal(selected.at(-1).date,'2026-11-04');assert.equal(selected.at(-1).id,undefined);
+  calendar.querySelector('[aria-label="下个月"]').click();await settle();assert.equal(months.at(-1),'2026-12');assert.equal(selected.length,2);assert.equal(calendar.querySelectorAll('.rdp-week').length,6);assert.equal(calendar.querySelector('.stage-month-number').textContent,'12月');
+  calendar.querySelector('.stage-return-month').click();await settle();assert.equal(months.at(-1),'2026-11');assert.equal(selected.length,2);assert.equal(calendar.querySelector('.stage-return-month').disabled,true);assert.equal(calendar.querySelector('[data-calendar-date="2026-11-02"]').dataset.calendarRecord,'original-id');
   ui.disposeUi(calendar);calendar.replaceChildren();
 });
 
-test('rail uses linked real Tabs with force mounted panels and cleanup removes portal roots',async()=>{
-  ui.showRail(surface,{header:'<header class="rail-dialog-header"><h2 id="rail-dialog-title">阶段与日历</h2><button id="rail-close">关闭</button></header>',stats:'<section class="rail-stats">统计</section>',panels:[{id:'calendar',html:'<section id="test-calendar">日历</section>'},{id:'stage',html:'<section><input id="stage-field" value="保留"></section>'},{id:'pending',html:'<section>待验证</section>'}],decorHtml:'',onClose(){}});await settle();
+test('controlled calendar month browsing preserves navigation nodes and keyboard focus',async()=>{
+  for(const type of ['stage','verification']){
+    const months=[],selections=[];
+    if(type==='stage')ui.showStageCalendar(calendar,{month:'2026-11',today:'2026-11-04',records:[],statusLabels:{verified:'已验证',completed:'已完成',draft:'草稿'},onMonthChange:value=>months.push(value),onSelect:value=>selections.push(value)});
+    else ui.showVerificationCalendar(calendar,{value:'2026-11-14',month:'2026-11',minimum:'2026-11-11',locked:false,today:'2026-11-04',onMonthChange:value=>months.push(value),onSelect:value=>selections.push(value)});
+    await settle();
+    const root=calendar.querySelector('[data-slot="calendar"]'),next=calendar.querySelector('[aria-label="下个月"]'),previous=calendar.querySelector('[aria-label="上个月"]');
+    next.focus();next.click();await settle();
+    assert.equal(months.at(-1),'2026-12',`${type} advances one month`);
+    assert.ok(calendar.querySelector('[data-slot="calendar"]')===root,`${type} keeps the DayPicker root`);
+    assert.ok(calendar.querySelector('[aria-label="下个月"]')===next,`${type} keeps its next button`);
+    assert.ok(calendar.querySelector('[aria-label="上个月"]')===previous,`${type} keeps its previous button`);
+    assert.ok(document.activeElement===next,`${type} retains focus on the activated button`);
+    next.click();await settle();assert.equal(months.at(-1),'2027-01');assert.equal(document.activeElement,next);
+    previous.focus();previous.click();await settle();assert.equal(months.at(-1),'2026-12');assert.equal(document.activeElement,previous);
+    assert.deepEqual(selections,[],`${type} month browsing never selects a date`);
+    ui.disposeUi(calendar);calendar.replaceChildren();
+  }
+});
+
+test('stage folio uses linked persistent Tabs, one shared stats footer and no side decorations',async()=>{
+  ui.showRail(surface,{header:'<header class="stage-folio-header rail-dialog-header"><h2 id="rail-dialog-title">阶段与日历</h2><button id="rail-close">关闭</button></header>',stats:'<section class="stage-summary rail-stats">统计</section>',panels:[{id:'calendar',html:'<section id="test-calendar">日历</section>'},{id:'stage',html:'<section><input id="stage-field" value="保留"></section>'},{id:'pending',html:'<section>待验证</section>'}],onClose(){}});await settle();
+  assert.ok(surface.querySelector('#right-rail.stage-folio.open'));assert.equal(surface.querySelectorAll('.stage-summary').length,1);assert.equal(surface.querySelector('.stage-folio-footer').previousElementSibling.className,'stage-folio-pages');assert.equal(surface.querySelectorAll('img,.rail-side-decor,.rail-compact-decor').length,0);
   const tabs=[...surface.querySelectorAll('[role="tab"]')];assert.equal(tabs.length,3);const field=surface.querySelector('#stage-field');field.value='保持内容';
+  assert.equal(surface.querySelectorAll('[role="tabpanel"]').length,3);assert.equal(surface.querySelectorAll('[role="tabpanel"][hidden]').length,2);
   tabs[1].dispatchEvent(new MouseEvent('mousedown',{bubbles:true,button:0}));tabs[1].click();await settle();assert.equal(tabs[1].getAttribute('aria-selected'),'true');assert.equal(surface.querySelector('#test-calendar').closest('[role="tabpanel"]').hidden,true);assert.equal(surface.querySelector('#stage-field'),field);assert.equal(field.value,'保持内容');
+  assert.equal(surface.querySelector('.stage-folio-footer').closest('[role="tabpanel"]'),null);assert.equal(surface.querySelectorAll('[role="tabpanel"][hidden]').length,2);
   ui.dismissDialog(surface);await settle();assert.equal(document.querySelector('[role="tabpanel"]'),null);
 });
 
