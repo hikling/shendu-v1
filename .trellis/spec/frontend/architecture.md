@@ -22,6 +22,10 @@ Daily uses a full art canvas for both intro and writing. `.daily-flow.daily-art-
 
 `statsHtml()` is owned by the shared stage/calendar dialog and renders once inside `rightRail()`. Review bodies must not call it. Its compact three-stat controls navigate through the existing guard after closing the parent dialog.
 
+`calendarHtml()` owns the stage-dialog month grid and its draft/completed/verified/today presentation. Keep its original date-to-record lookup and disabled-date rules, six week rows, descriptive native buttons and view-only month controls. `bindCalendar()` rebinds after the month subtree is replaced and restores the active navigation control's focus. The decorative side cards live behind the dialog surface and share its frame geometry; they are not navigation controls. This calendar remains separate from the verifyDate form calendar.
+
+`renderHistory()` owns the illustrated archive page, including its local q/type/year/month filter projection and post-render search-caret restoration. Cards retain `data-open-record` and `bindRecordOpen()`, so the original ID decides which stored record opens. Existing local category art is decorative and has no persisted selection field; escape every title/excerpt/period/status passed into HTML. Keep history-only markup/styles scoped away from the approved overview and immersive review canvases.
+
 Routes are in-memory names such as `overview`, `daily`, `history`, `actions`, and `backup`. `boot()` opens `overview` after `refreshData()`. `renderOverview()` is the overview-only page; other page bodies retain their own render functions. `attemptNavigate()` guards unsaved input before moving between routes. Header, calendar, overview cards, and record-card handlers use that guard. Preserve it when adding navigation affordances.
 
 The top navigation is shared by every logged-in route. `navItems()` filters the header review menu by `state.stage.showQuarter`, while the six overview category cards always come from all entries in `TYPES`. `bindCommon()` binds the header menus and route buttons after each `shell()` render; a page rerender must rebind them.

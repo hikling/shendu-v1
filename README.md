@@ -16,7 +16,9 @@
 
 [查看顶部复盘菜单](docs/top-navigation.png)
 
-[查看居中的阶段与日历](docs/stage-calendar.png)
+[查看居中的阶段与日历](docs/stage-calendar.png) · [查看手机月历与状态图例](docs/stage-calendar-mobile.png)
+
+[查看历史复盘页](docs/history-overview.png) · [查看分类插画记录卡](docs/history-records.png) · [查看手机历史页](docs/history-mobile.png)
 
 [查看每日复盘引导](docs/daily-intro.png) · [查看分步填写](docs/daily-step.png)
 
@@ -44,6 +46,8 @@
 六类插画衬底各自采用折页纸、珊瑚叠纸点阵、琥珀圆盘刻度、湖蓝路径格线、紫色年轮轨道、橄榄绿对向纸形，保持低对比、静态且不接收指针；左上角阶段名称跟随概览类别深色。[查看六类衬底与阶段配色](docs/review-category-backdrops.png)。
 
 升级后，已有待验证记录按原完成日重新计算最早验证日期；原预期日期与已验证结果保留。
+
+阶段与日历采用更清楚的纸感月历，标出今天、草稿、已完成和已验证，附文字图例；六类装饰从弹窗边框后半露伸出。历史复盘改为分类插画记录卡，保留全文搜索、类型和年月筛选，以及草稿、锁定和已验证记录的原有打开方式。两处配图均使用已有本地素材，不向外部服务发送复盘内容。
 
 本项目没有前端构建步骤，也没有第三方 npm 运行依赖。服务端要求 **Node.js 22.13 或更高版本**（推荐与容器一致的 Node.js 24）；生产部署推荐 Debian 12/13、Docker Compose 和项目自带的 Caddy 配置。
 

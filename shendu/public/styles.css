@@ -670,7 +670,7 @@ body.reduce-motion *,body.reduce-motion *:before,body.reduce-motion *:after{anim
 .rail-backdrop[hidden]{display:none!important}
 body.rail-dialog-open{overflow:hidden}
 body.rail-dialog-open .modal-backdrop{z-index:110}
-.app-shell .right-rail.open{position:fixed;inset:50% auto auto 50%;z-index:90;width:min(900px,calc(100vw - 40px));height:auto;max-height:calc(100dvh - 64px);display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:18px;overflow:auto;overscroll-behavior:contain;padding:26px;border:1px solid #dce5df;border-radius:28px;background:#f7f9f6;box-shadow:0 32px 90px rgba(15,40,35,.28),0 5px 18px rgba(15,40,35,.08);transform:translate(-50%,-50%);animation:rail-dialog-enter .24s cubic-bezier(.2,.8,.2,1)}
+.app-shell .right-rail.open{position:fixed;inset:50% auto auto 50%;z-index:90;width:var(--rail-dialog-width);height:auto;max-height:calc(100dvh - 64px);display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:18px;overflow:auto;overscroll-behavior:contain;padding:26px;border:1px solid #dce5df;border-radius:28px;background:#f7f9f6;box-shadow:0 32px 90px rgba(15,40,35,.28),0 5px 18px rgba(15,40,35,.08);transform:translate(-50%,-50%);animation:rail-dialog-enter .24s cubic-bezier(.2,.8,.2,1)}
 .right-rail.open .rail-dialog-header{display:flex;grid-column:1/-1;align-items:flex-start;justify-content:space-between;gap:18px;padding:0 2px 8px}
 .rail-dialog-header h2{margin:0;color:#233d36;font:700 1.5rem/1.25 "Noto Serif SC","Songti SC",serif;letter-spacing:.05em}
 .rail-dialog-header p{margin:8px 0 0;color:#677b73;font:500 .72rem/1.65 "Noto Sans SC","Microsoft YaHei",system-ui,sans-serif}
@@ -798,26 +798,56 @@ body.reduce-motion .overview-type-burst{display:none}
   .header-menu-panel,.header-mobile-nav,.overview-type-info,.rail-backdrop,.app-shell .right-rail.open{animation:none}
 }
 
-/* Stage dialog: soft calendar paper and six familiar category illustrations. */
-.rail-side-decor{position:absolute;inset:0;pointer-events:none}
-.rail-side-decor img{position:absolute;width:clamp(50px,7vw,92px);height:auto;border-radius:19%;box-shadow:0 12px 28px #173d3530}
-.rail-side-decor img:nth-child(-n+3){left:max(12px,calc(50% - 570px))}
-.rail-side-decor img:nth-child(n+4){right:max(12px,calc(50% - 570px))}
-.rail-side-decor img:nth-child(3n+1){top:calc(50% - 168px);transform:rotate(-9deg)}
-.rail-side-decor img:nth-child(3n+2){top:calc(50% - 46px);transform:rotate(7deg)}
-.rail-side-decor img:nth-child(3n){top:calc(50% + 76px);transform:rotate(-6deg)}
+/* Stage dialog: category tabs emerge from behind its shared paper edge. */
+.app-shell{--rail-dialog-width:min(900px,calc(100vw - 40px))}
+.rail-side-decor{position:absolute;inset:auto;left:50%;top:50%;width:var(--rail-dialog-width);height:min(560px,calc(100dvh - 90px));transform:translate(-50%,-50%);pointer-events:none}
+.rail-side-decor img{--tab-tilt:-8deg;position:absolute;width:106px;height:106px;border-radius:20%;box-shadow:0 9px 24px #173d3533;transform:rotate(var(--tab-tilt));animation:rail-tab-emerge .48s cubic-bezier(.2,.8,.2,1) both;pointer-events:none}
+.rail-side-decor img:nth-child(-n+3){--tab-slide:35px;left:-51px}
+.rail-side-decor img:nth-child(n+4){--tab-slide:-35px;right:-51px}
+.rail-side-decor img:nth-child(3n+1){top:17%}
+.rail-side-decor img:nth-child(3n+2){--tab-tilt:7deg;top:43%;animation-delay:.04s}
+.rail-side-decor img:nth-child(3n){--tab-tilt:-5deg;top:69%;animation-delay:.08s}
 .rail-compact-decor{display:none}
-.right-rail.open .rail-calendar{background:linear-gradient(155deg,#eef8f4,#eaf2f9);border-color:#d3e6e0;box-shadow:inset 0 1px #fff,0 9px 24px #315c5012}
-.right-rail.open .calendar-head{color:#244f4a}
-.right-rail.open .calendar-head strong{font-size:.95rem;letter-spacing:.04em}
-.right-rail.open .calendar-head .icon-btn{border-color:#d2e5df;background:#fff;color:#21685c;box-shadow:0 3px 10px #1d695312}
-.right-rail.open .cal-grid .dow{color:#50746a;font-weight:750;background:#dceee8;border-radius:8px}
-.right-rail.open .cal-day{background:#ffffffad;color:#5a716b;border-color:#ffffffa8;opacity:1}
-.right-rail.open .cal-day:disabled:hover{background:#ffffffad}
-.right-rail.open .cal-day.completed{background:#bfe5d5;color:#135c4b;border-color:#97d0b9;font-weight:800}
-.right-rail.open .cal-day.draft{background:#f9dfb5;color:#79511f;border-color:#e8c893;font-weight:750}
-.right-rail.open .cal-day.today,.right-rail.open .cal-day.today.completed,.right-rail.open .cal-day.today.draft{background:#ad4e43;color:#fff;border-color:#ad4e43;font-weight:800}
-.right-rail.open .cal-day:not(:disabled):hover{outline:2px solid #489582;outline-offset:2px}
+@keyframes rail-tab-emerge{from{opacity:0;transform:translateX(var(--tab-slide)) rotate(0)}to{opacity:1;transform:translateX(0) rotate(var(--tab-tilt))}}
+.right-rail.open .rail-calendar{align-self:stretch;padding:21px 22px 17px;border-color:#cbd9d0;background:#fcfcf8;box-shadow:0 8px 22px #315c500c}
+.calendar-caption{display:flex;align-items:center;justify-content:space-between;gap:8px;color:#4f655c;font:700 .69rem/1.4 "Noto Sans SC","Microsoft YaHei",sans-serif;letter-spacing:.08em}
+.calendar-return{min-height:32px;padding:4px 0 4px 8px;border:0;background:transparent;color:#405d52;font:600 .66rem/1.4 "Noto Sans SC","Microsoft YaHei",sans-serif;letter-spacing:0}
+.calendar-return span{margin-left:4px}
+.calendar-return:hover:not(:disabled){color:#15584e;text-decoration:underline;text-underline-offset:4px}
+.calendar-return:disabled{color:#68776d;cursor:default}
+.right-rail.open .calendar-head{align-items:flex-end;margin:7px 0 19px;color:#24483b}
+.calendar-month{display:flex;align-items:baseline;gap:13px}
+.calendar-month>small{color:#52675a;font:600 .78rem/1.4 "Noto Sans SC","Microsoft YaHei",sans-serif;white-space:nowrap}
+.right-rail.open .calendar-month>strong{color:#1f3d32;font:800 2.6rem/1 "SimSun","宋体","Noto Serif SC",serif;letter-spacing:-.05em;white-space:nowrap}
+.calendar-month>strong>span{margin-left:7px;font-size:1.15rem;letter-spacing:0}
+.calendar-month-actions{display:flex;gap:7px}
+.right-rail.open .calendar-head .icon-btn{width:34px;height:34px;border:1px solid #cedbd2;border-radius:50%;background:#fff;color:#31594a;box-shadow:none}
+.right-rail.open .calendar-head .icon-btn:hover{border-color:#789a88;background:#eaf1e9;transform:none}
+.right-rail.open .cal-grid{gap:5px}
+.right-rail.open .cal-grid .dow{padding:0 0 10px;background:transparent;border-radius:0;color:#586d61;font:650 .7rem/1.4 "Noto Sans SC","Microsoft YaHei",sans-serif}
+.right-rail.open .cal-grid .dow.weekend{color:#9a604d}
+.right-rail.open .cal-day{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;aspect-ratio:auto;min-width:0;height:43px;padding:4px 0;border:1px solid #e1e7de;border-radius:10px;background:#fff;color:#54685d;font:650 .86rem/1 "Noto Sans SC","Microsoft YaHei",sans-serif;opacity:1;transition:background .18s,border-color .18s,box-shadow .18s}
+.right-rail.open .cal-day-number{font-variant-numeric:tabular-nums;line-height:1}
+.right-rail.open .cal-day-mark{height:8px;font:800 .48rem/8px "Noto Sans SC",sans-serif}
+.right-rail.open .cal-day:disabled{border-color:#e9ece4;background:#f4f5ee;color:#788276;cursor:default;opacity:1}
+.right-rail.open .cal-day:disabled:hover{background:#f4f5ee}
+.right-rail.open .cal-day.today{outline:2px solid #b15442;outline-offset:1px;border-color:#fff;background:#fffaf3;color:#914530;font-weight:800}
+.right-rail.open .cal-day.completed{border-color:#a4c5b2;background:#dcece0;color:#28513d;font-weight:800}
+.right-rail.open .cal-day.verified{border-color:#275c47;background:#275c47;color:#fff;font-weight:800}
+.right-rail.open .cal-day.draft{border-color:#ddbf81;border-style:dashed;background:#fbefd7;color:#795419;font-weight:800}
+.right-rail.open .cal-day:not(:disabled):hover{outline:2px solid #496f5b;outline-offset:2px;box-shadow:0 3px 8px #2c5a3826}
+.right-rail.open .cal-day:focus-visible{outline:3px solid #164f43;outline-offset:2px;z-index:1}
+.cal-blank{height:43px}
+.calendar-legend{display:flex;justify-content:space-between;flex-wrap:wrap;gap:7px 10px;padding-top:17px;margin-top:14px;border-top:1px solid #dce4d8;color:#435c4e;font:500 .61rem/1.4 "Noto Sans SC","Microsoft YaHei",sans-serif}
+.calendar-legend>span{display:inline-flex;align-items:center;gap:5px;white-space:nowrap}
+.calendar-legend i{display:grid;place-items:center;width:12px;height:12px;border-radius:4px;font:800 7px/1 "Noto Sans SC",sans-serif;font-style:normal}
+.legend-today{border:1.5px solid #b15442;background:#fffaf3}
+.legend-draft{border:1px dashed #ad8039;background:#fbefd7;color:#795419}
+.legend-completed{background:#dcece0;color:#28513d}
+.legend-verified{background:#275c47;color:white}
+.right-rail.open .rail-calendar .calendar-month-note{display:flex;justify-content:space-between;align-items:center;gap:9px;margin:13px 0 0;color:#52675a;font:500 .62rem/1.5 "Noto Sans SC","Microsoft YaHei",sans-serif}
+.calendar-month-note b{color:#24553d;font-weight:800}
+.calendar-month-note>span{font-size:.56rem}
 
 /* Daily art canvas. Mounted fields persist; group sets the side, prompt sets the scene. */
 .shendu-header[hidden]{display:none!important}
@@ -1193,11 +1223,133 @@ body.reduce-motion .rail-stat{transition:none}
 
 @media(max-width:1100px){
   .rail-side-decor{display:none}
-  .rail-compact-decor{display:flex;gap:5px;margin-top:12px}
-  .rail-compact-decor img{display:block;width:36px;height:36px;border-radius:8px;box-shadow:0 3px 8px #24584618}
-}
-@media(max-width:1100px){
   .right-rail.open .rail-dialog-header>div{flex:1;min-width:0}
-  .rail-compact-decor img{width:clamp(24px,8vw,36px);height:auto}
+  .rail-compact-decor{display:flex;align-items:flex-start;gap:7px;height:28px;overflow:hidden;margin:13px 0 -8px;padding:0 3px;border-bottom:1px solid #cbd9ce;pointer-events:none}
+  .rail-compact-decor img{display:block;width:clamp(28px,6vw,42px);height:auto;border-radius:9px;transform:translateY(4px) rotate(-6deg);box-shadow:0 3px 9px #24584618;pointer-events:none}
+  .rail-compact-decor img:nth-child(even){transform:translateY(7px) rotate(7deg)}
   .rail-compact-decor img:nth-child(4){margin-left:auto}
 }
+@media(max-width:680px){
+  .right-rail.open .rail-calendar{padding:19px 16px 17px}
+  .calendar-caption{font-size:.7rem}
+  .right-rail.open .cal-day,.cal-blank{height:39px}
+  .right-rail.open .calendar-month>strong{font-size:2.3rem}
+  .calendar-month-note>span{display:none}
+}
+@media(max-width:360px){
+  .rail-compact-decor{gap:4px}
+  .right-rail.open .rail-calendar{padding:16px 11px}
+  .right-rail.open .cal-grid{gap:4px}
+  .right-rail.open .cal-day,.cal-blank{height:35px}
+  .calendar-legend{gap:8px 10px;justify-content:flex-start}
+}
+/* History: an illustrated paper archive, independent of the review canvases. */
+.history-page{--history-ink:#263b35;--history-muted:#617066;color:var(--history-ink);padding:0 0 35px;font-family:"Noto Sans SC","Microsoft YaHei",sans-serif}
+.history-hero{position:relative;display:grid;grid-template-columns:minmax(0,1fr) 235px 96px;align-items:center;gap:22px;min-height:246px;padding:10px 16px 28px 7px;border-bottom:1px solid #d6ded2;overflow:clip}
+.history-kicker{margin:0 0 15px;color:#596c5e;font-size:.65rem;font-weight:700;letter-spacing:.17em}
+.history-hero h1{margin:0;color:#253d31;font:900 clamp(2.2rem,4.3vw,3.5rem)/1.22 "SimSun","宋体","Noto Serif SC",serif;letter-spacing:.06em;-webkit-text-stroke:.12px currentColor}
+.history-hero-note{margin:15px 0 19px;color:#5b6d61;font-size:.85rem;line-height:1.8;letter-spacing:.04em}
+.history-write{display:inline-flex;align-items:center;gap:24px;min-height:43px;padding:9px 17px;border:1px solid #244f3f;border-radius:99px;background:#244f3f;color:#fff;font:650 .73rem/1.4 "Noto Sans SC","Microsoft YaHei",sans-serif;transition:background .2s,box-shadow .2s}
+.history-write:hover{background:#173e30;box-shadow:0 5px 13px #244f3f20}
+.history-write>span{font-size:1rem;line-height:1}
+.history-hero-art{position:relative;isolation:isolate;align-self:stretch;display:grid;place-items:center;min-width:0;pointer-events:none}
+.history-hero-art:before{content:"";position:absolute;z-index:-1;inset:10% 1% 12%;border:1px solid #bdd1c1;border-radius:45% 55% 44% 56%;background:#e6ecdf80;transform:rotate(-12deg)}
+.history-hero-orbit{position:absolute;z-index:-1;inset:14% -9% 16%;border:1px solid #b7c7b7;border-radius:50%;transform:rotate(18deg)}
+.history-hero-art>img{display:block;width:100%;max-width:220px;height:auto;object-fit:contain;filter:drop-shadow(0 9px 12px #294e3b0c)}
+.history-hero-caption{position:absolute;bottom:-5px;color:#617158;font-size:.59rem;letter-spacing:.08em;white-space:nowrap}
+.history-archive-count{align-self:center;padding:3px 0 4px 23px;border-left:1px solid #c9d5c7;color:#53705a}
+.history-archive-count strong{display:block;margin-bottom:9px;color:#2e4d38;font:500 2.6rem/1 Georgia,serif;letter-spacing:-.05em}
+.history-archive-count>span{display:block;font-size:.64rem;line-height:1.85;letter-spacing:.03em}
+.history-page .history-filters{display:grid;grid-template-columns:minmax(210px,1fr) 146px 125px 125px;gap:12px;align-items:end;margin:25px 0 0;padding:0}
+.history-page .history-search-field,.history-page .history-filter-select{position:relative;display:flex;flex-direction:column;align-items:stretch;gap:8px;min-width:0;width:100%}
+.history-filter-caption{color:#596a5b;font-size:.65rem;font-weight:600;letter-spacing:.05em}
+.history-page .history-search,.history-page .history-filter-select select{flex:0 0 44px;width:100%;max-width:none;min-width:0;height:44px;padding:10px 13px;border:1px solid #cbd6c9;border-radius:12px;background:#fdfefa;color:#314b3b;font:500 .75rem/1.4 "Noto Sans SC","Microsoft YaHei",sans-serif;box-shadow:0 2px 5px #2e4b3305}
+.history-page .history-search::placeholder{color:#65725f;opacity:1}
+.history-page .history-filter-select select{padding-right:31px}
+.history-page .history-filter-select .select-chevron{top:auto;bottom:17px;right:15px;transform:none}
+.history-page .history-filter-select select:disabled{background:#eff2e9;color:#6f7a66;opacity:1;cursor:default}
+.history-page .history-search:focus-visible,.history-page select:focus-visible,.history-page button:focus-visible{outline:3px solid #527761;outline-offset:3px}
+.history-results-head{display:flex;align-items:center;justify-content:space-between;gap:14px;margin:27px 2px 15px;min-height:30px}
+.history-results-head h2{display:flex;align-items:center;gap:13px;margin:0;color:#304d3a;font-size:.86rem;line-height:1.5;font-weight:700;letter-spacing:.04em}
+.history-results-head h2>span{display:inline-flex;padding:3px 9px;border:1px solid #d6dfd0;border-radius:99px;color:#637660;background:#f8faf2;font-size:.61rem;font-weight:500;letter-spacing:0;white-space:nowrap}
+.history-results-head>p{margin:0;color:#617158;font-size:.65rem;line-height:1.6}
+.history-reset{min-height:36px;padding:5px 0 5px 10px;border:0;background:transparent;color:#506c55;font-size:.67rem}
+.history-reset:hover{text-decoration:underline;text-underline-offset:4px}
+.history-reset>span{margin-left:7px}
+.history-record-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+.history-record{--history-tone:#15584e;--history-soft:#edf4ed;position:relative;display:flex;flex-direction:column;min-width:0;padding:19px 21px 16px;text-align:left;border:1px solid color-mix(in srgb,var(--history-tone) 21%,#e8ede3);border-radius:21px;background:linear-gradient(125deg,#fffefaf2 45%,var(--history-soft));color:var(--history-ink);box-shadow:0 7px 17px #213c2810;overflow:hidden;transition:transform .22s,box-shadow .22s,border-color .22s}
+.history-record.type-weekly{--history-tone:#8f4335;--history-soft:#f7ebe4}
+.history-record.type-monthly{--history-tone:#875b21;--history-soft:#f9f0d9}
+.history-record.type-quarterly{--history-tone:#345585;--history-soft:#e9eff9}
+.history-record.type-yearly{--history-tone:#624782;--history-soft:#f0e9f6}
+.history-record.type-decision{--history-tone:#455f34;--history-soft:#edf2e2}
+.history-record:before{content:"";position:absolute;top:21px;left:0;width:3px;height:23px;border-radius:0 3px 3px 0;background:var(--history-tone)}
+.history-record:hover{transform:translateY(-4px);border-color:color-mix(in srgb,var(--history-tone) 55%,#e8ede3);box-shadow:0 14px 26px #213c281c}
+.history-record-top{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.history-category{display:flex;align-items:center;gap:8px;color:var(--history-tone);font:700 .68rem/1.4 "Noto Sans SC","Microsoft YaHei",sans-serif}
+.history-category>span{display:grid;place-items:center;width:25px;height:25px;border:1px solid color-mix(in srgb,var(--history-tone) 27%,#fff);border-radius:8px;background:#ffffff87;font:800 .74rem/1 "SimSun","宋体",serif}
+.history-record-arrow{display:grid;place-items:center;width:28px;height:28px;border:1px solid color-mix(in srgb,var(--history-tone) 18%,#fff);border-radius:50%;color:var(--history-tone);background:#ffffff80;font-size:1rem;transition:background .2s,transform .2s}
+.history-record:hover .history-record-arrow{background:#fff;transform:translate(1px,-1px)}
+.history-record-body{display:grid;grid-template-columns:minmax(0,1fr) 42%;align-items:center;gap:7px;min-height:178px;padding:13px 0 9px}
+.history-record-copy{position:relative;z-index:1;display:flex;flex-direction:column;min-width:0;gap:13px}
+.history-record-copy>strong{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;color:color-mix(in srgb,var(--history-tone) 25%,#26352e);font:900 clamp(1.05rem,1.6vw,1.38rem)/1.55 "SimSun","宋体","Noto Serif SC",serif;letter-spacing:.025em;overflow-wrap:anywhere}
+.history-record-excerpt{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;color:#5e6b5d;font:400 .71rem/1.85 "Noto Sans SC","Microsoft YaHei",sans-serif;overflow-wrap:anywhere}
+.history-record-art{position:relative;isolation:isolate;align-self:center;display:block;width:100%;aspect-ratio:1;pointer-events:none}
+.history-record-art:before{content:"";position:absolute;inset:15% 2% 5%;z-index:-1;border:1px solid color-mix(in srgb,var(--history-tone) 14%,transparent);border-radius:44% 56% 40% 60%;background:color-mix(in srgb,var(--history-tone) 5%,transparent);transform:rotate(-12deg)}
+.history-record-art img{display:block;width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 7px 9px color-mix(in srgb,var(--history-tone) 14%,transparent));transition:transform .3s}
+.history-record:hover .history-record-art img{transform:translateY(-3px) rotate(-2deg)}
+.history-record-foot{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:auto;padding-top:13px;border-top:1px solid color-mix(in srgb,var(--history-tone) 15%,transparent)}
+.history-record-date{min-width:0;color:color-mix(in srgb,var(--history-tone) 55%,#5d6b5e);font:600 .65rem/1.6 "Noto Sans SC","Microsoft YaHei",sans-serif;overflow-wrap:anywhere}
+.history-status{display:inline-flex;align-items:center;gap:5px;flex:0 0 auto;padding:4px 7px;border:1px solid #cdd9ce;border-radius:99px;background:#f4f8ee;color:#426044;font:650 .59rem/1.4 "Noto Sans SC","Microsoft YaHei",sans-serif;white-space:nowrap}
+.history-status i{display:block;width:5px;height:5px;border-radius:50%;background:currentColor}
+.history-status.draft{border-color:#dfc69a;background:#fcf2df;color:#805b20}
+.history-status.verified{border-color:#476b55;background:#476b55;color:#fff}
+.history-empty{grid-column:1/-1;display:grid;grid-template-columns:210px minmax(0,1fr);align-items:center;gap:30px;padding:34px 50px 42px;border:1px dashed #bdcdb9;border-radius:23px;background:#f5f7ee}
+.history-empty>img{display:block;width:100%;height:auto;pointer-events:none}
+.history-empty .history-kicker{margin-bottom:13px}
+.history-empty h3{margin:0 0 14px;color:#35533b;font:800 1.55rem/1.5 "SimSun","宋体","Noto Serif SC",serif}
+.history-empty p:not(.history-kicker){margin:0 0 21px;color:#617158;font-size:.78rem;line-height:1.8}
+@media(max-width:820px){
+  .history-hero{grid-template-columns:minmax(0,1fr) 190px;gap:20px;padding:10px 4px 26px;min-height:220px}
+  .history-archive-count{display:none}
+  .history-page .history-filters{grid-template-columns:repeat(3,minmax(0,1fr));gap:13px 9px;margin-top:22px}
+  .history-page .history-search-field{grid-column:1/-1}
+  .history-page .history-type-filter{grid-column:auto}
+  .history-record{padding:17px 16px 14px}
+  .history-record-body{grid-template-columns:minmax(0,1fr) 39%;min-height:173px}
+  .history-record-copy>strong{font-size:1.12rem}
+}
+@media(max-width:620px){
+  .history-hero{grid-template-columns:minmax(0,1fr) 35%;gap:10px;min-height:210px}
+  .history-hero h1{font-size:2.15rem;letter-spacing:.035em}
+  .history-kicker{font-size:.61rem;margin-bottom:13px}
+  .history-hero-note{font-size:.75rem;line-height:1.85;margin:13px 0 17px}
+  .history-hero-art{align-self:center}
+  .history-hero-caption{display:none}
+  .history-write{gap:12px;padding:9px 13px;font-size:.67rem}
+  .history-page .history-filters{grid-template-columns:repeat(2,minmax(0,1fr));gap:13px 10px}
+  .history-page .history-search-field,.history-page .history-type-filter{grid-column:1/-1}
+  .history-page .history-filter-select select,.history-page .history-search{font-size:.76rem}
+  .history-results-head{margin-top:23px}
+  .history-results-head>p{display:none}
+  .history-record-grid{grid-template-columns:minmax(0,1fr);gap:15px}
+  .history-record{padding:19px 20px 16px}
+  .history-record-body{grid-template-columns:minmax(0,1fr) 40%;gap:9px;min-height:166px}
+  .history-record-copy>strong{font-size:1.3rem}
+  .history-record-excerpt{font-size:.75rem;-webkit-line-clamp:3}
+  .history-category{font-size:.72rem}
+  .history-record-date{font-size:.7rem}
+  .history-status{font-size:.65rem}
+  .history-empty{grid-template-columns:minmax(0,1fr);gap:11px;padding:24px 23px 30px;text-align:center}
+  .history-empty>img{width:150px;margin:auto}
+  .history-empty h3{font-size:1.35rem}
+}
+@media(max-width:360px){
+  .history-hero{grid-template-columns:minmax(0,1fr) 31%;gap:6px}
+  .history-hero h1{font-size:1.95rem}
+  .history-record{padding:16px}
+  .history-record-copy>strong{font-size:1.15rem}
+  .history-record-body{grid-template-columns:minmax(0,1fr) 37%;min-height:170px}
+}
+@media(prefers-reduced-motion:reduce){.rail-side-decor img,.history-record,.history-record-art img,.history-record-arrow,.history-write,.history-page button{animation:none;transition:none}}
+body.reduce-motion .rail-side-decor img,body.reduce-motion .history-record,body.reduce-motion .history-record-art img,body.reduce-motion .history-record-arrow,body.reduce-motion .history-write,body.reduce-motion .history-page button{animation:none;transition:none}
