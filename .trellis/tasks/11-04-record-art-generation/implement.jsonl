@@ -1,0 +1,5 @@
+{"file":".trellis/spec/frontend/architecture.md","reason":"Local catalog ownership and immutable asset cache contract"}
+{"file":".trellis/spec/frontend/ui-quality.md","reason":"Decorative image behavior and approved page boundaries"}
+{"file":".trellis/spec/frontend/state-and-data.md","reason":"Full-record assignment before filtering; no personal content transmission"}
+{"file":"art/record-library/README.md","reason":"65 scene generation plan and original user authorization"}
+{"file":"shendu/public/assets/overview/README.md","reason":"Authoritative category colors and original visual language"}

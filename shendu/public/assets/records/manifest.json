@@ -1,0 +1,2230 @@
+{
+  "status": "reviewed-and-published",
+  "generated_on": "2026-11-04",
+  "generator": "bundled imagegen CLI through user-authorized Sub2API",
+  "requested_model": "gpt-image-2",
+  "requested_size": "1024x1024",
+  "quality": "medium",
+  "prompts": "art/record-library/generation-plan.json",
+  "processing": "Border-connected warm-white removal; four-color category palette; transparent padding; 640-square WebP quality 90. Source PNGs unchanged. Alpha is locally extracted, not native model transparency.",
+  "counts": {
+    "daily": 30,
+    "weekly": 7,
+    "monthly": 12,
+    "quarterly": 4,
+    "yearly": 6,
+    "decision": 6
+  },
+  "assets": [
+    {
+      "id": "daily-01-morning-window",
+      "type": "daily",
+      "label": "晨光与开窗",
+      "terms": [
+        "晨光",
+        "早晨",
+        "起床",
+        "开窗",
+        "清晨"
+      ],
+      "palette": {
+        "dark": "#15584E",
+        "accent": "#1E8F83",
+        "paper": "#ECF8F1"
+      },
+      "source": "output/imagegen/record-library/daily-01-morning-window.png",
+      "source_sha256": "0c96d002cf5446d028894bbf3a15a37534e9c10d4f8b5612b6c176435a8d0db9",
+      "source_width": 1254,
+      "source_height": 1254,
+      "webp": "/assets/records/daily-01-morning-window.webp",
+      "webp_sha256": "90593eeb9fc54c26e2a272426b1a8643aefb2a38a64ea3b9aa55155f84b09e52",
+      "width": 640,
+      "height": 640,
+      "bytes": 50816,
+      "source_bounds": [
+        152,
+        106,
+        1095,
+        1181
+      ],
+      "removed_border_background_fraction": 0.5934,
+      "prompt_id": "daily-01-morning-window"
+    },
+    {
+      "id": "daily-02-sleep-rest",
+      "type": "daily",
+      "label": "一夜好眠",
+      "terms": [
+        "睡眠",
+        "睡觉",
+        "休息",
+        "熬夜",
+        "入睡"
+      ],
+      "palette": {
+        "dark": "#15584E",
+        "accent": "#1E8F83",
+        "paper": "#ECF8F1"
+      },
+      "source": "output/imagegen/record-library/daily-02-sleep-rest.png",
+      "source_sha256": "e66df3f05d3b85707208c5c1495199915674ff26e7198e4d85f7fbed8592c310",
+      "source_width": 1254,
+      "source_height": 1254,
+      "webp": "/assets/records/daily-02-sleep-rest.webp",
+      "webp_sha256": "d5868ce41a8fe3889d26a09095a45d4440c326106c361734ab278482de058a4e",
+      "width": 640,
+      "height": 640,
+      "bytes": 60254,
+      "source_bounds": [
+        57,
+        141,
+        1196,
+        1136
+      ],
+      "removed_border_background_fraction": 0.6497,
+      "prompt_id": "daily-02-sleep-rest"
+    },
+    {
+      "id": "daily-03-stretch-energy",
+      "type": "daily",
+      "label": "伸展与精力",
+      "terms": [
+        "精力",
+        "运动",
+        "锻炼",
+        "拉伸",
+        "伸展"
+      ],
+      "palette": {
+        "dark": "#15584E",
+        "accent": "#1E8F83",
+        "paper": "#ECF8F1"
+      },
+      "source": "output/imagegen/record-library/daily-03-stretch-energy.png",
+      "source_sha256": "97c8d24a3425b59dbf163cd48a021e01425c439f651a294f68057e7e92469cac",
+      "source_width": 1254,
+      "source_height": 1254,
+      "webp": "/assets/records/daily-03-stretch-energy.webp",
+      "webp_sha256": "42f7eb3d30aca0fb364addae9f1469adc2676c78880cb51972ee4d658f6061aa",
+      "width": 640,
+      "height": 640,
+      "bytes": 47724,
+      "source_bounds": [
+        186,
+        83,
+        1065,
+        1164
+      ],
+      "removed_border_background_fraction": 0.8243,
+      "prompt_id": "daily-03-stretch-energy"
+    },
+    {
+      "id": "daily-04-desk-focus",
+      "type": "daily",
+      "label": "专注的一刻",
+      "terms": [
+        "专注",
+        "写报告",
+        "工作",
+        "书桌",
+        "集中"
+      ],
+      "palette": {
+        "dark": "#15584E",
+        "accent": "#1E8F83",
+        "paper": "#ECF8F1"
+      },
+      "source": "output/imagegen/record-library/daily-04-desk-focus.png",
+      "source_sha256": "49f30aa15846d5cde54e826f36e177665542bb8ad89f25fbdb087596727dabed",
+      "source_width": 1254,
+      "source_height": 1254,
+      "webp": "/assets/records/daily-04-desk-focus.webp",
+      "webp_sha256": "3585f1f009ef9434440251192c2b135bd18b8a11e899d8f0790e1e72ed3249ef",
+      "width": 640,
+      "height": 640,
+      "bytes": 76310,
+      "source_bounds": [
+        163,
+        176,
+        1093,
+        1130
+      ],
+      "removed_border_background_fraction": 0.7138,
+      "prompt_id": "daily-04-desk-focus"
+    },
+    {
+      "id": "daily-05-reading-corner",
+      "type": "daily",
+      "label": "读书的角落",
+      "terms": [
+        "阅读",
+        "读书",
+        "书籍",
+        "看书",
+        "读完"
+      ],
+      "palette": {
+        "dark": "#15584E",
+        "accent": "#1E8F83",
+        "paper": "#ECF8F1"
+      },
+      "source": "output/imagegen/record-library/daily-05-reading-corner.png",
+      "source_sha256": "ef647a18c300a417d7fb614bf46d40ccac8719458c855f115c04e86ef610a227",
+      "source_width": 1254,
+      "source_height": 1254,
+      "webp": "/assets/records/daily-05-reading-corner.webp",
+      "webp_sha256": "aae249d9dd78d15cee2045e57a748eccb4c3ea283bdbc79c32ffe2b90b320ac3",
+      "width": 640,
+      "height": 640,
+      "bytes": 63556,
+      "source_bounds": [
+        169,
+        170,
+        1127,
+        1135
+      ],
+      "removed_border_background_fraction": 0.7526,
+      "prompt_id": "daily-05-reading-corner"
+    },
+    {
+      "id": "daily-06-walk-leaves",
+      "type": "daily",
+      "label": "散步与观察",
+      "terms": [
+        "散步",
+        "步行",
+        "观察",
+        "树叶",
+        "出门走走"
+      ],
+      "palette": {
+        "dark": "#15584E",
+        "accent": "#1E8F83",
+        "paper": "#ECF8F1"
+      },
+      "source": "output/imagegen/record-library/daily-06-walk-leaves.png",
+      "source_sha256": "37379b247becd9d9494010623a1b53ae283a5572637b13f0b4f804163a31c015",
+      "source_width": 1254,
+      "source_height": 1254,
+      "webp": "/assets/records/daily-06-walk-leaves.webp",
+      "webp_sha256": "585d8c79640e2d2e96dd93d7ab7b7f94fb23eb4b0f7669113fbe50b81f3e972b",
+      "width": 640,
+      "height": 640,
+      "bytes": 68932,
+      "source_bounds": [
+        181,
+        185,
+        1065,
+        1090
+      ],
+      "removed_border_background_fraction": 0.8294,
+      "prompt_id": "daily-06-walk-leaves"
+    },
+    {
+      "id": "daily-07-small-checklist",
+      "type": "daily",
+      "label": "完成一小步",
+      "terms": [
+        "完成",
+        "清单",
+        "待办",
+        "打勾",
+        "小目标"
+      ],
+      "palette": {
+        "dark": "#15584E",
+        "accent": "#1E8F83",
+        "paper": "#ECF8F1"
+      },
+      "source": "output/imagegen/record-library/daily-07-small-checklist.png",
+      "source_sha256": "7ed07ae1021cac5392d231e96f2e0cc32b4a67eca1fc42557061e984285820f2",
+      "source_width": 1254,
+      "source_height": 1254,
+      "webp": "/assets/records/daily-07-small-checklist.webp",
+      "webp_sha256": "15fbd6877c205526041e5a17b280e24ea69401eea8ac1058bec576aefe04f8ab",
+      "width": 640,
+      "height": 640,
+      "bytes": 64538,
+      "source_bounds": [
+        141,
+        217,
+        1078,
+        1108
+      ],
+      "removed_border_background_fraction": 0.6923,
+      "prompt_id": "daily-07-small-checklist"
+    },
+    {
+      "id": "daily-08-plant-care",
+      "type": "daily",
+      "label": "照料日常",
+      "terms": [
+        "浇水",
+        "植物",
+        "养花",
+        "照料",
+        "盆栽"
+      ],
+      "palette": {
+        "dark": "#15584E",
+        "accent": "#1E8F83",
+        "paper": "#ECF8F1"
+      },
+      "source": "output/imagegen/record-library/daily-08-plant-care.png",
+      "source_sha256": "f155c84b5fbf8727485acb4fbc832605523f7c46bcc20f45a49fb194a37f3329",
+      "source_width": 1254,
+      "source_height": 1254,
+      "webp": "/assets/records/daily-08-plant-care.webp",
+      "webp_sha256": "732aa1513d621a88e961cb7fcd8c99b24fe2d8ef607a57fb026e5be95593ceb6",
+      "width": 640,
+      "height": 640,
+      "bytes": 62426,
+      "source_bounds": [
+        118,
+        258,
+        1146,
+        1078
+      ],
+      "removed_border_background_fraction": 0.7485,
+      "prompt_id": "daily-08-plant-care"
+    },
+    {
+      "id": "daily-09-tea-pause",
+      "type": "daily",
+      "label": "给自己片刻",
+      "terms": [
+        "喝茶",
+        "茶",
+        "暂停",
+        "放松",
+        "片刻"
+      ],
+      "palette": {
+        "dark": "#15584E",
+        "accent": "#1E8F83",
+        "paper": "#ECF8F1"
+      },
+      "source": "output/imagegen/record-library/daily-09-tea-pause.png",
+      "source_sha256": "4edf1f0ff684575cfbb7c20d8bf5129f9f875d0a31343fb525e78d2b5b6d8d65",
+      "source_width": 1254,
+      "source_height": 1254,
+      "webp": "/assets/records/daily-09-tea-pause.webp",
+      "webp_sha256": "72cebcf416b29942a7fa08987a981697ca8cc26aa625011c265ba7eea00d4dc6",
+      "width": 640,
+      "height": 640,
+      "bytes": 59130,
+      "source_bounds": [
+        147,
+        153,
+        1108,
+        1139
+      ],
+      "removed_border_background_fraction": 0.6869,
+      "prompt_id": "daily-09-tea-pause"
+    },
+    {
+      "id": "daily-10-listen-talk",
+      "type": "daily",
+      "label": "认真听一次",
+      "terms": [
+        "倾听",
+        "沟通",
+        "交谈",
+        "聊天",
+        "表达"
+      ],
+      "palette": {
+        "dark": "#15584E",
+        "accent": "#1E8F83",
+        "paper": "#ECF8F1"
+      },
+      "source": "output/imagegen/record-library/daily-10-listen-talk.png",
+      "source_sha256": "626ed33166da41cbe7116e7c0ce781b33b8a3561f68f1cc7486aee7d8b479c1c",
+      "source_width": 1254,
+      "source_height": 1254,
+      "webp": "/assets/records/daily-10-listen-talk.webp",
+      "webp_sha256": "a5249d19006de2936bce2f0300187526367222587ef600af50f71571dbfa0527",
+      "width": 640,
+      "height": 640,
+      "bytes": 73186,
+      "source_bounds": [
+        57,
+        222,
+        1191,
+        1094
+      ],
+      "removed_border_background_fraction": 0.7198,
+      "prompt_id": "daily-10-listen-talk"
+    },
+    {
+      "id": "daily-11-tidy-room",
+      "type": "daily",
+      "label": "整理空间",
+      "terms": [
+        "整理",
+        "房间",
+        "收拾",
+        "打扫",
+        "整洁"
+      ],
+      "palette": {
+        "dark": "#15584E",
+        "accent": "#1E8F83",
+        "paper": "#ECF8F1"
+      },
+      "source": "output/imagegen/record-library/daily-11-tidy-room.png",
+      "source_sha256": "367c8390286273f0aa986f15da0c16b77d5a22a6cae9265857a9511a73c61947",
+      "source_width": 1254,
+      "source_height": 1254,
+      "webp": "/assets/records/daily-11-tidy-room.webp",
+      "webp_sha256": "148ad561ca2b62bcb172df8661228d6d9ef51e3096b9fb6688fef16b9aeddd73",
+      "width": 640,
+      "height": 640,
+      "bytes": 46318,
+      "source_bounds": [
+        89,
+        312,
+        1169,
+        1125
+      ],
+      "removed_border_background_fraction": 0.6768,
+      "prompt_id": "daily-11-tidy-room"
+    },
+    {
+      "id": "daily-12-cook-meal",
+      "type": "daily",
+      "label": "好好吃饭",
+      "terms": [
+        "做饭",
+        "吃饭",
+        "烹饪",
+        "用餐",
+        "饮食"
+      ],
+      "palette": {
+        "dark": "#15584E",
+        "accent": "#1E8F83",
+        "paper": "#ECF8F1"
+      },
+      "source": "output/imagegen/record-library/daily-12-cook-meal.png",
+      "source_sha256": "c4eb511555334f973d653696cdc171f98f8e8f66ae1352368084c24643bbb838",
+      "source_width": 1254,
+      "source_height": 1254,
+      "webp": "/assets/records/daily-12-cook-meal.webp",
+      "webp_sha256": "4d4bb3dfe4f731a826c1ac26c6980bba55e8d2c4858698dfb1701d75c2e14aea",
+      "width": 640,
+      "height": 640,
+      "bytes": 57960,
+      "source_bounds": [
+        103,
+        194,
+        1156,
+        1111
+      ],
+      "removed_border_background_fraction": 0.664,
+      "prompt_id": "daily-12-cook-meal"
+    },
+    {
+      "id": "daily-13-cycle-outdoors",
+      "type": "daily",
+      "label": "向外走走",
+      "terms": [
+        "骑行",
+        "自行车",
+        "户外",
+        "骑车",
+        "出游"
+      ],
+      "palette": {
+        "dark": "#15584E",
+        "accent": "#1E8F83",
+        "paper": "#ECF8F1"
+      },
+      "source": "output/imagegen/record-library/daily-13-cycle-outdoors.png",
+      "source_sha256": "101ee09b5f8fde826a8f97c2bd644971a7857710e03bf3bce33407315a21128d",
+      "source_width": 1254,
+      "source_height": 1254,
+      "webp": "/assets/records/daily-13-cycle-outdoors.webp",
+      "webp_sha256": "412fd8f561278e1f4dd047ab4a5852798732030aa9d051db60813d656b9264d8",
+      "width": 640,
+      "height": 640,
+      "bytes": 58624,
+      "source_bounds": [
+        55,
+        181,
+        1195,
+        1122
+      ],
+      "removed_border_background_fraction": 0.7122,
+      "prompt_id": "daily-13-cycle-outdoors"
+    },
+    {
+      "id": "daily-14-journal-page",
+      "type": "daily",
+      "label": "写下一页",
+      "terms": [
+        "日记",
+        "写作",
+        "书写",
+        "手账",
+        "写下来"
+      ],
+      "palette": {
+        "dark": "#15584E",
+        "accent": "#1E8F83",
+        "paper": "#ECF8F1"
+      },
+      "source": "output/imagegen/record-library/daily-14-journal-page.png",
+      "source_sha256": "814b53c5f3b6a096e31fc18059b6dfc4a31d16379893f6eb89e9362516152a99",
+      "source_width": 1254,
+      "source_height": 1254,
+      "webp": "/assets/records/daily-14-journal-page.webp",
+      "webp_sha256": "9ab6de3495c0a138b97be63799563ac179ffeadd55afad2be03dcd407230b0e2",
+      "width": 640,
+      "height": 640,
+      "bytes": 55102,
+      "source_bounds": [
+        104,
+        217,
+        1142,
+        1094
+      ],
+      "removed_border_background_fraction": 0.7193,
+      "prompt_id": "daily-14-journal-page"
+    },
+    {
+      "id": "daily-15-balance-stones",
+      "type": "daily",
+      "label": "找回平衡",
+      "terms": [
+        "平衡",
+        "稳定",
+        "分寸",
+        "从容",
+        "稳住"
+      ],
+      "palette": {
+        "dark": "#15584E",
+        "accent": "#1E8F83",
+        "paper": "#ECF8F1"
+      },
+      "source": "output/imagegen/record-library/daily-15-balance-stones.png",
+      "source_sha256": "612b7efb2770b9470f1593450afed31748a41adf70db9527a5849d284b32d89d",
+      "source_width": 1254,
+      "source_height": 1254,
+      "webp": "/assets/records/daily-15-balance-stones.webp",
+      "webp_sha256": "f35bdb87d8f733116ad7b4918ad7250c878c532b68e2e79b1befa95577f445b8",
+      "width": 640,
+      "height": 640,
+      "bytes": 47296,
+      "source_bounds": [
+        77,
+        257,
+        1171,
+        1139
+      ],
+      "removed_border_background_fraction": 0.653,
+      "prompt_id": "daily-15-balance-stones"
+    },
+    {
+      "id": "daily-16-repair-mend",
+      "type": "daily",
+      "label": "修补一个问题",
+      "terms": [
+        "修补",
+        "修理",
+        "修复",
+        "缝补",
+        "补救"
+      ],
+      "palette": {
+        "dark": "#15584E",
+        "accent": "#1E8F83",
+        "paper": "#ECF8F1"
+      },
+      "source": "output/imagegen/record-library/daily-16-repair-mend.png",
+      "source_sha256": "5f29dc910ba56892d76051590a72b82e479e8e4a8f322f25095bc55f69de3139",
+      "source_width": 1254,
+      "source_height": 1254,
+      "webp": "/assets/records/daily-16-repair-mend.webp",
+      "webp_sha256": "2205d63d5ebb9a5e713c30fe40c8688fe220597576bca4d4cb314241391bfc1f",
+      "width": 640,
+      "height": 640,
+      "bytes": 60614,
+      "source_bounds": [
+        111,
+        210,
+        1098,
+        1139
+      ],
+      "removed_border_background_fraction": 0.6902,
+      "prompt_id": "daily-16-repair-mend"
+    },
+    {
+      "id": "daily-17-clear-inbox",
+      "type": "daily",
+      "label": "清空积压",
+      "terms": [
+        "邮件",
+        "收件箱",
+        "积压",
+        "清空",
+        "消息"
+      ],
+      "palette": {
+        "dark": "#15584E",
+        "accent": "#1E8F83",
+        "paper": "#ECF8F1"
+      },
+      "source": "output/imagegen/record-library/daily-17-clear-inbox.png",
+      "source_sha256": "005073b496f3910b8f9e305ec6c12d9e3e80e70a943d01715f1f23a4630b7bd8",
+      "source_width": 1254,
+      "source_height": 1254,
+      "webp": "/assets/records/daily-17-clear-inbox.webp",
+      "webp_sha256": "1218180cb425a87bb1dd0c5593fb56e8b23799ca00a9055e223827e92c95063b",
+      "width": 640,
+      "height": 640,
+      "bytes": 48568,
+      "source_bounds": [
+        101,
+        205,
+        1157,
+        1132
+      ],
+      "removed_border_background_fraction": 0.7248,
+      "prompt_id": "daily-17-clear-inbox"
+    },
+    {
+      "id": "daily-18-music-break",
+      "type": "daily",
+      "label": "音乐与休息",
+      "terms": [
+        "音乐",
+        "听歌",
+        "旋律",
+        "乐曲",
+        "耳机"
+      ],
+      "palette": {
+        "dark": "#15584E",
+        "accent": "#1E8F83",
+        "paper": "#ECF8F1"
+      },
+      "source": "output/imagegen/record-library/daily-18-music-break.png",
+      "source_sha256": "6a8ec9b807772391cc71876d34e78edd40e769b8abb625f2487e63a643d1ff41",
+      "source_width": 1254,
+      "source_height": 1254,
+      "webp": "/assets/records/daily-18-music-break.webp",
+      "webp_sha256": "88ecf9079f16faacc071032a967cc3ed535f7649bc9567b67cae1ddf2c621a2c",
+      "width": 640,
+      "height": 640,
+      "bytes": 56082,
+      "source_bounds": [
+        89,
+        272,
+        1151,
+        1159
+      ],
+      "removed_border_background_fraction": 0.7151,
+      "prompt_id": "daily-18-music-break"
+    },
+    {
+      "id": "daily-19-make-notes",
+      "type": "daily",
+      "label": "捕捉念头",
+      "terms": [
+        "笔记",
+        "灵感",
+        "想法",
+        "念头",
+        "摘记"
+      ],
+      "palette": {
+        "dark": "#15584E",
+        "accent": "#1E8F83",
+        "paper": "#ECF8F1"
+      },
+      "source": "output/imagegen/record-library/daily-19-make-notes.png",
+      "source_sha256": "93131b999a49a4f4cba5b8e0cc9f6eb8b130d6c998f4339b8148a4ea566026fa",
+      "source_width": 1254,
+      "source_height": 1254,
+      "webp": "/assets/records/daily-19-make-notes.webp",
+      "webp_sha256": "bdb35584cbe906bd9fe5f42fc6b24975b11051360e3ac9f5aad9dd0d34a1ec7b",
+      "width": 640,
+      "height": 640,
+      "bytes": 57176,
+      "source_bounds": [
+        106,
+        133,
+        1130,
+        1152
+      ],
+      "removed_border_background_fraction": 0.631,
+      "prompt_id": "daily-19-make-notes"
+    },
+    {
+      "id": "daily-20-rain-umbrella",
+      "type": "daily",
+      "label": "雨中仍前行",
+      "terms": [
+        "下雨",
+        "雨天",
+        "雨伞",
+        "挫折",
+        "逆境"
+      ],
+      "palette": {
+        "dark": "#15584E",
+        "accent": "#1E8F83",
+        "paper": "#ECF8F1"
+      },
+      "source": "output/imagegen/record-library/daily-20-rain-umbrella.png",
+      "source_sha256": "529b1df51b353b77e19859e2a59a74780bdabf23584dc4cc51b36101ad67b28d",
+      "source_width": 1254,
+      "source_height": 1254,
+      "webp": "/assets/records/daily-20-rain-umbrella.webp",
+      "webp_sha256": "beaa0a18db1ab006d536a40268e4144c433720e998eeae192c108dced0a48679",
+      "width": 640,
+      "height": 640,
+      "bytes": 51766,
+      "source_bounds": [
+        251,
+        68,
+        993,
+        1188
+      ],
+      "removed_border_background_fraction": 0.7749,
+      "prompt_id": "daily-20-rain-umbrella"
+    },
+    {
+      "id": "daily-21-sunset-bench",
+      "type": "daily",
+      "label": "傍晚的停留",
+      "terms": [
+        "傍晚",
+        "夕阳",
+        "落日",
+        "黄昏",
+        "停留"
+      ],
+      "palette": {
+        "dark": "#15584E",
+        "accent": "#1E8F83",
+        "paper": "#ECF8F1"
+      },
+      "source": "output/imagegen/record-library/daily-21-sunset-bench.png",
+      "source_sha256": "0ae9b347d1e836a9662412a9e3cc1494885cb3dbcd3bbe7d4341820029b35a4b",
+      "source_width": 1254,
+      "source_height": 1254,
+      "webp": "/assets/records/daily-21-sunset-bench.webp",
+      "webp_sha256": "aeb165c81b9de1a89f3712905c1fcbe0dd187159da364b07df6f71fa1398f0e8",
+      "width": 640,
+      "height": 640,
+      "bytes": 59340,
+      "source_bounds": [
+        87,
+        322,
+        1164,
+        1086
+      ],
+      "removed_border_background_fraction": 0.7514,
+      "prompt_id": "daily-21-sunset-bench"
+    },
+    {
+      "id": "daily-22-steps-stairs",
+      "type": "daily",
+      "label": "小步向前",
+      "terms": [
+        "进步",
+        "台阶",
+        "一步",
+        "前进",
+        "小步"
+      ],
+      "palette": {
+        "dark": "#15584E",
+        "accent": "#1E8F83",
+        "paper": "#ECF8F1"
+      },
+      "source": "output/imagegen/record-library/daily-22-steps-stairs.png",
+      "source_sha256": "95576fee5dcb338029b2218abfcd3d12b73c739251f4f9ce83896a65a7b4b9df",
+      "source_width": 1254,
+      "source_height": 1254,
+      "webp": "/assets/records/daily-22-steps-stairs.webp",
+      "webp_sha256": "b2c10d814e4272ac94b011729b27baf4f809d5dd5f6bcf2812b3d048ebf3cc06",
+      "width": 640,
+      "height": 640,
+      "bytes": 56006,
+      "source_bounds": [
+        127,
+        189,
+        1045,
+        1120
+      ],
+      "removed_border_background_fraction": 0.7191,
+      "prompt_id": "daily-22-steps-stairs"
+    },
+    {
+      "id": "daily-23-protect-time",
+      "type": "daily",
+      "label": "留出时间",
+      "terms": [
+        "时间",
+        "边界",
+        "守住",
+        "拒绝",
+        "打扰"
+      ],
+      "palette": {
+        "dark": "#15584E",
+        "accent": "#1E8F83",
+        "paper": "#ECF8F1"
+      },
+      "source": "output/imagegen/record-library/daily-23-protect-time.png",
+      "source_sha256": "23aedbb2c3620b5284a39186a07a3beddcc4039ca9ae19e64079801303f183ad",
+      "source_width": 1254,
+      "source_height": 1254,
+      "webp": "/assets/records/daily-23-protect-time.webp",
+      "webp_sha256": "035e903ac104a78f5af53063150470e6c5be59bfb10c8d28217daecf7004f413",
+      "width": 640,
+      "height": 640,
+      "bytes": 52734,
+      "source_bounds": [
+        84,
+        322,
+        1144,
+        1081
+      ],
+      "removed_border_background_fraction": 0.6907,
+      "prompt_id": "daily-23-protect-time"
+    },
+    {
+      "id": "daily-24-untangle-thread",
+      "type": "daily",
+      "label": "理清线索",
+      "terms": [
+        "理清",
+        "思绪",
+        "纠结",
+        "思考",
+        "头绪"
+      ],
+      "palette": {
+        "dark": "#15584E",
+        "accent": "#1E8F83",
+        "paper": "#ECF8F1"
+      },
+      "source": "output/imagegen/record-library/daily-24-untangle-thread.png",
+      "source_sha256": "d5f37233b44f39c1f175954f3a1fb44d8c9860b6c9aba73eacea1d795ad4eed9",
+      "source_width": 1254,
+      "source_height": 1254,
+      "webp": "/assets/records/daily-24-untangle-thread.webp",
+      "webp_sha256": "b6a1d41837704956854635cfad13a8205b4d0be1d322abfe2c70bd97867111b7",
+      "width": 640,
+      "height": 640,
+      "bytes": 47716,
+      "source_bounds": [
+        101,
+        261,
+        1158,
+        1100
+      ],
+      "removed_border_background_fraction": 0.7118,
+      "prompt_id": "daily-24-untangle-thread"
+    },
+    {
+      "id": "daily-25-garden-path",
+      "type": "daily",
+      "label": "日常的生长",
+      "terms": [
+        "成长",
+        "园艺",
+        "播种",
+        "耐心",
+        "培育"
+      ],
+      "palette": {
+        "dark": "#15584E",
+        "accent": "#1E8F83",
+        "paper": "#ECF8F1"
+      },
+      "source": "output/imagegen/record-library/daily-25-garden-path.png",
+      "source_sha256": "7ddfe22def429881ec2645ac01db9a9f23e822b2652a3ebebbacb5ee59cdf291",
+      "source_width": 1254,
+      "source_height": 1254,
+      "webp": "/assets/records/daily-25-garden-path.webp",
+      "webp_sha256": "7a4e2805669e3aca82a0dba7a8805e8479c0996133aeb61f256eb016659abdcf",
+      "width": 640,
+      "height": 640,
+      "bytes": 79690,
+      "source_bounds": [
+        100,
+        137,
+        1130,
+        1130
+      ],
+      "removed_border_background_fraction": 0.7707,
+      "prompt_id": "daily-25-garden-path"
+    },
+    {
+      "id": "daily-26-quiet-breath",
+      "type": "daily",
+      "label": "慢下来呼吸",
+      "terms": [
+        "呼吸",
+        "冥想",
+        "安静",
+        "平静",
+        "正念"
+      ],
+      "palette": {
+        "dark": "#15584E",
+        "accent": "#1E8F83",
+        "paper": "#ECF8F1"
+      },
+      "source": "output/imagegen/record-library/daily-26-quiet-breath.png",
+      "source_sha256": "8e81a7607befafc657a4cba0f0c380c9988110ba13f69b5aa8a8e5048f539500",
+      "source_width": 1254,
+      "source_height": 1254,
+      "webp": "/assets/records/daily-26-quiet-breath.webp",
+      "webp_sha256": "f353429bb25cd68f49750f8caa83f1d5b73c40b56d62957a16633f7fe0bec0e1",
+      "width": 640,
+      "height": 640,
+      "bytes": 58810,
+      "source_bounds": [
+        124,
+        254,
+        1110,
+        1112
+      ],
+      "removed_border_background_fraction": 0.7319,
+      "prompt_id": "daily-26-quiet-breath"
+    },
+    {
+      "id": "daily-27-finish-puzzle",
+      "type": "daily",
+      "label": "补上一块",
+      "terms": [
+        "拼图",
+        "拼合",
+        "解决",
+        "连接",
+        "理解"
+      ],
+      "palette": {
+        "dark": "#15584E",
+        "accent": "#1E8F83",
+        "paper": "#ECF8F1"
+      },
+      "source": "output/imagegen/record-library/daily-27-finish-puzzle.png",
+      "source_sha256": "dbd0c7c0caacbb261c399b7569d7d24299ca1d297188fdc967cf77daf24fb1d5",
+      "source_width": 1254,
+      "source_height": 1254,
+      "webp": "/assets/records/daily-27-finish-puzzle.webp",
+      "webp_sha256": "1d85a9e805319405a759f309022ad902087ec387a335344e48e2e3682a48cca0",
+      "width": 640,
+      "height": 640,
+      "bytes": 52780,
+      "source_bounds": [
+        72,
+        194,
+        1156,
+        1152
+      ],
+      "removed_border_background_fraction": 0.6388,
+      "prompt_id": "daily-27-finish-puzzle"
+    },
+    {
+      "id": "daily-28-night-lamp",
+      "type": "daily",
+      "label": "灯下复盘",
+      "terms": [
+        "夜晚",
+        "台灯",
+        "复盘",
+        "回顾",
+        "夜读"
+      ],
+      "palette": {
+        "dark": "#15584E",
+        "accent": "#1E8F83",
+        "paper": "#ECF8F1"
+      },
+      "source": "output/imagegen/record-library/daily-28-night-lamp.png",
+      "source_sha256": "d956647fd916e1b733c45c6d8bce2d6400ed31b611b3657cfdc70a18ed2e4b32",
+      "source_width": 1254,
+      "source_height": 1254,
+      "webp": "/assets/records/daily-28-night-lamp.webp",
+      "webp_sha256": "467158fcbf797c0f1ee166a23bd5f57f4b89762b6a672ebd5462393199cab341",
+      "width": 640,
+      "height": 640,
+      "bytes": 58774,
+      "source_bounds": [
+        123,
+        80,
+        1107,
+        1174
+      ],
+      "removed_border_background_fraction": 0.7018,
+      "prompt_id": "daily-28-night-lamp"
+    },
+    {
+      "id": "daily-29-share-help",
+      "type": "daily",
+      "label": "伸出援手",
+      "terms": [
+        "帮助",
+        "分享",
+        "支持",
+        "感谢",
+        "协作"
+      ],
+      "palette": {
+        "dark": "#15584E",
+        "accent": "#1E8F83",
+        "paper": "#ECF8F1"
+      },
+      "source": "output/imagegen/record-library/daily-29-share-help.png",
+      "source_sha256": "73bd21b236c123ea2a16fb0a7730537a4e1626d758b93d04f1aa663f899bfd78",
+      "source_width": 1254,
+      "source_height": 1254,
+      "webp": "/assets/records/daily-29-share-help.webp",
+      "webp_sha256": "183003421385e6f949e0da34582cc25a5e1c6c524e3dfd15cfee6d44b95515af",
+      "width": 640,
+      "height": 640,
+      "bytes": 51168,
+      "source_bounds": [
+        83,
+        272,
+        1169,
+        1024
+      ],
+      "removed_border_background_fraction": 0.7861,
+      "prompt_id": "daily-29-share-help"
+    },
+    {
+      "id": "daily-30-tomorrow-bag",
+      "type": "daily",
+      "label": "准备明天",
+      "terms": [
+        "明天",
+        "准备",
+        "出发",
+        "背包",
+        "行前"
+      ],
+      "palette": {
+        "dark": "#15584E",
+        "accent": "#1E8F83",
+        "paper": "#ECF8F1"
+      },
+      "source": "output/imagegen/record-library/daily-30-tomorrow-bag.png",
+      "source_sha256": "537d541b6113c6e9aa3f1795a4b4b118cd7d841f47b101c80f3755ca371ac390",
+      "source_width": 1254,
+      "source_height": 1254,
+      "webp": "/assets/records/daily-30-tomorrow-bag.webp",
+      "webp_sha256": "c457c18e9b6889e64dc57553c9b119e4bd2293476e4ad1e3f2accbc6c9f2ff80",
+      "width": 640,
+      "height": 640,
+      "bytes": 70712,
+      "source_bounds": [
+        75,
+        107,
+        1171,
+        1179
+      ],
+      "removed_border_background_fraction": 0.5459,
+      "prompt_id": "daily-30-tomorrow-bag"
+    },
+    {
+      "id": "weekly-01-seven-pages",
+      "type": "weekly",
+      "label": "一周的七页",
+      "terms": [
+        "本周",
+        "一周",
+        "回顾",
+        "周记",
+        "总结"
+      ],
+      "palette": {
+        "dark": "#8F4335",
+        "accent": "#DB7B61",
+        "paper": "#FFF2EC"
+      },
+      "source": "output/imagegen/record-library/weekly-01-seven-pages.png",
+      "source_sha256": "6a5d507bd493fb63a04f95ad66a60f52105cfcc1afe8c6879e18b77c02b1a8e4",
+      "source_width": 1254,
+      "source_height": 1254,
+      "webp": "/assets/records/weekly-01-seven-pages.webp",
+      "webp_sha256": "cddf6ec17cc677373c56e1fdb2ec28e80e21a89eb266c0f1b63e14d6a8828b9d",
+      "width": 640,
+      "height": 640,
+      "bytes": 56282,
+      "source_bounds": [
+        100,
+        128,
+        1149,
+        1190
+      ],
+      "removed_border_background_fraction": 0.633,
+      "prompt_id": "weekly-01-seven-pages"
+    },
+    {
+      "id": "weekly-02-weekly-pattern",
+      "type": "weekly",
+      "label": "找到重复的线索",
+      "terms": [
+        "规律",
+        "反复",
+        "模式",
+        "原因",
+        "重复"
+      ],
+      "palette": {
+        "dark": "#8F4335",
+        "accent": "#DB7B61",
+        "paper": "#FFF2EC"
+      },
+      "source": "output/imagegen/record-library/weekly-02-weekly-pattern.png",
+      "source_sha256": "3a2e7b9e3ff31f1f7e7b056cff57ab58aa3b5c6b3a83aada3b8d25fb24631081",
+      "source_width": 1254,
+      "source_height": 1254,
+      "webp": "/assets/records/weekly-02-weekly-pattern.webp",
+      "webp_sha256": "86a50fe658fbfe5f3b592b60ba4889701590399cf51203a7e2834381a45af496",
+      "width": 640,
+      "height": 640,
+      "bytes": 59022,
+      "source_bounds": [
+        104,
+        239,
+        1129,
+        1116
+      ],
+      "removed_border_background_fraction": 0.7224,
+      "prompt_id": "weekly-02-weekly-pattern"
+    },
+    {
+      "id": "weekly-03-week-priorities",
+      "type": "weekly",
+      "label": "为重要的事留位",
+      "terms": [
+        "重点",
+        "优先",
+        "重要",
+        "取舍",
+        "排序"
+      ],
+      "palette": {
+        "dark": "#8F4335",
+        "accent": "#DB7B61",
+        "paper": "#FFF2EC"
+      },
+      "source": "output/imagegen/record-library/weekly-03-week-priorities.png",
+      "source_sha256": "c76e66be00c1f12166ffacf4478ab0b39f4d0ba9b6f5f60e56795b9cefc9ec98",
+      "source_width": 1254,
+      "source_height": 1254,
+      "webp": "/assets/records/weekly-03-week-priorities.webp",
+      "webp_sha256": "39f2914fb591cc1b1db1e80afd4b2069224a6ab11a9f93dd74e05475d996fad1",
+      "width": 640,
+      "height": 640,
+      "bytes": 47196,
+      "source_bounds": [
+        75,
+        191,
+        1154,
+        1122
+      ],
+      "removed_border_background_fraction": 0.7296,
+      "prompt_id": "weekly-03-week-priorities"
+    },
+    {
+      "id": "weekly-04-unfinished-carry",
+      "type": "weekly",
+      "label": "把未完带到下周",
+      "terms": [
+        "未完成",
+        "遗留",
+        "延后",
+        "积压",
+        "搁置"
+      ],
+      "palette": {
+        "dark": "#8F4335",
+        "accent": "#DB7B61",
+        "paper": "#FFF2EC"
+      },
+      "source": "output/imagegen/record-library/weekly-04-unfinished-carry.png",
+      "source_sha256": "e1801363630d0d5c1c975f1484cbb2142b86f6a245048fca418be5d81de4e69e",
+      "source_width": 1254,
+      "source_height": 1254,
+      "webp": "/assets/records/weekly-04-unfinished-carry.webp",
+      "webp_sha256": "4aba5ad7456cfe0f3619b2a880c06997de89d71375cb83b7351ea66791dd6235",
+      "width": 640,
+      "height": 640,
+      "bytes": 61482,
+      "source_bounds": [
+        83,
+        173,
+        1154,
+        1192
+      ],
+      "removed_border_background_fraction": 0.7405,
+      "prompt_id": "weekly-04-unfinished-carry"
+    },
+    {
+      "id": "weekly-05-week-balance",
+      "type": "weekly",
+      "label": "工作与休息",
+      "terms": [
+        "休息",
+        "平衡",
+        "工作",
+        "生活",
+        "精力"
+      ],
+      "palette": {
+        "dark": "#8F4335",
+        "accent": "#DB7B61",
+        "paper": "#FFF2EC"
+      },
+      "source": "output/imagegen/record-library/weekly-05-week-balance.png",
+      "source_sha256": "77d8c8174b5ac03fa4b3bf35b2a97007671ca9cb92d18ff8ad43d25b98abac64",
+      "source_width": 1254,
+      "source_height": 1254,
+      "webp": "/assets/records/weekly-05-week-balance.webp",
+      "webp_sha256": "faa0e2ee13fad94b4393baf5dedc811e59c837ae2a480a1ac30656cc61c06b4b",
+      "width": 640,
+      "height": 640,
+      "bytes": 52382,
+      "source_bounds": [
+        116,
+        280,
+        1172,
+        1069
+      ],
+      "removed_border_background_fraction": 0.6866,
+      "prompt_id": "weekly-05-week-balance"
+    },
+    {
+      "id": "weekly-06-week-path",
+      "type": "weekly",
+      "label": "回看走过的路",
+      "terms": [
+        "进展",
+        "走过",
+        "过程",
+        "经历",
+        "轨迹"
+      ],
+      "palette": {
+        "dark": "#8F4335",
+        "accent": "#DB7B61",
+        "paper": "#FFF2EC"
+      },
+      "source": "output/imagegen/record-library/weekly-06-week-path.png",
+      "source_sha256": "95dc4aa299ce1fde897f8260c233b662ed5c89a1e7463c6cd6031a9b8d582bc3",
+      "source_width": 1254,
+      "source_height": 1254,
+      "webp": "/assets/records/weekly-06-week-path.webp",
+      "webp_sha256": "9ba3ee2a65d45b951ca57600dc171f7472a2dca76e419d35f5ddda24a36795f6",
+      "width": 640,
+      "height": 640,
+      "bytes": 52332,
+      "source_bounds": [
+        215,
+        157,
+        1058,
+        1099
+      ],
+      "removed_border_background_fraction": 0.7999,
+      "prompt_id": "weekly-06-week-path"
+    },
+    {
+      "id": "weekly-07-week-next",
+      "type": "weekly",
+      "label": "铺好下一周",
+      "terms": [
+        "下周",
+        "计划",
+        "下一步",
+        "安排",
+        "行动"
+      ],
+      "palette": {
+        "dark": "#8F4335",
+        "accent": "#DB7B61",
+        "paper": "#FFF2EC"
+      },
+      "source": "output/imagegen/record-library/weekly-07-week-next.png",
+      "source_sha256": "6a6d5065d382e550a4ed05f2eb4e5f8fe77990c427a4c1a1443356f7ee01efcb",
+      "source_width": 1254,
+      "source_height": 1254,
+      "webp": "/assets/records/weekly-07-week-next.webp",
+      "webp_sha256": "ad632c8e2d1333603312c14e613285accdad95cdbe451dd673b95f893e8a74f8",
+      "width": 640,
+      "height": 640,
+      "bytes": 59884,
+      "source_bounds": [
+        84,
+        174,
+        1166,
+        1137
+      ],
+      "removed_border_background_fraction": 0.6109,
+      "prompt_id": "weekly-07-week-next"
+    },
+    {
+      "id": "monthly-01-month-harvest",
+      "type": "monthly",
+      "label": "收拢月度成果",
+      "terms": [
+        "成果",
+        "收获",
+        "结果",
+        "成就",
+        "完成"
+      ],
+      "palette": {
+        "dark": "#875B21",
+        "accent": "#D79A34",
+        "paper": "#FFF7E5"
+      },
+      "source": "output/imagegen/record-library/monthly-01-month-harvest.png",
+      "source_sha256": "d3cc183f6bced683709aa83cc09d2e67747bc22d45b144049967cf413dd4ef43",
+      "source_width": 1254,
+      "source_height": 1254,
+      "webp": "/assets/records/monthly-01-month-harvest.webp",
+      "webp_sha256": "5a4a7322df649653d02598ed77d65df0884e7a5a0cdde70d3e1b9cfc9d60b1fb",
+      "width": 640,
+      "height": 640,
+      "bytes": 75314,
+      "source_bounds": [
+        91,
+        193,
+        1085,
+        1140
+      ],
+      "removed_border_background_fraction": 0.6847,
+      "prompt_id": "monthly-01-month-harvest"
+    },
+    {
+      "id": "monthly-02-month-system",
+      "type": "monthly",
+      "label": "整理做事系统",
+      "terms": [
+        "系统",
+        "流程",
+        "方法",
+        "机制",
+        "整理"
+      ],
+      "palette": {
+        "dark": "#875B21",
+        "accent": "#D79A34",
+        "paper": "#FFF7E5"
+      },
+      "source": "output/imagegen/record-library/monthly-02-month-system.png",
+      "source_sha256": "4361cda0b8982952643132266a16aa9838f15b137c8adc8f5b51238bc589bb89",
+      "source_width": 1254,
+      "source_height": 1254,
+      "webp": "/assets/records/monthly-02-month-system.webp",
+      "webp_sha256": "5460310913bfa935436460f63ca2096088a27150d5e9934e90c1341181d81b34",
+      "width": 640,
+      "height": 640,
+      "bytes": 54514,
+      "source_bounds": [
+        74,
+        219,
+        1103,
+        1132
+      ],
+      "removed_border_background_fraction": 0.653,
+      "prompt_id": "monthly-02-month-system"
+    },
+    {
+      "id": "monthly-03-month-budget",
+      "type": "monthly",
+      "label": "看清资源去向",
+      "terms": [
+        "预算",
+        "资源",
+        "支出",
+        "投入",
+        "开销"
+      ],
+      "palette": {
+        "dark": "#875B21",
+        "accent": "#D79A34",
+        "paper": "#FFF7E5"
+      },
+      "source": "output/imagegen/record-library/monthly-03-month-budget.png",
+      "source_sha256": "b9654a9da7247670f1df7cb5388ca3c16239a8b1999b6d77cb980b9e74907c3d",
+      "source_width": 1254,
+      "source_height": 1254,
+      "webp": "/assets/records/monthly-03-month-budget.webp",
+      "webp_sha256": "5d8067878a256284456bbb64ec0194c375a25a1bc24c909fbde05e3571b1090e",
+      "width": 640,
+      "height": 640,
+      "bytes": 58680,
+      "source_bounds": [
+        81,
+        186,
+        1176,
+        1152
+      ],
+      "removed_border_background_fraction": 0.6132,
+      "prompt_id": "monthly-03-month-budget"
+    },
+    {
+      "id": "monthly-04-month-habit",
+      "type": "monthly",
+      "label": "让习惯成形",
+      "terms": [
+        "习惯",
+        "坚持",
+        "打卡",
+        "日常",
+        "养成"
+      ],
+      "palette": {
+        "dark": "#875B21",
+        "accent": "#D79A34",
+        "paper": "#FFF7E5"
+      },
+      "source": "output/imagegen/record-library/monthly-04-month-habit.png",
+      "source_sha256": "8485fc858e0c5669907a967fa4f60193b703485cc20c7dc5681aac011a83afad",
+      "source_width": 1254,
+      "source_height": 1254,
+      "webp": "/assets/records/monthly-04-month-habit.webp",
+      "webp_sha256": "bbf705aec0b7522ca8d3f1097107a0cf88ec28ac856e63b213be5c0a9d2c7b6b",
+      "width": 640,
+      "height": 640,
+      "bytes": 56864,
+      "source_bounds": [
+        55,
+        273,
+        1168,
+        1105
+      ],
+      "removed_border_background_fraction": 0.8114,
+      "prompt_id": "monthly-04-month-habit"
+    },
+    {
+      "id": "monthly-05-month-bottleneck",
+      "type": "monthly",
+      "label": "拆开一个瓶颈",
+      "terms": [
+        "瓶颈",
+        "阻碍",
+        "困难",
+        "卡住",
+        "问题"
+      ],
+      "palette": {
+        "dark": "#875B21",
+        "accent": "#D79A34",
+        "paper": "#FFF7E5"
+      },
+      "source": "output/imagegen/record-library/monthly-05-month-bottleneck.png",
+      "source_sha256": "2496b834c1303e0f082661441044498c1557f0c3667f447ad48898ac802d25ac",
+      "source_width": 1254,
+      "source_height": 1254,
+      "webp": "/assets/records/monthly-05-month-bottleneck.webp",
+      "webp_sha256": "2c303ff3b8887087147d8461619b0abd9931cb1fd7b7f81d5521f4c2605085ca",
+      "width": 640,
+      "height": 640,
+      "bytes": 71722,
+      "source_bounds": [
+        148,
+        184,
+        1106,
+        1121
+      ],
+      "removed_border_background_fraction": 0.8012,
+      "prompt_id": "monthly-05-month-bottleneck"
+    },
+    {
+      "id": "monthly-06-month-experiment",
+      "type": "monthly",
+      "label": "试一种新方法",
+      "terms": [
+        "实验",
+        "尝试",
+        "测试",
+        "新方法",
+        "调整"
+      ],
+      "palette": {
+        "dark": "#875B21",
+        "accent": "#D79A34",
+        "paper": "#FFF7E5"
+      },
+      "source": "output/imagegen/record-library/monthly-06-month-experiment.png",
+      "source_sha256": "efaefa5b59f5847f09a0b6b92e375a14696b2b90407230d86ae7c9ca34e5f340",
+      "source_width": 1254,
+      "source_height": 1254,
+      "webp": "/assets/records/monthly-06-month-experiment.webp",
+      "webp_sha256": "db0600a989efe92568e1959a74b9d34127151ba7b663bc2e7646be7b4843c9bd",
+      "width": 640,
+      "height": 640,
+      "bytes": 56930,
+      "source_bounds": [
+        163,
+        176,
+        1083,
+        1154
+      ],
+      "removed_border_background_fraction": 0.7018,
+      "prompt_id": "monthly-06-month-experiment"
+    },
+    {
+      "id": "monthly-07-month-learning",
+      "type": "monthly",
+      "label": "把学习连起来",
+      "terms": [
+        "学习",
+        "复习",
+        "课程",
+        "知识",
+        "技能"
+      ],
+      "palette": {
+        "dark": "#875B21",
+        "accent": "#D79A34",
+        "paper": "#FFF7E5"
+      },
+      "source": "output/imagegen/record-library/monthly-07-month-learning.png",
+      "source_sha256": "2010afb15d623037df5e249b2edbcd19fde9adc3267b598b3d4388aaabc9155b",
+      "source_width": 1254,
+      "source_height": 1254,
+      "webp": "/assets/records/monthly-07-month-learning.webp",
+      "webp_sha256": "3981dee1e403b8b29d7dbdb579acc25281e1ec041ea284289056f8896b55f6b9",
+      "width": 640,
+      "height": 640,
+      "bytes": 55078,
+      "source_bounds": [
+        67,
+        246,
+        1104,
+        1113
+      ],
+      "removed_border_background_fraction": 0.7117,
+      "prompt_id": "monthly-07-month-learning"
+    },
+    {
+      "id": "monthly-08-month-workspace",
+      "type": "monthly",
+      "label": "重排工作空间",
+      "terms": [
+        "工作空间",
+        "工作台",
+        "书桌",
+        "环境",
+        "布置"
+      ],
+      "palette": {
+        "dark": "#875B21",
+        "accent": "#D79A34",
+        "paper": "#FFF7E5"
+      },
+      "source": "output/imagegen/record-library/monthly-08-month-workspace.png",
+      "source_sha256": "d2f641276f415fdfa48671df23888c648c0421e570026feaba5eaae00eb89f07",
+      "source_width": 1254,
+      "source_height": 1254,
+      "webp": "/assets/records/monthly-08-month-workspace.webp",
+      "webp_sha256": "e6333d7d57097b5a7fc8cd7deec82cc0c684a86ec2db0932b8d96b136cbb4b42",
+      "width": 640,
+      "height": 640,
+      "bytes": 48544,
+      "source_bounds": [
+        35,
+        271,
+        1216,
+        1052
+      ],
+      "removed_border_background_fraction": 0.7055,
+      "prompt_id": "monthly-08-month-workspace"
+    },
+    {
+      "id": "monthly-09-month-relation",
+      "type": "monthly",
+      "label": "留下相处的时间",
+      "terms": [
+        "关系",
+        "相处",
+        "家人",
+        "朋友",
+        "沟通"
+      ],
+      "palette": {
+        "dark": "#875B21",
+        "accent": "#D79A34",
+        "paper": "#FFF7E5"
+      },
+      "source": "output/imagegen/record-library/monthly-09-month-relation.png",
+      "source_sha256": "671420cd9ea6fc3ccd4505e9803035a5794cf1d0aab67aef38c09f23a0184507",
+      "source_width": 1254,
+      "source_height": 1254,
+      "webp": "/assets/records/monthly-09-month-relation.webp",
+      "webp_sha256": "6fbe868a67ed7391ce510b6b336e09a5c9cde5902697ce931e50ee26b8bbc5ce",
+      "width": 640,
+      "height": 640,
+      "bytes": 64118,
+      "source_bounds": [
+        74,
+        143,
+        1181,
+        1167
+      ],
+      "removed_border_background_fraction": 0.5963,
+      "prompt_id": "monthly-09-month-relation"
+    },
+    {
+      "id": "monthly-10-month-energy",
+      "type": "monthly",
+      "label": "分配有限的精力",
+      "terms": [
+        "精力",
+        "疲惫",
+        "恢复",
+        "体力",
+        "节奏"
+      ],
+      "palette": {
+        "dark": "#875B21",
+        "accent": "#D79A34",
+        "paper": "#FFF7E5"
+      },
+      "source": "output/imagegen/record-library/monthly-10-month-energy.png",
+      "source_sha256": "eea299584943cfa57420827d19d462c48d877723b01c890e9769d6ed4182bfe4",
+      "source_width": 1254,
+      "source_height": 1254,
+      "webp": "/assets/records/monthly-10-month-energy.webp",
+      "webp_sha256": "b69bd3d7e7a7c7ef544ffef6ce79547eb0fdaa0d3ed3fd4363dbc4dd03589d6f",
+      "width": 640,
+      "height": 640,
+      "bytes": 63606,
+      "source_bounds": [
+        69,
+        189,
+        1168,
+        1118
+      ],
+      "removed_border_background_fraction": 0.6145,
+      "prompt_id": "monthly-10-month-energy"
+    },
+    {
+      "id": "monthly-11-month-release",
+      "type": "monthly",
+      "label": "给生活减负",
+      "terms": [
+        "放下",
+        "舍弃",
+        "清理",
+        "告别",
+        "负担"
+      ],
+      "palette": {
+        "dark": "#875B21",
+        "accent": "#D79A34",
+        "paper": "#FFF7E5"
+      },
+      "source": "output/imagegen/record-library/monthly-11-month-release.png",
+      "source_sha256": "7778e3690d98af44a90765b02e613b8d305349638aaaf9d81e3a7fc245a64474",
+      "source_width": 1254,
+      "source_height": 1254,
+      "webp": "/assets/records/monthly-11-month-release.webp",
+      "webp_sha256": "7079d52d47106d1e86c33e20b1f75de5799283663afd37929f7bff148ad6597d",
+      "width": 640,
+      "height": 640,
+      "bytes": 61930,
+      "source_bounds": [
+        96,
+        147,
+        1130,
+        1171
+      ],
+      "removed_border_background_fraction": 0.7145,
+      "prompt_id": "monthly-11-month-release"
+    },
+    {
+      "id": "monthly-12-month-next",
+      "type": "monthly",
+      "label": "给下个月一张地图",
+      "terms": [
+        "下月",
+        "规划",
+        "地图",
+        "方向",
+        "目标"
+      ],
+      "palette": {
+        "dark": "#875B21",
+        "accent": "#D79A34",
+        "paper": "#FFF7E5"
+      },
+      "source": "output/imagegen/record-library/monthly-12-month-next.png",
+      "source_sha256": "41a22269bd93abe5603f208502f4868805419e7fffa0bef9bf76aaa16294afc6",
+      "source_width": 1254,
+      "source_height": 1254,
+      "webp": "/assets/records/monthly-12-month-next.webp",
+      "webp_sha256": "7d00d079129f48c023135f05b540067b18485d8e00fc9e7a3b75c46e3f5081db",
+      "width": 640,
+      "height": 640,
+      "bytes": 50458,
+      "source_bounds": [
+        54,
+        186,
+        1140,
+        1144
+      ],
+      "removed_border_background_fraction": 0.6516,
+      "prompt_id": "monthly-12-month-next"
+    },
+    {
+      "id": "quarterly-01-quarter-spring",
+      "type": "quarterly",
+      "label": "让方向萌芽",
+      "terms": [
+        "春",
+        "萌芽",
+        "方向",
+        "启动",
+        "播种"
+      ],
+      "palette": {
+        "dark": "#345585",
+        "accent": "#5C82C5",
+        "paper": "#EFF5FF"
+      },
+      "source": "output/imagegen/record-library/quarterly-01-quarter-spring.png",
+      "source_sha256": "ba39203bfbf8ec64b7fc68105cafdc4f7b0f5862c072acc648b81618f83ad503",
+      "source_width": 1254,
+      "source_height": 1254,
+      "webp": "/assets/records/quarterly-01-quarter-spring.webp",
+      "webp_sha256": "c2067fca84ce8af41d66fb4d5f11dde7754e4ef132e89cc3baae3e1d304b7e45",
+      "width": 640,
+      "height": 640,
+      "bytes": 62752,
+      "source_bounds": [
+        96,
+        215,
+        1121,
+        1148
+      ],
+      "removed_border_background_fraction": 0.7388,
+      "prompt_id": "quarterly-01-quarter-spring"
+    },
+    {
+      "id": "quarterly-02-quarter-summer",
+      "type": "quarterly",
+      "label": "在行动里生长",
+      "terms": [
+        "夏",
+        "生长",
+        "行动",
+        "推进",
+        "执行"
+      ],
+      "palette": {
+        "dark": "#345585",
+        "accent": "#5C82C5",
+        "paper": "#EFF5FF"
+      },
+      "source": "output/imagegen/record-library/quarterly-02-quarter-summer.png",
+      "source_sha256": "200ddc9aa7dee9fda59e23db151c061fb86972994ce14d059f3685364749919e",
+      "source_width": 1254,
+      "source_height": 1254,
+      "webp": "/assets/records/quarterly-02-quarter-summer.webp",
+      "webp_sha256": "cc46aea382c2558ecf90f00a0f4a826205ada77f583a26caf960924f1222159f",
+      "width": 640,
+      "height": 640,
+      "bytes": 43880,
+      "source_bounds": [
+        201,
+        121,
+        1021,
+        1154
+      ],
+      "removed_border_background_fraction": 0.7292,
+      "prompt_id": "quarterly-02-quarter-summer"
+    },
+    {
+      "id": "quarterly-03-quarter-autumn",
+      "type": "quarterly",
+      "label": "用证据收获",
+      "terms": [
+        "秋",
+        "收获",
+        "证据",
+        "成果",
+        "验证"
+      ],
+      "palette": {
+        "dark": "#345585",
+        "accent": "#5C82C5",
+        "paper": "#EFF5FF"
+      },
+      "source": "output/imagegen/record-library/quarterly-03-quarter-autumn.png",
+      "source_sha256": "7b98121a9c11603af124476e9e4512dfb14eb434274ec8088c013ab8248d638e",
+      "source_width": 1254,
+      "source_height": 1254,
+      "webp": "/assets/records/quarterly-03-quarter-autumn.webp",
+      "webp_sha256": "25173f9b91c58fcf8210949b04cf4fb26b2ee989c6c737438f2940c46b0dcffc",
+      "width": 640,
+      "height": 640,
+      "bytes": 61926,
+      "source_bounds": [
+        65,
+        188,
+        1176,
+        1127
+      ],
+      "removed_border_background_fraction": 0.695,
+      "prompt_id": "quarterly-03-quarter-autumn"
+    },
+    {
+      "id": "quarterly-04-quarter-winter",
+      "type": "quarterly",
+      "label": "校准下一段路",
+      "terms": [
+        "冬",
+        "校准",
+        "下季",
+        "复盘",
+        "路线"
+      ],
+      "palette": {
+        "dark": "#345585",
+        "accent": "#5C82C5",
+        "paper": "#EFF5FF"
+      },
+      "source": "output/imagegen/record-library/quarterly-04-quarter-winter.png",
+      "source_sha256": "7d527789dbaea832ec37dd453fdf05c447c7173112cfc3b4a0d686c34844fcaf",
+      "source_width": 1254,
+      "source_height": 1254,
+      "webp": "/assets/records/quarterly-04-quarter-winter.webp",
+      "webp_sha256": "215ddc434903dcf93878dea0636234b45cc52b52dee479a00feac63bdaae6e5c",
+      "width": 640,
+      "height": 640,
+      "bytes": 62266,
+      "source_bounds": [
+        49,
+        187,
+        1214,
+        1164
+      ],
+      "removed_border_background_fraction": 0.7844,
+      "prompt_id": "quarterly-04-quarter-winter"
+    },
+    {
+      "id": "yearly-01-year-milestones",
+      "type": "yearly",
+      "label": "串起一年里程碑",
+      "terms": [
+        "里程碑",
+        "经历",
+        "重要时刻",
+        "年度",
+        "成就"
+      ],
+      "palette": {
+        "dark": "#624782",
+        "accent": "#9A73BD",
+        "paper": "#F7EFFC"
+      },
+      "source": "output/imagegen/record-library/yearly-01-year-milestones.png",
+      "source_sha256": "1929763f49021fa6dedd09b49fb532bea12a401e30a6c2a10cc01a511a5bd3cb",
+      "source_width": 1254,
+      "source_height": 1254,
+      "webp": "/assets/records/yearly-01-year-milestones.webp",
+      "webp_sha256": "042fcf246aec555134bdcc8836a886bcdaad6b4c640fc928a3ccb92a82c2e72d",
+      "width": 640,
+      "height": 640,
+      "bytes": 64800,
+      "source_bounds": [
+        73,
+        172,
+        1158,
+        1178
+      ],
+      "removed_border_background_fraction": 0.611,
+      "prompt_id": "yearly-01-year-milestones"
+    },
+    {
+      "id": "yearly-02-year-growth",
+      "type": "yearly",
+      "label": "看见自己的成长",
+      "terms": [
+        "成长",
+        "变化",
+        "进步",
+        "能力",
+        "收获"
+      ],
+      "palette": {
+        "dark": "#624782",
+        "accent": "#9A73BD",
+        "paper": "#F7EFFC"
+      },
+      "source": "output/imagegen/record-library/yearly-02-year-growth.png",
+      "source_sha256": "68f9300cb60de49a110668c9ad5cc27867c1f202cc781027116395111e0dc1dc",
+      "source_width": 1254,
+      "source_height": 1254,
+      "webp": "/assets/records/yearly-02-year-growth.webp",
+      "webp_sha256": "548578d2bd91bcb7c14edaad58985bf2bc6300ea556af0d46bf640f51e7de680",
+      "width": 640,
+      "height": 640,
+      "bytes": 52712,
+      "source_bounds": [
+        63,
+        217,
+        1184,
+        1120
+      ],
+      "removed_border_background_fraction": 0.6852,
+      "prompt_id": "yearly-02-year-growth"
+    },
+    {
+      "id": "yearly-03-year-keep",
+      "type": "yearly",
+      "label": "保留值得的东西",
+      "terms": [
+        "保留",
+        "珍惜",
+        "坚持",
+        "值得",
+        "价值"
+      ],
+      "palette": {
+        "dark": "#624782",
+        "accent": "#9A73BD",
+        "paper": "#F7EFFC"
+      },
+      "source": "output/imagegen/record-library/yearly-03-year-keep.png",
+      "source_sha256": "4e031f4344c1feae0fe003bdd20009562fce3f098e17388760140e28fc59f51e",
+      "source_width": 1254,
+      "source_height": 1254,
+      "webp": "/assets/records/yearly-03-year-keep.webp",
+      "webp_sha256": "d6549744cfb4bcf084b4ae7e5b46e8dc3c4cd87e38f2ddb0c33f098d20fa8ed8",
+      "width": 640,
+      "height": 640,
+      "bytes": 43900,
+      "source_bounds": [
+        114,
+        232,
+        1133,
+        1145
+      ],
+      "removed_border_background_fraction": 0.6611,
+      "prompt_id": "yearly-03-year-keep"
+    },
+    {
+      "id": "yearly-04-year-release",
+      "type": "yearly",
+      "label": "向过去轻轻告别",
+      "terms": [
+        "放下",
+        "告别",
+        "过去",
+        "释怀",
+        "负担"
+      ],
+      "palette": {
+        "dark": "#624782",
+        "accent": "#9A73BD",
+        "paper": "#F7EFFC"
+      },
+      "source": "output/imagegen/record-library/yearly-04-year-release.png",
+      "source_sha256": "5b76027b3288a966c9339f89e5b2d2f4cd5519f009837189a3c28214684b9fe8",
+      "source_width": 1254,
+      "source_height": 1254,
+      "webp": "/assets/records/yearly-04-year-release.webp",
+      "webp_sha256": "a1362e5ef519f9d6ec201eed46c6e4b8043e592cd18160f239e085f40adb85c4",
+      "width": 640,
+      "height": 640,
+      "bytes": 46032,
+      "source_bounds": [
+        63,
+        271,
+        1196,
+        1121
+      ],
+      "removed_border_background_fraction": 0.7408,
+      "prompt_id": "yearly-04-year-release"
+    },
+    {
+      "id": "yearly-05-year-coordinate",
+      "type": "yearly",
+      "label": "找到新的坐标",
+      "terms": [
+        "坐标",
+        "定位",
+        "方向",
+        "选择",
+        "校准"
+      ],
+      "palette": {
+        "dark": "#624782",
+        "accent": "#9A73BD",
+        "paper": "#F7EFFC"
+      },
+      "source": "output/imagegen/record-library/yearly-05-year-coordinate.png",
+      "source_sha256": "4527eceb3813fd2e34b6e464da68aea602f52f73fb4843e6040867ea4c1dfe2d",
+      "source_width": 1254,
+      "source_height": 1254,
+      "webp": "/assets/records/yearly-05-year-coordinate.webp",
+      "webp_sha256": "61d1ca89e39aba9c696c442fcabb339ba4f25dfbb934e47707a0cea3ccc9bcc5",
+      "width": 640,
+      "height": 640,
+      "bytes": 60558,
+      "source_bounds": [
+        75,
+        251,
+        1145,
+        1140
+      ],
+      "removed_border_background_fraction": 0.6726,
+      "prompt_id": "yearly-05-year-coordinate"
+    },
+    {
+      "id": "yearly-06-year-horizon",
+      "type": "yearly",
+      "label": "把目光交给未来",
+      "terms": [
+        "未来",
+        "明年",
+        "期望",
+        "愿景",
+        "规划"
+      ],
+      "palette": {
+        "dark": "#624782",
+        "accent": "#9A73BD",
+        "paper": "#F7EFFC"
+      },
+      "source": "output/imagegen/record-library/yearly-06-year-horizon.png",
+      "source_sha256": "c47d4f18d2e7b36058e454bcbd3ccfb2c32595019c38493060d69bc94043f06f",
+      "source_width": 1254,
+      "source_height": 1254,
+      "webp": "/assets/records/yearly-06-year-horizon.webp",
+      "webp_sha256": "2f82aaf20da59e84af51b122b885dd3a46422e1bd120836dc85f90ae2c0dbd0d",
+      "width": 640,
+      "height": 640,
+      "bytes": 63224,
+      "source_bounds": [
+        99,
+        273,
+        1156,
+        1100
+      ],
+      "removed_border_background_fraction": 0.8068,
+      "prompt_id": "yearly-06-year-horizon"
+    },
+    {
+      "id": "decision-01-decision-question",
+      "type": "decision",
+      "label": "先问清问题",
+      "terms": [
+        "问题",
+        "疑问",
+        "决定",
+        "澄清",
+        "思考"
+      ],
+      "palette": {
+        "dark": "#455F34",
+        "accent": "#759D58",
+        "paper": "#F3F8E8"
+      },
+      "source": "output/imagegen/record-library/decision-01-decision-question.png",
+      "source_sha256": "4ba0ea38a2f028ea8dae8011128a76bc4ed4e65d39971f3e8821b05148f8dc83",
+      "source_width": 1254,
+      "source_height": 1254,
+      "webp": "/assets/records/decision-01-decision-question.webp",
+      "webp_sha256": "b9fe6ad0449b5352e9bf46ed52280a247f56773be26916882098af643026151c",
+      "width": 640,
+      "height": 640,
+      "bytes": 53740,
+      "source_bounds": [
+        125,
+        186,
+        1147,
+        1142
+      ],
+      "removed_border_background_fraction": 0.6388,
+      "prompt_id": "decision-01-decision-question"
+    },
+    {
+      "id": "decision-02-decision-facts",
+      "type": "decision",
+      "label": "把事实摆上桌",
+      "terms": [
+        "事实",
+        "证据",
+        "信息",
+        "调查",
+        "核实"
+      ],
+      "palette": {
+        "dark": "#455F34",
+        "accent": "#759D58",
+        "paper": "#F3F8E8"
+      },
+      "source": "output/imagegen/record-library/decision-02-decision-facts.png",
+      "source_sha256": "cf59e0621d2734921af35d35fd620c439b1196041c1e7104b083177e61194772",
+      "source_width": 1254,
+      "source_height": 1254,
+      "webp": "/assets/records/decision-02-decision-facts.webp",
+      "webp_sha256": "ffa30a982451fe33df740e0b042a5a8b4dedbd411ed2a83d54c5bb257950a54f",
+      "width": 640,
+      "height": 640,
+      "bytes": 47892,
+      "source_bounds": [
+        58,
+        312,
+        1193,
+        1078
+      ],
+      "removed_border_background_fraction": 0.7019,
+      "prompt_id": "decision-02-decision-facts"
+    },
+    {
+      "id": "decision-03-decision-options",
+      "type": "decision",
+      "label": "比较可走的路",
+      "terms": [
+        "方案",
+        "选择",
+        "比较",
+        "取舍",
+        "备选"
+      ],
+      "palette": {
+        "dark": "#455F34",
+        "accent": "#759D58",
+        "paper": "#F3F8E8"
+      },
+      "source": "output/imagegen/record-library/decision-03-decision-options.png",
+      "source_sha256": "4dd251d5f1e5970fb29c3e7645873ebf2c7414e1163774e9b41afea16f1b35bc",
+      "source_width": 1254,
+      "source_height": 1254,
+      "webp": "/assets/records/decision-03-decision-options.webp",
+      "webp_sha256": "3bdd073c32bc5da601661e1478e4f5d85eceb86f80482843645dadac41d78fc4",
+      "width": 640,
+      "height": 640,
+      "bytes": 68786,
+      "source_bounds": [
+        78,
+        193,
+        1176,
+        1108
+      ],
+      "removed_border_background_fraction": 0.8415,
+      "prompt_id": "decision-03-decision-options"
+    },
+    {
+      "id": "decision-04-decision-risk",
+      "type": "decision",
+      "label": "为风险留余地",
+      "terms": [
+        "风险",
+        "不确定",
+        "预案",
+        "代价",
+        "后果"
+      ],
+      "palette": {
+        "dark": "#455F34",
+        "accent": "#759D58",
+        "paper": "#F3F8E8"
+      },
+      "source": "output/imagegen/record-library/decision-04-decision-risk.png",
+      "source_sha256": "9b8cb4b5e6f93f251b8f38ea0e315febb37322614396a47f8af061017cd79921",
+      "source_width": 1254,
+      "source_height": 1254,
+      "webp": "/assets/records/decision-04-decision-risk.webp",
+      "webp_sha256": "9e88591181b292c5b840c547df1d58edadfe2b0dcb435b26752d6460f5108f14",
+      "width": 640,
+      "height": 640,
+      "bytes": 52880,
+      "source_bounds": [
+        52,
+        281,
+        1194,
+        1108
+      ],
+      "removed_border_background_fraction": 0.7683,
+      "prompt_id": "decision-04-decision-risk"
+    },
+    {
+      "id": "decision-05-decision-first",
+      "type": "decision",
+      "label": "踏出可逆的一步",
+      "terms": [
+        "行动",
+        "第一步",
+        "开始",
+        "执行",
+        "尝试"
+      ],
+      "palette": {
+        "dark": "#455F34",
+        "accent": "#759D58",
+        "paper": "#F3F8E8"
+      },
+      "source": "output/imagegen/record-library/decision-05-decision-first.png",
+      "source_sha256": "01e26dcc638205c8917405d438350f135222eb20f1aa1d889d37d0850b63cc49",
+      "source_width": 1254,
+      "source_height": 1254,
+      "webp": "/assets/records/decision-05-decision-first.webp",
+      "webp_sha256": "b3cba85caf3191d270ead7a79f3854fd2dcf111763511b8c29c918231eb7a442",
+      "width": 640,
+      "height": 640,
+      "bytes": 51312,
+      "source_bounds": [
+        47,
+        199,
+        1197,
+        1096
+      ],
+      "removed_border_background_fraction": 0.8348,
+      "prompt_id": "decision-05-decision-first"
+    },
+    {
+      "id": "decision-06-decision-return",
+      "type": "decision",
+      "label": "回到结果里检验",
+      "terms": [
+        "验证",
+        "复查",
+        "结果",
+        "调整",
+        "回看"
+      ],
+      "palette": {
+        "dark": "#455F34",
+        "accent": "#759D58",
+        "paper": "#F3F8E8"
+      },
+      "source": "output/imagegen/record-library/decision-06-decision-return.png",
+      "source_sha256": "bff53a71f06d2fbc4b559e237223660d68d8b41382cb56c71b490349c48e4c82",
+      "source_width": 1254,
+      "source_height": 1254,
+      "webp": "/assets/records/decision-06-decision-return.webp",
+      "webp_sha256": "d4a8bd9ba791435491f61c58b6b1e9dee5bf259ef1c77e32eb16b6d81eff41ee",
+      "width": 640,
+      "height": 640,
+      "bytes": 56150,
+      "source_bounds": [
+        118,
+        288,
+        1129,
+        1076
+      ],
+      "removed_border_background_fraction": 0.7314,
+      "prompt_id": "decision-06-decision-return"
+    }
+  ]
+}

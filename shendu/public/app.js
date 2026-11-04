@@ -3,7 +3,7 @@ import {DAILY_STEPS,dailyStepIssues,dailyPrompts,dailyPromptIssues,dailyPromptNe
 import {dailyCalendarModel,dailyCalendarKeyDate,dailyCalendarDateLabel} from './daily-calendar.js?v=1.0.0-art1';
 import {EXTENDED_FLOW,extendedPrompts,extendedPromptNeighbor,extendedPromptIssues,extendedReviewIssues} from './extended-flow.js?v=1.0.0-extended2';
 import {verificationMinimum} from './verification-policy.js?v=1.0.0-verification2';
-import {RECORD_ART,recordArtAssignments} from './record-art.js?v=1.0.0-archive1';
+import {RECORD_ART,recordArtAssignments} from './record-art.js?v=1.0.0-records1';
 const $ = (s, root = document) => root.querySelector(s);
 const $$ = (s, root = document) => [...root.querySelectorAll(s)];
 const esc = (v = '') => String(v).replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
@@ -144,17 +144,13 @@ function navItems(className='header-menu-item'){return Object.entries(TYPES).fil
 function headerLink(route,label,extra=''){return `<button class="header-link ${state.route===route?'active':''}" type="button" data-nav="${route}" ${state.route===route?'aria-current="page"':''}>${esc(label)}${extra}</button>`}
 function headerBrandContent(){return '<span class="seal header-seal" aria-hidden="true">慎</span><span class="brand-cn header-wordmark">慎獨</span>'}
 function topbar(){
-  const reviewsActive=Boolean(TYPES[state.route]),admin=['admin','superadmin'].includes(state.user.role),actionLabel=currentActionTemplate().pageTitle;
+  const admin=['admin','superadmin'].includes(state.user.role),actionLabel=currentActionTemplate().pageTitle;
   const accountName=state.user.displayName||state.user.username;
   return `<header class="topbar shendu-header" id="site-header">
     <div class="header-inner">
       <button class="header-brand" type="button" data-nav="overview" aria-label="慎独，返回概览">${headerBrandContent()}</button>
       <nav class="header-nav" aria-label="主导航">
         ${headerLink('overview','概览')}
-        <div class="header-menu">
-          <button class="header-menu-trigger ${reviewsActive?'active':''}" type="button" data-menu-trigger data-review-type="${reviewsActive?state.route:'daily'}" aria-expanded="false" aria-controls="review-menu">复盘<span class="header-chevron" aria-hidden="true"></span></button>
-          <div class="header-menu-panel review-menu" id="review-menu" hidden><span class="header-menu-caption">复盘节奏</span><div class="header-review-grid">${navItems()}</div></div>
-        </div>
         ${headerLink('history','历史复盘')}
         ${headerLink('actions',actionLabel,state.stats.pending?`<span class="header-count">${Number(state.stats.pending)}</span>`:'')}
       </nav>
@@ -175,7 +171,6 @@ function topbar(){
     </div>
     <nav class="header-mobile-nav" id="mobile-nav" aria-label="手机导航" hidden>
       <div class="mobile-nav-main">${headerLink('overview','概览')}${headerLink('history','历史复盘')}${headerLink('actions',actionLabel)}</div>
-      <div class="mobile-nav-group"><span>复盘分类</span><div>${navItems('mobile-review-link')}</div></div>
       <div class="mobile-nav-bottom"><button type="button" class="${state.route==='backup'?'active':''}" data-nav="backup" ${state.route==='backup'?'aria-current="page"':''}>数据备份</button>${admin?`<button type="button" class="${state.route==='users'?'active':''}" data-nav="users" ${state.route==='users'?'aria-current="page"':''}>账户管理</button>`:''}<button type="button" data-modal="account">账户与安全</button><button type="button" id="mobile-settings-trigger">设置</button></div>
     </nav>
   </header>`;
@@ -312,8 +307,9 @@ function calendarHtml(){
   days+=Array.from({length:42-lead-last.getUTCDate()},()=>'<span class="cal-blank" aria-hidden="true"></span>').join('');
   return `<div class="calendar-caption"><span>每日足迹</span><button type="button" class="calendar-return" data-calendar-today ${selected===current.slice(0,7)?'disabled':''}>回到本月 <span aria-hidden="true">↗</span></button></div><div class="calendar-head"><div class="calendar-month"><small>${year} 年</small><strong>${month}<span>月</span></strong></div><div class="calendar-month-actions"><button class="icon-btn" type="button" data-calendar-shift="-1" aria-label="上个月"><span class="chevron-icon left" aria-hidden="true"></span></button><button class="icon-btn" type="button" data-calendar-shift="1" aria-label="下个月"><span class="chevron-icon right" aria-hidden="true"></span></button></div></div><div class="cal-grid" aria-label="${year}年${month}月每日复盘">${['一','二','三','四','五','六','日'].map((label,index)=>`<span class="dow ${index>4?'weekend':''}" aria-label="星期${label}">${label}</span>`).join('')}${days}</div><div class="calendar-legend" aria-label="日历状态说明"><span><i class="legend-today" aria-hidden="true"></i>今天</span><span><i class="legend-draft" aria-hidden="true">—</i>草稿</span><span><i class="legend-completed" aria-hidden="true">●</i>已完成</span><span><i class="legend-verified" aria-hidden="true">✓</i>已验证</span></div><p class="calendar-month-note">本月已完成 <b>${finished}</b> 天复盘<span>点亮的日期，可以重新翻阅。</span></p>`;
 }
-function rightRail(){const p=stageProgress(),pending=state.records.filter(r=>r.status==='completed').sort((a,b)=>String(a.data.verifyDate).localeCompare(String(b.data.verifyDate))).slice(0,2);return `<aside class="right-rail ${state.railOpen?'open':''}" id="right-rail" ${state.railOpen?'':'hidden inert'}>
+function rightRail(){const p=stageProgress(),pending=state.records.filter(r=>r.status==='completed').sort((a,b)=>String(a.data.verifyDate).localeCompare(String(b.data.verifyDate))).slice(0,2);return `<aside class="right-rail ${state.railOpen?'open':''}" id="right-rail" data-view="calendar" ${state.railOpen?'':'hidden inert'}>
   <header class="rail-dialog-header"><div><h2 id="rail-dialog-title">阶段与日历</h2><p>看见这一阶段的方向，也留意每一天的足迹。</p><div class="rail-compact-decor" aria-hidden="true">${railDecor()}</div></div><button class="modal-close" id="rail-close" type="button" aria-label="关闭阶段与日历">×</button></header>
+  <div class="rail-view-switch" role="group" aria-label="阶段面板"><button type="button" data-rail-view="calendar" aria-pressed="true">每日足迹</button><button type="button" data-rail-view="stage" aria-pressed="false">当前阶段</button><button type="button" data-rail-view="pending" aria-pressed="false">待验证</button></div>
   ${statsHtml()}
   <section class="card rail-card rail-stage"><div class="stage-title"><span class="help">当前阶段</span><span class="badge">${p.day} / ${p.days} 天</span></div><b>${esc(state.stage.name)}</b><p>${esc(state.stage.focus)}</p><div class="progress"><i style="width:${p.pct}%"></i></div><button class="rail-link" data-modal="stage">编辑阶段设置</button></section>
   <section class="card rail-card rail-calendar" id="rail-calendar">${calendarHtml()}</section>
@@ -707,8 +703,8 @@ function actionCard(r,art=RECORD_ART[r.type][0]){
   return `<article class="action-archive-card type-${esc(r.type)}" aria-labelledby="action-title-${esc(r.id)}"><div class="action-archive-top"><span class="history-category"><span aria-hidden="true">${TYPE_ICONS[r.type]}</span>${esc(type.label)}</span><span class="action-state ${esc(b[1])}"><i aria-hidden="true"></i>${esc(b[0])}</span></div>
   <div class="action-archive-body"><div class="action-archive-copy">${heading.showDate?`<p class="action-record-period">${esc(date)}</p>`:''}<h3 id="action-title-${esc(r.id)}">${esc(heading.title)}</h3><p class="action-record-caption">${esc(t.agreementEyebrow)}</p></div><div class="action-archive-art" aria-hidden="true"><span></span><img src="${esc(art.src)}" alt="" width="1254" height="1254" loading="lazy" draggable="false"></div></div>
   ${verificationTimes(r,t,true)}
-  <details class="action-archive-disclosure"><summary><span class="action-disclosure-title">${esc(t.agreementTitle)}<span aria-hidden="true">＋</span></span><span class="action-disclosure-preview">${esc(r.data.action||t.missingActionText)}</span></summary><div class="action-disclosure-content"><p class="action-detail-note">${esc(t.agreementNote)}</p><h4>${esc(t.originalActionTitle)}</h4><p>${esc(r.data.action||t.missingActionText)}</p></div></details>
-  ${pending?'':`<details class="action-archive-disclosure action-result-disclosure"><summary><span class="action-disclosure-title">${esc(t.reviewTitle)}<span aria-hidden="true">＋</span></span><span class="action-disclosure-preview">${esc(v.result||t.missingResultText)}</span></summary><div class="action-disclosure-content"><p class="action-detail-kicker">${esc(t.reviewEyebrow)}</p><p class="action-detail-note">${esc(t.reviewNote)}</p><h4>${esc(t.resultTitle)}</h4><p>${esc(v.result||t.missingResultText)}</p><h4>${esc(t.adjustmentTitle)}</h4><p>${esc(v.adjustment||t.missingResultText)}</p></div></details>`}
+  <details class="action-archive-disclosure" open><summary><span class="action-disclosure-title">${esc(t.agreementTitle)}<span aria-hidden="true">＋</span></span></summary><div class="action-disclosure-content"><p class="action-detail-note">${esc(t.agreementNote)}</p><h4>${esc(t.originalActionTitle)}</h4><p>${esc(r.data.action||t.missingActionText)}</p></div></details>
+  ${pending?'':`<details class="action-archive-disclosure action-result-disclosure" open><summary><span class="action-disclosure-title">${esc(t.reviewTitle)}<span aria-hidden="true">＋</span></span></summary><div class="action-disclosure-content"><p class="action-detail-kicker">${esc(t.reviewEyebrow)}</p><p class="action-detail-note">${esc(t.reviewNote)}</p><h4>${esc(t.resultTitle)}</h4><p>${esc(v.result||t.missingResultText)}</p><h4>${esc(t.adjustmentTitle)}</h4><p>${esc(v.adjustment||t.missingResultText)}</p></div></details>`}
   <div class="action-archive-footer"><button type="button" class="action-record-open" data-open-record="${esc(r.id)}">${esc(t.viewRecordButton)} <span aria-hidden="true">↗</span></button>${pending?`<button type="button" class="action-verify-button" data-open-action="${esc(r.id)}" ${tooEarly?'disabled':''}>${tooEarly?`最早 ${esc(dailyCalendarDateLabel(earliest))} 验证`:esc(r.type==='decision'?t.decisionActionButton:t.submitActionButton)}${tooEarly?'':'<span aria-hidden="true">→</span>'}</button>`:'<span class="action-archive-seal" aria-hidden="true">验</span>'}</div></article>`;
 }
 function renderActions(){
@@ -913,6 +909,10 @@ function setRailOverlayOpen(open,restoreFocus=false){
   else if(restoreFocus)trigger.focus();
 }
 function bindCommon(){
+  $$('[data-rail-view]').forEach(button=>button.addEventListener('click',()=>{
+    $('#right-rail').dataset.view=button.dataset.railView;
+    $$('[data-rail-view]').forEach(item=>item.setAttribute('aria-pressed',String(item===button)));
+  }));
   $$('[data-nav]').forEach(button=>button.addEventListener('click',()=>{closeHeaderMenus();if(button.closest('#right-rail')&&$('#right-rail.open'))setRailOverlayOpen(false,true);attemptNavigate(()=>navigate(button.dataset.nav))}));
   $$('[data-modal]').forEach(button=>button.addEventListener('click',()=>{closeHeaderMenus();if(button.dataset.modal==='theme')openTheme();if(button.dataset.modal==='stage')openStage();if(button.dataset.modal==='account')openAccount()}));
   $('#settings-trigger')?.addEventListener('click',()=>{closeHeaderMenus();openSettings()});

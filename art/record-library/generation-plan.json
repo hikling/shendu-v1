@@ -1,5 +1,5 @@
 {
-  "status": "awaiting-local-api-key",
+  "status": "generated-and-reviewed",
   "generator": "imagegen fallback CLI / gpt-image-2",
   "counts": {
     "daily": 30,
@@ -10,917 +10,1372 @@
     "decision": 6
   },
   "total": 65,
-  "note": "User chose to finish UI first and configure API key later. These 65 are prompts, not generated images.",
+  "note": "65 distinct original scenes generated using the bundled imagegen CLI and the user-authorized Sub2API service, reviewed and published for history/actions only. Requested 1024x1024; actual PNGs are 1254x1254. Published local WebP images are 640x640 with locally extracted alpha and authoritative category palette normalization.",
   "assets": [
     {
       "id": "daily-01-morning-window",
       "type": "daily",
       "label": "晨光与开窗",
-      "status": "planned",
+      "status": "generated-and-reviewed",
       "reference": "../../shendu/public/assets/overview/daily.svg",
       "palette": {
         "dark": "#15584E",
         "accent": "#1E8F83",
         "paper": "#ECF8F1"
       },
-      "prompt": "Use case: illustration-story. Asset type: a single local illustration for Shendu personal review archive cards. Subject: A person opens a tall window to a small rising sun, folded curtains and a notebook on the sill. Style: flat editorial human illustration, angular ivory figures, thin expressive dark contours, geometric paper props, restrained hand-drawn elegance. Match the established overview category icon visual language; do not imitate a generic 3D mascot. Color palette strictly #15584E for contours and deepest clothing, #1E8F83 for major accents, #ECF8F1 and ivory for small surfaces. Composition: one distinct cohesive scene, centered, square, complete silhouettes with at least 12 percent empty margin; uniform warm white #FFFEFA background. Constraints: a unique pose, prop arrangement and scene for this asset. No lettering, numbers, badges, frames, logos, watermark, photographic texture, gradients or drop shadows. Use only the specified category colors and ivory.",
-      "output": "daily-01-morning-window.png"
+      "prompt": "Use case: illustration-story. Asset type: a single local illustration for Shendu personal review archive cards. Subject: A person opens a tall window to a small rising sun, folded curtains and a notebook on the sill. Style: minimalist editorial LINE illustration matching the existing overview icons: whimsical small oval heads with a single long curved nose and almost no facial detail, elongated rounded ivory arms and legs, oversized simple hands, flowing relaxed curves, very thin continuous category-colored outlines, sparse flat accent clothing and a few geometric paper props. Keep the figure mostly ivory and open negative space, like a delicate ink drawing with a few flat colored shapes. The scene is about the action and props, never a portrait. No angular faceted anatomy, realistic human face, anime, large hair mass, heavy filled silhouette, 3D, texture or shading. Color palette strictly #15584E for contours and deepest clothing, #1E8F83 for major accents, #ECF8F1 and ivory for small surfaces. Composition: one distinct cohesive scene, centered, square, complete silhouettes with at least 12 percent empty margin; uniform warm white #FFFEFA background. Constraints: a unique pose, prop arrangement and scene for this asset. No lettering, numbers, badges, frames, logos, watermark, photographic texture, gradients or drop shadows. Use only the specified category colors and ivory.",
+      "output": "daily-01-morning-window.png",
+      "terms": [
+        "晨光",
+        "早晨",
+        "起床",
+        "开窗",
+        "清晨"
+      ]
     },
     {
       "id": "daily-02-sleep-rest",
       "type": "daily",
       "label": "一夜好眠",
-      "status": "planned",
+      "status": "generated-and-reviewed",
       "reference": "../../shendu/public/assets/overview/daily.svg",
       "palette": {
         "dark": "#15584E",
         "accent": "#1E8F83",
         "paper": "#ECF8F1"
       },
-      "prompt": "Use case: illustration-story. Asset type: a single local illustration for Shendu personal review archive cards. Subject: A reclining person under a quilt, crescent moon, bedside book and soft geometric night shapes. Style: flat editorial human illustration, angular ivory figures, thin expressive dark contours, geometric paper props, restrained hand-drawn elegance. Match the established overview category icon visual language; do not imitate a generic 3D mascot. Color palette strictly #15584E for contours and deepest clothing, #1E8F83 for major accents, #ECF8F1 and ivory for small surfaces. Composition: one distinct cohesive scene, centered, square, complete silhouettes with at least 12 percent empty margin; uniform warm white #FFFEFA background. Constraints: a unique pose, prop arrangement and scene for this asset. No lettering, numbers, badges, frames, logos, watermark, photographic texture, gradients or drop shadows. Use only the specified category colors and ivory.",
-      "output": "daily-02-sleep-rest.png"
+      "prompt": "Use case: illustration-story. Asset type: a single local illustration for Shendu personal review archive cards. Subject: A reclining person under a quilt, crescent moon, bedside book and soft geometric night shapes. Style: minimalist editorial LINE illustration matching the existing overview icons: whimsical small oval heads with a single long curved nose and almost no facial detail, elongated rounded ivory arms and legs, oversized simple hands, flowing relaxed curves, very thin continuous category-colored outlines, sparse flat accent clothing and a few geometric paper props. Keep the figure mostly ivory and open negative space, like a delicate ink drawing with a few flat colored shapes. The scene is about the action and props, never a portrait. No angular faceted anatomy, realistic human face, anime, large hair mass, heavy filled silhouette, 3D, texture or shading. Color palette strictly #15584E for contours and deepest clothing, #1E8F83 for major accents, #ECF8F1 and ivory for small surfaces. Composition: one distinct cohesive scene, centered, square, complete silhouettes with at least 12 percent empty margin; uniform warm white #FFFEFA background. Constraints: a unique pose, prop arrangement and scene for this asset. No lettering, numbers, badges, frames, logos, watermark, photographic texture, gradients or drop shadows. Use only the specified category colors and ivory.",
+      "output": "daily-02-sleep-rest.png",
+      "terms": [
+        "睡眠",
+        "睡觉",
+        "休息",
+        "熬夜",
+        "入睡"
+      ]
     },
     {
       "id": "daily-03-stretch-energy",
       "type": "daily",
       "label": "伸展与精力",
-      "status": "planned",
+      "status": "generated-and-reviewed",
       "reference": "../../shendu/public/assets/overview/daily.svg",
       "palette": {
         "dark": "#15584E",
         "accent": "#1E8F83",
         "paper": "#ECF8F1"
       },
-      "prompt": "Use case: illustration-story. Asset type: a single local illustration for Shendu personal review archive cards. Subject: A person stretching both arms beside a small exercise mat and a water bottle. Style: flat editorial human illustration, angular ivory figures, thin expressive dark contours, geometric paper props, restrained hand-drawn elegance. Match the established overview category icon visual language; do not imitate a generic 3D mascot. Color palette strictly #15584E for contours and deepest clothing, #1E8F83 for major accents, #ECF8F1 and ivory for small surfaces. Composition: one distinct cohesive scene, centered, square, complete silhouettes with at least 12 percent empty margin; uniform warm white #FFFEFA background. Constraints: a unique pose, prop arrangement and scene for this asset. No lettering, numbers, badges, frames, logos, watermark, photographic texture, gradients or drop shadows. Use only the specified category colors and ivory.",
-      "output": "daily-03-stretch-energy.png"
+      "prompt": "Use case: illustration-story. Asset type: a single local illustration for Shendu personal review archive cards. Subject: A person stretching both arms beside a small exercise mat and a water bottle. Style: minimalist editorial LINE illustration matching the existing overview icons: whimsical small oval heads with a single long curved nose and almost no facial detail, elongated rounded ivory arms and legs, oversized simple hands, flowing relaxed curves, very thin continuous category-colored outlines, sparse flat accent clothing and a few geometric paper props. Keep the figure mostly ivory and open negative space, like a delicate ink drawing with a few flat colored shapes. The scene is about the action and props, never a portrait. No angular faceted anatomy, realistic human face, anime, large hair mass, heavy filled silhouette, 3D, texture or shading. Color palette strictly #15584E for contours and deepest clothing, #1E8F83 for major accents, #ECF8F1 and ivory for small surfaces. Composition: one distinct cohesive scene, centered, square, complete silhouettes with at least 12 percent empty margin; uniform warm white #FFFEFA background. Constraints: a unique pose, prop arrangement and scene for this asset. No lettering, numbers, badges, frames, logos, watermark, photographic texture, gradients or drop shadows. Use only the specified category colors and ivory.",
+      "output": "daily-03-stretch-energy.png",
+      "terms": [
+        "精力",
+        "运动",
+        "锻炼",
+        "拉伸",
+        "伸展"
+      ]
     },
     {
       "id": "daily-04-desk-focus",
       "type": "daily",
       "label": "专注的一刻",
-      "status": "planned",
+      "status": "generated-and-reviewed",
       "reference": "../../shendu/public/assets/overview/daily.svg",
       "palette": {
         "dark": "#15584E",
         "accent": "#1E8F83",
         "paper": "#ECF8F1"
       },
-      "prompt": "Use case: illustration-story. Asset type: a single local illustration for Shendu personal review archive cards. Subject: A seated person at a compact writing desk, upright lamp, single open notebook and quiet clock. Style: flat editorial human illustration, angular ivory figures, thin expressive dark contours, geometric paper props, restrained hand-drawn elegance. Match the established overview category icon visual language; do not imitate a generic 3D mascot. Color palette strictly #15584E for contours and deepest clothing, #1E8F83 for major accents, #ECF8F1 and ivory for small surfaces. Composition: one distinct cohesive scene, centered, square, complete silhouettes with at least 12 percent empty margin; uniform warm white #FFFEFA background. Constraints: a unique pose, prop arrangement and scene for this asset. No lettering, numbers, badges, frames, logos, watermark, photographic texture, gradients or drop shadows. Use only the specified category colors and ivory.",
-      "output": "daily-04-desk-focus.png"
+      "prompt": "Use case: illustration-story. Asset type: a single local illustration for Shendu personal review archive cards. Subject: A seated person at a compact writing desk, upright lamp, single open notebook and quiet clock. Style: minimalist editorial LINE illustration matching the existing overview icons: whimsical small oval heads with a single long curved nose and almost no facial detail, elongated rounded ivory arms and legs, oversized simple hands, flowing relaxed curves, very thin continuous category-colored outlines, sparse flat accent clothing and a few geometric paper props. Keep the figure mostly ivory and open negative space, like a delicate ink drawing with a few flat colored shapes. The scene is about the action and props, never a portrait. No angular faceted anatomy, realistic human face, anime, large hair mass, heavy filled silhouette, 3D, texture or shading. Color palette strictly #15584E for contours and deepest clothing, #1E8F83 for major accents, #ECF8F1 and ivory for small surfaces. Composition: one distinct cohesive scene, centered, square, complete silhouettes with at least 12 percent empty margin; uniform warm white #FFFEFA background. Constraints: a unique pose, prop arrangement and scene for this asset. No lettering, numbers, badges, frames, logos, watermark, photographic texture, gradients or drop shadows. Use only the specified category colors and ivory.",
+      "output": "daily-04-desk-focus.png",
+      "terms": [
+        "专注",
+        "写报告",
+        "工作",
+        "书桌",
+        "集中"
+      ]
     },
     {
       "id": "daily-05-reading-corner",
       "type": "daily",
       "label": "读书的角落",
-      "status": "planned",
+      "status": "generated-and-reviewed",
       "reference": "../../shendu/public/assets/overview/daily.svg",
       "palette": {
         "dark": "#15584E",
         "accent": "#1E8F83",
         "paper": "#ECF8F1"
       },
-      "prompt": "Use case: illustration-story. Asset type: a single local illustration for Shendu personal review archive cards. Subject: A person curled in a low chair reading, small book stack and leaning floor lamp. Style: flat editorial human illustration, angular ivory figures, thin expressive dark contours, geometric paper props, restrained hand-drawn elegance. Match the established overview category icon visual language; do not imitate a generic 3D mascot. Color palette strictly #15584E for contours and deepest clothing, #1E8F83 for major accents, #ECF8F1 and ivory for small surfaces. Composition: one distinct cohesive scene, centered, square, complete silhouettes with at least 12 percent empty margin; uniform warm white #FFFEFA background. Constraints: a unique pose, prop arrangement and scene for this asset. No lettering, numbers, badges, frames, logos, watermark, photographic texture, gradients or drop shadows. Use only the specified category colors and ivory.",
-      "output": "daily-05-reading-corner.png"
+      "prompt": "Use case: illustration-story. Asset type: a single local illustration for Shendu personal review archive cards. Subject: A person curled in a low chair reading, small book stack and leaning floor lamp. Style: minimalist editorial LINE illustration matching the existing overview icons: whimsical small oval heads with a single long curved nose and almost no facial detail, elongated rounded ivory arms and legs, oversized simple hands, flowing relaxed curves, very thin continuous category-colored outlines, sparse flat accent clothing and a few geometric paper props. Keep the figure mostly ivory and open negative space, like a delicate ink drawing with a few flat colored shapes. The scene is about the action and props, never a portrait. No angular faceted anatomy, realistic human face, anime, large hair mass, heavy filled silhouette, 3D, texture or shading. Color palette strictly #15584E for contours and deepest clothing, #1E8F83 for major accents, #ECF8F1 and ivory for small surfaces. Composition: one distinct cohesive scene, centered, square, complete silhouettes with at least 12 percent empty margin; uniform warm white #FFFEFA background. Constraints: a unique pose, prop arrangement and scene for this asset. No lettering, numbers, badges, frames, logos, watermark, photographic texture, gradients or drop shadows. Use only the specified category colors and ivory.",
+      "output": "daily-05-reading-corner.png",
+      "terms": [
+        "阅读",
+        "读书",
+        "书籍",
+        "看书",
+        "读完"
+      ]
     },
     {
       "id": "daily-06-walk-leaves",
       "type": "daily",
       "label": "散步与观察",
-      "status": "planned",
+      "status": "generated-and-reviewed",
       "reference": "../../shendu/public/assets/overview/daily.svg",
       "palette": {
         "dark": "#15584E",
         "accent": "#1E8F83",
         "paper": "#ECF8F1"
       },
-      "prompt": "Use case: illustration-story. Asset type: a single local illustration for Shendu personal review archive cards. Subject: A walking person on a curving short path, two fallen leaves and small framed cloud. Style: flat editorial human illustration, angular ivory figures, thin expressive dark contours, geometric paper props, restrained hand-drawn elegance. Match the established overview category icon visual language; do not imitate a generic 3D mascot. Color palette strictly #15584E for contours and deepest clothing, #1E8F83 for major accents, #ECF8F1 and ivory for small surfaces. Composition: one distinct cohesive scene, centered, square, complete silhouettes with at least 12 percent empty margin; uniform warm white #FFFEFA background. Constraints: a unique pose, prop arrangement and scene for this asset. No lettering, numbers, badges, frames, logos, watermark, photographic texture, gradients or drop shadows. Use only the specified category colors and ivory.",
-      "output": "daily-06-walk-leaves.png"
+      "prompt": "Use case: illustration-story. Asset type: a single local illustration for Shendu personal review archive cards. Subject: A walking person on a curving short path, two fallen leaves and small framed cloud. Style: minimalist editorial LINE illustration matching the existing overview icons: whimsical small oval heads with a single long curved nose and almost no facial detail, elongated rounded ivory arms and legs, oversized simple hands, flowing relaxed curves, very thin continuous category-colored outlines, sparse flat accent clothing and a few geometric paper props. Keep the figure mostly ivory and open negative space, like a delicate ink drawing with a few flat colored shapes. The scene is about the action and props, never a portrait. No angular faceted anatomy, realistic human face, anime, large hair mass, heavy filled silhouette, 3D, texture or shading. Color palette strictly #15584E for contours and deepest clothing, #1E8F83 for major accents, #ECF8F1 and ivory for small surfaces. Composition: one distinct cohesive scene, centered, square, complete silhouettes with at least 12 percent empty margin; uniform warm white #FFFEFA background. Constraints: a unique pose, prop arrangement and scene for this asset. No lettering, numbers, badges, frames, logos, watermark, photographic texture, gradients or drop shadows. Use only the specified category colors and ivory.",
+      "output": "daily-06-walk-leaves.png",
+      "terms": [
+        "散步",
+        "步行",
+        "观察",
+        "树叶",
+        "出门走走"
+      ]
     },
     {
       "id": "daily-07-small-checklist",
       "type": "daily",
       "label": "完成一小步",
-      "status": "planned",
+      "status": "generated-and-reviewed",
       "reference": "../../shendu/public/assets/overview/daily.svg",
       "palette": {
         "dark": "#15584E",
         "accent": "#1E8F83",
         "paper": "#ECF8F1"
       },
-      "prompt": "Use case: illustration-story. Asset type: a single local illustration for Shendu personal review archive cards. Subject: A standing person marks one box on a large vertical checklist with a long pencil. Style: flat editorial human illustration, angular ivory figures, thin expressive dark contours, geometric paper props, restrained hand-drawn elegance. Match the established overview category icon visual language; do not imitate a generic 3D mascot. Color palette strictly #15584E for contours and deepest clothing, #1E8F83 for major accents, #ECF8F1 and ivory for small surfaces. Composition: one distinct cohesive scene, centered, square, complete silhouettes with at least 12 percent empty margin; uniform warm white #FFFEFA background. Constraints: a unique pose, prop arrangement and scene for this asset. No lettering, numbers, badges, frames, logos, watermark, photographic texture, gradients or drop shadows. Use only the specified category colors and ivory.",
-      "output": "daily-07-small-checklist.png"
+      "prompt": "Use case: illustration-story. Asset type: a single local illustration for Shendu personal review archive cards. Subject: A standing person marks one box on a large vertical checklist with a long pencil. Style: minimalist editorial LINE illustration matching the existing overview icons: whimsical small oval heads with a single long curved nose and almost no facial detail, elongated rounded ivory arms and legs, oversized simple hands, flowing relaxed curves, very thin continuous category-colored outlines, sparse flat accent clothing and a few geometric paper props. Keep the figure mostly ivory and open negative space, like a delicate ink drawing with a few flat colored shapes. The scene is about the action and props, never a portrait. No angular faceted anatomy, realistic human face, anime, large hair mass, heavy filled silhouette, 3D, texture or shading. Color palette strictly #15584E for contours and deepest clothing, #1E8F83 for major accents, #ECF8F1 and ivory for small surfaces. Composition: one distinct cohesive scene, centered, square, complete silhouettes with at least 12 percent empty margin; uniform warm white #FFFEFA background. Constraints: a unique pose, prop arrangement and scene for this asset. No lettering, numbers, badges, frames, logos, watermark, photographic texture, gradients or drop shadows. Use only the specified category colors and ivory.",
+      "output": "daily-07-small-checklist.png",
+      "terms": [
+        "完成",
+        "清单",
+        "待办",
+        "打勾",
+        "小目标"
+      ]
     },
     {
       "id": "daily-08-plant-care",
       "type": "daily",
       "label": "照料日常",
-      "status": "planned",
+      "status": "generated-and-reviewed",
       "reference": "../../shendu/public/assets/overview/daily.svg",
       "palette": {
         "dark": "#15584E",
         "accent": "#1E8F83",
         "paper": "#ECF8F1"
       },
-      "prompt": "Use case: illustration-story. Asset type: a single local illustration for Shendu personal review archive cards. Subject: A person kneels to water a potted plant with three large leaves. Style: flat editorial human illustration, angular ivory figures, thin expressive dark contours, geometric paper props, restrained hand-drawn elegance. Match the established overview category icon visual language; do not imitate a generic 3D mascot. Color palette strictly #15584E for contours and deepest clothing, #1E8F83 for major accents, #ECF8F1 and ivory for small surfaces. Composition: one distinct cohesive scene, centered, square, complete silhouettes with at least 12 percent empty margin; uniform warm white #FFFEFA background. Constraints: a unique pose, prop arrangement and scene for this asset. No lettering, numbers, badges, frames, logos, watermark, photographic texture, gradients or drop shadows. Use only the specified category colors and ivory.",
-      "output": "daily-08-plant-care.png"
+      "prompt": "Use case: illustration-story. Asset type: a single local illustration for Shendu personal review archive cards. Subject: A person kneels to water a potted plant with three large leaves. Style: minimalist editorial LINE illustration matching the existing overview icons: whimsical small oval heads with a single long curved nose and almost no facial detail, elongated rounded ivory arms and legs, oversized simple hands, flowing relaxed curves, very thin continuous category-colored outlines, sparse flat accent clothing and a few geometric paper props. Keep the figure mostly ivory and open negative space, like a delicate ink drawing with a few flat colored shapes. The scene is about the action and props, never a portrait. No angular faceted anatomy, realistic human face, anime, large hair mass, heavy filled silhouette, 3D, texture or shading. Color palette strictly #15584E for contours and deepest clothing, #1E8F83 for major accents, #ECF8F1 and ivory for small surfaces. Composition: one distinct cohesive scene, centered, square, complete silhouettes with at least 12 percent empty margin; uniform warm white #FFFEFA background. Constraints: a unique pose, prop arrangement and scene for this asset. No lettering, numbers, badges, frames, logos, watermark, photographic texture, gradients or drop shadows. Use only the specified category colors and ivory.",
+      "output": "daily-08-plant-care.png",
+      "terms": [
+        "浇水",
+        "植物",
+        "养花",
+        "照料",
+        "盆栽"
+      ]
     },
     {
       "id": "daily-09-tea-pause",
       "type": "daily",
       "label": "给自己片刻",
-      "status": "planned",
+      "status": "generated-and-reviewed",
       "reference": "../../shendu/public/assets/overview/daily.svg",
       "palette": {
         "dark": "#15584E",
         "accent": "#1E8F83",
         "paper": "#ECF8F1"
       },
-      "prompt": "Use case: illustration-story. Asset type: a single local illustration for Shendu personal review archive cards. Subject: A person sitting at a round table holding a cup, teapot and light steam curl. Style: flat editorial human illustration, angular ivory figures, thin expressive dark contours, geometric paper props, restrained hand-drawn elegance. Match the established overview category icon visual language; do not imitate a generic 3D mascot. Color palette strictly #15584E for contours and deepest clothing, #1E8F83 for major accents, #ECF8F1 and ivory for small surfaces. Composition: one distinct cohesive scene, centered, square, complete silhouettes with at least 12 percent empty margin; uniform warm white #FFFEFA background. Constraints: a unique pose, prop arrangement and scene for this asset. No lettering, numbers, badges, frames, logos, watermark, photographic texture, gradients or drop shadows. Use only the specified category colors and ivory.",
-      "output": "daily-09-tea-pause.png"
+      "prompt": "Use case: illustration-story. Asset type: a single local illustration for Shendu personal review archive cards. Subject: A person sitting at a round table holding a cup, teapot and light steam curl. Style: minimalist editorial LINE illustration matching the existing overview icons: whimsical small oval heads with a single long curved nose and almost no facial detail, elongated rounded ivory arms and legs, oversized simple hands, flowing relaxed curves, very thin continuous category-colored outlines, sparse flat accent clothing and a few geometric paper props. Keep the figure mostly ivory and open negative space, like a delicate ink drawing with a few flat colored shapes. The scene is about the action and props, never a portrait. No angular faceted anatomy, realistic human face, anime, large hair mass, heavy filled silhouette, 3D, texture or shading. Color palette strictly #15584E for contours and deepest clothing, #1E8F83 for major accents, #ECF8F1 and ivory for small surfaces. Composition: one distinct cohesive scene, centered, square, complete silhouettes with at least 12 percent empty margin; uniform warm white #FFFEFA background. Constraints: a unique pose, prop arrangement and scene for this asset. No lettering, numbers, badges, frames, logos, watermark, photographic texture, gradients or drop shadows. Use only the specified category colors and ivory.",
+      "output": "daily-09-tea-pause.png",
+      "terms": [
+        "喝茶",
+        "茶",
+        "暂停",
+        "放松",
+        "片刻"
+      ]
     },
     {
       "id": "daily-10-listen-talk",
       "type": "daily",
       "label": "认真听一次",
-      "status": "planned",
+      "status": "generated-and-reviewed",
       "reference": "../../shendu/public/assets/overview/daily.svg",
       "palette": {
         "dark": "#15584E",
         "accent": "#1E8F83",
         "paper": "#ECF8F1"
       },
-      "prompt": "Use case: illustration-story. Asset type: a single local illustration for Shendu personal review archive cards. Subject: Two seated people face each other, one listening, with two small abstract speech shapes. Style: flat editorial human illustration, angular ivory figures, thin expressive dark contours, geometric paper props, restrained hand-drawn elegance. Match the established overview category icon visual language; do not imitate a generic 3D mascot. Color palette strictly #15584E for contours and deepest clothing, #1E8F83 for major accents, #ECF8F1 and ivory for small surfaces. Composition: one distinct cohesive scene, centered, square, complete silhouettes with at least 12 percent empty margin; uniform warm white #FFFEFA background. Constraints: a unique pose, prop arrangement and scene for this asset. No lettering, numbers, badges, frames, logos, watermark, photographic texture, gradients or drop shadows. Use only the specified category colors and ivory.",
-      "output": "daily-10-listen-talk.png"
+      "prompt": "Use case: illustration-story. Asset type: a single local illustration for Shendu personal review archive cards. Subject: Two seated people face each other, one listening, with two small abstract speech shapes. Style: minimalist editorial LINE illustration matching the existing overview icons: whimsical small oval heads with a single long curved nose and almost no facial detail, elongated rounded ivory arms and legs, oversized simple hands, flowing relaxed curves, very thin continuous category-colored outlines, sparse flat accent clothing and a few geometric paper props. Keep the figure mostly ivory and open negative space, like a delicate ink drawing with a few flat colored shapes. The scene is about the action and props, never a portrait. No angular faceted anatomy, realistic human face, anime, large hair mass, heavy filled silhouette, 3D, texture or shading. Color palette strictly #15584E for contours and deepest clothing, #1E8F83 for major accents, #ECF8F1 and ivory for small surfaces. Composition: one distinct cohesive scene, centered, square, complete silhouettes with at least 12 percent empty margin; uniform warm white #FFFEFA background. Constraints: a unique pose, prop arrangement and scene for this asset. No lettering, numbers, badges, frames, logos, watermark, photographic texture, gradients or drop shadows. Use only the specified category colors and ivory.",
+      "output": "daily-10-listen-talk.png",
+      "terms": [
+        "倾听",
+        "沟通",
+        "交谈",
+        "聊天",
+        "表达"
+      ]
     },
     {
       "id": "daily-11-tidy-room",
       "type": "daily",
       "label": "整理空间",
-      "status": "planned",
+      "status": "generated-and-reviewed",
       "reference": "../../shendu/public/assets/overview/daily.svg",
       "palette": {
         "dark": "#15584E",
         "accent": "#1E8F83",
         "paper": "#ECF8F1"
       },
-      "prompt": "Use case: illustration-story. Asset type: a single local illustration for Shendu personal review archive cards. Subject: A person placing a book into an open low shelf, a basket and folded cloth nearby. Style: flat editorial human illustration, angular ivory figures, thin expressive dark contours, geometric paper props, restrained hand-drawn elegance. Match the established overview category icon visual language; do not imitate a generic 3D mascot. Color palette strictly #15584E for contours and deepest clothing, #1E8F83 for major accents, #ECF8F1 and ivory for small surfaces. Composition: one distinct cohesive scene, centered, square, complete silhouettes with at least 12 percent empty margin; uniform warm white #FFFEFA background. Constraints: a unique pose, prop arrangement and scene for this asset. No lettering, numbers, badges, frames, logos, watermark, photographic texture, gradients or drop shadows. Use only the specified category colors and ivory.",
-      "output": "daily-11-tidy-room.png"
+      "prompt": "Use case: illustration-story. Asset type: a single local illustration for Shendu personal review archive cards. Subject: A person placing a book into an open low shelf, a basket and folded cloth nearby. Style: minimalist editorial LINE illustration matching the existing overview icons: whimsical small oval heads with a single long curved nose and almost no facial detail, elongated rounded ivory arms and legs, oversized simple hands, flowing relaxed curves, very thin continuous category-colored outlines, sparse flat accent clothing and a few geometric paper props. Keep the figure mostly ivory and open negative space, like a delicate ink drawing with a few flat colored shapes. The scene is about the action and props, never a portrait. No angular faceted anatomy, realistic human face, anime, large hair mass, heavy filled silhouette, 3D, texture or shading. Color palette strictly #15584E for contours and deepest clothing, #1E8F83 for major accents, #ECF8F1 and ivory for small surfaces. Composition: one distinct cohesive scene, centered, square, complete silhouettes with at least 12 percent empty margin; uniform warm white #FFFEFA background. Constraints: a unique pose, prop arrangement and scene for this asset. No lettering, numbers, badges, frames, logos, watermark, photographic texture, gradients or drop shadows. Use only the specified category colors and ivory.",
+      "output": "daily-11-tidy-room.png",
+      "terms": [
+        "整理",
+        "房间",
+        "收拾",
+        "打扫",
+        "整洁"
+      ]
     },
     {
       "id": "daily-12-cook-meal",
       "type": "daily",
       "label": "好好吃饭",
-      "status": "planned",
+      "status": "generated-and-reviewed",
       "reference": "../../shendu/public/assets/overview/daily.svg",
       "palette": {
         "dark": "#15584E",
         "accent": "#1E8F83",
         "paper": "#ECF8F1"
       },
-      "prompt": "Use case: illustration-story. Asset type: a single local illustration for Shendu personal review archive cards. Subject: A person prepares vegetables at a short kitchen counter with a bowl and a single pan. Style: flat editorial human illustration, angular ivory figures, thin expressive dark contours, geometric paper props, restrained hand-drawn elegance. Match the established overview category icon visual language; do not imitate a generic 3D mascot. Color palette strictly #15584E for contours and deepest clothing, #1E8F83 for major accents, #ECF8F1 and ivory for small surfaces. Composition: one distinct cohesive scene, centered, square, complete silhouettes with at least 12 percent empty margin; uniform warm white #FFFEFA background. Constraints: a unique pose, prop arrangement and scene for this asset. No lettering, numbers, badges, frames, logos, watermark, photographic texture, gradients or drop shadows. Use only the specified category colors and ivory.",
-      "output": "daily-12-cook-meal.png"
+      "prompt": "Use case: illustration-story. Asset type: a single local illustration for Shendu personal review archive cards. Subject: A person prepares vegetables at a short kitchen counter with a bowl and a single pan. Style: minimalist editorial LINE illustration matching the existing overview icons: whimsical small oval heads with a single long curved nose and almost no facial detail, elongated rounded ivory arms and legs, oversized simple hands, flowing relaxed curves, very thin continuous category-colored outlines, sparse flat accent clothing and a few geometric paper props. Keep the figure mostly ivory and open negative space, like a delicate ink drawing with a few flat colored shapes. The scene is about the action and props, never a portrait. No angular faceted anatomy, realistic human face, anime, large hair mass, heavy filled silhouette, 3D, texture or shading. Color palette strictly #15584E for contours and deepest clothing, #1E8F83 for major accents, #ECF8F1 and ivory for small surfaces. Composition: one distinct cohesive scene, centered, square, complete silhouettes with at least 12 percent empty margin; uniform warm white #FFFEFA background. Constraints: a unique pose, prop arrangement and scene for this asset. No lettering, numbers, badges, frames, logos, watermark, photographic texture, gradients or drop shadows. Use only the specified category colors and ivory.",
+      "output": "daily-12-cook-meal.png",
+      "terms": [
+        "做饭",
+        "吃饭",
+        "烹饪",
+        "用餐",
+        "饮食"
+      ]
     },
     {
       "id": "daily-13-cycle-outdoors",
       "type": "daily",
       "label": "向外走走",
-      "status": "planned",
+      "status": "generated-and-reviewed",
       "reference": "../../shendu/public/assets/overview/daily.svg",
       "palette": {
         "dark": "#15584E",
         "accent": "#1E8F83",
         "paper": "#ECF8F1"
       },
-      "prompt": "Use case: illustration-story. Asset type: a single local illustration for Shendu personal review archive cards. Subject: A person beside a bicycle on a small bridge, simple distant sun. Style: flat editorial human illustration, angular ivory figures, thin expressive dark contours, geometric paper props, restrained hand-drawn elegance. Match the established overview category icon visual language; do not imitate a generic 3D mascot. Color palette strictly #15584E for contours and deepest clothing, #1E8F83 for major accents, #ECF8F1 and ivory for small surfaces. Composition: one distinct cohesive scene, centered, square, complete silhouettes with at least 12 percent empty margin; uniform warm white #FFFEFA background. Constraints: a unique pose, prop arrangement and scene for this asset. No lettering, numbers, badges, frames, logos, watermark, photographic texture, gradients or drop shadows. Use only the specified category colors and ivory.",
-      "output": "daily-13-cycle-outdoors.png"
+      "prompt": "Use case: illustration-story. Asset type: a single local illustration for Shendu personal review archive cards. Subject: A person beside a bicycle on a small bridge, simple distant sun. Style: minimalist editorial LINE illustration matching the existing overview icons: whimsical small oval heads with a single long curved nose and almost no facial detail, elongated rounded ivory arms and legs, oversized simple hands, flowing relaxed curves, very thin continuous category-colored outlines, sparse flat accent clothing and a few geometric paper props. Keep the figure mostly ivory and open negative space, like a delicate ink drawing with a few flat colored shapes. The scene is about the action and props, never a portrait. No angular faceted anatomy, realistic human face, anime, large hair mass, heavy filled silhouette, 3D, texture or shading. Color palette strictly #15584E for contours and deepest clothing, #1E8F83 for major accents, #ECF8F1 and ivory for small surfaces. Composition: one distinct cohesive scene, centered, square, complete silhouettes with at least 12 percent empty margin; uniform warm white #FFFEFA background. Constraints: a unique pose, prop arrangement and scene for this asset. No lettering, numbers, badges, frames, logos, watermark, photographic texture, gradients or drop shadows. Use only the specified category colors and ivory.",
+      "output": "daily-13-cycle-outdoors.png",
+      "terms": [
+        "骑行",
+        "自行车",
+        "户外",
+        "骑车",
+        "出游"
+      ]
     },
     {
       "id": "daily-14-journal-page",
       "type": "daily",
       "label": "写下一页",
-      "status": "planned",
+      "status": "generated-and-reviewed",
       "reference": "../../shendu/public/assets/overview/daily.svg",
       "palette": {
         "dark": "#15584E",
         "accent": "#1E8F83",
         "paper": "#ECF8F1"
       },
-      "prompt": "Use case: illustration-story. Asset type: a single local illustration for Shendu personal review archive cards. Subject: A person sits on a large open notebook edge writing with a slim pen. Style: flat editorial human illustration, angular ivory figures, thin expressive dark contours, geometric paper props, restrained hand-drawn elegance. Match the established overview category icon visual language; do not imitate a generic 3D mascot. Color palette strictly #15584E for contours and deepest clothing, #1E8F83 for major accents, #ECF8F1 and ivory for small surfaces. Composition: one distinct cohesive scene, centered, square, complete silhouettes with at least 12 percent empty margin; uniform warm white #FFFEFA background. Constraints: a unique pose, prop arrangement and scene for this asset. No lettering, numbers, badges, frames, logos, watermark, photographic texture, gradients or drop shadows. Use only the specified category colors and ivory.",
-      "output": "daily-14-journal-page.png"
+      "prompt": "Use case: illustration-story. Asset type: a single local illustration for Shendu personal review archive cards. Subject: A person sits on a large open notebook edge writing with a slim pen. Style: minimalist editorial LINE illustration matching the existing overview icons: whimsical small oval heads with a single long curved nose and almost no facial detail, elongated rounded ivory arms and legs, oversized simple hands, flowing relaxed curves, very thin continuous category-colored outlines, sparse flat accent clothing and a few geometric paper props. Keep the figure mostly ivory and open negative space, like a delicate ink drawing with a few flat colored shapes. The scene is about the action and props, never a portrait. No angular faceted anatomy, realistic human face, anime, large hair mass, heavy filled silhouette, 3D, texture or shading. Color palette strictly #15584E for contours and deepest clothing, #1E8F83 for major accents, #ECF8F1 and ivory for small surfaces. Composition: one distinct cohesive scene, centered, square, complete silhouettes with at least 12 percent empty margin; uniform warm white #FFFEFA background. Constraints: a unique pose, prop arrangement and scene for this asset. No lettering, numbers, badges, frames, logos, watermark, photographic texture, gradients or drop shadows. Use only the specified category colors and ivory.",
+      "output": "daily-14-journal-page.png",
+      "terms": [
+        "日记",
+        "写作",
+        "书写",
+        "手账",
+        "写下来"
+      ]
     },
     {
       "id": "daily-15-balance-stones",
       "type": "daily",
       "label": "找回平衡",
-      "status": "planned",
+      "status": "generated-and-reviewed",
       "reference": "../../shendu/public/assets/overview/daily.svg",
       "palette": {
         "dark": "#15584E",
         "accent": "#1E8F83",
         "paper": "#ECF8F1"
       },
-      "prompt": "Use case: illustration-story. Asset type: a single local illustration for Shendu personal review archive cards. Subject: A person carefully balances three unequal smooth stones on a small plinth. Style: flat editorial human illustration, angular ivory figures, thin expressive dark contours, geometric paper props, restrained hand-drawn elegance. Match the established overview category icon visual language; do not imitate a generic 3D mascot. Color palette strictly #15584E for contours and deepest clothing, #1E8F83 for major accents, #ECF8F1 and ivory for small surfaces. Composition: one distinct cohesive scene, centered, square, complete silhouettes with at least 12 percent empty margin; uniform warm white #FFFEFA background. Constraints: a unique pose, prop arrangement and scene for this asset. No lettering, numbers, badges, frames, logos, watermark, photographic texture, gradients or drop shadows. Use only the specified category colors and ivory.",
-      "output": "daily-15-balance-stones.png"
+      "prompt": "Use case: illustration-story. Asset type: a single local illustration for Shendu personal review archive cards. Subject: A person carefully balances three unequal smooth stones on a small plinth. Style: minimalist editorial LINE illustration matching the existing overview icons: whimsical small oval heads with a single long curved nose and almost no facial detail, elongated rounded ivory arms and legs, oversized simple hands, flowing relaxed curves, very thin continuous category-colored outlines, sparse flat accent clothing and a few geometric paper props. Keep the figure mostly ivory and open negative space, like a delicate ink drawing with a few flat colored shapes. The scene is about the action and props, never a portrait. No angular faceted anatomy, realistic human face, anime, large hair mass, heavy filled silhouette, 3D, texture or shading. Color palette strictly #15584E for contours and deepest clothing, #1E8F83 for major accents, #ECF8F1 and ivory for small surfaces. Composition: one distinct cohesive scene, centered, square, complete silhouettes with at least 12 percent empty margin; uniform warm white #FFFEFA background. Constraints: a unique pose, prop arrangement and scene for this asset. No lettering, numbers, badges, frames, logos, watermark, photographic texture, gradients or drop shadows. Use only the specified category colors and ivory.",
+      "output": "daily-15-balance-stones.png",
+      "terms": [
+        "平衡",
+        "稳定",
+        "分寸",
+        "从容",
+        "稳住"
+      ]
     },
     {
       "id": "daily-16-repair-mend",
       "type": "daily",
       "label": "修补一个问题",
-      "status": "planned",
+      "status": "generated-and-reviewed",
       "reference": "../../shendu/public/assets/overview/daily.svg",
       "palette": {
         "dark": "#15584E",
         "accent": "#1E8F83",
         "paper": "#ECF8F1"
       },
-      "prompt": "Use case: illustration-story. Asset type: a single local illustration for Shendu personal review archive cards. Subject: A person repairs a small chair with a simple hand tool, loose screw and bent knee pose. Style: flat editorial human illustration, angular ivory figures, thin expressive dark contours, geometric paper props, restrained hand-drawn elegance. Match the established overview category icon visual language; do not imitate a generic 3D mascot. Color palette strictly #15584E for contours and deepest clothing, #1E8F83 for major accents, #ECF8F1 and ivory for small surfaces. Composition: one distinct cohesive scene, centered, square, complete silhouettes with at least 12 percent empty margin; uniform warm white #FFFEFA background. Constraints: a unique pose, prop arrangement and scene for this asset. No lettering, numbers, badges, frames, logos, watermark, photographic texture, gradients or drop shadows. Use only the specified category colors and ivory.",
-      "output": "daily-16-repair-mend.png"
+      "prompt": "Use case: illustration-story. Asset type: a single local illustration for Shendu personal review archive cards. Subject: A person repairs a small chair with a simple hand tool, loose screw and bent knee pose. Style: minimalist editorial LINE illustration matching the existing overview icons: whimsical small oval heads with a single long curved nose and almost no facial detail, elongated rounded ivory arms and legs, oversized simple hands, flowing relaxed curves, very thin continuous category-colored outlines, sparse flat accent clothing and a few geometric paper props. Keep the figure mostly ivory and open negative space, like a delicate ink drawing with a few flat colored shapes. The scene is about the action and props, never a portrait. No angular faceted anatomy, realistic human face, anime, large hair mass, heavy filled silhouette, 3D, texture or shading. Color palette strictly #15584E for contours and deepest clothing, #1E8F83 for major accents, #ECF8F1 and ivory for small surfaces. Composition: one distinct cohesive scene, centered, square, complete silhouettes with at least 12 percent empty margin; uniform warm white #FFFEFA background. Constraints: a unique pose, prop arrangement and scene for this asset. No lettering, numbers, badges, frames, logos, watermark, photographic texture, gradients or drop shadows. Use only the specified category colors and ivory.",
+      "output": "daily-16-repair-mend.png",
+      "terms": [
+        "修补",
+        "修理",
+        "修复",
+        "缝补",
+        "补救"
+      ]
     },
     {
       "id": "daily-17-clear-inbox",
       "type": "daily",
       "label": "清空积压",
-      "status": "planned",
+      "status": "generated-and-reviewed",
       "reference": "../../shendu/public/assets/overview/daily.svg",
       "palette": {
         "dark": "#15584E",
         "accent": "#1E8F83",
         "paper": "#ECF8F1"
       },
-      "prompt": "Use case: illustration-story. Asset type: a single local illustration for Shendu personal review archive cards. Subject: A person sorts three envelopes into two small trays, no letters or symbols on envelopes. Style: flat editorial human illustration, angular ivory figures, thin expressive dark contours, geometric paper props, restrained hand-drawn elegance. Match the established overview category icon visual language; do not imitate a generic 3D mascot. Color palette strictly #15584E for contours and deepest clothing, #1E8F83 for major accents, #ECF8F1 and ivory for small surfaces. Composition: one distinct cohesive scene, centered, square, complete silhouettes with at least 12 percent empty margin; uniform warm white #FFFEFA background. Constraints: a unique pose, prop arrangement and scene for this asset. No lettering, numbers, badges, frames, logos, watermark, photographic texture, gradients or drop shadows. Use only the specified category colors and ivory.",
-      "output": "daily-17-clear-inbox.png"
+      "prompt": "Use case: illustration-story. Asset type: a single local illustration for Shendu personal review archive cards. Subject: A person sorts three envelopes into two small trays, no letters or symbols on envelopes. Style: minimalist editorial LINE illustration matching the existing overview icons: whimsical small oval heads with a single long curved nose and almost no facial detail, elongated rounded ivory arms and legs, oversized simple hands, flowing relaxed curves, very thin continuous category-colored outlines, sparse flat accent clothing and a few geometric paper props. Keep the figure mostly ivory and open negative space, like a delicate ink drawing with a few flat colored shapes. The scene is about the action and props, never a portrait. No angular faceted anatomy, realistic human face, anime, large hair mass, heavy filled silhouette, 3D, texture or shading. Color palette strictly #15584E for contours and deepest clothing, #1E8F83 for major accents, #ECF8F1 and ivory for small surfaces. Composition: one distinct cohesive scene, centered, square, complete silhouettes with at least 12 percent empty margin; uniform warm white #FFFEFA background. Constraints: a unique pose, prop arrangement and scene for this asset. No lettering, numbers, badges, frames, logos, watermark, photographic texture, gradients or drop shadows. Use only the specified category colors and ivory.",
+      "output": "daily-17-clear-inbox.png",
+      "terms": [
+        "邮件",
+        "收件箱",
+        "积压",
+        "清空",
+        "消息"
+      ]
     },
     {
       "id": "daily-18-music-break",
       "type": "daily",
       "label": "音乐与休息",
-      "status": "planned",
+      "status": "generated-and-reviewed",
       "reference": "../../shendu/public/assets/overview/daily.svg",
       "palette": {
         "dark": "#15584E",
         "accent": "#1E8F83",
         "paper": "#ECF8F1"
       },
-      "prompt": "Use case: illustration-story. Asset type: a single local illustration for Shendu personal review archive cards. Subject: A seated person wearing headphones, small turntable and two abstract sound curves. Style: flat editorial human illustration, angular ivory figures, thin expressive dark contours, geometric paper props, restrained hand-drawn elegance. Match the established overview category icon visual language; do not imitate a generic 3D mascot. Color palette strictly #15584E for contours and deepest clothing, #1E8F83 for major accents, #ECF8F1 and ivory for small surfaces. Composition: one distinct cohesive scene, centered, square, complete silhouettes with at least 12 percent empty margin; uniform warm white #FFFEFA background. Constraints: a unique pose, prop arrangement and scene for this asset. No lettering, numbers, badges, frames, logos, watermark, photographic texture, gradients or drop shadows. Use only the specified category colors and ivory.",
-      "output": "daily-18-music-break.png"
+      "prompt": "Use case: illustration-story. Asset type: a single local illustration for Shendu personal review archive cards. Subject: A seated person wearing headphones, small turntable and two abstract sound curves. Style: minimalist editorial LINE illustration matching the existing overview icons: whimsical small oval heads with a single long curved nose and almost no facial detail, elongated rounded ivory arms and legs, oversized simple hands, flowing relaxed curves, very thin continuous category-colored outlines, sparse flat accent clothing and a few geometric paper props. Keep the figure mostly ivory and open negative space, like a delicate ink drawing with a few flat colored shapes. The scene is about the action and props, never a portrait. No angular faceted anatomy, realistic human face, anime, large hair mass, heavy filled silhouette, 3D, texture or shading. Color palette strictly #15584E for contours and deepest clothing, #1E8F83 for major accents, #ECF8F1 and ivory for small surfaces. Composition: one distinct cohesive scene, centered, square, complete silhouettes with at least 12 percent empty margin; uniform warm white #FFFEFA background. Constraints: a unique pose, prop arrangement and scene for this asset. No lettering, numbers, badges, frames, logos, watermark, photographic texture, gradients or drop shadows. Use only the specified category colors and ivory.",
+      "output": "daily-18-music-break.png",
+      "terms": [
+        "音乐",
+        "听歌",
+        "旋律",
+        "乐曲",
+        "耳机"
+      ]
     },
     {
       "id": "daily-19-make-notes",
       "type": "daily",
       "label": "捕捉念头",
-      "status": "planned",
+      "status": "generated-and-reviewed",
       "reference": "../../shendu/public/assets/overview/daily.svg",
       "palette": {
         "dark": "#15584E",
         "accent": "#1E8F83",
         "paper": "#ECF8F1"
       },
-      "prompt": "Use case: illustration-story. Asset type: a single local illustration for Shendu personal review archive cards. Subject: A person pins a blank note on a three-card board with a pencil tucked behind one ear. Style: flat editorial human illustration, angular ivory figures, thin expressive dark contours, geometric paper props, restrained hand-drawn elegance. Match the established overview category icon visual language; do not imitate a generic 3D mascot. Color palette strictly #15584E for contours and deepest clothing, #1E8F83 for major accents, #ECF8F1 and ivory for small surfaces. Composition: one distinct cohesive scene, centered, square, complete silhouettes with at least 12 percent empty margin; uniform warm white #FFFEFA background. Constraints: a unique pose, prop arrangement and scene for this asset. No lettering, numbers, badges, frames, logos, watermark, photographic texture, gradients or drop shadows. Use only the specified category colors and ivory.",
-      "output": "daily-19-make-notes.png"
+      "prompt": "Use case: illustration-story. Asset type: a single local illustration for Shendu personal review archive cards. Subject: A person pins a blank note on a three-card board with a pencil tucked behind one ear. Style: minimalist editorial LINE illustration matching the existing overview icons: whimsical small oval heads with a single long curved nose and almost no facial detail, elongated rounded ivory arms and legs, oversized simple hands, flowing relaxed curves, very thin continuous category-colored outlines, sparse flat accent clothing and a few geometric paper props. Keep the figure mostly ivory and open negative space, like a delicate ink drawing with a few flat colored shapes. The scene is about the action and props, never a portrait. No angular faceted anatomy, realistic human face, anime, large hair mass, heavy filled silhouette, 3D, texture or shading. Color palette strictly #15584E for contours and deepest clothing, #1E8F83 for major accents, #ECF8F1 and ivory for small surfaces. Composition: one distinct cohesive scene, centered, square, complete silhouettes with at least 12 percent empty margin; uniform warm white #FFFEFA background. Constraints: a unique pose, prop arrangement and scene for this asset. No lettering, numbers, badges, frames, logos, watermark, photographic texture, gradients or drop shadows. Use only the specified category colors and ivory.",
+      "output": "daily-19-make-notes.png",
+      "terms": [
+        "笔记",
+        "灵感",
+        "想法",
+        "念头",
+        "摘记"
+      ]
     },
     {
       "id": "daily-20-rain-umbrella",
       "type": "daily",
       "label": "雨中仍前行",
-      "status": "planned",
+      "status": "generated-and-reviewed",
       "reference": "../../shendu/public/assets/overview/daily.svg",
       "palette": {
         "dark": "#15584E",
         "accent": "#1E8F83",
         "paper": "#ECF8F1"
       },
-      "prompt": "Use case: illustration-story. Asset type: a single local illustration for Shendu personal review archive cards. Subject: A person walking beneath an open umbrella, sparse raindrops and short puddle reflection. Style: flat editorial human illustration, angular ivory figures, thin expressive dark contours, geometric paper props, restrained hand-drawn elegance. Match the established overview category icon visual language; do not imitate a generic 3D mascot. Color palette strictly #15584E for contours and deepest clothing, #1E8F83 for major accents, #ECF8F1 and ivory for small surfaces. Composition: one distinct cohesive scene, centered, square, complete silhouettes with at least 12 percent empty margin; uniform warm white #FFFEFA background. Constraints: a unique pose, prop arrangement and scene for this asset. No lettering, numbers, badges, frames, logos, watermark, photographic texture, gradients or drop shadows. Use only the specified category colors and ivory.",
-      "output": "daily-20-rain-umbrella.png"
+      "prompt": "Use case: illustration-story. Asset type: a single local illustration for Shendu personal review archive cards. Subject: A person walking beneath an open umbrella, sparse raindrops and short puddle reflection. Style: minimalist editorial LINE illustration matching the existing overview icons: whimsical small oval heads with a single long curved nose and almost no facial detail, elongated rounded ivory arms and legs, oversized simple hands, flowing relaxed curves, very thin continuous category-colored outlines, sparse flat accent clothing and a few geometric paper props. Keep the figure mostly ivory and open negative space, like a delicate ink drawing with a few flat colored shapes. The scene is about the action and props, never a portrait. No angular faceted anatomy, realistic human face, anime, large hair mass, heavy filled silhouette, 3D, texture or shading. Color palette strictly #15584E for contours and deepest clothing, #1E8F83 for major accents, #ECF8F1 and ivory for small surfaces. Composition: one distinct cohesive scene, centered, square, complete silhouettes with at least 12 percent empty margin; uniform warm white #FFFEFA background. Constraints: a unique pose, prop arrangement and scene for this asset. No lettering, numbers, badges, frames, logos, watermark, photographic texture, gradients or drop shadows. Use only the specified category colors and ivory.",
+      "output": "daily-20-rain-umbrella.png",
+      "terms": [
+        "下雨",
+        "雨天",
+        "雨伞",
+        "挫折",
+        "逆境"
+      ]
     },
     {
       "id": "daily-21-sunset-bench",
       "type": "daily",
       "label": "傍晚的停留",
-      "status": "planned",
+      "status": "generated-and-reviewed",
       "reference": "../../shendu/public/assets/overview/daily.svg",
       "palette": {
         "dark": "#15584E",
         "accent": "#1E8F83",
         "paper": "#ECF8F1"
       },
-      "prompt": "Use case: illustration-story. Asset type: a single local illustration for Shendu personal review archive cards. Subject: A person sitting on a slatted bench looking at a large low sun. Style: flat editorial human illustration, angular ivory figures, thin expressive dark contours, geometric paper props, restrained hand-drawn elegance. Match the established overview category icon visual language; do not imitate a generic 3D mascot. Color palette strictly #15584E for contours and deepest clothing, #1E8F83 for major accents, #ECF8F1 and ivory for small surfaces. Composition: one distinct cohesive scene, centered, square, complete silhouettes with at least 12 percent empty margin; uniform warm white #FFFEFA background. Constraints: a unique pose, prop arrangement and scene for this asset. No lettering, numbers, badges, frames, logos, watermark, photographic texture, gradients or drop shadows. Use only the specified category colors and ivory.",
-      "output": "daily-21-sunset-bench.png"
+      "prompt": "Use case: illustration-story. Asset type: a single local illustration for Shendu personal review archive cards. Subject: A person sitting on a slatted bench looking at a large low sun. Style: minimalist editorial LINE illustration matching the existing overview icons: whimsical small oval heads with a single long curved nose and almost no facial detail, elongated rounded ivory arms and legs, oversized simple hands, flowing relaxed curves, very thin continuous category-colored outlines, sparse flat accent clothing and a few geometric paper props. Keep the figure mostly ivory and open negative space, like a delicate ink drawing with a few flat colored shapes. The scene is about the action and props, never a portrait. No angular faceted anatomy, realistic human face, anime, large hair mass, heavy filled silhouette, 3D, texture or shading. Color palette strictly #15584E for contours and deepest clothing, #1E8F83 for major accents, #ECF8F1 and ivory for small surfaces. Composition: one distinct cohesive scene, centered, square, complete silhouettes with at least 12 percent empty margin; uniform warm white #FFFEFA background. Constraints: a unique pose, prop arrangement and scene for this asset. No lettering, numbers, badges, frames, logos, watermark, photographic texture, gradients or drop shadows. Use only the specified category colors and ivory.",
+      "output": "daily-21-sunset-bench.png",
+      "terms": [
+        "傍晚",
+        "夕阳",
+        "落日",
+        "黄昏",
+        "停留"
+      ]
     },
     {
       "id": "daily-22-steps-stairs",
       "type": "daily",
       "label": "小步向前",
-      "status": "planned",
+      "status": "generated-and-reviewed",
       "reference": "../../shendu/public/assets/overview/daily.svg",
       "palette": {
         "dark": "#15584E",
         "accent": "#1E8F83",
         "paper": "#ECF8F1"
       },
-      "prompt": "Use case: illustration-story. Asset type: a single local illustration for Shendu personal review archive cards. Subject: A person climbs three broad paper steps while holding a modest book. Style: flat editorial human illustration, angular ivory figures, thin expressive dark contours, geometric paper props, restrained hand-drawn elegance. Match the established overview category icon visual language; do not imitate a generic 3D mascot. Color palette strictly #15584E for contours and deepest clothing, #1E8F83 for major accents, #ECF8F1 and ivory for small surfaces. Composition: one distinct cohesive scene, centered, square, complete silhouettes with at least 12 percent empty margin; uniform warm white #FFFEFA background. Constraints: a unique pose, prop arrangement and scene for this asset. No lettering, numbers, badges, frames, logos, watermark, photographic texture, gradients or drop shadows. Use only the specified category colors and ivory.",
-      "output": "daily-22-steps-stairs.png"
+      "prompt": "Use case: illustration-story. Asset type: a single local illustration for Shendu personal review archive cards. Subject: A person climbs three broad paper steps while holding a modest book. Style: minimalist editorial LINE illustration matching the existing overview icons: whimsical small oval heads with a single long curved nose and almost no facial detail, elongated rounded ivory arms and legs, oversized simple hands, flowing relaxed curves, very thin continuous category-colored outlines, sparse flat accent clothing and a few geometric paper props. Keep the figure mostly ivory and open negative space, like a delicate ink drawing with a few flat colored shapes. The scene is about the action and props, never a portrait. No angular faceted anatomy, realistic human face, anime, large hair mass, heavy filled silhouette, 3D, texture or shading. Color palette strictly #15584E for contours and deepest clothing, #1E8F83 for major accents, #ECF8F1 and ivory for small surfaces. Composition: one distinct cohesive scene, centered, square, complete silhouettes with at least 12 percent empty margin; uniform warm white #FFFEFA background. Constraints: a unique pose, prop arrangement and scene for this asset. No lettering, numbers, badges, frames, logos, watermark, photographic texture, gradients or drop shadows. Use only the specified category colors and ivory.",
+      "output": "daily-22-steps-stairs.png",
+      "terms": [
+        "进步",
+        "台阶",
+        "一步",
+        "前进",
+        "小步"
+      ]
     },
     {
       "id": "daily-23-protect-time",
       "type": "daily",
       "label": "留出时间",
-      "status": "planned",
+      "status": "generated-and-reviewed",
       "reference": "../../shendu/public/assets/overview/daily.svg",
       "palette": {
         "dark": "#15584E",
         "accent": "#1E8F83",
         "paper": "#ECF8F1"
       },
-      "prompt": "Use case: illustration-story. Asset type: a single local illustration for Shendu personal review archive cards. Subject: A person gently moves a round hourglass beside a notebook and a folded screen. Style: flat editorial human illustration, angular ivory figures, thin expressive dark contours, geometric paper props, restrained hand-drawn elegance. Match the established overview category icon visual language; do not imitate a generic 3D mascot. Color palette strictly #15584E for contours and deepest clothing, #1E8F83 for major accents, #ECF8F1 and ivory for small surfaces. Composition: one distinct cohesive scene, centered, square, complete silhouettes with at least 12 percent empty margin; uniform warm white #FFFEFA background. Constraints: a unique pose, prop arrangement and scene for this asset. No lettering, numbers, badges, frames, logos, watermark, photographic texture, gradients or drop shadows. Use only the specified category colors and ivory.",
-      "output": "daily-23-protect-time.png"
+      "prompt": "Use case: illustration-story. Asset type: a single local illustration for Shendu personal review archive cards. Subject: A person gently moves a round hourglass beside a notebook and a folded screen. Style: minimalist editorial LINE illustration matching the existing overview icons: whimsical small oval heads with a single long curved nose and almost no facial detail, elongated rounded ivory arms and legs, oversized simple hands, flowing relaxed curves, very thin continuous category-colored outlines, sparse flat accent clothing and a few geometric paper props. Keep the figure mostly ivory and open negative space, like a delicate ink drawing with a few flat colored shapes. The scene is about the action and props, never a portrait. No angular faceted anatomy, realistic human face, anime, large hair mass, heavy filled silhouette, 3D, texture or shading. Color palette strictly #15584E for contours and deepest clothing, #1E8F83 for major accents, #ECF8F1 and ivory for small surfaces. Composition: one distinct cohesive scene, centered, square, complete silhouettes with at least 12 percent empty margin; uniform warm white #FFFEFA background. Constraints: a unique pose, prop arrangement and scene for this asset. No lettering, numbers, badges, frames, logos, watermark, photographic texture, gradients or drop shadows. Use only the specified category colors and ivory.",
+      "output": "daily-23-protect-time.png",
+      "terms": [
+        "时间",
+        "边界",
+        "守住",
+        "拒绝",
+        "打扰"
+      ]
     },
     {
       "id": "daily-24-untangle-thread",
       "type": "daily",
       "label": "理清线索",
-      "status": "planned",
+      "status": "generated-and-reviewed",
       "reference": "../../shendu/public/assets/overview/daily.svg",
       "palette": {
         "dark": "#15584E",
         "accent": "#1E8F83",
         "paper": "#ECF8F1"
       },
-      "prompt": "Use case: illustration-story. Asset type: a single local illustration for Shendu personal review archive cards. Subject: A seated person unravels one loop of thread from a spool, with the loosened line forming a clear curve. Style: flat editorial human illustration, angular ivory figures, thin expressive dark contours, geometric paper props, restrained hand-drawn elegance. Match the established overview category icon visual language; do not imitate a generic 3D mascot. Color palette strictly #15584E for contours and deepest clothing, #1E8F83 for major accents, #ECF8F1 and ivory for small surfaces. Composition: one distinct cohesive scene, centered, square, complete silhouettes with at least 12 percent empty margin; uniform warm white #FFFEFA background. Constraints: a unique pose, prop arrangement and scene for this asset. No lettering, numbers, badges, frames, logos, watermark, photographic texture, gradients or drop shadows. Use only the specified category colors and ivory.",
-      "output": "daily-24-untangle-thread.png"
+      "prompt": "Use case: illustration-story. Asset type: a single local illustration for Shendu personal review archive cards. Subject: A seated person unravels one loop of thread from a spool, with the loosened line forming a clear curve. Style: minimalist editorial LINE illustration matching the existing overview icons: whimsical small oval heads with a single long curved nose and almost no facial detail, elongated rounded ivory arms and legs, oversized simple hands, flowing relaxed curves, very thin continuous category-colored outlines, sparse flat accent clothing and a few geometric paper props. Keep the figure mostly ivory and open negative space, like a delicate ink drawing with a few flat colored shapes. The scene is about the action and props, never a portrait. No angular faceted anatomy, realistic human face, anime, large hair mass, heavy filled silhouette, 3D, texture or shading. Color palette strictly #15584E for contours and deepest clothing, #1E8F83 for major accents, #ECF8F1 and ivory for small surfaces. Composition: one distinct cohesive scene, centered, square, complete silhouettes with at least 12 percent empty margin; uniform warm white #FFFEFA background. Constraints: a unique pose, prop arrangement and scene for this asset. No lettering, numbers, badges, frames, logos, watermark, photographic texture, gradients or drop shadows. Use only the specified category colors and ivory.",
+      "output": "daily-24-untangle-thread.png",
+      "terms": [
+        "理清",
+        "思绪",
+        "纠结",
+        "思考",
+        "头绪"
+      ]
     },
     {
       "id": "daily-25-garden-path",
       "type": "daily",
       "label": "日常的生长",
-      "status": "planned",
+      "status": "generated-and-reviewed",
       "reference": "../../shendu/public/assets/overview/daily.svg",
       "palette": {
         "dark": "#15584E",
         "accent": "#1E8F83",
         "paper": "#ECF8F1"
       },
-      "prompt": "Use case: illustration-story. Asset type: a single local illustration for Shendu personal review archive cards. Subject: A person stands with a hand rake between two potted seedlings on a short garden path. Style: flat editorial human illustration, angular ivory figures, thin expressive dark contours, geometric paper props, restrained hand-drawn elegance. Match the established overview category icon visual language; do not imitate a generic 3D mascot. Color palette strictly #15584E for contours and deepest clothing, #1E8F83 for major accents, #ECF8F1 and ivory for small surfaces. Composition: one distinct cohesive scene, centered, square, complete silhouettes with at least 12 percent empty margin; uniform warm white #FFFEFA background. Constraints: a unique pose, prop arrangement and scene for this asset. No lettering, numbers, badges, frames, logos, watermark, photographic texture, gradients or drop shadows. Use only the specified category colors and ivory.",
-      "output": "daily-25-garden-path.png"
+      "prompt": "Use case: illustration-story. Asset type: a single local illustration for Shendu personal review archive cards. Subject: A person stands with a hand rake between two potted seedlings on a short garden path. Style: minimalist editorial LINE illustration matching the existing overview icons: whimsical small oval heads with a single long curved nose and almost no facial detail, elongated rounded ivory arms and legs, oversized simple hands, flowing relaxed curves, very thin continuous category-colored outlines, sparse flat accent clothing and a few geometric paper props. Keep the figure mostly ivory and open negative space, like a delicate ink drawing with a few flat colored shapes. The scene is about the action and props, never a portrait. No angular faceted anatomy, realistic human face, anime, large hair mass, heavy filled silhouette, 3D, texture or shading. Color palette strictly #15584E for contours and deepest clothing, #1E8F83 for major accents, #ECF8F1 and ivory for small surfaces. Composition: one distinct cohesive scene, centered, square, complete silhouettes with at least 12 percent empty margin; uniform warm white #FFFEFA background. Constraints: a unique pose, prop arrangement and scene for this asset. No lettering, numbers, badges, frames, logos, watermark, photographic texture, gradients or drop shadows. Use only the specified category colors and ivory.",
+      "output": "daily-25-garden-path.png",
+      "terms": [
+        "成长",
+        "园艺",
+        "播种",
+        "耐心",
+        "培育"
+      ]
     },
     {
       "id": "daily-26-quiet-breath",
       "type": "daily",
       "label": "慢下来呼吸",
-      "status": "planned",
+      "status": "generated-and-reviewed",
       "reference": "../../shendu/public/assets/overview/daily.svg",
       "palette": {
         "dark": "#15584E",
         "accent": "#1E8F83",
         "paper": "#ECF8F1"
       },
-      "prompt": "Use case: illustration-story. Asset type: a single local illustration for Shendu personal review archive cards. Subject: A person seated cross-legged on a cushion, small wind line and a single broad leaf. Style: flat editorial human illustration, angular ivory figures, thin expressive dark contours, geometric paper props, restrained hand-drawn elegance. Match the established overview category icon visual language; do not imitate a generic 3D mascot. Color palette strictly #15584E for contours and deepest clothing, #1E8F83 for major accents, #ECF8F1 and ivory for small surfaces. Composition: one distinct cohesive scene, centered, square, complete silhouettes with at least 12 percent empty margin; uniform warm white #FFFEFA background. Constraints: a unique pose, prop arrangement and scene for this asset. No lettering, numbers, badges, frames, logos, watermark, photographic texture, gradients or drop shadows. Use only the specified category colors and ivory.",
-      "output": "daily-26-quiet-breath.png"
+      "prompt": "Use case: illustration-story. Asset type: a single local illustration for Shendu personal review archive cards. Subject: A person seated cross-legged on a cushion, small wind line and a single broad leaf. Style: minimalist editorial LINE illustration matching the existing overview icons: whimsical small oval heads with a single long curved nose and almost no facial detail, elongated rounded ivory arms and legs, oversized simple hands, flowing relaxed curves, very thin continuous category-colored outlines, sparse flat accent clothing and a few geometric paper props. Keep the figure mostly ivory and open negative space, like a delicate ink drawing with a few flat colored shapes. The scene is about the action and props, never a portrait. No angular faceted anatomy, realistic human face, anime, large hair mass, heavy filled silhouette, 3D, texture or shading. Color palette strictly #15584E for contours and deepest clothing, #1E8F83 for major accents, #ECF8F1 and ivory for small surfaces. Composition: one distinct cohesive scene, centered, square, complete silhouettes with at least 12 percent empty margin; uniform warm white #FFFEFA background. Constraints: a unique pose, prop arrangement and scene for this asset. No lettering, numbers, badges, frames, logos, watermark, photographic texture, gradients or drop shadows. Use only the specified category colors and ivory.",
+      "output": "daily-26-quiet-breath.png",
+      "terms": [
+        "呼吸",
+        "冥想",
+        "安静",
+        "平静",
+        "正念"
+      ]
     },
     {
       "id": "daily-27-finish-puzzle",
       "type": "daily",
       "label": "补上一块",
-      "status": "planned",
+      "status": "generated-and-reviewed",
       "reference": "../../shendu/public/assets/overview/daily.svg",
       "palette": {
         "dark": "#15584E",
         "accent": "#1E8F83",
         "paper": "#ECF8F1"
       },
-      "prompt": "Use case: illustration-story. Asset type: a single local illustration for Shendu personal review archive cards. Subject: A person places the last large puzzle piece into a compact incomplete board. Style: flat editorial human illustration, angular ivory figures, thin expressive dark contours, geometric paper props, restrained hand-drawn elegance. Match the established overview category icon visual language; do not imitate a generic 3D mascot. Color palette strictly #15584E for contours and deepest clothing, #1E8F83 for major accents, #ECF8F1 and ivory for small surfaces. Composition: one distinct cohesive scene, centered, square, complete silhouettes with at least 12 percent empty margin; uniform warm white #FFFEFA background. Constraints: a unique pose, prop arrangement and scene for this asset. No lettering, numbers, badges, frames, logos, watermark, photographic texture, gradients or drop shadows. Use only the specified category colors and ivory.",
-      "output": "daily-27-finish-puzzle.png"
+      "prompt": "Use case: illustration-story. Asset type: a single local illustration for Shendu personal review archive cards. Subject: A person places the last large puzzle piece into a compact incomplete board. Style: minimalist editorial LINE illustration matching the existing overview icons: whimsical small oval heads with a single long curved nose and almost no facial detail, elongated rounded ivory arms and legs, oversized simple hands, flowing relaxed curves, very thin continuous category-colored outlines, sparse flat accent clothing and a few geometric paper props. Keep the figure mostly ivory and open negative space, like a delicate ink drawing with a few flat colored shapes. The scene is about the action and props, never a portrait. No angular faceted anatomy, realistic human face, anime, large hair mass, heavy filled silhouette, 3D, texture or shading. Color palette strictly #15584E for contours and deepest clothing, #1E8F83 for major accents, #ECF8F1 and ivory for small surfaces. Composition: one distinct cohesive scene, centered, square, complete silhouettes with at least 12 percent empty margin; uniform warm white #FFFEFA background. Constraints: a unique pose, prop arrangement and scene for this asset. No lettering, numbers, badges, frames, logos, watermark, photographic texture, gradients or drop shadows. Use only the specified category colors and ivory.",
+      "output": "daily-27-finish-puzzle.png",
+      "terms": [
+        "拼图",
+        "拼合",
+        "解决",
+        "连接",
+        "理解"
+      ]
     },
     {
       "id": "daily-28-night-lamp",
       "type": "daily",
       "label": "灯下复盘",
-      "status": "planned",
+      "status": "generated-and-reviewed",
       "reference": "../../shendu/public/assets/overview/daily.svg",
       "palette": {
         "dark": "#15584E",
         "accent": "#1E8F83",
         "paper": "#ECF8F1"
       },
-      "prompt": "Use case: illustration-story. Asset type: a single local illustration for Shendu personal review archive cards. Subject: A person bends over a journal beneath a small pendant lamp, dark window with one star. Style: flat editorial human illustration, angular ivory figures, thin expressive dark contours, geometric paper props, restrained hand-drawn elegance. Match the established overview category icon visual language; do not imitate a generic 3D mascot. Color palette strictly #15584E for contours and deepest clothing, #1E8F83 for major accents, #ECF8F1 and ivory for small surfaces. Composition: one distinct cohesive scene, centered, square, complete silhouettes with at least 12 percent empty margin; uniform warm white #FFFEFA background. Constraints: a unique pose, prop arrangement and scene for this asset. No lettering, numbers, badges, frames, logos, watermark, photographic texture, gradients or drop shadows. Use only the specified category colors and ivory.",
-      "output": "daily-28-night-lamp.png"
+      "prompt": "Use case: illustration-story. Asset type: a single local illustration for Shendu personal review archive cards. Subject: A person bends over a journal beneath a small pendant lamp, dark window with one star. Style: minimalist editorial LINE illustration matching the existing overview icons: whimsical small oval heads with a single long curved nose and almost no facial detail, elongated rounded ivory arms and legs, oversized simple hands, flowing relaxed curves, very thin continuous category-colored outlines, sparse flat accent clothing and a few geometric paper props. Keep the figure mostly ivory and open negative space, like a delicate ink drawing with a few flat colored shapes. The scene is about the action and props, never a portrait. No angular faceted anatomy, realistic human face, anime, large hair mass, heavy filled silhouette, 3D, texture or shading. Color palette strictly #15584E for contours and deepest clothing, #1E8F83 for major accents, #ECF8F1 and ivory for small surfaces. Composition: one distinct cohesive scene, centered, square, complete silhouettes with at least 12 percent empty margin; uniform warm white #FFFEFA background. Constraints: a unique pose, prop arrangement and scene for this asset. No lettering, numbers, badges, frames, logos, watermark, photographic texture, gradients or drop shadows. Use only the specified category colors and ivory.",
+      "output": "daily-28-night-lamp.png",
+      "terms": [
+        "夜晚",
+        "台灯",
+        "复盘",
+        "回顾",
+        "夜读"
+      ]
     },
     {
       "id": "daily-29-share-help",
       "type": "daily",
       "label": "伸出援手",
-      "status": "planned",
+      "status": "generated-and-reviewed",
       "reference": "../../shendu/public/assets/overview/daily.svg",
       "palette": {
         "dark": "#15584E",
         "accent": "#1E8F83",
         "paper": "#ECF8F1"
       },
-      "prompt": "Use case: illustration-story. Asset type: a single local illustration for Shendu personal review archive cards. Subject: One person offers a box to another across a small gap, complementary leaning poses. Style: flat editorial human illustration, angular ivory figures, thin expressive dark contours, geometric paper props, restrained hand-drawn elegance. Match the established overview category icon visual language; do not imitate a generic 3D mascot. Color palette strictly #15584E for contours and deepest clothing, #1E8F83 for major accents, #ECF8F1 and ivory for small surfaces. Composition: one distinct cohesive scene, centered, square, complete silhouettes with at least 12 percent empty margin; uniform warm white #FFFEFA background. Constraints: a unique pose, prop arrangement and scene for this asset. No lettering, numbers, badges, frames, logos, watermark, photographic texture, gradients or drop shadows. Use only the specified category colors and ivory.",
-      "output": "daily-29-share-help.png"
+      "prompt": "Use case: illustration-story. Asset type: a single local illustration for Shendu personal review archive cards. Subject: One person offers a box to another across a small gap, complementary leaning poses. Style: minimalist editorial LINE illustration matching the existing overview icons: whimsical small oval heads with a single long curved nose and almost no facial detail, elongated rounded ivory arms and legs, oversized simple hands, flowing relaxed curves, very thin continuous category-colored outlines, sparse flat accent clothing and a few geometric paper props. Keep the figure mostly ivory and open negative space, like a delicate ink drawing with a few flat colored shapes. The scene is about the action and props, never a portrait. No angular faceted anatomy, realistic human face, anime, large hair mass, heavy filled silhouette, 3D, texture or shading. Color palette strictly #15584E for contours and deepest clothing, #1E8F83 for major accents, #ECF8F1 and ivory for small surfaces. Composition: one distinct cohesive scene, centered, square, complete silhouettes with at least 12 percent empty margin; uniform warm white #FFFEFA background. Constraints: a unique pose, prop arrangement and scene for this asset. No lettering, numbers, badges, frames, logos, watermark, photographic texture, gradients or drop shadows. Use only the specified category colors and ivory.",
+      "output": "daily-29-share-help.png",
+      "terms": [
+        "帮助",
+        "分享",
+        "支持",
+        "感谢",
+        "协作"
+      ]
     },
     {
       "id": "daily-30-tomorrow-bag",
       "type": "daily",
       "label": "准备明天",
-      "status": "planned",
+      "status": "generated-and-reviewed",
       "reference": "../../shendu/public/assets/overview/daily.svg",
       "palette": {
         "dark": "#15584E",
         "accent": "#1E8F83",
         "paper": "#ECF8F1"
       },
-      "prompt": "Use case: illustration-story. Asset type: a single local illustration for Shendu personal review archive cards. Subject: A person packs a notebook and water bottle into an open bag near a doorway. Style: flat editorial human illustration, angular ivory figures, thin expressive dark contours, geometric paper props, restrained hand-drawn elegance. Match the established overview category icon visual language; do not imitate a generic 3D mascot. Color palette strictly #15584E for contours and deepest clothing, #1E8F83 for major accents, #ECF8F1 and ivory for small surfaces. Composition: one distinct cohesive scene, centered, square, complete silhouettes with at least 12 percent empty margin; uniform warm white #FFFEFA background. Constraints: a unique pose, prop arrangement and scene for this asset. No lettering, numbers, badges, frames, logos, watermark, photographic texture, gradients or drop shadows. Use only the specified category colors and ivory.",
-      "output": "daily-30-tomorrow-bag.png"
+      "prompt": "Use case: illustration-story. Asset type: a single local illustration for Shendu personal review archive cards. Subject: A person packs a notebook and water bottle into an open bag near a doorway. Style: minimalist editorial LINE illustration matching the existing overview icons: whimsical small oval heads with a single long curved nose and almost no facial detail, elongated rounded ivory arms and legs, oversized simple hands, flowing relaxed curves, very thin continuous category-colored outlines, sparse flat accent clothing and a few geometric paper props. Keep the figure mostly ivory and open negative space, like a delicate ink drawing with a few flat colored shapes. The scene is about the action and props, never a portrait. No angular faceted anatomy, realistic human face, anime, large hair mass, heavy filled silhouette, 3D, texture or shading. Color palette strictly #15584E for contours and deepest clothing, #1E8F83 for major accents, #ECF8F1 and ivory for small surfaces. Composition: one distinct cohesive scene, centered, square, complete silhouettes with at least 12 percent empty margin; uniform warm white #FFFEFA background. Constraints: a unique pose, prop arrangement and scene for this asset. No lettering, numbers, badges, frames, logos, watermark, photographic texture, gradients or drop shadows. Use only the specified category colors and ivory.",
+      "output": "daily-30-tomorrow-bag.png",
+      "terms": [
+        "明天",
+        "准备",
+        "出发",
+        "背包",
+        "行前"
+      ]
     },
     {
       "id": "weekly-01-seven-pages",
       "type": "weekly",
       "label": "一周的七页",
-      "status": "planned",
+      "status": "generated-and-reviewed",
       "reference": "../../shendu/public/assets/overview/weekly.svg",
       "palette": {
         "dark": "#8F4335",
         "accent": "#DB7B61",
         "paper": "#FFF2EC"
       },
-      "prompt": "Use case: illustration-story. Asset type: a single local illustration for Shendu personal review archive cards. Subject: A seated person fans seven blank notebook pages across a table. Style: flat editorial human illustration, angular ivory figures, thin expressive dark contours, geometric paper props, restrained hand-drawn elegance. Match the established overview category icon visual language; do not imitate a generic 3D mascot. Color palette strictly #8F4335 for contours and deepest clothing, #DB7B61 for major accents, #FFF2EC and ivory for small surfaces. Composition: one distinct cohesive scene, centered, square, complete silhouettes with at least 12 percent empty margin; uniform warm white #FFFEFA background. Constraints: a unique pose, prop arrangement and scene for this asset. No lettering, numbers, badges, frames, logos, watermark, photographic texture, gradients or drop shadows. Avoid all teal or green clothing, plants, props and contours; use the specified category colors instead.",
-      "output": "weekly-01-seven-pages.png"
+      "prompt": "Use case: illustration-story. Asset type: a single local illustration for Shendu personal review archive cards. Subject: A seated person fans seven blank notebook pages across a table. Style: minimalist editorial LINE illustration matching the existing overview icons: whimsical small oval heads with a single long curved nose and almost no facial detail, elongated rounded ivory arms and legs, oversized simple hands, flowing relaxed curves, very thin continuous category-colored outlines, sparse flat accent clothing and a few geometric paper props. Keep the figure mostly ivory and open negative space, like a delicate ink drawing with a few flat colored shapes. The scene is about the action and props, never a portrait. No angular faceted anatomy, realistic human face, anime, large hair mass, heavy filled silhouette, 3D, texture or shading. Color palette strictly #8F4335 for contours and deepest clothing, #DB7B61 for major accents, #FFF2EC and ivory for small surfaces. Composition: one distinct cohesive scene, centered, square, complete silhouettes with at least 12 percent empty margin; uniform warm white #FFFEFA background. Constraints: a unique pose, prop arrangement and scene for this asset. No lettering, numbers, badges, frames, logos, watermark, photographic texture, gradients or drop shadows. Avoid all teal or green clothing, plants, props and contours; use the specified category colors instead.",
+      "output": "weekly-01-seven-pages.png",
+      "terms": [
+        "本周",
+        "一周",
+        "回顾",
+        "周记",
+        "总结"
+      ]
     },
     {
       "id": "weekly-02-weekly-pattern",
       "type": "weekly",
       "label": "找到重复的线索",
-      "status": "planned",
+      "status": "generated-and-reviewed",
       "reference": "../../shendu/public/assets/overview/weekly.svg",
       "palette": {
         "dark": "#8F4335",
         "accent": "#DB7B61",
         "paper": "#FFF2EC"
       },
-      "prompt": "Use case: illustration-story. Asset type: a single local illustration for Shendu personal review archive cards. Subject: A person examines repeated small shapes through a round magnifying glass. Style: flat editorial human illustration, angular ivory figures, thin expressive dark contours, geometric paper props, restrained hand-drawn elegance. Match the established overview category icon visual language; do not imitate a generic 3D mascot. Color palette strictly #8F4335 for contours and deepest clothing, #DB7B61 for major accents, #FFF2EC and ivory for small surfaces. Composition: one distinct cohesive scene, centered, square, complete silhouettes with at least 12 percent empty margin; uniform warm white #FFFEFA background. Constraints: a unique pose, prop arrangement and scene for this asset. No lettering, numbers, badges, frames, logos, watermark, photographic texture, gradients or drop shadows. Avoid all teal or green clothing, plants, props and contours; use the specified category colors instead.",
-      "output": "weekly-02-weekly-pattern.png"
+      "prompt": "Use case: illustration-story. Asset type: a single local illustration for Shendu personal review archive cards. Subject: A person examines repeated small shapes through a round magnifying glass. Style: minimalist editorial LINE illustration matching the existing overview icons: whimsical small oval heads with a single long curved nose and almost no facial detail, elongated rounded ivory arms and legs, oversized simple hands, flowing relaxed curves, very thin continuous category-colored outlines, sparse flat accent clothing and a few geometric paper props. Keep the figure mostly ivory and open negative space, like a delicate ink drawing with a few flat colored shapes. The scene is about the action and props, never a portrait. No angular faceted anatomy, realistic human face, anime, large hair mass, heavy filled silhouette, 3D, texture or shading. Color palette strictly #8F4335 for contours and deepest clothing, #DB7B61 for major accents, #FFF2EC and ivory for small surfaces. Composition: one distinct cohesive scene, centered, square, complete silhouettes with at least 12 percent empty margin; uniform warm white #FFFEFA background. Constraints: a unique pose, prop arrangement and scene for this asset. No lettering, numbers, badges, frames, logos, watermark, photographic texture, gradients or drop shadows. Avoid all teal or green clothing, plants, props and contours; use the specified category colors instead.",
+      "output": "weekly-02-weekly-pattern.png",
+      "terms": [
+        "规律",
+        "反复",
+        "模式",
+        "原因",
+        "重复"
+      ]
     },
     {
       "id": "weekly-03-week-priorities",
       "type": "weekly",
       "label": "为重要的事留位",
-      "status": "planned",
+      "status": "generated-and-reviewed",
       "reference": "../../shendu/public/assets/overview/weekly.svg",
       "palette": {
         "dark": "#8F4335",
         "accent": "#DB7B61",
         "paper": "#FFF2EC"
       },
-      "prompt": "Use case: illustration-story. Asset type: a single local illustration for Shendu personal review archive cards. Subject: A person moves three large priority blocks onto a short shelf. Style: flat editorial human illustration, angular ivory figures, thin expressive dark contours, geometric paper props, restrained hand-drawn elegance. Match the established overview category icon visual language; do not imitate a generic 3D mascot. Color palette strictly #8F4335 for contours and deepest clothing, #DB7B61 for major accents, #FFF2EC and ivory for small surfaces. Composition: one distinct cohesive scene, centered, square, complete silhouettes with at least 12 percent empty margin; uniform warm white #FFFEFA background. Constraints: a unique pose, prop arrangement and scene for this asset. No lettering, numbers, badges, frames, logos, watermark, photographic texture, gradients or drop shadows. Avoid all teal or green clothing, plants, props and contours; use the specified category colors instead.",
-      "output": "weekly-03-week-priorities.png"
+      "prompt": "Use case: illustration-story. Asset type: a single local illustration for Shendu personal review archive cards. Subject: A person moves three large priority blocks onto a short shelf. Style: minimalist editorial LINE illustration matching the existing overview icons: whimsical small oval heads with a single long curved nose and almost no facial detail, elongated rounded ivory arms and legs, oversized simple hands, flowing relaxed curves, very thin continuous category-colored outlines, sparse flat accent clothing and a few geometric paper props. Keep the figure mostly ivory and open negative space, like a delicate ink drawing with a few flat colored shapes. The scene is about the action and props, never a portrait. No angular faceted anatomy, realistic human face, anime, large hair mass, heavy filled silhouette, 3D, texture or shading. Color palette strictly #8F4335 for contours and deepest clothing, #DB7B61 for major accents, #FFF2EC and ivory for small surfaces. Composition: one distinct cohesive scene, centered, square, complete silhouettes with at least 12 percent empty margin; uniform warm white #FFFEFA background. Constraints: a unique pose, prop arrangement and scene for this asset. No lettering, numbers, badges, frames, logos, watermark, photographic texture, gradients or drop shadows. Avoid all teal or green clothing, plants, props and contours; use the specified category colors instead.",
+      "output": "weekly-03-week-priorities.png",
+      "terms": [
+        "重点",
+        "优先",
+        "重要",
+        "取舍",
+        "排序"
+      ]
     },
     {
       "id": "weekly-04-unfinished-carry",
       "type": "weekly",
       "label": "把未完带到下周",
-      "status": "planned",
+      "status": "generated-and-reviewed",
       "reference": "../../shendu/public/assets/overview/weekly.svg",
       "palette": {
         "dark": "#8F4335",
         "accent": "#DB7B61",
         "paper": "#FFF2EC"
       },
-      "prompt": "Use case: illustration-story. Asset type: a single local illustration for Shendu personal review archive cards. Subject: A person carries a small open crate of blank cards across a low bridge. Style: flat editorial human illustration, angular ivory figures, thin expressive dark contours, geometric paper props, restrained hand-drawn elegance. Match the established overview category icon visual language; do not imitate a generic 3D mascot. Color palette strictly #8F4335 for contours and deepest clothing, #DB7B61 for major accents, #FFF2EC and ivory for small surfaces. Composition: one distinct cohesive scene, centered, square, complete silhouettes with at least 12 percent empty margin; uniform warm white #FFFEFA background. Constraints: a unique pose, prop arrangement and scene for this asset. No lettering, numbers, badges, frames, logos, watermark, photographic texture, gradients or drop shadows. Avoid all teal or green clothing, plants, props and contours; use the specified category colors instead.",
-      "output": "weekly-04-unfinished-carry.png"
+      "prompt": "Use case: illustration-story. Asset type: a single local illustration for Shendu personal review archive cards. Subject: A person carries a small open crate of blank cards across a low bridge. Style: minimalist editorial LINE illustration matching the existing overview icons: whimsical small oval heads with a single long curved nose and almost no facial detail, elongated rounded ivory arms and legs, oversized simple hands, flowing relaxed curves, very thin continuous category-colored outlines, sparse flat accent clothing and a few geometric paper props. Keep the figure mostly ivory and open negative space, like a delicate ink drawing with a few flat colored shapes. The scene is about the action and props, never a portrait. No angular faceted anatomy, realistic human face, anime, large hair mass, heavy filled silhouette, 3D, texture or shading. Color palette strictly #8F4335 for contours and deepest clothing, #DB7B61 for major accents, #FFF2EC and ivory for small surfaces. Composition: one distinct cohesive scene, centered, square, complete silhouettes with at least 12 percent empty margin; uniform warm white #FFFEFA background. Constraints: a unique pose, prop arrangement and scene for this asset. No lettering, numbers, badges, frames, logos, watermark, photographic texture, gradients or drop shadows. Avoid all teal or green clothing, plants, props and contours; use the specified category colors instead.",
+      "output": "weekly-04-unfinished-carry.png",
+      "terms": [
+        "未完成",
+        "遗留",
+        "延后",
+        "积压",
+        "搁置"
+      ]
     },
     {
       "id": "weekly-05-week-balance",
       "type": "weekly",
       "label": "工作与休息",
-      "status": "planned",
+      "status": "generated-and-reviewed",
       "reference": "../../shendu/public/assets/overview/weekly.svg",
       "palette": {
         "dark": "#8F4335",
         "accent": "#DB7B61",
         "paper": "#FFF2EC"
       },
-      "prompt": "Use case: illustration-story. Asset type: a single local illustration for Shendu personal review archive cards. Subject: A person adjusts a balance scale with a book on one side and a cushion on the other. Style: flat editorial human illustration, angular ivory figures, thin expressive dark contours, geometric paper props, restrained hand-drawn elegance. Match the established overview category icon visual language; do not imitate a generic 3D mascot. Color palette strictly #8F4335 for contours and deepest clothing, #DB7B61 for major accents, #FFF2EC and ivory for small surfaces. Composition: one distinct cohesive scene, centered, square, complete silhouettes with at least 12 percent empty margin; uniform warm white #FFFEFA background. Constraints: a unique pose, prop arrangement and scene for this asset. No lettering, numbers, badges, frames, logos, watermark, photographic texture, gradients or drop shadows. Avoid all teal or green clothing, plants, props and contours; use the specified category colors instead.",
-      "output": "weekly-05-week-balance.png"
+      "prompt": "Use case: illustration-story. Asset type: a single local illustration for Shendu personal review archive cards. Subject: A person adjusts a balance scale with a book on one side and a cushion on the other. Style: minimalist editorial LINE illustration matching the existing overview icons: whimsical small oval heads with a single long curved nose and almost no facial detail, elongated rounded ivory arms and legs, oversized simple hands, flowing relaxed curves, very thin continuous category-colored outlines, sparse flat accent clothing and a few geometric paper props. Keep the figure mostly ivory and open negative space, like a delicate ink drawing with a few flat colored shapes. The scene is about the action and props, never a portrait. No angular faceted anatomy, realistic human face, anime, large hair mass, heavy filled silhouette, 3D, texture or shading. Color palette strictly #8F4335 for contours and deepest clothing, #DB7B61 for major accents, #FFF2EC and ivory for small surfaces. Composition: one distinct cohesive scene, centered, square, complete silhouettes with at least 12 percent empty margin; uniform warm white #FFFEFA background. Constraints: a unique pose, prop arrangement and scene for this asset. No lettering, numbers, badges, frames, logos, watermark, photographic texture, gradients or drop shadows. Avoid all teal or green clothing, plants, props and contours; use the specified category colors instead.",
+      "output": "weekly-05-week-balance.png",
+      "terms": [
+        "休息",
+        "平衡",
+        "工作",
+        "生活",
+        "精力"
+      ]
     },
     {
       "id": "weekly-06-week-path",
       "type": "weekly",
       "label": "回看走过的路",
-      "status": "planned",
+      "status": "generated-and-reviewed",
       "reference": "../../shendu/public/assets/overview/weekly.svg",
       "palette": {
         "dark": "#8F4335",
         "accent": "#DB7B61",
         "paper": "#FFF2EC"
       },
-      "prompt": "Use case: illustration-story. Asset type: a single local illustration for Shendu personal review archive cards. Subject: A person looks back along seven stepping stones with a notebook in hand. Style: flat editorial human illustration, angular ivory figures, thin expressive dark contours, geometric paper props, restrained hand-drawn elegance. Match the established overview category icon visual language; do not imitate a generic 3D mascot. Color palette strictly #8F4335 for contours and deepest clothing, #DB7B61 for major accents, #FFF2EC and ivory for small surfaces. Composition: one distinct cohesive scene, centered, square, complete silhouettes with at least 12 percent empty margin; uniform warm white #FFFEFA background. Constraints: a unique pose, prop arrangement and scene for this asset. No lettering, numbers, badges, frames, logos, watermark, photographic texture, gradients or drop shadows. Avoid all teal or green clothing, plants, props and contours; use the specified category colors instead.",
-      "output": "weekly-06-week-path.png"
+      "prompt": "Use case: illustration-story. Asset type: a single local illustration for Shendu personal review archive cards. Subject: A person looks back along seven stepping stones with a notebook in hand. Style: minimalist editorial LINE illustration matching the existing overview icons: whimsical small oval heads with a single long curved nose and almost no facial detail, elongated rounded ivory arms and legs, oversized simple hands, flowing relaxed curves, very thin continuous category-colored outlines, sparse flat accent clothing and a few geometric paper props. Keep the figure mostly ivory and open negative space, like a delicate ink drawing with a few flat colored shapes. The scene is about the action and props, never a portrait. No angular faceted anatomy, realistic human face, anime, large hair mass, heavy filled silhouette, 3D, texture or shading. Color palette strictly #8F4335 for contours and deepest clothing, #DB7B61 for major accents, #FFF2EC and ivory for small surfaces. Composition: one distinct cohesive scene, centered, square, complete silhouettes with at least 12 percent empty margin; uniform warm white #FFFEFA background. Constraints: a unique pose, prop arrangement and scene for this asset. No lettering, numbers, badges, frames, logos, watermark, photographic texture, gradients or drop shadows. Avoid all teal or green clothing, plants, props and contours; use the specified category colors instead.",
+      "output": "weekly-06-week-path.png",
+      "terms": [
+        "进展",
+        "走过",
+        "过程",
+        "经历",
+        "轨迹"
+      ]
     },
     {
       "id": "weekly-07-week-next",
       "type": "weekly",
       "label": "铺好下一周",
-      "status": "planned",
+      "status": "generated-and-reviewed",
       "reference": "../../shendu/public/assets/overview/weekly.svg",
       "palette": {
         "dark": "#8F4335",
         "accent": "#DB7B61",
         "paper": "#FFF2EC"
       },
-      "prompt": "Use case: illustration-story. Asset type: a single local illustration for Shendu personal review archive cards. Subject: A person unrolls a blank planner beside a small compass and pencil. Style: flat editorial human illustration, angular ivory figures, thin expressive dark contours, geometric paper props, restrained hand-drawn elegance. Match the established overview category icon visual language; do not imitate a generic 3D mascot. Color palette strictly #8F4335 for contours and deepest clothing, #DB7B61 for major accents, #FFF2EC and ivory for small surfaces. Composition: one distinct cohesive scene, centered, square, complete silhouettes with at least 12 percent empty margin; uniform warm white #FFFEFA background. Constraints: a unique pose, prop arrangement and scene for this asset. No lettering, numbers, badges, frames, logos, watermark, photographic texture, gradients or drop shadows. Avoid all teal or green clothing, plants, props and contours; use the specified category colors instead.",
-      "output": "weekly-07-week-next.png"
+      "prompt": "Use case: illustration-story. Asset type: a single local illustration for Shendu personal review archive cards. Subject: A person unrolls a blank planner beside a small compass and pencil. Style: minimalist editorial LINE illustration matching the existing overview icons: whimsical small oval heads with a single long curved nose and almost no facial detail, elongated rounded ivory arms and legs, oversized simple hands, flowing relaxed curves, very thin continuous category-colored outlines, sparse flat accent clothing and a few geometric paper props. Keep the figure mostly ivory and open negative space, like a delicate ink drawing with a few flat colored shapes. The scene is about the action and props, never a portrait. No angular faceted anatomy, realistic human face, anime, large hair mass, heavy filled silhouette, 3D, texture or shading. Color palette strictly #8F4335 for contours and deepest clothing, #DB7B61 for major accents, #FFF2EC and ivory for small surfaces. Composition: one distinct cohesive scene, centered, square, complete silhouettes with at least 12 percent empty margin; uniform warm white #FFFEFA background. Constraints: a unique pose, prop arrangement and scene for this asset. No lettering, numbers, badges, frames, logos, watermark, photographic texture, gradients or drop shadows. Avoid all teal or green clothing, plants, props and contours; use the specified category colors instead.",
+      "output": "weekly-07-week-next.png",
+      "terms": [
+        "下周",
+        "计划",
+        "下一步",
+        "安排",
+        "行动"
+      ]
     },
     {
       "id": "monthly-01-month-harvest",
       "type": "monthly",
       "label": "收拢月度成果",
-      "status": "planned",
+      "status": "generated-and-reviewed",
       "reference": "../../shendu/public/assets/overview/monthly.svg",
       "palette": {
         "dark": "#875B21",
         "accent": "#D79A34",
         "paper": "#FFF7E5"
       },
-      "prompt": "Use case: illustration-story. Asset type: a single local illustration for Shendu personal review archive cards. Subject: A person collects three large seed pods into a shallow basket beside a blank ledger. Style: flat editorial human illustration, angular ivory figures, thin expressive dark contours, geometric paper props, restrained hand-drawn elegance. Match the established overview category icon visual language; do not imitate a generic 3D mascot. Color palette strictly #875B21 for contours and deepest clothing, #D79A34 for major accents, #FFF7E5 and ivory for small surfaces. Composition: one distinct cohesive scene, centered, square, complete silhouettes with at least 12 percent empty margin; uniform warm white #FFFEFA background. Constraints: a unique pose, prop arrangement and scene for this asset. No lettering, numbers, badges, frames, logos, watermark, photographic texture, gradients or drop shadows. Avoid all teal or green clothing, plants, props and contours; use the specified category colors instead.",
-      "output": "monthly-01-month-harvest.png"
+      "prompt": "Use case: illustration-story. Asset type: a single local illustration for Shendu personal review archive cards. Subject: A person collects three large seed pods into a shallow basket beside a blank ledger. Style: minimalist editorial LINE illustration matching the existing overview icons: whimsical small oval heads with a single long curved nose and almost no facial detail, elongated rounded ivory arms and legs, oversized simple hands, flowing relaxed curves, very thin continuous category-colored outlines, sparse flat accent clothing and a few geometric paper props. Keep the figure mostly ivory and open negative space, like a delicate ink drawing with a few flat colored shapes. The scene is about the action and props, never a portrait. No angular faceted anatomy, realistic human face, anime, large hair mass, heavy filled silhouette, 3D, texture or shading. Color palette strictly #875B21 for contours and deepest clothing, #D79A34 for major accents, #FFF7E5 and ivory for small surfaces. Composition: one distinct cohesive scene, centered, square, complete silhouettes with at least 12 percent empty margin; uniform warm white #FFFEFA background. Constraints: a unique pose, prop arrangement and scene for this asset. No lettering, numbers, badges, frames, logos, watermark, photographic texture, gradients or drop shadows. Avoid all teal or green clothing, plants, props and contours; use the specified category colors instead.",
+      "output": "monthly-01-month-harvest.png",
+      "terms": [
+        "成果",
+        "收获",
+        "结果",
+        "成就",
+        "完成"
+      ]
     },
     {
       "id": "monthly-02-month-system",
       "type": "monthly",
       "label": "整理做事系统",
-      "status": "planned",
+      "status": "generated-and-reviewed",
       "reference": "../../shendu/public/assets/overview/monthly.svg",
       "palette": {
         "dark": "#875B21",
         "accent": "#D79A34",
         "paper": "#FFF7E5"
       },
-      "prompt": "Use case: illustration-story. Asset type: a single local illustration for Shendu personal review archive cards. Subject: A person aligns three interlocking large gears beside a low workbench. Style: flat editorial human illustration, angular ivory figures, thin expressive dark contours, geometric paper props, restrained hand-drawn elegance. Match the established overview category icon visual language; do not imitate a generic 3D mascot. Color palette strictly #875B21 for contours and deepest clothing, #D79A34 for major accents, #FFF7E5 and ivory for small surfaces. Composition: one distinct cohesive scene, centered, square, complete silhouettes with at least 12 percent empty margin; uniform warm white #FFFEFA background. Constraints: a unique pose, prop arrangement and scene for this asset. No lettering, numbers, badges, frames, logos, watermark, photographic texture, gradients or drop shadows. Avoid all teal or green clothing, plants, props and contours; use the specified category colors instead.",
-      "output": "monthly-02-month-system.png"
+      "prompt": "Use case: illustration-story. Asset type: a single local illustration for Shendu personal review archive cards. Subject: A person aligns three interlocking large gears beside a low workbench. Style: minimalist editorial LINE illustration matching the existing overview icons: whimsical small oval heads with a single long curved nose and almost no facial detail, elongated rounded ivory arms and legs, oversized simple hands, flowing relaxed curves, very thin continuous category-colored outlines, sparse flat accent clothing and a few geometric paper props. Keep the figure mostly ivory and open negative space, like a delicate ink drawing with a few flat colored shapes. The scene is about the action and props, never a portrait. No angular faceted anatomy, realistic human face, anime, large hair mass, heavy filled silhouette, 3D, texture or shading. Color palette strictly #875B21 for contours and deepest clothing, #D79A34 for major accents, #FFF7E5 and ivory for small surfaces. Composition: one distinct cohesive scene, centered, square, complete silhouettes with at least 12 percent empty margin; uniform warm white #FFFEFA background. Constraints: a unique pose, prop arrangement and scene for this asset. No lettering, numbers, badges, frames, logos, watermark, photographic texture, gradients or drop shadows. Avoid all teal or green clothing, plants, props and contours; use the specified category colors instead.",
+      "output": "monthly-02-month-system.png",
+      "terms": [
+        "系统",
+        "流程",
+        "方法",
+        "机制",
+        "整理"
+      ]
     },
     {
       "id": "monthly-03-month-budget",
       "type": "monthly",
       "label": "看清资源去向",
-      "status": "planned",
+      "status": "generated-and-reviewed",
       "reference": "../../shendu/public/assets/overview/monthly.svg",
       "palette": {
         "dark": "#875B21",
         "accent": "#D79A34",
         "paper": "#FFF7E5"
       },
-      "prompt": "Use case: illustration-story. Asset type: a single local illustration for Shendu personal review archive cards. Subject: A seated person sorts round counters into three glass jars with blank tags. Style: flat editorial human illustration, angular ivory figures, thin expressive dark contours, geometric paper props, restrained hand-drawn elegance. Match the established overview category icon visual language; do not imitate a generic 3D mascot. Color palette strictly #875B21 for contours and deepest clothing, #D79A34 for major accents, #FFF7E5 and ivory for small surfaces. Composition: one distinct cohesive scene, centered, square, complete silhouettes with at least 12 percent empty margin; uniform warm white #FFFEFA background. Constraints: a unique pose, prop arrangement and scene for this asset. No lettering, numbers, badges, frames, logos, watermark, photographic texture, gradients or drop shadows. Avoid all teal or green clothing, plants, props and contours; use the specified category colors instead.",
-      "output": "monthly-03-month-budget.png"
+      "prompt": "Use case: illustration-story. Asset type: a single local illustration for Shendu personal review archive cards. Subject: A seated person sorts round counters into three glass jars with blank tags. Style: minimalist editorial LINE illustration matching the existing overview icons: whimsical small oval heads with a single long curved nose and almost no facial detail, elongated rounded ivory arms and legs, oversized simple hands, flowing relaxed curves, very thin continuous category-colored outlines, sparse flat accent clothing and a few geometric paper props. Keep the figure mostly ivory and open negative space, like a delicate ink drawing with a few flat colored shapes. The scene is about the action and props, never a portrait. No angular faceted anatomy, realistic human face, anime, large hair mass, heavy filled silhouette, 3D, texture or shading. Color palette strictly #875B21 for contours and deepest clothing, #D79A34 for major accents, #FFF7E5 and ivory for small surfaces. Composition: one distinct cohesive scene, centered, square, complete silhouettes with at least 12 percent empty margin; uniform warm white #FFFEFA background. Constraints: a unique pose, prop arrangement and scene for this asset. No lettering, numbers, badges, frames, logos, watermark, photographic texture, gradients or drop shadows. Avoid all teal or green clothing, plants, props and contours; use the specified category colors instead.",
+      "output": "monthly-03-month-budget.png",
+      "terms": [
+        "预算",
+        "资源",
+        "支出",
+        "投入",
+        "开销"
+      ]
     },
     {
       "id": "monthly-04-month-habit",
       "type": "monthly",
       "label": "让习惯成形",
-      "status": "planned",
+      "status": "generated-and-reviewed",
       "reference": "../../shendu/public/assets/overview/monthly.svg",
       "palette": {
         "dark": "#875B21",
         "accent": "#D79A34",
         "paper": "#FFF7E5"
       },
-      "prompt": "Use case: illustration-story. Asset type: a single local illustration for Shendu personal review archive cards. Subject: A person tends a row of four seedlings at different growth stages. Style: flat editorial human illustration, angular ivory figures, thin expressive dark contours, geometric paper props, restrained hand-drawn elegance. Match the established overview category icon visual language; do not imitate a generic 3D mascot. Color palette strictly #875B21 for contours and deepest clothing, #D79A34 for major accents, #FFF7E5 and ivory for small surfaces. Composition: one distinct cohesive scene, centered, square, complete silhouettes with at least 12 percent empty margin; uniform warm white #FFFEFA background. Constraints: a unique pose, prop arrangement and scene for this asset. No lettering, numbers, badges, frames, logos, watermark, photographic texture, gradients or drop shadows. Avoid all teal or green clothing, plants, props and contours; use the specified category colors instead.",
-      "output": "monthly-04-month-habit.png"
+      "prompt": "Use case: illustration-story. Asset type: a single local illustration for Shendu personal review archive cards. Subject: A person tends a row of four seedlings at different growth stages. Style: minimalist editorial LINE illustration matching the existing overview icons: whimsical small oval heads with a single long curved nose and almost no facial detail, elongated rounded ivory arms and legs, oversized simple hands, flowing relaxed curves, very thin continuous category-colored outlines, sparse flat accent clothing and a few geometric paper props. Keep the figure mostly ivory and open negative space, like a delicate ink drawing with a few flat colored shapes. The scene is about the action and props, never a portrait. No angular faceted anatomy, realistic human face, anime, large hair mass, heavy filled silhouette, 3D, texture or shading. Color palette strictly #875B21 for contours and deepest clothing, #D79A34 for major accents, #FFF7E5 and ivory for small surfaces. Composition: one distinct cohesive scene, centered, square, complete silhouettes with at least 12 percent empty margin; uniform warm white #FFFEFA background. Constraints: a unique pose, prop arrangement and scene for this asset. No lettering, numbers, badges, frames, logos, watermark, photographic texture, gradients or drop shadows. Avoid all teal or green clothing, plants, props and contours; use the specified category colors instead.",
+      "output": "monthly-04-month-habit.png",
+      "terms": [
+        "习惯",
+        "坚持",
+        "打卡",
+        "日常",
+        "养成"
+      ]
     },
     {
       "id": "monthly-05-month-bottleneck",
       "type": "monthly",
       "label": "拆开一个瓶颈",
-      "status": "planned",
+      "status": "generated-and-reviewed",
       "reference": "../../shendu/public/assets/overview/monthly.svg",
       "palette": {
         "dark": "#875B21",
         "accent": "#D79A34",
         "paper": "#FFF7E5"
       },
-      "prompt": "Use case: illustration-story. Asset type: a single local illustration for Shendu personal review archive cards. Subject: A person removes a large stopper from a narrow hourglass-shaped passage. Style: flat editorial human illustration, angular ivory figures, thin expressive dark contours, geometric paper props, restrained hand-drawn elegance. Match the established overview category icon visual language; do not imitate a generic 3D mascot. Color palette strictly #875B21 for contours and deepest clothing, #D79A34 for major accents, #FFF7E5 and ivory for small surfaces. Composition: one distinct cohesive scene, centered, square, complete silhouettes with at least 12 percent empty margin; uniform warm white #FFFEFA background. Constraints: a unique pose, prop arrangement and scene for this asset. No lettering, numbers, badges, frames, logos, watermark, photographic texture, gradients or drop shadows. Avoid all teal or green clothing, plants, props and contours; use the specified category colors instead.",
-      "output": "monthly-05-month-bottleneck.png"
+      "prompt": "Use case: illustration-story. Asset type: a single local illustration for Shendu personal review archive cards. Subject: A person removes a large stopper from a narrow hourglass-shaped passage. Style: minimalist editorial LINE illustration matching the existing overview icons: whimsical small oval heads with a single long curved nose and almost no facial detail, elongated rounded ivory arms and legs, oversized simple hands, flowing relaxed curves, very thin continuous category-colored outlines, sparse flat accent clothing and a few geometric paper props. Keep the figure mostly ivory and open negative space, like a delicate ink drawing with a few flat colored shapes. The scene is about the action and props, never a portrait. No angular faceted anatomy, realistic human face, anime, large hair mass, heavy filled silhouette, 3D, texture or shading. Color palette strictly #875B21 for contours and deepest clothing, #D79A34 for major accents, #FFF7E5 and ivory for small surfaces. Composition: one distinct cohesive scene, centered, square, complete silhouettes with at least 12 percent empty margin; uniform warm white #FFFEFA background. Constraints: a unique pose, prop arrangement and scene for this asset. No lettering, numbers, badges, frames, logos, watermark, photographic texture, gradients or drop shadows. Avoid all teal or green clothing, plants, props and contours; use the specified category colors instead.",
+      "output": "monthly-05-month-bottleneck.png",
+      "terms": [
+        "瓶颈",
+        "阻碍",
+        "困难",
+        "卡住",
+        "问题"
+      ]
     },
     {
       "id": "monthly-06-month-experiment",
       "type": "monthly",
       "label": "试一种新方法",
-      "status": "planned",
+      "status": "generated-and-reviewed",
       "reference": "../../shendu/public/assets/overview/monthly.svg",
       "palette": {
         "dark": "#875B21",
         "accent": "#D79A34",
         "paper": "#FFF7E5"
       },
-      "prompt": "Use case: illustration-story. Asset type: a single local illustration for Shendu personal review archive cards. Subject: A person pours a small beaker into a simple flask on a short laboratory table. Style: flat editorial human illustration, angular ivory figures, thin expressive dark contours, geometric paper props, restrained hand-drawn elegance. Match the established overview category icon visual language; do not imitate a generic 3D mascot. Color palette strictly #875B21 for contours and deepest clothing, #D79A34 for major accents, #FFF7E5 and ivory for small surfaces. Composition: one distinct cohesive scene, centered, square, complete silhouettes with at least 12 percent empty margin; uniform warm white #FFFEFA background. Constraints: a unique pose, prop arrangement and scene for this asset. No lettering, numbers, badges, frames, logos, watermark, photographic texture, gradients or drop shadows. Avoid all teal or green clothing, plants, props and contours; use the specified category colors instead.",
-      "output": "monthly-06-month-experiment.png"
+      "prompt": "Use case: illustration-story. Asset type: a single local illustration for Shendu personal review archive cards. Subject: A person pours a small beaker into a simple flask on a short laboratory table. Style: minimalist editorial LINE illustration matching the existing overview icons: whimsical small oval heads with a single long curved nose and almost no facial detail, elongated rounded ivory arms and legs, oversized simple hands, flowing relaxed curves, very thin continuous category-colored outlines, sparse flat accent clothing and a few geometric paper props. Keep the figure mostly ivory and open negative space, like a delicate ink drawing with a few flat colored shapes. The scene is about the action and props, never a portrait. No angular faceted anatomy, realistic human face, anime, large hair mass, heavy filled silhouette, 3D, texture or shading. Color palette strictly #875B21 for contours and deepest clothing, #D79A34 for major accents, #FFF7E5 and ivory for small surfaces. Composition: one distinct cohesive scene, centered, square, complete silhouettes with at least 12 percent empty margin; uniform warm white #FFFEFA background. Constraints: a unique pose, prop arrangement and scene for this asset. No lettering, numbers, badges, frames, logos, watermark, photographic texture, gradients or drop shadows. Avoid all teal or green clothing, plants, props and contours; use the specified category colors instead.",
+      "output": "monthly-06-month-experiment.png",
+      "terms": [
+        "实验",
+        "尝试",
+        "测试",
+        "新方法",
+        "调整"
+      ]
     },
     {
       "id": "monthly-07-month-learning",
       "type": "monthly",
       "label": "把学习连起来",
-      "status": "planned",
+      "status": "generated-and-reviewed",
       "reference": "../../shendu/public/assets/overview/monthly.svg",
       "palette": {
         "dark": "#875B21",
         "accent": "#D79A34",
         "paper": "#FFF7E5"
       },
-      "prompt": "Use case: illustration-story. Asset type: a single local illustration for Shendu personal review archive cards. Subject: A person builds a low arch out of three open books. Style: flat editorial human illustration, angular ivory figures, thin expressive dark contours, geometric paper props, restrained hand-drawn elegance. Match the established overview category icon visual language; do not imitate a generic 3D mascot. Color palette strictly #875B21 for contours and deepest clothing, #D79A34 for major accents, #FFF7E5 and ivory for small surfaces. Composition: one distinct cohesive scene, centered, square, complete silhouettes with at least 12 percent empty margin; uniform warm white #FFFEFA background. Constraints: a unique pose, prop arrangement and scene for this asset. No lettering, numbers, badges, frames, logos, watermark, photographic texture, gradients or drop shadows. Avoid all teal or green clothing, plants, props and contours; use the specified category colors instead.",
-      "output": "monthly-07-month-learning.png"
+      "prompt": "Use case: illustration-story. Asset type: a single local illustration for Shendu personal review archive cards. Subject: A person builds a low arch out of three open books. Style: minimalist editorial LINE illustration matching the existing overview icons: whimsical small oval heads with a single long curved nose and almost no facial detail, elongated rounded ivory arms and legs, oversized simple hands, flowing relaxed curves, very thin continuous category-colored outlines, sparse flat accent clothing and a few geometric paper props. Keep the figure mostly ivory and open negative space, like a delicate ink drawing with a few flat colored shapes. The scene is about the action and props, never a portrait. No angular faceted anatomy, realistic human face, anime, large hair mass, heavy filled silhouette, 3D, texture or shading. Color palette strictly #875B21 for contours and deepest clothing, #D79A34 for major accents, #FFF7E5 and ivory for small surfaces. Composition: one distinct cohesive scene, centered, square, complete silhouettes with at least 12 percent empty margin; uniform warm white #FFFEFA background. Constraints: a unique pose, prop arrangement and scene for this asset. No lettering, numbers, badges, frames, logos, watermark, photographic texture, gradients or drop shadows. Avoid all teal or green clothing, plants, props and contours; use the specified category colors instead.",
+      "output": "monthly-07-month-learning.png",
+      "terms": [
+        "学习",
+        "复习",
+        "课程",
+        "知识",
+        "技能"
+      ]
     },
     {
       "id": "monthly-08-month-workspace",
       "type": "monthly",
       "label": "重排工作空间",
-      "status": "planned",
+      "status": "generated-and-reviewed",
       "reference": "../../shendu/public/assets/overview/monthly.svg",
       "palette": {
         "dark": "#875B21",
         "accent": "#D79A34",
         "paper": "#FFF7E5"
       },
-      "prompt": "Use case: illustration-story. Asset type: a single local illustration for Shendu personal review archive cards. Subject: A person moves a desk lamp and a short drawer unit into a new arrangement. Style: flat editorial human illustration, angular ivory figures, thin expressive dark contours, geometric paper props, restrained hand-drawn elegance. Match the established overview category icon visual language; do not imitate a generic 3D mascot. Color palette strictly #875B21 for contours and deepest clothing, #D79A34 for major accents, #FFF7E5 and ivory for small surfaces. Composition: one distinct cohesive scene, centered, square, complete silhouettes with at least 12 percent empty margin; uniform warm white #FFFEFA background. Constraints: a unique pose, prop arrangement and scene for this asset. No lettering, numbers, badges, frames, logos, watermark, photographic texture, gradients or drop shadows. Avoid all teal or green clothing, plants, props and contours; use the specified category colors instead.",
-      "output": "monthly-08-month-workspace.png"
+      "prompt": "Use case: illustration-story. Asset type: a single local illustration for Shendu personal review archive cards. Subject: A person moves a desk lamp and a short drawer unit into a new arrangement. Style: minimalist editorial LINE illustration matching the existing overview icons: whimsical small oval heads with a single long curved nose and almost no facial detail, elongated rounded ivory arms and legs, oversized simple hands, flowing relaxed curves, very thin continuous category-colored outlines, sparse flat accent clothing and a few geometric paper props. Keep the figure mostly ivory and open negative space, like a delicate ink drawing with a few flat colored shapes. The scene is about the action and props, never a portrait. No angular faceted anatomy, realistic human face, anime, large hair mass, heavy filled silhouette, 3D, texture or shading. Color palette strictly #875B21 for contours and deepest clothing, #D79A34 for major accents, #FFF7E5 and ivory for small surfaces. Composition: one distinct cohesive scene, centered, square, complete silhouettes with at least 12 percent empty margin; uniform warm white #FFFEFA background. Constraints: a unique pose, prop arrangement and scene for this asset. No lettering, numbers, badges, frames, logos, watermark, photographic texture, gradients or drop shadows. Avoid all teal or green clothing, plants, props and contours; use the specified category colors instead.",
+      "output": "monthly-08-month-workspace.png",
+      "terms": [
+        "工作空间",
+        "工作台",
+        "书桌",
+        "环境",
+        "布置"
+      ]
     },
     {
       "id": "monthly-09-month-relation",
       "type": "monthly",
       "label": "留下相处的时间",
-      "status": "planned",
+      "status": "generated-and-reviewed",
       "reference": "../../shendu/public/assets/overview/monthly.svg",
       "palette": {
         "dark": "#875B21",
         "accent": "#D79A34",
         "paper": "#FFF7E5"
       },
-      "prompt": "Use case: illustration-story. Asset type: a single local illustration for Shendu personal review archive cards. Subject: Two people sit at opposite corners of a square table sharing a blank album. Style: flat editorial human illustration, angular ivory figures, thin expressive dark contours, geometric paper props, restrained hand-drawn elegance. Match the established overview category icon visual language; do not imitate a generic 3D mascot. Color palette strictly #875B21 for contours and deepest clothing, #D79A34 for major accents, #FFF7E5 and ivory for small surfaces. Composition: one distinct cohesive scene, centered, square, complete silhouettes with at least 12 percent empty margin; uniform warm white #FFFEFA background. Constraints: a unique pose, prop arrangement and scene for this asset. No lettering, numbers, badges, frames, logos, watermark, photographic texture, gradients or drop shadows. Avoid all teal or green clothing, plants, props and contours; use the specified category colors instead.",
-      "output": "monthly-09-month-relation.png"
+      "prompt": "Use case: illustration-story. Asset type: a single local illustration for Shendu personal review archive cards. Subject: Two people sit at opposite corners of a square table sharing a blank album. Style: minimalist editorial LINE illustration matching the existing overview icons: whimsical small oval heads with a single long curved nose and almost no facial detail, elongated rounded ivory arms and legs, oversized simple hands, flowing relaxed curves, very thin continuous category-colored outlines, sparse flat accent clothing and a few geometric paper props. Keep the figure mostly ivory and open negative space, like a delicate ink drawing with a few flat colored shapes. The scene is about the action and props, never a portrait. No angular faceted anatomy, realistic human face, anime, large hair mass, heavy filled silhouette, 3D, texture or shading. Color palette strictly #875B21 for contours and deepest clothing, #D79A34 for major accents, #FFF7E5 and ivory for small surfaces. Composition: one distinct cohesive scene, centered, square, complete silhouettes with at least 12 percent empty margin; uniform warm white #FFFEFA background. Constraints: a unique pose, prop arrangement and scene for this asset. No lettering, numbers, badges, frames, logos, watermark, photographic texture, gradients or drop shadows. Avoid all teal or green clothing, plants, props and contours; use the specified category colors instead.",
+      "output": "monthly-09-month-relation.png",
+      "terms": [
+        "关系",
+        "相处",
+        "家人",
+        "朋友",
+        "沟通"
+      ]
     },
     {
       "id": "monthly-10-month-energy",
       "type": "monthly",
       "label": "分配有限的精力",
-      "status": "planned",
+      "status": "generated-and-reviewed",
       "reference": "../../shendu/public/assets/overview/monthly.svg",
       "palette": {
         "dark": "#875B21",
         "accent": "#D79A34",
         "paper": "#FFF7E5"
       },
-      "prompt": "Use case: illustration-story. Asset type: a single local illustration for Shendu personal review archive cards. Subject: A person fills three different-size watering cans from a single reservoir. Style: flat editorial human illustration, angular ivory figures, thin expressive dark contours, geometric paper props, restrained hand-drawn elegance. Match the established overview category icon visual language; do not imitate a generic 3D mascot. Color palette strictly #875B21 for contours and deepest clothing, #D79A34 for major accents, #FFF7E5 and ivory for small surfaces. Composition: one distinct cohesive scene, centered, square, complete silhouettes with at least 12 percent empty margin; uniform warm white #FFFEFA background. Constraints: a unique pose, prop arrangement and scene for this asset. No lettering, numbers, badges, frames, logos, watermark, photographic texture, gradients or drop shadows. Avoid all teal or green clothing, plants, props and contours; use the specified category colors instead.",
-      "output": "monthly-10-month-energy.png"
+      "prompt": "Use case: illustration-story. Asset type: a single local illustration for Shendu personal review archive cards. Subject: A person fills three different-size watering cans from a single reservoir. Style: minimalist editorial LINE illustration matching the existing overview icons: whimsical small oval heads with a single long curved nose and almost no facial detail, elongated rounded ivory arms and legs, oversized simple hands, flowing relaxed curves, very thin continuous category-colored outlines, sparse flat accent clothing and a few geometric paper props. Keep the figure mostly ivory and open negative space, like a delicate ink drawing with a few flat colored shapes. The scene is about the action and props, never a portrait. No angular faceted anatomy, realistic human face, anime, large hair mass, heavy filled silhouette, 3D, texture or shading. Color palette strictly #875B21 for contours and deepest clothing, #D79A34 for major accents, #FFF7E5 and ivory for small surfaces. Composition: one distinct cohesive scene, centered, square, complete silhouettes with at least 12 percent empty margin; uniform warm white #FFFEFA background. Constraints: a unique pose, prop arrangement and scene for this asset. No lettering, numbers, badges, frames, logos, watermark, photographic texture, gradients or drop shadows. Avoid all teal or green clothing, plants, props and contours; use the specified category colors instead.",
+      "output": "monthly-10-month-energy.png",
+      "terms": [
+        "精力",
+        "疲惫",
+        "恢复",
+        "体力",
+        "节奏"
+      ]
     },
     {
       "id": "monthly-11-month-release",
       "type": "monthly",
       "label": "给生活减负",
-      "status": "planned",
+      "status": "generated-and-reviewed",
       "reference": "../../shendu/public/assets/overview/monthly.svg",
       "palette": {
         "dark": "#875B21",
         "accent": "#D79A34",
         "paper": "#FFF7E5"
       },
-      "prompt": "Use case: illustration-story. Asset type: a single local illustration for Shendu personal review archive cards. Subject: A person lifts an unnecessary heavy stone from a modest backpack. Style: flat editorial human illustration, angular ivory figures, thin expressive dark contours, geometric paper props, restrained hand-drawn elegance. Match the established overview category icon visual language; do not imitate a generic 3D mascot. Color palette strictly #875B21 for contours and deepest clothing, #D79A34 for major accents, #FFF7E5 and ivory for small surfaces. Composition: one distinct cohesive scene, centered, square, complete silhouettes with at least 12 percent empty margin; uniform warm white #FFFEFA background. Constraints: a unique pose, prop arrangement and scene for this asset. No lettering, numbers, badges, frames, logos, watermark, photographic texture, gradients or drop shadows. Avoid all teal or green clothing, plants, props and contours; use the specified category colors instead.",
-      "output": "monthly-11-month-release.png"
+      "prompt": "Use case: illustration-story. Asset type: a single local illustration for Shendu personal review archive cards. Subject: A person lifts an unnecessary heavy stone from a modest backpack. Style: minimalist editorial LINE illustration matching the existing overview icons: whimsical small oval heads with a single long curved nose and almost no facial detail, elongated rounded ivory arms and legs, oversized simple hands, flowing relaxed curves, very thin continuous category-colored outlines, sparse flat accent clothing and a few geometric paper props. Keep the figure mostly ivory and open negative space, like a delicate ink drawing with a few flat colored shapes. The scene is about the action and props, never a portrait. No angular faceted anatomy, realistic human face, anime, large hair mass, heavy filled silhouette, 3D, texture or shading. Color palette strictly #875B21 for contours and deepest clothing, #D79A34 for major accents, #FFF7E5 and ivory for small surfaces. Composition: one distinct cohesive scene, centered, square, complete silhouettes with at least 12 percent empty margin; uniform warm white #FFFEFA background. Constraints: a unique pose, prop arrangement and scene for this asset. No lettering, numbers, badges, frames, logos, watermark, photographic texture, gradients or drop shadows. Avoid all teal or green clothing, plants, props and contours; use the specified category colors instead.",
+      "output": "monthly-11-month-release.png",
+      "terms": [
+        "放下",
+        "舍弃",
+        "清理",
+        "告别",
+        "负担"
+      ]
     },
     {
       "id": "monthly-12-month-next",
       "type": "monthly",
       "label": "给下个月一张地图",
-      "status": "planned",
+      "status": "generated-and-reviewed",
       "reference": "../../shendu/public/assets/overview/monthly.svg",
       "palette": {
         "dark": "#875B21",
         "accent": "#D79A34",
         "paper": "#FFF7E5"
       },
-      "prompt": "Use case: illustration-story. Asset type: a single local illustration for Shendu personal review archive cards. Subject: A person draws a winding route on a blank folded map, three large waypoints. Style: flat editorial human illustration, angular ivory figures, thin expressive dark contours, geometric paper props, restrained hand-drawn elegance. Match the established overview category icon visual language; do not imitate a generic 3D mascot. Color palette strictly #875B21 for contours and deepest clothing, #D79A34 for major accents, #FFF7E5 and ivory for small surfaces. Composition: one distinct cohesive scene, centered, square, complete silhouettes with at least 12 percent empty margin; uniform warm white #FFFEFA background. Constraints: a unique pose, prop arrangement and scene for this asset. No lettering, numbers, badges, frames, logos, watermark, photographic texture, gradients or drop shadows. Avoid all teal or green clothing, plants, props and contours; use the specified category colors instead.",
-      "output": "monthly-12-month-next.png"
+      "prompt": "Use case: illustration-story. Asset type: a single local illustration for Shendu personal review archive cards. Subject: A person draws a winding route on a blank folded map, three large waypoints. Style: minimalist editorial LINE illustration matching the existing overview icons: whimsical small oval heads with a single long curved nose and almost no facial detail, elongated rounded ivory arms and legs, oversized simple hands, flowing relaxed curves, very thin continuous category-colored outlines, sparse flat accent clothing and a few geometric paper props. Keep the figure mostly ivory and open negative space, like a delicate ink drawing with a few flat colored shapes. The scene is about the action and props, never a portrait. No angular faceted anatomy, realistic human face, anime, large hair mass, heavy filled silhouette, 3D, texture or shading. Color palette strictly #875B21 for contours and deepest clothing, #D79A34 for major accents, #FFF7E5 and ivory for small surfaces. Composition: one distinct cohesive scene, centered, square, complete silhouettes with at least 12 percent empty margin; uniform warm white #FFFEFA background. Constraints: a unique pose, prop arrangement and scene for this asset. No lettering, numbers, badges, frames, logos, watermark, photographic texture, gradients or drop shadows. Avoid all teal or green clothing, plants, props and contours; use the specified category colors instead.",
+      "output": "monthly-12-month-next.png",
+      "terms": [
+        "下月",
+        "规划",
+        "地图",
+        "方向",
+        "目标"
+      ]
     },
     {
       "id": "quarterly-01-quarter-spring",
       "type": "quarterly",
       "label": "让方向萌芽",
-      "status": "planned",
+      "status": "generated-and-reviewed",
       "reference": "../../shendu/public/assets/overview/quarterly.svg",
       "palette": {
         "dark": "#345585",
         "accent": "#5C82C5",
         "paper": "#EFF5FF"
       },
-      "prompt": "Use case: illustration-story. Asset type: a single local illustration for Shendu personal review archive cards. Subject: A person kneels next to a branching seedling beside a blank compass disc. Style: flat editorial human illustration, angular ivory figures, thin expressive dark contours, geometric paper props, restrained hand-drawn elegance. Match the established overview category icon visual language; do not imitate a generic 3D mascot. Color palette strictly #345585 for contours and deepest clothing, #5C82C5 for major accents, #EFF5FF and ivory for small surfaces. Composition: one distinct cohesive scene, centered, square, complete silhouettes with at least 12 percent empty margin; uniform warm white #FFFEFA background. Constraints: a unique pose, prop arrangement and scene for this asset. No lettering, numbers, badges, frames, logos, watermark, photographic texture, gradients or drop shadows. Avoid all teal or green clothing, plants, props and contours; use the specified category colors instead.",
-      "output": "quarterly-01-quarter-spring.png"
+      "prompt": "Use case: illustration-story. Asset type: a single local illustration for Shendu personal review archive cards. Subject: A person kneels next to a branching seedling beside a blank compass disc. Style: minimalist editorial LINE illustration matching the existing overview icons: whimsical small oval heads with a single long curved nose and almost no facial detail, elongated rounded ivory arms and legs, oversized simple hands, flowing relaxed curves, very thin continuous category-colored outlines, sparse flat accent clothing and a few geometric paper props. Keep the figure mostly ivory and open negative space, like a delicate ink drawing with a few flat colored shapes. The scene is about the action and props, never a portrait. No angular faceted anatomy, realistic human face, anime, large hair mass, heavy filled silhouette, 3D, texture or shading. Color palette strictly #345585 for contours and deepest clothing, #5C82C5 for major accents, #EFF5FF and ivory for small surfaces. Composition: one distinct cohesive scene, centered, square, complete silhouettes with at least 12 percent empty margin; uniform warm white #FFFEFA background. Constraints: a unique pose, prop arrangement and scene for this asset. No lettering, numbers, badges, frames, logos, watermark, photographic texture, gradients or drop shadows. Avoid all teal or green clothing, plants, props and contours; use the specified category colors instead.",
+      "output": "quarterly-01-quarter-spring.png",
+      "terms": [
+        "春",
+        "萌芽",
+        "方向",
+        "启动",
+        "播种"
+      ]
     },
     {
       "id": "quarterly-02-quarter-summer",
       "type": "quarterly",
       "label": "在行动里生长",
-      "status": "planned",
+      "status": "generated-and-reviewed",
       "reference": "../../shendu/public/assets/overview/quarterly.svg",
       "palette": {
         "dark": "#345585",
         "accent": "#5C82C5",
         "paper": "#EFF5FF"
       },
-      "prompt": "Use case: illustration-story. Asset type: a single local illustration for Shendu personal review archive cards. Subject: A person climbs a short geometric scaffold carrying a plank, one broad sun. Style: flat editorial human illustration, angular ivory figures, thin expressive dark contours, geometric paper props, restrained hand-drawn elegance. Match the established overview category icon visual language; do not imitate a generic 3D mascot. Color palette strictly #345585 for contours and deepest clothing, #5C82C5 for major accents, #EFF5FF and ivory for small surfaces. Composition: one distinct cohesive scene, centered, square, complete silhouettes with at least 12 percent empty margin; uniform warm white #FFFEFA background. Constraints: a unique pose, prop arrangement and scene for this asset. No lettering, numbers, badges, frames, logos, watermark, photographic texture, gradients or drop shadows. Avoid all teal or green clothing, plants, props and contours; use the specified category colors instead.",
-      "output": "quarterly-02-quarter-summer.png"
+      "prompt": "Use case: illustration-story. Asset type: a single local illustration for Shendu personal review archive cards. Subject: A person climbs a short geometric scaffold carrying a plank, one broad sun. Style: minimalist editorial LINE illustration matching the existing overview icons: whimsical small oval heads with a single long curved nose and almost no facial detail, elongated rounded ivory arms and legs, oversized simple hands, flowing relaxed curves, very thin continuous category-colored outlines, sparse flat accent clothing and a few geometric paper props. Keep the figure mostly ivory and open negative space, like a delicate ink drawing with a few flat colored shapes. The scene is about the action and props, never a portrait. No angular faceted anatomy, realistic human face, anime, large hair mass, heavy filled silhouette, 3D, texture or shading. Color palette strictly #345585 for contours and deepest clothing, #5C82C5 for major accents, #EFF5FF and ivory for small surfaces. Composition: one distinct cohesive scene, centered, square, complete silhouettes with at least 12 percent empty margin; uniform warm white #FFFEFA background. Constraints: a unique pose, prop arrangement and scene for this asset. No lettering, numbers, badges, frames, logos, watermark, photographic texture, gradients or drop shadows. Avoid all teal or green clothing, plants, props and contours; use the specified category colors instead.",
+      "output": "quarterly-02-quarter-summer.png",
+      "terms": [
+        "夏",
+        "生长",
+        "行动",
+        "推进",
+        "执行"
+      ]
     },
     {
       "id": "quarterly-03-quarter-autumn",
       "type": "quarterly",
       "label": "用证据收获",
-      "status": "planned",
+      "status": "generated-and-reviewed",
       "reference": "../../shendu/public/assets/overview/quarterly.svg",
       "palette": {
         "dark": "#345585",
         "accent": "#5C82C5",
         "paper": "#EFF5FF"
       },
-      "prompt": "Use case: illustration-story. Asset type: a single local illustration for Shendu personal review archive cards. Subject: A person compares three tall sample stems beside an open ledger on a low table. Style: flat editorial human illustration, angular ivory figures, thin expressive dark contours, geometric paper props, restrained hand-drawn elegance. Match the established overview category icon visual language; do not imitate a generic 3D mascot. Color palette strictly #345585 for contours and deepest clothing, #5C82C5 for major accents, #EFF5FF and ivory for small surfaces. Composition: one distinct cohesive scene, centered, square, complete silhouettes with at least 12 percent empty margin; uniform warm white #FFFEFA background. Constraints: a unique pose, prop arrangement and scene for this asset. No lettering, numbers, badges, frames, logos, watermark, photographic texture, gradients or drop shadows. Avoid all teal or green clothing, plants, props and contours; use the specified category colors instead.",
-      "output": "quarterly-03-quarter-autumn.png"
+      "prompt": "Use case: illustration-story. Asset type: a single local illustration for Shendu personal review archive cards. Subject: A person compares three tall sample stems beside an open ledger on a low table. Style: minimalist editorial LINE illustration matching the existing overview icons: whimsical small oval heads with a single long curved nose and almost no facial detail, elongated rounded ivory arms and legs, oversized simple hands, flowing relaxed curves, very thin continuous category-colored outlines, sparse flat accent clothing and a few geometric paper props. Keep the figure mostly ivory and open negative space, like a delicate ink drawing with a few flat colored shapes. The scene is about the action and props, never a portrait. No angular faceted anatomy, realistic human face, anime, large hair mass, heavy filled silhouette, 3D, texture or shading. Color palette strictly #345585 for contours and deepest clothing, #5C82C5 for major accents, #EFF5FF and ivory for small surfaces. Composition: one distinct cohesive scene, centered, square, complete silhouettes with at least 12 percent empty margin; uniform warm white #FFFEFA background. Constraints: a unique pose, prop arrangement and scene for this asset. No lettering, numbers, badges, frames, logos, watermark, photographic texture, gradients or drop shadows. Avoid all teal or green clothing, plants, props and contours; use the specified category colors instead.",
+      "output": "quarterly-03-quarter-autumn.png",
+      "terms": [
+        "秋",
+        "收获",
+        "证据",
+        "成果",
+        "验证"
+      ]
     },
     {
       "id": "quarterly-04-quarter-winter",
       "type": "quarterly",
       "label": "校准下一段路",
-      "status": "planned",
+      "status": "generated-and-reviewed",
       "reference": "../../shendu/public/assets/overview/quarterly.svg",
       "palette": {
         "dark": "#345585",
         "accent": "#5C82C5",
         "paper": "#EFF5FF"
       },
-      "prompt": "Use case: illustration-story. Asset type: a single local illustration for Shendu personal review archive cards. Subject: A person adjusts a telescope toward a simple distant mountain route. Style: flat editorial human illustration, angular ivory figures, thin expressive dark contours, geometric paper props, restrained hand-drawn elegance. Match the established overview category icon visual language; do not imitate a generic 3D mascot. Color palette strictly #345585 for contours and deepest clothing, #5C82C5 for major accents, #EFF5FF and ivory for small surfaces. Composition: one distinct cohesive scene, centered, square, complete silhouettes with at least 12 percent empty margin; uniform warm white #FFFEFA background. Constraints: a unique pose, prop arrangement and scene for this asset. No lettering, numbers, badges, frames, logos, watermark, photographic texture, gradients or drop shadows. Avoid all teal or green clothing, plants, props and contours; use the specified category colors instead.",
-      "output": "quarterly-04-quarter-winter.png"
+      "prompt": "Use case: illustration-story. Asset type: a single local illustration for Shendu personal review archive cards. Subject: A person adjusts a telescope toward a simple distant mountain route. Style: minimalist editorial LINE illustration matching the existing overview icons: whimsical small oval heads with a single long curved nose and almost no facial detail, elongated rounded ivory arms and legs, oversized simple hands, flowing relaxed curves, very thin continuous category-colored outlines, sparse flat accent clothing and a few geometric paper props. Keep the figure mostly ivory and open negative space, like a delicate ink drawing with a few flat colored shapes. The scene is about the action and props, never a portrait. No angular faceted anatomy, realistic human face, anime, large hair mass, heavy filled silhouette, 3D, texture or shading. Color palette strictly #345585 for contours and deepest clothing, #5C82C5 for major accents, #EFF5FF and ivory for small surfaces. Composition: one distinct cohesive scene, centered, square, complete silhouettes with at least 12 percent empty margin; uniform warm white #FFFEFA background. Constraints: a unique pose, prop arrangement and scene for this asset. No lettering, numbers, badges, frames, logos, watermark, photographic texture, gradients or drop shadows. Avoid all teal or green clothing, plants, props and contours; use the specified category colors instead.",
+      "output": "quarterly-04-quarter-winter.png",
+      "terms": [
+        "冬",
+        "校准",
+        "下季",
+        "复盘",
+        "路线"
+      ]
     },
     {
       "id": "yearly-01-year-milestones",
       "type": "yearly",
       "label": "串起一年里程碑",
-      "status": "planned",
+      "status": "generated-and-reviewed",
       "reference": "../../shendu/public/assets/overview/yearly.svg",
       "palette": {
         "dark": "#624782",
         "accent": "#9A73BD",
         "paper": "#F7EFFC"
       },
-      "prompt": "Use case: illustration-story. Asset type: a single local illustration for Shendu personal review archive cards. Subject: A person stretches a string between six large blank milestone cards. Style: flat editorial human illustration, angular ivory figures, thin expressive dark contours, geometric paper props, restrained hand-drawn elegance. Match the established overview category icon visual language; do not imitate a generic 3D mascot. Color palette strictly #624782 for contours and deepest clothing, #9A73BD for major accents, #F7EFFC and ivory for small surfaces. Composition: one distinct cohesive scene, centered, square, complete silhouettes with at least 12 percent empty margin; uniform warm white #FFFEFA background. Constraints: a unique pose, prop arrangement and scene for this asset. No lettering, numbers, badges, frames, logos, watermark, photographic texture, gradients or drop shadows. Avoid all teal or green clothing, plants, props and contours; use the specified category colors instead.",
-      "output": "yearly-01-year-milestones.png"
+      "prompt": "Use case: illustration-story. Asset type: a single local illustration for Shendu personal review archive cards. Subject: A person stretches a string between six large blank milestone cards. Style: minimalist editorial LINE illustration matching the existing overview icons: whimsical small oval heads with a single long curved nose and almost no facial detail, elongated rounded ivory arms and legs, oversized simple hands, flowing relaxed curves, very thin continuous category-colored outlines, sparse flat accent clothing and a few geometric paper props. Keep the figure mostly ivory and open negative space, like a delicate ink drawing with a few flat colored shapes. The scene is about the action and props, never a portrait. No angular faceted anatomy, realistic human face, anime, large hair mass, heavy filled silhouette, 3D, texture or shading. Color palette strictly #624782 for contours and deepest clothing, #9A73BD for major accents, #F7EFFC and ivory for small surfaces. Composition: one distinct cohesive scene, centered, square, complete silhouettes with at least 12 percent empty margin; uniform warm white #FFFEFA background. Constraints: a unique pose, prop arrangement and scene for this asset. No lettering, numbers, badges, frames, logos, watermark, photographic texture, gradients or drop shadows. Avoid all teal or green clothing, plants, props and contours; use the specified category colors instead.",
+      "output": "yearly-01-year-milestones.png",
+      "terms": [
+        "里程碑",
+        "经历",
+        "重要时刻",
+        "年度",
+        "成就"
+      ]
     },
     {
       "id": "yearly-02-year-growth",
       "type": "yearly",
       "label": "看见自己的成长",
-      "status": "planned",
+      "status": "generated-and-reviewed",
       "reference": "../../shendu/public/assets/overview/yearly.svg",
       "palette": {
         "dark": "#624782",
         "accent": "#9A73BD",
         "paper": "#F7EFFC"
       },
-      "prompt": "Use case: illustration-story. Asset type: a single local illustration for Shendu personal review archive cards. Subject: A person measures the height of a broad stylized tree against a blank measuring board. Style: flat editorial human illustration, angular ivory figures, thin expressive dark contours, geometric paper props, restrained hand-drawn elegance. Match the established overview category icon visual language; do not imitate a generic 3D mascot. Color palette strictly #624782 for contours and deepest clothing, #9A73BD for major accents, #F7EFFC and ivory for small surfaces. Composition: one distinct cohesive scene, centered, square, complete silhouettes with at least 12 percent empty margin; uniform warm white #FFFEFA background. Constraints: a unique pose, prop arrangement and scene for this asset. No lettering, numbers, badges, frames, logos, watermark, photographic texture, gradients or drop shadows. Avoid all teal or green clothing, plants, props and contours; use the specified category colors instead.",
-      "output": "yearly-02-year-growth.png"
+      "prompt": "Use case: illustration-story. Asset type: a single local illustration for Shendu personal review archive cards. Subject: A person measures the height of a broad stylized tree against a blank measuring board. Style: minimalist editorial LINE illustration matching the existing overview icons: whimsical small oval heads with a single long curved nose and almost no facial detail, elongated rounded ivory arms and legs, oversized simple hands, flowing relaxed curves, very thin continuous category-colored outlines, sparse flat accent clothing and a few geometric paper props. Keep the figure mostly ivory and open negative space, like a delicate ink drawing with a few flat colored shapes. The scene is about the action and props, never a portrait. No angular faceted anatomy, realistic human face, anime, large hair mass, heavy filled silhouette, 3D, texture or shading. Color palette strictly #624782 for contours and deepest clothing, #9A73BD for major accents, #F7EFFC and ivory for small surfaces. Composition: one distinct cohesive scene, centered, square, complete silhouettes with at least 12 percent empty margin; uniform warm white #FFFEFA background. Constraints: a unique pose, prop arrangement and scene for this asset. No lettering, numbers, badges, frames, logos, watermark, photographic texture, gradients or drop shadows. Avoid all teal or green clothing, plants, props and contours; use the specified category colors instead.",
+      "output": "yearly-02-year-growth.png",
+      "terms": [
+        "成长",
+        "变化",
+        "进步",
+        "能力",
+        "收获"
+      ]
     },
     {
       "id": "yearly-03-year-keep",
       "type": "yearly",
       "label": "保留值得的东西",
-      "status": "planned",
+      "status": "generated-and-reviewed",
       "reference": "../../shendu/public/assets/overview/yearly.svg",
       "palette": {
         "dark": "#624782",
         "accent": "#9A73BD",
         "paper": "#F7EFFC"
       },
-      "prompt": "Use case: illustration-story. Asset type: a single local illustration for Shendu personal review archive cards. Subject: A seated person carefully places a book, a seed and a small frame into an open box. Style: flat editorial human illustration, angular ivory figures, thin expressive dark contours, geometric paper props, restrained hand-drawn elegance. Match the established overview category icon visual language; do not imitate a generic 3D mascot. Color palette strictly #624782 for contours and deepest clothing, #9A73BD for major accents, #F7EFFC and ivory for small surfaces. Composition: one distinct cohesive scene, centered, square, complete silhouettes with at least 12 percent empty margin; uniform warm white #FFFEFA background. Constraints: a unique pose, prop arrangement and scene for this asset. No lettering, numbers, badges, frames, logos, watermark, photographic texture, gradients or drop shadows. Avoid all teal or green clothing, plants, props and contours; use the specified category colors instead.",
-      "output": "yearly-03-year-keep.png"
+      "prompt": "Use case: illustration-story. Asset type: a single local illustration for Shendu personal review archive cards. Subject: A seated person carefully places a book, a seed and a small frame into an open box. Style: minimalist editorial LINE illustration matching the existing overview icons: whimsical small oval heads with a single long curved nose and almost no facial detail, elongated rounded ivory arms and legs, oversized simple hands, flowing relaxed curves, very thin continuous category-colored outlines, sparse flat accent clothing and a few geometric paper props. Keep the figure mostly ivory and open negative space, like a delicate ink drawing with a few flat colored shapes. The scene is about the action and props, never a portrait. No angular faceted anatomy, realistic human face, anime, large hair mass, heavy filled silhouette, 3D, texture or shading. Color palette strictly #624782 for contours and deepest clothing, #9A73BD for major accents, #F7EFFC and ivory for small surfaces. Composition: one distinct cohesive scene, centered, square, complete silhouettes with at least 12 percent empty margin; uniform warm white #FFFEFA background. Constraints: a unique pose, prop arrangement and scene for this asset. No lettering, numbers, badges, frames, logos, watermark, photographic texture, gradients or drop shadows. Avoid all teal or green clothing, plants, props and contours; use the specified category colors instead.",
+      "output": "yearly-03-year-keep.png",
+      "terms": [
+        "保留",
+        "珍惜",
+        "坚持",
+        "值得",
+        "价值"
+      ]
     },
     {
       "id": "yearly-04-year-release",
       "type": "yearly",
       "label": "向过去轻轻告别",
-      "status": "planned",
+      "status": "generated-and-reviewed",
       "reference": "../../shendu/public/assets/overview/yearly.svg",
       "palette": {
         "dark": "#624782",
         "accent": "#9A73BD",
         "paper": "#F7EFFC"
       },
-      "prompt": "Use case: illustration-story. Asset type: a single local illustration for Shendu personal review archive cards. Subject: A person releases a small paper boat into a curved stream. Style: flat editorial human illustration, angular ivory figures, thin expressive dark contours, geometric paper props, restrained hand-drawn elegance. Match the established overview category icon visual language; do not imitate a generic 3D mascot. Color palette strictly #624782 for contours and deepest clothing, #9A73BD for major accents, #F7EFFC and ivory for small surfaces. Composition: one distinct cohesive scene, centered, square, complete silhouettes with at least 12 percent empty margin; uniform warm white #FFFEFA background. Constraints: a unique pose, prop arrangement and scene for this asset. No lettering, numbers, badges, frames, logos, watermark, photographic texture, gradients or drop shadows. Avoid all teal or green clothing, plants, props and contours; use the specified category colors instead.",
-      "output": "yearly-04-year-release.png"
+      "prompt": "Use case: illustration-story. Asset type: a single local illustration for Shendu personal review archive cards. Subject: A person releases a small paper boat into a curved stream. Style: minimalist editorial LINE illustration matching the existing overview icons: whimsical small oval heads with a single long curved nose and almost no facial detail, elongated rounded ivory arms and legs, oversized simple hands, flowing relaxed curves, very thin continuous category-colored outlines, sparse flat accent clothing and a few geometric paper props. Keep the figure mostly ivory and open negative space, like a delicate ink drawing with a few flat colored shapes. The scene is about the action and props, never a portrait. No angular faceted anatomy, realistic human face, anime, large hair mass, heavy filled silhouette, 3D, texture or shading. Color palette strictly #624782 for contours and deepest clothing, #9A73BD for major accents, #F7EFFC and ivory for small surfaces. Composition: one distinct cohesive scene, centered, square, complete silhouettes with at least 12 percent empty margin; uniform warm white #FFFEFA background. Constraints: a unique pose, prop arrangement and scene for this asset. No lettering, numbers, badges, frames, logos, watermark, photographic texture, gradients or drop shadows. Avoid all teal or green clothing, plants, props and contours; use the specified category colors instead.",
+      "output": "yearly-04-year-release.png",
+      "terms": [
+        "放下",
+        "告别",
+        "过去",
+        "释怀",
+        "负担"
+      ]
     },
     {
       "id": "yearly-05-year-coordinate",
       "type": "yearly",
       "label": "找到新的坐标",
-      "status": "planned",
+      "status": "generated-and-reviewed",
       "reference": "../../shendu/public/assets/overview/yearly.svg",
       "palette": {
         "dark": "#624782",
         "accent": "#9A73BD",
         "paper": "#F7EFFC"
       },
-      "prompt": "Use case: illustration-story. Asset type: a single local illustration for Shendu personal review archive cards. Subject: A person places a pin on a large abstract coordinate globe beside a notebook. Style: flat editorial human illustration, angular ivory figures, thin expressive dark contours, geometric paper props, restrained hand-drawn elegance. Match the established overview category icon visual language; do not imitate a generic 3D mascot. Color palette strictly #624782 for contours and deepest clothing, #9A73BD for major accents, #F7EFFC and ivory for small surfaces. Composition: one distinct cohesive scene, centered, square, complete silhouettes with at least 12 percent empty margin; uniform warm white #FFFEFA background. Constraints: a unique pose, prop arrangement and scene for this asset. No lettering, numbers, badges, frames, logos, watermark, photographic texture, gradients or drop shadows. Avoid all teal or green clothing, plants, props and contours; use the specified category colors instead.",
-      "output": "yearly-05-year-coordinate.png"
+      "prompt": "Use case: illustration-story. Asset type: a single local illustration for Shendu personal review archive cards. Subject: A person places a pin on a large abstract coordinate globe beside a notebook. Style: minimalist editorial LINE illustration matching the existing overview icons: whimsical small oval heads with a single long curved nose and almost no facial detail, elongated rounded ivory arms and legs, oversized simple hands, flowing relaxed curves, very thin continuous category-colored outlines, sparse flat accent clothing and a few geometric paper props. Keep the figure mostly ivory and open negative space, like a delicate ink drawing with a few flat colored shapes. The scene is about the action and props, never a portrait. No angular faceted anatomy, realistic human face, anime, large hair mass, heavy filled silhouette, 3D, texture or shading. Color palette strictly #624782 for contours and deepest clothing, #9A73BD for major accents, #F7EFFC and ivory for small surfaces. Composition: one distinct cohesive scene, centered, square, complete silhouettes with at least 12 percent empty margin; uniform warm white #FFFEFA background. Constraints: a unique pose, prop arrangement and scene for this asset. No lettering, numbers, badges, frames, logos, watermark, photographic texture, gradients or drop shadows. Avoid all teal or green clothing, plants, props and contours; use the specified category colors instead.",
+      "output": "yearly-05-year-coordinate.png",
+      "terms": [
+        "坐标",
+        "定位",
+        "方向",
+        "选择",
+        "校准"
+      ]
     },
     {
       "id": "yearly-06-year-horizon",
       "type": "yearly",
       "label": "把目光交给未来",
-      "status": "planned",
+      "status": "generated-and-reviewed",
       "reference": "../../shendu/public/assets/overview/yearly.svg",
       "palette": {
         "dark": "#624782",
         "accent": "#9A73BD",
         "paper": "#F7EFFC"
       },
-      "prompt": "Use case: illustration-story. Asset type: a single local illustration for Shendu personal review archive cards. Subject: A person stands on a low overlook holding a rolled map and looking toward a rising sun. Style: flat editorial human illustration, angular ivory figures, thin expressive dark contours, geometric paper props, restrained hand-drawn elegance. Match the established overview category icon visual language; do not imitate a generic 3D mascot. Color palette strictly #624782 for contours and deepest clothing, #9A73BD for major accents, #F7EFFC and ivory for small surfaces. Composition: one distinct cohesive scene, centered, square, complete silhouettes with at least 12 percent empty margin; uniform warm white #FFFEFA background. Constraints: a unique pose, prop arrangement and scene for this asset. No lettering, numbers, badges, frames, logos, watermark, photographic texture, gradients or drop shadows. Avoid all teal or green clothing, plants, props and contours; use the specified category colors instead.",
-      "output": "yearly-06-year-horizon.png"
+      "prompt": "Use case: illustration-story. Asset type: a single local illustration for Shendu personal review archive cards. Subject: A person stands on a low overlook holding a rolled map and looking toward a rising sun. Style: minimalist editorial LINE illustration matching the existing overview icons: whimsical small oval heads with a single long curved nose and almost no facial detail, elongated rounded ivory arms and legs, oversized simple hands, flowing relaxed curves, very thin continuous category-colored outlines, sparse flat accent clothing and a few geometric paper props. Keep the figure mostly ivory and open negative space, like a delicate ink drawing with a few flat colored shapes. The scene is about the action and props, never a portrait. No angular faceted anatomy, realistic human face, anime, large hair mass, heavy filled silhouette, 3D, texture or shading. Color palette strictly #624782 for contours and deepest clothing, #9A73BD for major accents, #F7EFFC and ivory for small surfaces. Composition: one distinct cohesive scene, centered, square, complete silhouettes with at least 12 percent empty margin; uniform warm white #FFFEFA background. Constraints: a unique pose, prop arrangement and scene for this asset. No lettering, numbers, badges, frames, logos, watermark, photographic texture, gradients or drop shadows. Avoid all teal or green clothing, plants, props and contours; use the specified category colors instead.",
+      "output": "yearly-06-year-horizon.png",
+      "terms": [
+        "未来",
+        "明年",
+        "期望",
+        "愿景",
+        "规划"
+      ]
     },
     {
       "id": "decision-01-decision-question",
       "type": "decision",
       "label": "先问清问题",
-      "status": "planned",
+      "status": "generated-and-reviewed",
       "reference": "../../shendu/public/assets/overview/decision.svg",
       "palette": {
         "dark": "#455F34",
         "accent": "#759D58",
         "paper": "#F3F8E8"
       },
-      "prompt": "Use case: illustration-story. Asset type: a single local illustration for Shendu personal review archive cards. Subject: A seated person studies a large blank folded page through a magnifying glass. Style: flat editorial human illustration, angular ivory figures, thin expressive dark contours, geometric paper props, restrained hand-drawn elegance. Match the established overview category icon visual language; do not imitate a generic 3D mascot. Color palette strictly #455F34 for contours and deepest clothing, #759D58 for major accents, #F3F8E8 and ivory for small surfaces. Composition: one distinct cohesive scene, centered, square, complete silhouettes with at least 12 percent empty margin; uniform warm white #FFFEFA background. Constraints: a unique pose, prop arrangement and scene for this asset. No lettering, numbers, badges, frames, logos, watermark, photographic texture, gradients or drop shadows. Use only the specified category colors and ivory.",
-      "output": "decision-01-decision-question.png"
+      "prompt": "Use case: illustration-story. Asset type: a single local illustration for Shendu personal review archive cards. Subject: A seated person studies a large blank folded page through a magnifying glass. Style: minimalist editorial LINE illustration matching the existing overview icons: whimsical small oval heads with a single long curved nose and almost no facial detail, elongated rounded ivory arms and legs, oversized simple hands, flowing relaxed curves, very thin continuous category-colored outlines, sparse flat accent clothing and a few geometric paper props. Keep the figure mostly ivory and open negative space, like a delicate ink drawing with a few flat colored shapes. The scene is about the action and props, never a portrait. No angular faceted anatomy, realistic human face, anime, large hair mass, heavy filled silhouette, 3D, texture or shading. Color palette strictly #455F34 for contours and deepest clothing, #759D58 for major accents, #F3F8E8 and ivory for small surfaces. Composition: one distinct cohesive scene, centered, square, complete silhouettes with at least 12 percent empty margin; uniform warm white #FFFEFA background. Constraints: a unique pose, prop arrangement and scene for this asset. No lettering, numbers, badges, frames, logos, watermark, photographic texture, gradients or drop shadows. Use only the specified category colors and ivory.",
+      "output": "decision-01-decision-question.png",
+      "terms": [
+        "问题",
+        "疑问",
+        "决定",
+        "澄清",
+        "思考"
+      ]
     },
     {
       "id": "decision-02-decision-facts",
       "type": "decision",
       "label": "把事实摆上桌",
-      "status": "planned",
+      "status": "generated-and-reviewed",
       "reference": "../../shendu/public/assets/overview/decision.svg",
       "palette": {
         "dark": "#455F34",
         "accent": "#759D58",
         "paper": "#F3F8E8"
       },
-      "prompt": "Use case: illustration-story. Asset type: a single local illustration for Shendu personal review archive cards. Subject: A person sorts three evidence objects on a wide low table under a desk light. Style: flat editorial human illustration, angular ivory figures, thin expressive dark contours, geometric paper props, restrained hand-drawn elegance. Match the established overview category icon visual language; do not imitate a generic 3D mascot. Color palette strictly #455F34 for contours and deepest clothing, #759D58 for major accents, #F3F8E8 and ivory for small surfaces. Composition: one distinct cohesive scene, centered, square, complete silhouettes with at least 12 percent empty margin; uniform warm white #FFFEFA background. Constraints: a unique pose, prop arrangement and scene for this asset. No lettering, numbers, badges, frames, logos, watermark, photographic texture, gradients or drop shadows. Use only the specified category colors and ivory.",
-      "output": "decision-02-decision-facts.png"
+      "prompt": "Use case: illustration-story. Asset type: a single local illustration for Shendu personal review archive cards. Subject: A person sorts three evidence objects on a wide low table under a desk light. Style: minimalist editorial LINE illustration matching the existing overview icons: whimsical small oval heads with a single long curved nose and almost no facial detail, elongated rounded ivory arms and legs, oversized simple hands, flowing relaxed curves, very thin continuous category-colored outlines, sparse flat accent clothing and a few geometric paper props. Keep the figure mostly ivory and open negative space, like a delicate ink drawing with a few flat colored shapes. The scene is about the action and props, never a portrait. No angular faceted anatomy, realistic human face, anime, large hair mass, heavy filled silhouette, 3D, texture or shading. Color palette strictly #455F34 for contours and deepest clothing, #759D58 for major accents, #F3F8E8 and ivory for small surfaces. Composition: one distinct cohesive scene, centered, square, complete silhouettes with at least 12 percent empty margin; uniform warm white #FFFEFA background. Constraints: a unique pose, prop arrangement and scene for this asset. No lettering, numbers, badges, frames, logos, watermark, photographic texture, gradients or drop shadows. Use only the specified category colors and ivory.",
+      "output": "decision-02-decision-facts.png",
+      "terms": [
+        "事实",
+        "证据",
+        "信息",
+        "调查",
+        "核实"
+      ]
     },
     {
       "id": "decision-03-decision-options",
       "type": "decision",
       "label": "比较可走的路",
-      "status": "planned",
+      "status": "generated-and-reviewed",
       "reference": "../../shendu/public/assets/overview/decision.svg",
       "palette": {
         "dark": "#455F34",
         "accent": "#759D58",
         "paper": "#F3F8E8"
       },
-      "prompt": "Use case: illustration-story. Asset type: a single local illustration for Shendu personal review archive cards. Subject: A person stands at a three-way fork while holding a small compass. Style: flat editorial human illustration, angular ivory figures, thin expressive dark contours, geometric paper props, restrained hand-drawn elegance. Match the established overview category icon visual language; do not imitate a generic 3D mascot. Color palette strictly #455F34 for contours and deepest clothing, #759D58 for major accents, #F3F8E8 and ivory for small surfaces. Composition: one distinct cohesive scene, centered, square, complete silhouettes with at least 12 percent empty margin; uniform warm white #FFFEFA background. Constraints: a unique pose, prop arrangement and scene for this asset. No lettering, numbers, badges, frames, logos, watermark, photographic texture, gradients or drop shadows. Use only the specified category colors and ivory.",
-      "output": "decision-03-decision-options.png"
+      "prompt": "Use case: illustration-story. Asset type: a single local illustration for Shendu personal review archive cards. Subject: A person stands at a three-way fork while holding a small compass. Style: minimalist editorial LINE illustration matching the existing overview icons: whimsical small oval heads with a single long curved nose and almost no facial detail, elongated rounded ivory arms and legs, oversized simple hands, flowing relaxed curves, very thin continuous category-colored outlines, sparse flat accent clothing and a few geometric paper props. Keep the figure mostly ivory and open negative space, like a delicate ink drawing with a few flat colored shapes. The scene is about the action and props, never a portrait. No angular faceted anatomy, realistic human face, anime, large hair mass, heavy filled silhouette, 3D, texture or shading. Color palette strictly #455F34 for contours and deepest clothing, #759D58 for major accents, #F3F8E8 and ivory for small surfaces. Composition: one distinct cohesive scene, centered, square, complete silhouettes with at least 12 percent empty margin; uniform warm white #FFFEFA background. Constraints: a unique pose, prop arrangement and scene for this asset. No lettering, numbers, badges, frames, logos, watermark, photographic texture, gradients or drop shadows. Use only the specified category colors and ivory.",
+      "output": "decision-03-decision-options.png",
+      "terms": [
+        "方案",
+        "选择",
+        "比较",
+        "取舍",
+        "备选"
+      ]
     },
     {
       "id": "decision-04-decision-risk",
       "type": "decision",
       "label": "为风险留余地",
-      "status": "planned",
+      "status": "generated-and-reviewed",
       "reference": "../../shendu/public/assets/overview/decision.svg",
       "palette": {
         "dark": "#455F34",
         "accent": "#759D58",
         "paper": "#F3F8E8"
       },
-      "prompt": "Use case: illustration-story. Asset type: a single local illustration for Shendu personal review archive cards. Subject: A person checks a small safety rope before crossing a short suspended bridge. Style: flat editorial human illustration, angular ivory figures, thin expressive dark contours, geometric paper props, restrained hand-drawn elegance. Match the established overview category icon visual language; do not imitate a generic 3D mascot. Color palette strictly #455F34 for contours and deepest clothing, #759D58 for major accents, #F3F8E8 and ivory for small surfaces. Composition: one distinct cohesive scene, centered, square, complete silhouettes with at least 12 percent empty margin; uniform warm white #FFFEFA background. Constraints: a unique pose, prop arrangement and scene for this asset. No lettering, numbers, badges, frames, logos, watermark, photographic texture, gradients or drop shadows. Use only the specified category colors and ivory.",
-      "output": "decision-04-decision-risk.png"
+      "prompt": "Use case: illustration-story. Asset type: a single local illustration for Shendu personal review archive cards. Subject: A person checks a small safety rope before crossing a short suspended bridge. Style: minimalist editorial LINE illustration matching the existing overview icons: whimsical small oval heads with a single long curved nose and almost no facial detail, elongated rounded ivory arms and legs, oversized simple hands, flowing relaxed curves, very thin continuous category-colored outlines, sparse flat accent clothing and a few geometric paper props. Keep the figure mostly ivory and open negative space, like a delicate ink drawing with a few flat colored shapes. The scene is about the action and props, never a portrait. No angular faceted anatomy, realistic human face, anime, large hair mass, heavy filled silhouette, 3D, texture or shading. Color palette strictly #455F34 for contours and deepest clothing, #759D58 for major accents, #F3F8E8 and ivory for small surfaces. Composition: one distinct cohesive scene, centered, square, complete silhouettes with at least 12 percent empty margin; uniform warm white #FFFEFA background. Constraints: a unique pose, prop arrangement and scene for this asset. No lettering, numbers, badges, frames, logos, watermark, photographic texture, gradients or drop shadows. Use only the specified category colors and ivory.",
+      "output": "decision-04-decision-risk.png",
+      "terms": [
+        "风险",
+        "不确定",
+        "预案",
+        "代价",
+        "后果"
+      ]
     },
     {
       "id": "decision-05-decision-first",
       "type": "decision",
       "label": "踏出可逆的一步",
-      "status": "planned",
+      "status": "generated-and-reviewed",
       "reference": "../../shendu/public/assets/overview/decision.svg",
       "palette": {
         "dark": "#455F34",
         "accent": "#759D58",
         "paper": "#F3F8E8"
       },
-      "prompt": "Use case: illustration-story. Asset type: a single local illustration for Shendu personal review archive cards. Subject: A person tests the first stepping stone with one foot while the other remains on shore. Style: flat editorial human illustration, angular ivory figures, thin expressive dark contours, geometric paper props, restrained hand-drawn elegance. Match the established overview category icon visual language; do not imitate a generic 3D mascot. Color palette strictly #455F34 for contours and deepest clothing, #759D58 for major accents, #F3F8E8 and ivory for small surfaces. Composition: one distinct cohesive scene, centered, square, complete silhouettes with at least 12 percent empty margin; uniform warm white #FFFEFA background. Constraints: a unique pose, prop arrangement and scene for this asset. No lettering, numbers, badges, frames, logos, watermark, photographic texture, gradients or drop shadows. Use only the specified category colors and ivory.",
-      "output": "decision-05-decision-first.png"
+      "prompt": "Use case: illustration-story. Asset type: a single local illustration for Shendu personal review archive cards. Subject: A person tests the first stepping stone with one foot while the other remains on shore. Style: minimalist editorial LINE illustration matching the existing overview icons: whimsical small oval heads with a single long curved nose and almost no facial detail, elongated rounded ivory arms and legs, oversized simple hands, flowing relaxed curves, very thin continuous category-colored outlines, sparse flat accent clothing and a few geometric paper props. Keep the figure mostly ivory and open negative space, like a delicate ink drawing with a few flat colored shapes. The scene is about the action and props, never a portrait. No angular faceted anatomy, realistic human face, anime, large hair mass, heavy filled silhouette, 3D, texture or shading. Color palette strictly #455F34 for contours and deepest clothing, #759D58 for major accents, #F3F8E8 and ivory for small surfaces. Composition: one distinct cohesive scene, centered, square, complete silhouettes with at least 12 percent empty margin; uniform warm white #FFFEFA background. Constraints: a unique pose, prop arrangement and scene for this asset. No lettering, numbers, badges, frames, logos, watermark, photographic texture, gradients or drop shadows. Use only the specified category colors and ivory.",
+      "output": "decision-05-decision-first.png",
+      "terms": [
+        "行动",
+        "第一步",
+        "开始",
+        "执行",
+        "尝试"
+      ]
     },
     {
       "id": "decision-06-decision-return",
       "type": "decision",
       "label": "回到结果里检验",
-      "status": "planned",
+      "status": "generated-and-reviewed",
       "reference": "../../shendu/public/assets/overview/decision.svg",
       "palette": {
         "dark": "#455F34",
         "accent": "#759D58",
         "paper": "#F3F8E8"
       },
-      "prompt": "Use case: illustration-story. Asset type: a single local illustration for Shendu personal review archive cards. Subject: A person compares two blank photographs beside a notebook and a small calendar disc. Style: flat editorial human illustration, angular ivory figures, thin expressive dark contours, geometric paper props, restrained hand-drawn elegance. Match the established overview category icon visual language; do not imitate a generic 3D mascot. Color palette strictly #455F34 for contours and deepest clothing, #759D58 for major accents, #F3F8E8 and ivory for small surfaces. Composition: one distinct cohesive scene, centered, square, complete silhouettes with at least 12 percent empty margin; uniform warm white #FFFEFA background. Constraints: a unique pose, prop arrangement and scene for this asset. No lettering, numbers, badges, frames, logos, watermark, photographic texture, gradients or drop shadows. Use only the specified category colors and ivory.",
-      "output": "decision-06-decision-return.png"
+      "prompt": "Use case: illustration-story. Asset type: a single local illustration for Shendu personal review archive cards. Subject: A person compares two blank photographs beside a notebook and a small calendar disc. Style: minimalist editorial LINE illustration matching the existing overview icons: whimsical small oval heads with a single long curved nose and almost no facial detail, elongated rounded ivory arms and legs, oversized simple hands, flowing relaxed curves, very thin continuous category-colored outlines, sparse flat accent clothing and a few geometric paper props. Keep the figure mostly ivory and open negative space, like a delicate ink drawing with a few flat colored shapes. The scene is about the action and props, never a portrait. No angular faceted anatomy, realistic human face, anime, large hair mass, heavy filled silhouette, 3D, texture or shading. Color palette strictly #455F34 for contours and deepest clothing, #759D58 for major accents, #F3F8E8 and ivory for small surfaces. Composition: one distinct cohesive scene, centered, square, complete silhouettes with at least 12 percent empty margin; uniform warm white #FFFEFA background. Constraints: a unique pose, prop arrangement and scene for this asset. No lettering, numbers, badges, frames, logos, watermark, photographic texture, gradients or drop shadows. Use only the specified category colors and ivory.",
+      "output": "decision-06-decision-return.png",
+      "terms": [
+        "验证",
+        "复查",
+        "结果",
+        "调整",
+        "回看"
+      ]
     }
   ]
 }

@@ -130,7 +130,7 @@ components:
 
 历史复盘使用独立的纸感归档页、大标题、搜索与类型／年份／月份筛选条。记录卡在宽屏排成两列，手机单列，每类采用对应概览配色和现有透明场景插画；图文分区，标题和摘要优先，周期与真实状态清晰可读。配图不向外部服务发送正文、不增加数据字段，不妨碍整卡打开。长标题、无匹配和空档案保留清楚的边界和入口。概览卡片默认标题中的点号、斜线、连字符或中文日期若与记录周期相同，统一为中文日期并仅显示一次；自定义标题及其他日期保留。
 
-历史与行动验证的记录插画由独立 `record-art.js` 从全量记录分配，同类优先未用图，再按本地关键词和ID稳定选择；不再一类固定一张，也不随搜索筛选重排配图。目前使用24张真实现有素材；65张独立新场景的生成准备在 `art/record-library/`，未生成前不进入运行图池。每张未来插画继续严格服从概览六类主色、细轮廓和平面人物语言。
+历史与行动验证的记录插画由独立 `record-art.js` 从全量记录分配，同类优先未用图，再按本地关键词和ID稳定选择；不再一类固定一张，也不随搜索筛选重排配图。当前图池为65张已实际生成、逐图审阅的独立新场景：每日30、周7、月12、季4、年6、决策6。图片在 `assets/records/`，原始PNG、六组联系图和可本地打开的图册在 `output/imagegen/record-library/`；提示词与逐图审阅哈希在 `art/record-library/`。人物以细曲线和象牙白保持统一，姿态、道具和构图各不相同。WebP按概览六类配色归一化，透明来自本地边缘背景提取；不改概览、阶段日历或沉浸填写插画。部署仅使用本地图片。
 
 行动验证沿用纸感页头、两列分类卡片和手机单列布局，待验证与已验证分区保留。原行动和日期在卡片上明确呈现，长结果／调整可通过原生展开控件完整阅读；验证填写使用同风格局部对话框。配图仅为装饰，原最早验证日、预期与实际时间、重大决策结果／过程评估及提交锁定语义不变。
 
@@ -141,3 +141,9 @@ components:
 六类复盘的题目标题使用 900 字重宋体，桌面 40—64px、手机 32—44px；深墨正文、对应类别强调色和较轻的说明／状态文字形成层级。概览展开介绍同步加大类别标题、说明与时长，进入按钮以类别深色底和白字突出；六图标排布与既有交互保持原样。周、月、季九张阶段图已按对应概览图标重新校准全图色调，见[图标与阶段插画对照](docs/extended-palette-comparison.png)。
 
 六类插画衬底各自采用折页纸、珊瑚叠纸点阵、琥珀圆盘刻度、湖蓝路径格线、紫色年轮轨道、橄榄绿对向纸形，保持低对比、静态且不接收指针；左上角阶段名称跟随概览类别深色。
+
+## 2026-11-04 archive workspace refinement
+- Header review dropdown removed on desktop and mobile; overview category entries remain available.
+- Stage dialog switches among calendar/stage/pending while retaining shared statistics. Calendar no longer stacks below all other sections.
+- History/actions reading surface extends to 1480px. Actions use one full-width record per row with paired native disclosures, initially open; mobile stacks the pair.
+- Existing records, verification eligibility, illustrations and overview layout remain unchanged.

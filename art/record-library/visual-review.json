@@ -1,0 +1,405 @@
+{
+  "reviewed_on": "2026-11-04",
+  "reference": "shendu/public/assets/overview/*.svg",
+  "checks": [
+    "All six actual rendered contact sheets inspected; 65 distinct poses, props and scene compositions.",
+    "Category palettes visibly match the six overview icons; no teal dominance in weekly/monthly/quarterly.",
+    "Complete main subjects; border-connected alpha and paper interiors inspected.",
+    "65 unique PNG hashes and 65 unique WebP hashes; all 640-square WebP alpha ranges verified."
+  ],
+  "rejected_variants": "Initial angular portrait sample rejected; not published or included in counts.",
+  "approved_ids": [
+    "daily-01-morning-window",
+    "daily-02-sleep-rest",
+    "daily-03-stretch-energy",
+    "daily-04-desk-focus",
+    "daily-05-reading-corner",
+    "daily-06-walk-leaves",
+    "daily-07-small-checklist",
+    "daily-08-plant-care",
+    "daily-09-tea-pause",
+    "daily-10-listen-talk",
+    "daily-11-tidy-room",
+    "daily-12-cook-meal",
+    "daily-13-cycle-outdoors",
+    "daily-14-journal-page",
+    "daily-15-balance-stones",
+    "daily-16-repair-mend",
+    "daily-17-clear-inbox",
+    "daily-18-music-break",
+    "daily-19-make-notes",
+    "daily-20-rain-umbrella",
+    "daily-21-sunset-bench",
+    "daily-22-steps-stairs",
+    "daily-23-protect-time",
+    "daily-24-untangle-thread",
+    "daily-25-garden-path",
+    "daily-26-quiet-breath",
+    "daily-27-finish-puzzle",
+    "daily-28-night-lamp",
+    "daily-29-share-help",
+    "daily-30-tomorrow-bag",
+    "weekly-01-seven-pages",
+    "weekly-02-weekly-pattern",
+    "weekly-03-week-priorities",
+    "weekly-04-unfinished-carry",
+    "weekly-05-week-balance",
+    "weekly-06-week-path",
+    "weekly-07-week-next",
+    "monthly-01-month-harvest",
+    "monthly-02-month-system",
+    "monthly-03-month-budget",
+    "monthly-04-month-habit",
+    "monthly-05-month-bottleneck",
+    "monthly-06-month-experiment",
+    "monthly-07-month-learning",
+    "monthly-08-month-workspace",
+    "monthly-09-month-relation",
+    "monthly-10-month-energy",
+    "monthly-11-month-release",
+    "monthly-12-month-next",
+    "quarterly-01-quarter-spring",
+    "quarterly-02-quarter-summer",
+    "quarterly-03-quarter-autumn",
+    "quarterly-04-quarter-winter",
+    "yearly-01-year-milestones",
+    "yearly-02-year-growth",
+    "yearly-03-year-keep",
+    "yearly-04-year-release",
+    "yearly-05-year-coordinate",
+    "yearly-06-year-horizon",
+    "decision-01-decision-question",
+    "decision-02-decision-facts",
+    "decision-03-decision-options",
+    "decision-04-decision-risk",
+    "decision-05-decision-first",
+    "decision-06-decision-return"
+  ],
+  "assets": [
+    {
+      "id": "daily-01-morning-window",
+      "source_sha256": "0c96d002cf5446d028894bbf3a15a37534e9c10d4f8b5612b6c176435a8d0db9",
+      "webp_sha256": "90593eeb9fc54c26e2a272426b1a8643aefb2a38a64ea3b9aa55155f84b09e52"
+    },
+    {
+      "id": "daily-02-sleep-rest",
+      "source_sha256": "e66df3f05d3b85707208c5c1495199915674ff26e7198e4d85f7fbed8592c310",
+      "webp_sha256": "d5868ce41a8fe3889d26a09095a45d4440c326106c361734ab278482de058a4e"
+    },
+    {
+      "id": "daily-03-stretch-energy",
+      "source_sha256": "97c8d24a3425b59dbf163cd48a021e01425c439f651a294f68057e7e92469cac",
+      "webp_sha256": "42f7eb3d30aca0fb364addae9f1469adc2676c78880cb51972ee4d658f6061aa"
+    },
+    {
+      "id": "daily-04-desk-focus",
+      "source_sha256": "49f30aa15846d5cde54e826f36e177665542bb8ad89f25fbdb087596727dabed",
+      "webp_sha256": "3585f1f009ef9434440251192c2b135bd18b8a11e899d8f0790e1e72ed3249ef"
+    },
+    {
+      "id": "daily-05-reading-corner",
+      "source_sha256": "ef647a18c300a417d7fb614bf46d40ccac8719458c855f115c04e86ef610a227",
+      "webp_sha256": "aae249d9dd78d15cee2045e57a748eccb4c3ea283bdbc79c32ffe2b90b320ac3"
+    },
+    {
+      "id": "daily-06-walk-leaves",
+      "source_sha256": "37379b247becd9d9494010623a1b53ae283a5572637b13f0b4f804163a31c015",
+      "webp_sha256": "585d8c79640e2d2e96dd93d7ab7b7f94fb23eb4b0f7669113fbe50b81f3e972b"
+    },
+    {
+      "id": "daily-07-small-checklist",
+      "source_sha256": "7ed07ae1021cac5392d231e96f2e0cc32b4a67eca1fc42557061e984285820f2",
+      "webp_sha256": "15fbd6877c205526041e5a17b280e24ea69401eea8ac1058bec576aefe04f8ab"
+    },
+    {
+      "id": "daily-08-plant-care",
+      "source_sha256": "f155c84b5fbf8727485acb4fbc832605523f7c46bcc20f45a49fb194a37f3329",
+      "webp_sha256": "732aa1513d621a88e961cb7fcd8c99b24fe2d8ef607a57fb026e5be95593ceb6"
+    },
+    {
+      "id": "daily-09-tea-pause",
+      "source_sha256": "4edf1f0ff684575cfbb7c20d8bf5129f9f875d0a31343fb525e78d2b5b6d8d65",
+      "webp_sha256": "72cebcf416b29942a7fa08987a981697ca8cc26aa625011c265ba7eea00d4dc6"
+    },
+    {
+      "id": "daily-10-listen-talk",
+      "source_sha256": "626ed33166da41cbe7116e7c0ce781b33b8a3561f68f1cc7486aee7d8b479c1c",
+      "webp_sha256": "a5249d19006de2936bce2f0300187526367222587ef600af50f71571dbfa0527"
+    },
+    {
+      "id": "daily-11-tidy-room",
+      "source_sha256": "367c8390286273f0aa986f15da0c16b77d5a22a6cae9265857a9511a73c61947",
+      "webp_sha256": "148ad561ca2b62bcb172df8661228d6d9ef51e3096b9fb6688fef16b9aeddd73"
+    },
+    {
+      "id": "daily-12-cook-meal",
+      "source_sha256": "c4eb511555334f973d653696cdc171f98f8e8f66ae1352368084c24643bbb838",
+      "webp_sha256": "4d4bb3dfe4f731a826c1ac26c6980bba55e8d2c4858698dfb1701d75c2e14aea"
+    },
+    {
+      "id": "daily-13-cycle-outdoors",
+      "source_sha256": "101ee09b5f8fde826a8f97c2bd644971a7857710e03bf3bce33407315a21128d",
+      "webp_sha256": "412fd8f561278e1f4dd047ab4a5852798732030aa9d051db60813d656b9264d8"
+    },
+    {
+      "id": "daily-14-journal-page",
+      "source_sha256": "814b53c5f3b6a096e31fc18059b6dfc4a31d16379893f6eb89e9362516152a99",
+      "webp_sha256": "9ab6de3495c0a138b97be63799563ac179ffeadd55afad2be03dcd407230b0e2"
+    },
+    {
+      "id": "daily-15-balance-stones",
+      "source_sha256": "612b7efb2770b9470f1593450afed31748a41adf70db9527a5849d284b32d89d",
+      "webp_sha256": "f35bdb87d8f733116ad7b4918ad7250c878c532b68e2e79b1befa95577f445b8"
+    },
+    {
+      "id": "daily-16-repair-mend",
+      "source_sha256": "5f29dc910ba56892d76051590a72b82e479e8e4a8f322f25095bc55f69de3139",
+      "webp_sha256": "2205d63d5ebb9a5e713c30fe40c8688fe220597576bca4d4cb314241391bfc1f"
+    },
+    {
+      "id": "daily-17-clear-inbox",
+      "source_sha256": "005073b496f3910b8f9e305ec6c12d9e3e80e70a943d01715f1f23a4630b7bd8",
+      "webp_sha256": "1218180cb425a87bb1dd0c5593fb56e8b23799ca00a9055e223827e92c95063b"
+    },
+    {
+      "id": "daily-18-music-break",
+      "source_sha256": "6a8ec9b807772391cc71876d34e78edd40e769b8abb625f2487e63a643d1ff41",
+      "webp_sha256": "88ecf9079f16faacc071032a967cc3ed535f7649bc9567b67cae1ddf2c621a2c"
+    },
+    {
+      "id": "daily-19-make-notes",
+      "source_sha256": "93131b999a49a4f4cba5b8e0cc9f6eb8b130d6c998f4339b8148a4ea566026fa",
+      "webp_sha256": "bdb35584cbe906bd9fe5f42fc6b24975b11051360e3ac9f5aad9dd0d34a1ec7b"
+    },
+    {
+      "id": "daily-20-rain-umbrella",
+      "source_sha256": "529b1df51b353b77e19859e2a59a74780bdabf23584dc4cc51b36101ad67b28d",
+      "webp_sha256": "beaa0a18db1ab006d536a40268e4144c433720e998eeae192c108dced0a48679"
+    },
+    {
+      "id": "daily-21-sunset-bench",
+      "source_sha256": "0ae9b347d1e836a9662412a9e3cc1494885cb3dbcd3bbe7d4341820029b35a4b",
+      "webp_sha256": "aeb165c81b9de1a89f3712905c1fcbe0dd187159da364b07df6f71fa1398f0e8"
+    },
+    {
+      "id": "daily-22-steps-stairs",
+      "source_sha256": "95576fee5dcb338029b2218abfcd3d12b73c739251f4f9ce83896a65a7b4b9df",
+      "webp_sha256": "b2c10d814e4272ac94b011729b27baf4f809d5dd5f6bcf2812b3d048ebf3cc06"
+    },
+    {
+      "id": "daily-23-protect-time",
+      "source_sha256": "23aedbb2c3620b5284a39186a07a3beddcc4039ca9ae19e64079801303f183ad",
+      "webp_sha256": "035e903ac104a78f5af53063150470e6c5be59bfb10c8d28217daecf7004f413"
+    },
+    {
+      "id": "daily-24-untangle-thread",
+      "source_sha256": "d5f37233b44f39c1f175954f3a1fb44d8c9860b6c9aba73eacea1d795ad4eed9",
+      "webp_sha256": "b6a1d41837704956854635cfad13a8205b4d0be1d322abfe2c70bd97867111b7"
+    },
+    {
+      "id": "daily-25-garden-path",
+      "source_sha256": "7ddfe22def429881ec2645ac01db9a9f23e822b2652a3ebebbacb5ee59cdf291",
+      "webp_sha256": "7a4e2805669e3aca82a0dba7a8805e8479c0996133aeb61f256eb016659abdcf"
+    },
+    {
+      "id": "daily-26-quiet-breath",
+      "source_sha256": "8e81a7607befafc657a4cba0f0c380c9988110ba13f69b5aa8a8e5048f539500",
+      "webp_sha256": "f353429bb25cd68f49750f8caa83f1d5b73c40b56d62957a16633f7fe0bec0e1"
+    },
+    {
+      "id": "daily-27-finish-puzzle",
+      "source_sha256": "dbd0c7c0caacbb261c399b7569d7d24299ca1d297188fdc967cf77daf24fb1d5",
+      "webp_sha256": "1d85a9e805319405a759f309022ad902087ec387a335344e48e2e3682a48cca0"
+    },
+    {
+      "id": "daily-28-night-lamp",
+      "source_sha256": "d956647fd916e1b733c45c6d8bce2d6400ed31b611b3657cfdc70a18ed2e4b32",
+      "webp_sha256": "467158fcbf797c0f1ee166a23bd5f57f4b89762b6a672ebd5462393199cab341"
+    },
+    {
+      "id": "daily-29-share-help",
+      "source_sha256": "73bd21b236c123ea2a16fb0a7730537a4e1626d758b93d04f1aa663f899bfd78",
+      "webp_sha256": "183003421385e6f949e0da34582cc25a5e1c6c524e3dfd15cfee6d44b95515af"
+    },
+    {
+      "id": "daily-30-tomorrow-bag",
+      "source_sha256": "537d541b6113c6e9aa3f1795a4b4b118cd7d841f47b101c80f3755ca371ac390",
+      "webp_sha256": "c457c18e9b6889e64dc57553c9b119e4bd2293476e4ad1e3f2accbc6c9f2ff80"
+    },
+    {
+      "id": "weekly-01-seven-pages",
+      "source_sha256": "6a5d507bd493fb63a04f95ad66a60f52105cfcc1afe8c6879e18b77c02b1a8e4",
+      "webp_sha256": "cddf6ec17cc677373c56e1fdb2ec28e80e21a89eb266c0f1b63e14d6a8828b9d"
+    },
+    {
+      "id": "weekly-02-weekly-pattern",
+      "source_sha256": "3a2e7b9e3ff31f1f7e7b056cff57ab58aa3b5c6b3a83aada3b8d25fb24631081",
+      "webp_sha256": "86a50fe658fbfe5f3b592b60ba4889701590399cf51203a7e2834381a45af496"
+    },
+    {
+      "id": "weekly-03-week-priorities",
+      "source_sha256": "c76e66be00c1f12166ffacf4478ab0b39f4d0ba9b6f5f60e56795b9cefc9ec98",
+      "webp_sha256": "39f2914fb591cc1b1db1e80afd4b2069224a6ab11a9f93dd74e05475d996fad1"
+    },
+    {
+      "id": "weekly-04-unfinished-carry",
+      "source_sha256": "e1801363630d0d5c1c975f1484cbb2142b86f6a245048fca418be5d81de4e69e",
+      "webp_sha256": "4aba5ad7456cfe0f3619b2a880c06997de89d71375cb83b7351ea66791dd6235"
+    },
+    {
+      "id": "weekly-05-week-balance",
+      "source_sha256": "77d8c8174b5ac03fa4b3bf35b2a97007671ca9cb92d18ff8ad43d25b98abac64",
+      "webp_sha256": "faa0e2ee13fad94b4393baf5dedc811e59c837ae2a480a1ac30656cc61c06b4b"
+    },
+    {
+      "id": "weekly-06-week-path",
+      "source_sha256": "95dc4aa299ce1fde897f8260c233b662ed5c89a1e7463c6cd6031a9b8d582bc3",
+      "webp_sha256": "9ba3ee2a65d45b951ca57600dc171f7472a2dca76e419d35f5ddda24a36795f6"
+    },
+    {
+      "id": "weekly-07-week-next",
+      "source_sha256": "6a6d5065d382e550a4ed05f2eb4e5f8fe77990c427a4c1a1443356f7ee01efcb",
+      "webp_sha256": "ad632c8e2d1333603312c14e613285accdad95cdbe451dd673b95f893e8a74f8"
+    },
+    {
+      "id": "monthly-01-month-harvest",
+      "source_sha256": "d3cc183f6bced683709aa83cc09d2e67747bc22d45b144049967cf413dd4ef43",
+      "webp_sha256": "5a4a7322df649653d02598ed77d65df0884e7a5a0cdde70d3e1b9cfc9d60b1fb"
+    },
+    {
+      "id": "monthly-02-month-system",
+      "source_sha256": "4361cda0b8982952643132266a16aa9838f15b137c8adc8f5b51238bc589bb89",
+      "webp_sha256": "5460310913bfa935436460f63ca2096088a27150d5e9934e90c1341181d81b34"
+    },
+    {
+      "id": "monthly-03-month-budget",
+      "source_sha256": "b9654a9da7247670f1df7cb5388ca3c16239a8b1999b6d77cb980b9e74907c3d",
+      "webp_sha256": "5d8067878a256284456bbb64ec0194c375a25a1bc24c909fbde05e3571b1090e"
+    },
+    {
+      "id": "monthly-04-month-habit",
+      "source_sha256": "8485fc858e0c5669907a967fa4f60193b703485cc20c7dc5681aac011a83afad",
+      "webp_sha256": "bbf705aec0b7522ca8d3f1097107a0cf88ec28ac856e63b213be5c0a9d2c7b6b"
+    },
+    {
+      "id": "monthly-05-month-bottleneck",
+      "source_sha256": "2496b834c1303e0f082661441044498c1557f0c3667f447ad48898ac802d25ac",
+      "webp_sha256": "2c303ff3b8887087147d8461619b0abd9931cb1fd7b7f81d5521f4c2605085ca"
+    },
+    {
+      "id": "monthly-06-month-experiment",
+      "source_sha256": "efaefa5b59f5847f09a0b6b92e375a14696b2b90407230d86ae7c9ca34e5f340",
+      "webp_sha256": "db0600a989efe92568e1959a74b9d34127151ba7b663bc2e7646be7b4843c9bd"
+    },
+    {
+      "id": "monthly-07-month-learning",
+      "source_sha256": "2010afb15d623037df5e249b2edbcd19fde9adc3267b598b3d4388aaabc9155b",
+      "webp_sha256": "3981dee1e403b8b29d7dbdb579acc25281e1ec041ea284289056f8896b55f6b9"
+    },
+    {
+      "id": "monthly-08-month-workspace",
+      "source_sha256": "d2f641276f415fdfa48671df23888c648c0421e570026feaba5eaae00eb89f07",
+      "webp_sha256": "e6333d7d57097b5a7fc8cd7deec82cc0c684a86ec2db0932b8d96b136cbb4b42"
+    },
+    {
+      "id": "monthly-09-month-relation",
+      "source_sha256": "671420cd9ea6fc3ccd4505e9803035a5794cf1d0aab67aef38c09f23a0184507",
+      "webp_sha256": "6fbe868a67ed7391ce510b6b336e09a5c9cde5902697ce931e50ee26b8bbc5ce"
+    },
+    {
+      "id": "monthly-10-month-energy",
+      "source_sha256": "eea299584943cfa57420827d19d462c48d877723b01c890e9769d6ed4182bfe4",
+      "webp_sha256": "b69bd3d7e7a7c7ef544ffef6ce79547eb0fdaa0d3ed3fd4363dbc4dd03589d6f"
+    },
+    {
+      "id": "monthly-11-month-release",
+      "source_sha256": "7778e3690d98af44a90765b02e613b8d305349638aaaf9d81e3a7fc245a64474",
+      "webp_sha256": "7079d52d47106d1e86c33e20b1f75de5799283663afd37929f7bff148ad6597d"
+    },
+    {
+      "id": "monthly-12-month-next",
+      "source_sha256": "41a22269bd93abe5603f208502f4868805419e7fffa0bef9bf76aaa16294afc6",
+      "webp_sha256": "7d00d079129f48c023135f05b540067b18485d8e00fc9e7a3b75c46e3f5081db"
+    },
+    {
+      "id": "quarterly-01-quarter-spring",
+      "source_sha256": "ba39203bfbf8ec64b7fc68105cafdc4f7b0f5862c072acc648b81618f83ad503",
+      "webp_sha256": "c2067fca84ce8af41d66fb4d5f11dde7754e4ef132e89cc3baae3e1d304b7e45"
+    },
+    {
+      "id": "quarterly-02-quarter-summer",
+      "source_sha256": "200ddc9aa7dee9fda59e23db151c061fb86972994ce14d059f3685364749919e",
+      "webp_sha256": "cc46aea382c2558ecf90f00a0f4a826205ada77f583a26caf960924f1222159f"
+    },
+    {
+      "id": "quarterly-03-quarter-autumn",
+      "source_sha256": "7b98121a9c11603af124476e9e4512dfb14eb434274ec8088c013ab8248d638e",
+      "webp_sha256": "25173f9b91c58fcf8210949b04cf4fb26b2ee989c6c737438f2940c46b0dcffc"
+    },
+    {
+      "id": "quarterly-04-quarter-winter",
+      "source_sha256": "7d527789dbaea832ec37dd453fdf05c447c7173112cfc3b4a0d686c34844fcaf",
+      "webp_sha256": "215ddc434903dcf93878dea0636234b45cc52b52dee479a00feac63bdaae6e5c"
+    },
+    {
+      "id": "yearly-01-year-milestones",
+      "source_sha256": "1929763f49021fa6dedd09b49fb532bea12a401e30a6c2a10cc01a511a5bd3cb",
+      "webp_sha256": "042fcf246aec555134bdcc8836a886bcdaad6b4c640fc928a3ccb92a82c2e72d"
+    },
+    {
+      "id": "yearly-02-year-growth",
+      "source_sha256": "68f9300cb60de49a110668c9ad5cc27867c1f202cc781027116395111e0dc1dc",
+      "webp_sha256": "548578d2bd91bcb7c14edaad58985bf2bc6300ea556af0d46bf640f51e7de680"
+    },
+    {
+      "id": "yearly-03-year-keep",
+      "source_sha256": "4e031f4344c1feae0fe003bdd20009562fce3f098e17388760140e28fc59f51e",
+      "webp_sha256": "d6549744cfb4bcf084b4ae7e5b46e8dc3c4cd87e38f2ddb0c33f098d20fa8ed8"
+    },
+    {
+      "id": "yearly-04-year-release",
+      "source_sha256": "5b76027b3288a966c9339f89e5b2d2f4cd5519f009837189a3c28214684b9fe8",
+      "webp_sha256": "a1362e5ef519f9d6ec201eed46c6e4b8043e592cd18160f239e085f40adb85c4"
+    },
+    {
+      "id": "yearly-05-year-coordinate",
+      "source_sha256": "4527eceb3813fd2e34b6e464da68aea602f52f73fb4843e6040867ea4c1dfe2d",
+      "webp_sha256": "61d1ca89e39aba9c696c442fcabb339ba4f25dfbb934e47707a0cea3ccc9bcc5"
+    },
+    {
+      "id": "yearly-06-year-horizon",
+      "source_sha256": "c47d4f18d2e7b36058e454bcbd3ccfb2c32595019c38493060d69bc94043f06f",
+      "webp_sha256": "2f82aaf20da59e84af51b122b885dd3a46422e1bd120836dc85f90ae2c0dbd0d"
+    },
+    {
+      "id": "decision-01-decision-question",
+      "source_sha256": "4ba0ea38a2f028ea8dae8011128a76bc4ed4e65d39971f3e8821b05148f8dc83",
+      "webp_sha256": "b9fe6ad0449b5352e9bf46ed52280a247f56773be26916882098af643026151c"
+    },
+    {
+      "id": "decision-02-decision-facts",
+      "source_sha256": "cf59e0621d2734921af35d35fd620c439b1196041c1e7104b083177e61194772",
+      "webp_sha256": "ffa30a982451fe33df740e0b042a5a8b4dedbd411ed2a83d54c5bb257950a54f"
+    },
+    {
+      "id": "decision-03-decision-options",
+      "source_sha256": "4dd251d5f1e5970fb29c3e7645873ebf2c7414e1163774e9b41afea16f1b35bc",
+      "webp_sha256": "3bdd073c32bc5da601661e1478e4f5d85eceb86f80482843645dadac41d78fc4"
+    },
+    {
+      "id": "decision-04-decision-risk",
+      "source_sha256": "9b8cb4b5e6f93f251b8f38ea0e315febb37322614396a47f8af061017cd79921",
+      "webp_sha256": "9e88591181b292c5b840c547df1d58edadfe2b0dcb435b26752d6460f5108f14"
+    },
+    {
+      "id": "decision-05-decision-first",
+      "source_sha256": "01e26dcc638205c8917405d438350f135222eb20f1aa1d889d37d0850b63cc49",
+      "webp_sha256": "b3cba85caf3191d270ead7a79f3854fd2dcf111763511b8c29c918231eb7a442"
+    },
+    {
+      "id": "decision-06-decision-return",
+      "source_sha256": "bff53a71f06d2fbc4b559e237223660d68d8b41382cb56c71b490349c48e4c82",
+      "webp_sha256": "d4a8bd9ba791435491f61c58b6b1e9dee5bf259ef1c77e32eb16b6d81eff41ee"
+    }
+  ]
+}

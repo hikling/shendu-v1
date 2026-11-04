@@ -1507,3 +1507,73 @@ body.reduce-motion .rail-stat{transition:none}
 body.reduce-motion .action-archive-card,body.reduce-motion .action-disclosure-title>span,body.reduce-motion .actions-page button,body.reduce-motion .verification-dialog .btn,body.reduce-motion .verification-dialog :is(textarea,select){animation:none;transition:none}
 @media(prefers-reduced-motion:reduce){.rail-side-decor img,.history-record,.history-record-art img,.history-record-arrow,.history-write,.history-page button{animation:none;transition:none}}
 body.reduce-motion .rail-side-decor img,body.reduce-motion .history-record,body.reduce-motion .history-record-art img,body.reduce-motion .history-record-arrow,body.reduce-motion .history-write,body.reduce-motion .history-page button{animation:none;transition:none}
+/* Archive workspace: broad reading surface and consistent paired action sections. */
+.workspace:has(.history-page),.workspace:has(.actions-page){max-width:1480px;width:100%;margin-inline:auto;grid-template-columns:minmax(0,1fr)}
+.main:has(.history-page),.main:has(.actions-page){max-width:none;width:100%;padding-inline:clamp(20px,4vw,64px)}
+.history-hero,.actions-hero{min-height:190px;padding-block:22px;margin-bottom:24px}
+.history-record-grid{gap:24px}
+.action-archive-grid{grid-template-columns:minmax(0,1fr);gap:24px}
+.action-archive-card{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 24px;padding:26px 30px;border-radius:22px}
+.action-archive-top,.action-archive-body,.action-archive-card>.verification-times,.action-archive-footer{grid-column:1/-1}
+.action-archive-body{grid-template-columns:minmax(0,1fr) 150px;min-height:140px}
+.action-archive-art{height:140px}
+.action-archive-copy h3{font-size:clamp(1.35rem,2.1vw,1.9rem);max-width:32em}
+.action-archive-disclosure{align-self:start;margin:16px 0 0}
+.action-disclosure-content{padding:0 18px 18px}
+.action-disclosure-content h4{font-size:.78rem}
+.action-disclosure-content>p{font-size:.85rem;line-height:1.9}
+.action-disclosure-content>.action-detail-note,.action-disclosure-content>.action-detail-kicker{display:none}
+.action-archive-footer{margin-top:20px}
+/* A compact single-view folio: switch sections instead of stacking a long dialog. */
+.app-shell .right-rail.open{width:min(760px,calc(100vw - 36px));max-height:calc(100dvh - 24px);padding:22px 28px;gap:12px;grid-template-columns:minmax(0,1fr);overflow:auto;background:#fbf8f1;border-color:#d6cfc0;border-radius:22px}
+.right-rail.open .rail-dialog-header{grid-column:1;grid-row:auto;padding:0;align-items:center}
+.right-rail.open .rail-dialog-header p,.right-rail.open .rail-compact-decor{display:none}
+.rail-view-switch{display:flex;gap:22px;border-bottom:1px solid #dfd8cb}
+.rail-view-switch button{padding:10px 0;border:0;border-bottom:2px solid transparent;border-radius:0;background:none;color:#777568;font:650 .8rem/1.4 sans-serif}
+.rail-view-switch button[aria-pressed="true"]{border-bottom-color:#935c45;color:#78422e}
+.rail-view-switch button:focus-visible{outline:2px solid #78422e;outline-offset:2px}
+.right-rail.open .rail-stats{grid-column:1;grid-row:auto;gap:10px}
+.right-rail.open .rail-stat{min-height:68px;padding:10px 12px;gap:4px;border-radius:10px;background:#fffdf8}
+.right-rail.open .rail-stat>strong{font-size:1.3rem}
+.right-rail.open .rail-stat-note,.right-rail.open .rail-week-marks{display:none}
+.right-rail.open .rail-card{grid-column:1;grid-row:auto;padding:16px 22px;border:0;border-radius:12px;box-shadow:none;background:#fffdf9}
+.right-rail.open[data-view="calendar"] :is(.rail-stage,.rail-pending),.right-rail.open[data-view="stage"] :is(.rail-calendar,.rail-pending),.right-rail.open[data-view="pending"] :is(.rail-stage,.rail-calendar){display:none}
+.right-rail.open .rail-calendar{width:100%;max-width:480px;justify-self:center}
+.right-rail.open .calendar-caption{font-size:.66rem}
+.right-rail.open .calendar-head{margin:6px 0 12px;align-items:center}
+.right-rail.open .calendar-month{display:flex;align-items:baseline;gap:10px}
+.right-rail.open .calendar-month>strong{font-size:1.8rem;color:#78422e}
+.right-rail.open .cal-grid{gap:4px 10px}
+.right-rail.open .cal-day,.right-rail.open .cal-blank{height:32px}
+.right-rail.open .cal-day{gap:2px;border:0;background:transparent;border-radius:50%;font-size:.82rem}
+.right-rail.open .cal-day:disabled{background:transparent;color:#8a877c;border:0}
+.right-rail.open .cal-day.completed{background:#e1ece5;color:#315846}
+.right-rail.open .cal-day.verified{background:#315846;color:white}
+.right-rail.open .cal-day.draft{background:#f7ead0;color:#856122}
+.right-rail.open .cal-day.today{outline:1px solid #a25e48;outline-offset:0;background:#f8ece3;color:#78422e}
+.right-rail.open .cal-grid .dow{padding-bottom:6px}
+.right-rail.open .calendar-legend{margin-top:12px;padding-top:10px}
+.right-rail.open .calendar-month-note{margin-top:8px}
+.right-rail.open .calendar-month-note>span{display:none}
+@media(min-width:900px){.history-record{min-height:290px}.history-record-title{font-size:1.45rem}}
+@media(max-width:620px){
+ .main:has(.history-page),.main:has(.actions-page){padding-inline:16px}
+ .action-archive-card{grid-template-columns:minmax(0,1fr);padding:20px;gap:0}
+ .action-archive-body{grid-template-columns:minmax(0,1fr) 100px;min-height:130px}
+ .action-archive-art{height:120px}
+ .app-shell .right-rail.open{padding:16px;gap:10px}
+ .right-rail.open .rail-card{padding:12px}
+ .right-rail.open .rail-stat{padding:8px;min-height:60px}
+ .right-rail.open .rail-stat-label{font-size:.58rem}
+ .right-rail.open .cal-grid{gap:3px 6px}
+ .right-rail.open .cal-day,.right-rail.open .cal-blank{height:30px}
+ .right-rail.open .calendar-legend{font-size:.55rem;gap:8px}
+}
+@media(max-height:640px) and (min-width:621px){
+ .app-shell .right-rail.open{grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);gap:10px 20px}
+ .right-rail.open .rail-dialog-header,.rail-view-switch{grid-column:1/-1}
+ .right-rail.open .rail-stats{grid-column:1;grid-row:3;grid-template-columns:1fr}
+ .right-rail.open .rail-card{grid-column:2;grid-row:3}
+}
+.right-rail.open .cal-day{width:32px;justify-self:center}
+.right-rail.open .calendar-month-note{justify-content:flex-start;gap:5px}

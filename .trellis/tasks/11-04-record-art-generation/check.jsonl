@@ -1,0 +1,4 @@
+{"file":".trellis/spec/frontend/architecture.md","reason":"Validate local catalog and cache revisions"}
+{"file":".trellis/spec/frontend/ui-quality.md","reason":"Validate inert art, browser rendering and scope preservation"}
+{"file":".trellis/spec/frontend/state-and-data.md","reason":"Preserve deterministic assignments and record contracts"}
+{"file":"shendu/public/assets/overview/README.md","reason":"Compare actual output against authoritative category palettes"}
