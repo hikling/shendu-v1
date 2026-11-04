@@ -4,4 +4,5 @@
 - [x] Add meaningful navigation regression tests; run syntax and full tests.
 - [x] Independent Trellis check, desktop/mobile browser return/dirty/layout checks.
 - [x] Update design/spec/navigation contract and screenshots/README as relevant.
-- [ ] Commit to main, archive/journal, push and verify remote HEAD.
+- [x] Commit to main and verify successful remote push: 9f6da1d.
+- Trellis archival, session journal and final main synchronization follow the verified work commit.

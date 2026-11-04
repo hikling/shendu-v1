@@ -805,3 +805,25 @@ Integrated 65 unique reviewed illustrations; removed review navigation; compact 
 ### Status
 
 [OK] **Completed**
+
+
+## Session 36: Fix review return destination and action reading layout
+<!-- trellis-session: v=2 fp=159c1a00e4ed8bc0 -->
+
+**Date**: 2026-11-04
+**Task**: Fix review return destination and action reading layout
+**Branch**: `main`
+
+### Summary
+
+Review exits return to history/actions with filters, focus and scroll; removed decorative stamps and rebuilt one continuous reading area. Independent review and91 tests passed; six category return paths, dirty/save/discard, 1280/820/390/320 layouts and white/reduced-motion browser QA passed.
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `9f6da1d` | Return reviews to their source and simplify action reading layout |
+
+### Status
+
+[OK] **Completed**
