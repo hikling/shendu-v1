@@ -739,3 +739,25 @@ Aligned nine weekly/monthly/quarterly illustrations to overview icon palettes; e
 ### Status
 
 [OK] **Completed**
+
+
+## Session 33: 阶段日历与插画历史页
+<!-- trellis-session: v=2 fp=d11937695746e27f -->
+
+**Date**: 2026-11-04
+**Task**: 阶段日历与插画历史页
+**Branch**: `main`
+
+### Summary
+
+六类装饰从阶段弹窗边框半露伸出；重设计42格月历与日期状态图例；历史复盘使用六类配色和本地插画卡片，保留搜索、年月筛选及原记录打开。桌面、320/390/820px、键盘、白色自定义主题和减少动态效果通过真实隔离后端验收。npm run check、78/78测试、diff检查通过，README、规范与截图已更新，临时数据已清理。最终推送后核查当前HEAD的远端CI。
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `d3ab70e` | Redesign stage calendar and illustrated review history |
+
+### Status
+
+[OK] **Completed**
