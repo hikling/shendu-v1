@@ -8,7 +8,7 @@
 - `npm run build`、`npm run check`、`npm test`：通过，108/108 项测试成功。
 - `npm run smoke:ui -- http://127.0.0.1:3192`：健康、HTML、主脚本、组件 JS/CSS 及媒体类型通过。
 - 17 项真实组件 DOM 回归，加上 6 项来源导航测试，覆盖原生字段／FormData、单次事件、隐藏答案、组件清理、勾选框、菜单、日历、嵌套与持久弹窗、背景隔离、退出登录清理和来源返回。
-- 本机没有 Docker；Linux 镜像构建、容器启动和真实前端资源检查由仓库 `Verify build` CI 验证。
+- 本机没有 Docker；代码提交 `3d74ac7` 的 [Verify build CI](https://github.com/hikling/shendu-v1/actions/runs/41857958794) 已通过 Linux 测试、Compose 配置检查、Docker 镜像构建、容器启动及真实前端资源检查。
 
 ## 浏览器检查
 
