@@ -162,4 +162,4 @@ npm test
 
 仓库的 [构建检查](.github/workflows/verify.yml)会在 Linux 上运行脚本与测试、解析 Compose 配置、构建 Docker 镜像，并启动容器检查 `/healthz`。
 
-新版界面截图：[紧凑日历](docs/calendar-compact.jpg)、[宽幅历史复盘](docs/history-wide.jpg)、[行动验证](docs/actions-art.jpg)、[手机历史复盘](docs/history-art-mobile.jpg)。插画完整预览见[本地画廊](output/imagegen/record-library/gallery.html)。
+新版界面截图：[紧凑日历](docs/calendar-compact.jpg)、[宽幅历史复盘](docs/history-wide.jpg)、[行动验证阅读区](docs/actions-reading.jpg)、[手机行动验证](docs/actions-reading-mobile.jpg)、[手机历史复盘](docs/history-art-mobile.jpg)。从历史复盘或行动验证打开记录，退出后返回原列表并保留历史筛选。插画完整预览见[本地画廊](output/imagegen/record-library/gallery.html)。

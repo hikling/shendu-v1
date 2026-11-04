@@ -3,6 +3,7 @@ import {DAILY_STEPS,dailyStepIssues,dailyPrompts,dailyPromptIssues,dailyPromptNe
 import {dailyCalendarModel,dailyCalendarKeyDate,dailyCalendarDateLabel} from './daily-calendar.js?v=1.0.0-art1';
 import {EXTENDED_FLOW,extendedPrompts,extendedPromptNeighbor,extendedPromptIssues,extendedReviewIssues} from './extended-flow.js?v=1.0.0-extended2';
 import {verificationMinimum} from './verification-policy.js?v=1.0.0-verification2';
+import {createReviewNavigator} from './review-navigation.js?v=1.0.0-return1';
 import {RECORD_ART,recordArtAssignments} from './record-art.js?v=1.0.0-records1';
 const $ = (s, root = document) => root.querySelector(s);
 const $$ = (s, root = document) => [...root.querySelectorAll(s)];
@@ -94,7 +95,27 @@ function templatesForRecord(record){
 }
 function currentTemplateSnapshot(type){return{version:1,review:clone(currentReviewTemplate(type)),action:clone(currentActionTemplate())}}
 
-const state = { user:null, stage:null, theme:null, records:[], stats:{week:0,pending:0,total:0}, route:'overview', current:null, dirty:false, saving:false, navOpen:false, railOpen:false, reauthOpen:false, calendarMonth:null, dailySection:'intro', dailyPrompt:null, extendedPrompt:null };
+const state = { user:null, stage:null, theme:null, records:[], stats:{week:0,pending:0,total:0}, route:'overview', current:null, dirty:false, saving:false, navOpen:false, railOpen:false, reauthOpen:false, calendarMonth:null, dailySection:'intro', dailyPrompt:null, extendedPrompt:null, historyFilter:{q:'',type:'all',year:'all',month:'all'} };
+const reviewNavigation=createReviewNavigator({
+  source:()=>({route:state.route,scrollY:window.scrollY}),
+  guard:next=>attemptNavigate(next),
+  open:({type,period,forceNew=false,record=null})=>{
+    state.route=type;state.current=record;
+    document.title=`${TYPES[type].label} · 慎独`;
+    renderReview(type,period,forceNew,record);
+  },
+  restore:context=>{
+    navigate(context.route);
+    requestAnimationFrame(()=>{
+      if(state.route!==context.route)return;
+      const trigger=context.recordId?$$('[data-open-record]').find(button=>button.dataset.openRecord===context.recordId):null;
+      trigger?.focus({preventScroll:true});
+      window.scrollTo({top:context.scrollY,behavior:'instant'});
+    });
+  }
+});
+function enterReview(type,period,forceNew=false,record=null){reviewNavigation.enter({type,period,forceNew,record})}
+
 let modalReturnFocus=null;
 let overviewReelObserver=null;
 let dailyTypingTimer=null,dailyTypingCleanup=null;
@@ -125,6 +146,7 @@ function newRecord(type,period){const data={answers:{},action:'',ifCondition:'',
 
 function renderAuth(info={}){
   cancelDailyTypewriter();setDailyImmersive(false);
+  reviewNavigation.clear();state.historyFilter={q:'',type:'all',year:'all',month:'all'};
   state.user=null;$('#app').innerHTML=`<main class="auth-shell">
     <section class="auth-art"><div class="brand-lockup"><div class="brand-row"><div class="seal">慎</div><div class="brand-cn">慎獨</div></div></div>
       <div class="auth-quote">“言寡尤，行寡悔，慎独存诚。”<small>把事实、调整与验证，留成一份不会被情绪改写的记录。</small></div></section>
@@ -264,7 +286,7 @@ function renderOverview(){
     <section class="overview-types" aria-labelledby="overview-types-title"><div class="overview-types-heading"><h2 id="overview-types-title">从哪里开始复盘？</h2></div><div class="overview-type-grid">${categories}</div></section>
     ${reel}
   </div>`);
-  $('.overview-reel-track')?.addEventListener('click',event=>{const button=event.target.closest('[data-overview-record]');if(button)attemptNavigate(()=>{const record=records.find(item=>item.id===button.dataset.overviewRecord);if(!record||record.status!=='verified')return;state.route=record.type;state.current=record;document.title=`${TYPES[record.type].label} · 慎独`;renderReview(record.type,record.period,false,record)})});
+  $('.overview-reel-track')?.addEventListener('click',event=>{const button=event.target.closest('[data-overview-record]');if(!button)return;const record=records.find(item=>item.id===button.dataset.overviewRecord);if(record?.status==='verified')enterReview(record.type,record.period,false,record)});
   $$('[data-overview-type]').forEach(button=>{
     const card=button.closest('.overview-type-card');
     card.addEventListener('pointerenter',event=>{if(event.pointerType!=='touch')setOverviewType(button,true)});
@@ -533,7 +555,7 @@ function bindDailyFlow(){
   bindDailyCalendar();
   const move=prompt=>{if(state.saving)return;if($('#daily-editor').dataset.dailyLocked!=='true')collectCurrent();clearDailyIssues();showDailyPrompt(prompt,true)};
   $('#daily-start').addEventListener('click',()=>move(currentDailyPrompts()[0].id));
-  $('[data-daily-exit]').addEventListener('click',()=>attemptNavigate(()=>navigate('overview')));
+  $('[data-daily-exit]').addEventListener('click',()=>reviewNavigation.exit());
   $('[data-daily-back]').addEventListener('click',()=>move(dailyPromptNeighbor(currentDailyPrompts(),state.dailyPrompt,-1)));
   $('[data-daily-next]').addEventListener('click',()=>{if(state.saving)return;if($('#daily-editor').dataset.dailyLocked!=='true'){collectCurrent();const issues=dailyPromptIssues(state.current.data,state.dailyPrompt,today());if(issues.length){showDailyIssues(issues);return}}const next=dailyPromptNeighbor(currentDailyPrompts(),state.dailyPrompt,1);if(next)move(next)});
   showDailySection(state.dailySection);
@@ -599,7 +621,7 @@ function bindExtendedFlow(){
   bindDailyCalendar();
   const move=prompt=>{if(state.saving)return;if($('#daily-editor').dataset.dailyLocked!=='true')collectCurrent();clearDailyIssues();showExtendedPrompt(prompt,true)};
   $('#daily-start').addEventListener('click',()=>move(currentExtendedPrompts()[0].id));
-  $('[data-daily-exit]').addEventListener('click',()=>attemptNavigate(()=>navigate('overview')));
+  $('[data-daily-exit]').addEventListener('click',()=>reviewNavigation.exit());
   $('[data-daily-back]').addEventListener('click',()=>move(extendedPromptNeighbor(currentExtendedPrompts(),state.extendedPrompt,-1)));
   $('[data-daily-next]').addEventListener('click',()=>{
     if(state.saving)return;
@@ -670,18 +692,19 @@ function historyCardHtml(record,art=RECORD_ART[record.type][0]){
   const type=TYPES[record.type],day=overviewDateParts(record.period),date=day?`${day.calendarDate} ${day.weekday}`:formatDate(record.period),normalized=overviewRecordTitle(record,date,type.label),period=normalized.showDate?date:type.position;
   return `<button type="button" class="history-record type-${esc(record.type)}" data-open-record="${esc(record.id)}"><span class="history-record-top"><span class="history-category"><span aria-hidden="true">${TYPE_ICONS[record.type]}</span>${esc(type.label)}</span><span class="history-record-arrow" aria-hidden="true">↗</span></span><span class="history-record-body"><span class="history-record-copy"><strong>${esc(normalized.title)}</strong><span class="history-record-excerpt">${esc(recordSummary(record))}</span></span><span class="history-record-art" aria-hidden="true"><img src="${esc(art.src)}" alt="" width="1254" height="1254" loading="lazy" draggable="false"></span></span><span class="history-record-foot"><span class="history-record-date">${esc(period)}</span><span class="history-status ${esc(record.status)}"><i aria-hidden="true"></i>${esc(STATUS[record.status])}</span></span></button>`;
 }
-function renderHistory(filter={q:'',type:'all',year:'all',month:'all'},focusSearch=false){
+function renderHistory(filter=state.historyFilter,focusSearch=false){
   const artwork=recordArtAssignments(state.records);
   const active={q:String(filter.q||''),type:filter.type||'all',year:filter.year||'all',month:filter.month||'all'};
   if(active.year==='all')active.month='all';
+  state.historyFilter={...active};
   const years=[...new Set([today().slice(0,4),...state.records.map(historyYear).filter(Boolean)])].sort((a,b)=>b.localeCompare(a));
   const rows=state.records.filter(r=>(active.type==='all'||r.type===active.type)&&(active.year==='all'||historyYear(r)===active.year)&&(active.month==='all'||historyMonth(r)===`${active.year}-${active.month}`)&&(!active.q||`${r.title} ${JSON.stringify(r.data)}`.toLowerCase().includes(active.q.toLowerCase()))).sort((a,b)=>b.period.localeCompare(a.period));
   const hasFilter=Boolean(active.q)||active.type!=='all'||active.year!=='all'||active.month!=='all';
   shell(`<section class="history-page" aria-labelledby="history-title"><header class="history-hero"><div class="history-hero-copy"><p class="history-kicker">循迹 · 归档有序</p><h1 id="history-title">历史复盘</h1><p class="history-hero-note">翻过写下的每一页，<br>看见自己走过的路。</p><button class="history-write" data-nav="daily">写今天的复盘 <span aria-hidden="true">↗</span></button></div><div class="history-hero-art" aria-hidden="true"><span class="history-hero-orbit"></span><img src="/assets/daily/journal.webp?v=1.0.0-overview26" alt="" width="1254" height="1254"><span class="history-hero-caption">把事实留下，让成长有迹。</span></div><div class="history-archive-count"><strong>${state.records.length}</strong><span>篇记录<br>安放在这里</span></div></header>
   <div class="filters history-filters"><label class="history-search-field"><span class="history-filter-caption">关键词</span><input class="history-search" id="history-search" value="${esc(active.q)}" placeholder="搜索标题、正文或行动" aria-label="搜索历史复盘"></label><label class="history-filter-select history-type-filter"><span class="history-filter-caption">复盘类型</span><select id="history-type"><option value="all">全部类型</option>${Object.entries(TYPES).map(([key,value])=>`<option value="${key}" ${active.type===key?'selected':''}>${value.label}</option>`).join('')}</select><span class="select-chevron" aria-hidden="true"></span></label><label class="history-filter-select history-year-filter"><span class="history-filter-caption">年份</span><select id="history-year"><option value="all">全部年份</option>${years.map(year=>`<option value="${year}" ${active.year===year?'selected':''}>${year} 年</option>`).join('')}</select><span class="select-chevron" aria-hidden="true"></span></label><label class="history-filter-select history-month-filter"><span class="history-filter-caption">月份</span><select id="history-month" ${active.year==='all'?'disabled':''}><option value="all">${active.year==='all'?'先选年份':'全年'}</option>${Array.from({length:12},(_,index)=>String(index+1).padStart(2,'0')).map(month=>`<option value="${month}" ${active.month===month?'selected':''}>${Number(month)} 月</option>`).join('')}</select><span class="select-chevron" aria-hidden="true"></span></label></div>
   <div class="history-results-head"><h2>${hasFilter?'筛选结果':'全部记录'} <span>${rows.length} 篇</span></h2>${hasFilter?'<button type="button" class="history-reset" id="history-reset">清除筛选 <span aria-hidden="true">↺</span></button>':'<p>每一份记录，都有它的来处。</p>'}</div><div class="history-record-grid">${rows.length?rows.map(record=>historyCardHtml(record,artwork.get(record.id))).join(''):`<div class="history-empty"><img src="/assets/daily/journal.webp?v=1.0.0-overview26" alt="" width="1254" height="1254" aria-hidden="true"><div><p class="history-kicker">${hasFilter?'换一条线索，再找找':'一切从第一笔开始'}</p><h3>${hasFilter?'这一页，暂时没有找到。':'还没有写下的记录。'}</h3><p>${hasFilter?'试试其他关键词、类型或日期。':'从今天发生的一件事开始，给未来的自己留一页。'}</p>${hasFilter?'<button type="button" class="history-write" id="history-empty-reset">清除筛选 <span aria-hidden="true">↗</span></button>':'<button class="history-write" data-nav="daily">开始每日复盘 <span aria-hidden="true">↗</span></button>'}</div></div>`}</div></section>`);
-  $('#history-reset')?.addEventListener('click',()=>renderHistory());
-  $('#history-empty-reset')?.addEventListener('click',()=>renderHistory());
+  $('#history-reset')?.addEventListener('click',()=>renderHistory({}));
+  $('#history-empty-reset')?.addEventListener('click',()=>renderHistory({}));
   const nextFilter=()=>({q:$('#history-search').value,type:$('#history-type').value,year:$('#history-year').value,month:$('#history-month').value});
   $('#history-search').addEventListener('input',e=>renderHistory({...nextFilter(),q:e.target.value},true));
   $('#history-type').addEventListener('change',e=>renderHistory({...nextFilter(),type:e.target.value}));
@@ -690,7 +713,7 @@ function renderHistory(filter={q:'',type:'all',year:'all',month:'all'},focusSear
   if(focusSearch){const input=$('#history-search');input.focus();input.setSelectionRange(input.value.length,input.value.length)}
   bindRecordOpen()
 }
-function bindRecordOpen(){$$('[data-open-record]').forEach(b=>b.addEventListener('click',()=>{const r=state.records.find(x=>x.id===b.dataset.openRecord);state.route=r.type;state.current=r;renderReview(r.type,r.period)}))}
+function bindRecordOpen(){$$('[data-open-record]').forEach(button=>button.addEventListener('click',()=>{const record=state.records.find(item=>item.id===button.dataset.openRecord);if(record)enterReview(record.type,record.period,false,record)}))}
 
 function dueBadge(r,t=templatesForRecord(r).action){const d=r.data.verifyDate;if(r.status==='completed'&&today()<earliestActualVerification(r))return[t.waitingStatus,''];if(!d)return[t.waitingStatus,''];if(d<today())return[t.overdueStatus,'overdue'];if(d===today())return[t.todayStatus,'today'];return[t.waitingStatus,'']}
 function earliestActualVerification(record){const source=record.completed_at||record.created_at;return verificationMinimum(record.type,source?beijingDateParts(new Date(source)).iso:today())}
@@ -701,17 +724,19 @@ function actionCard(r,art=RECORD_ART[r.type][0]){
   const pending=r.status==='completed',t=templatesForRecord(r).action,b=pending?dueBadge(r,t):[t.verifiedStatus,'verified'],v=r.verification||{},earliest=pending?earliestActualVerification(r):'',tooEarly=pending&&today()<earliest;
   const type=TYPES[r.type],day=overviewDateParts(r.period),date=day?`${day.calendarDate} ${day.weekday}`:formatDate(r.period),heading=overviewRecordTitle({...r,title:r.title||r.data.action||t.pageTitle},date,type.label);
   return `<article class="action-archive-card type-${esc(r.type)}" aria-labelledby="action-title-${esc(r.id)}"><div class="action-archive-top"><span class="history-category"><span aria-hidden="true">${TYPE_ICONS[r.type]}</span>${esc(type.label)}</span><span class="action-state ${esc(b[1])}"><i aria-hidden="true"></i>${esc(b[0])}</span></div>
-  <div class="action-archive-body"><div class="action-archive-copy">${heading.showDate?`<p class="action-record-period">${esc(date)}</p>`:''}<h3 id="action-title-${esc(r.id)}">${esc(heading.title)}</h3><p class="action-record-caption">${esc(t.agreementEyebrow)}</p></div><div class="action-archive-art" aria-hidden="true"><span></span><img src="${esc(art.src)}" alt="" width="1254" height="1254" loading="lazy" draggable="false"></div></div>
+  <div class="action-archive-body"><div class="action-archive-copy">${heading.showDate?`<p class="action-record-period">${esc(date)}</p>`:''}<h3 id="action-title-${esc(r.id)}">${esc(heading.title)}</h3></div><div class="action-archive-art" aria-hidden="true"><span></span><img src="${esc(art.src)}" alt="" width="1254" height="1254" loading="lazy" draggable="false"></div></div>
   ${verificationTimes(r,t,true)}
-  <details class="action-archive-disclosure" open><summary><span class="action-disclosure-title">${esc(t.agreementTitle)}<span aria-hidden="true">＋</span></span></summary><div class="action-disclosure-content"><p class="action-detail-note">${esc(t.agreementNote)}</p><h4>${esc(t.originalActionTitle)}</h4><p>${esc(r.data.action||t.missingActionText)}</p></div></details>
-  ${pending?'':`<details class="action-archive-disclosure action-result-disclosure" open><summary><span class="action-disclosure-title">${esc(t.reviewTitle)}<span aria-hidden="true">＋</span></span></summary><div class="action-disclosure-content"><p class="action-detail-kicker">${esc(t.reviewEyebrow)}</p><p class="action-detail-note">${esc(t.reviewNote)}</p><h4>${esc(t.resultTitle)}</h4><p>${esc(v.result||t.missingResultText)}</p><h4>${esc(t.adjustmentTitle)}</h4><p>${esc(v.adjustment||t.missingResultText)}</p></div></details>`}
-  <div class="action-archive-footer"><button type="button" class="action-record-open" data-open-record="${esc(r.id)}">${esc(t.viewRecordButton)} <span aria-hidden="true">↗</span></button>${pending?`<button type="button" class="action-verify-button" data-open-action="${esc(r.id)}" ${tooEarly?'disabled':''}>${tooEarly?`最早 ${esc(dailyCalendarDateLabel(earliest))} 验证`:esc(r.type==='decision'?t.decisionActionButton:t.submitActionButton)}${tooEarly?'':'<span aria-hidden="true">→</span>'}</button>`:'<span class="action-archive-seal" aria-hidden="true">验</span>'}</div></article>`;
+  <div class="action-reading">
+    <section class="action-reading-plan"><h4>${esc(t.originalActionTitle)}</h4><p>${esc(r.data.action||t.missingActionText)}</p></section>
+    ${pending?'':`<div class="action-reading-outcome"><section><h4>${esc(t.resultTitle)}</h4><p>${esc(v.result||t.missingResultText)}</p></section><section><h4>${esc(t.adjustmentTitle)}</h4><p>${esc(v.adjustment||t.missingResultText)}</p></section></div>`}
+  </div>
+  <div class="action-archive-footer"><button type="button" class="action-record-open" data-open-record="${esc(r.id)}">${esc(t.viewRecordButton)} <span aria-hidden="true">↗</span></button>${pending?`<button type="button" class="action-verify-button" data-open-action="${esc(r.id)}" ${tooEarly?'disabled':''}>${tooEarly?`最早 ${esc(dailyCalendarDateLabel(earliest))} 验证`:esc(r.type==='decision'?t.decisionActionButton:t.submitActionButton)}${tooEarly?'':'<span aria-hidden="true">→</span>'}</button>`:''}</div></article>`;
 }
 function renderActions(){
   const artwork=recordArtAssignments(state.records),pending=state.records.filter(r=>r.status==='completed').sort((a,b)=>String(a.data.verifyDate).localeCompare(String(b.data.verifyDate))),verified=state.records.filter(r=>r.status==='verified').sort((a,b)=>String(verificationActualAt(b)).localeCompare(String(verificationActualAt(a)))),t=currentActionTemplate();
   shell(`<section class="actions-page" aria-labelledby="actions-title"><header class="history-hero actions-hero"><div class="history-hero-copy"><p class="history-kicker">知行之间 · 让结果作答</p><h1 id="actions-title">${esc(t.pageTitle)}</h1><p class="history-hero-note">${esc(t.pageIntro)}</p><button type="button" class="history-write" data-nav="history">${esc(t.historyButton)} <span aria-hidden="true">↗</span></button></div><div class="history-hero-art actions-hero-art" aria-hidden="true"><span class="history-hero-orbit"></span><img src="/assets/daily/action.webp?v=1.0.0-overview26" alt="" width="1254" height="1254"><span class="history-hero-caption">把约定写下，让行动有回声。</span></div><div class="actions-tallies"><div><strong>${pending.length}</strong><span>${esc(t.pendingTitle)}</span></div><div><strong>${verified.length}</strong><span>${esc(t.verifiedTitle)}</span></div></div></header>
-  <section class="actions-section" aria-labelledby="actions-pending-title"><header class="actions-section-head"><div><p class="actions-section-kicker">约定 · 正在路上</p><h2 id="actions-pending-title">${esc(t.pendingTitle)} <span>${pending.length} ${esc(t.countUnit)}</span></h2><p>${esc(t.pendingIntro)}</p></div><span class="actions-section-mark" aria-hidden="true">候</span></header><div class="action-archive-grid">${pending.length?pending.map(r=>actionCard(r,artwork.get(r.id))).join(''):`<div class="actions-empty"><img src="/assets/daily/calendar.webp?v=1.0.0-overview26" alt="" width="1254" height="1254" loading="lazy" aria-hidden="true"><div><p class="actions-section-kicker">留一点时间，等待结果</p><h3>${esc(t.pendingEmptyTitle)}</h3><p>${esc(t.pendingEmptyText)}</p></div></div>`}</div></section>
-  <section class="actions-section" aria-labelledby="actions-verified-title"><header class="actions-section-head"><div><p class="actions-section-kicker">回声 · 已有答案</p><h2 id="actions-verified-title">${esc(t.verifiedTitle)} <span>${verified.length} ${esc(t.countUnit)}</span></h2><p>${esc(t.verifiedIntro)}</p></div><span class="actions-section-mark" aria-hidden="true">验</span></header><div class="action-archive-grid">${verified.length?verified.map(r=>actionCard(r,artwork.get(r.id))).join(''):`<div class="actions-empty"><img src="/assets/extended/decision-review.webp?v=1.0.0-palette2" alt="" width="1254" height="1254" loading="lazy" aria-hidden="true"><div><p class="actions-section-kicker">让每次尝试，都留下答案</p><h3>${esc(t.verifiedEmptyTitle)}</h3><p>${esc(t.verifiedEmptyText)}</p></div></div>`}</div></section></section>`);
+  <section class="actions-section" aria-labelledby="actions-pending-title"><header class="actions-section-head"><div><p class="actions-section-kicker">约定 · 正在路上</p><h2 id="actions-pending-title">${esc(t.pendingTitle)} <span>${pending.length} ${esc(t.countUnit)}</span></h2><p>${esc(t.pendingIntro)}</p></div></header><div class="action-archive-grid">${pending.length?pending.map(r=>actionCard(r,artwork.get(r.id))).join(''):`<div class="actions-empty"><img src="/assets/daily/calendar.webp?v=1.0.0-overview26" alt="" width="1254" height="1254" loading="lazy" aria-hidden="true"><div><p class="actions-section-kicker">留一点时间，等待结果</p><h3>${esc(t.pendingEmptyTitle)}</h3><p>${esc(t.pendingEmptyText)}</p></div></div>`}</div></section>
+  <section class="actions-section" aria-labelledby="actions-verified-title"><header class="actions-section-head"><div><p class="actions-section-kicker">回声 · 已有答案</p><h2 id="actions-verified-title">${esc(t.verifiedTitle)} <span>${verified.length} ${esc(t.countUnit)}</span></h2><p>${esc(t.verifiedIntro)}</p></div></header><div class="action-archive-grid">${verified.length?verified.map(r=>actionCard(r,artwork.get(r.id))).join(''):`<div class="actions-empty"><img src="/assets/extended/decision-review.webp?v=1.0.0-palette2" alt="" width="1254" height="1254" loading="lazy" aria-hidden="true"><div><p class="actions-section-kicker">让每次尝试，都留下答案</p><h3>${esc(t.verifiedEmptyTitle)}</h3><p>${esc(t.verifiedEmptyText)}</p></div></div>`}</div></section></section>`);
   bindRecordOpen();
 }
 function bindActionButtons(){$$('[data-open-action]').forEach(b=>b.addEventListener('click',()=>openVerification(b.dataset.openAction)))}
@@ -874,8 +899,8 @@ function bindCalendar(){
   const leaveCalendar=next=>{if($('#right-rail.open'))setRailOverlayOpen(false,true);attemptNavigate(next)};
   $$('[data-calendar-shift]').forEach(button=>button.addEventListener('click',()=>{const direction=button.dataset.calendarShift;state.calendarMonth=shiftMonth(state.calendarMonth,Number(direction));const card=$('#rail-calendar');if(card){card.innerHTML=calendarHtml();bindCalendar();$(`[data-calendar-shift="${direction}"]`,card)?.focus()}}));
   $('[data-calendar-today]')?.addEventListener('click',()=>{state.calendarMonth=today().slice(0,7);const card=$('#rail-calendar');if(card){card.innerHTML=calendarHtml();bindCalendar();$('[data-calendar-shift="-1"]',card)?.focus()}});
-  $$('[data-calendar-record]').forEach(button=>button.addEventListener('click',()=>leaveCalendar(()=>{const record=state.records.find(item=>item.id===button.dataset.calendarRecord);if(!record)return;state.route='daily';state.current=record;document.title='每日复盘 · 慎独';renderReview('daily',record.period)})));
-  $$('[data-calendar]').forEach(button=>button.addEventListener('click',()=>leaveCalendar(()=>{state.route='daily';document.title='每日复盘 · 慎独';renderReview('daily',today())})));
+  $$('[data-calendar-record]').forEach(button=>button.addEventListener('click',()=>leaveCalendar(()=>{const record=state.records.find(item=>item.id===button.dataset.calendarRecord);if(record)enterReview(record.type,record.period,false,record)})));
+  $$('[data-calendar]').forEach(button=>button.addEventListener('click',()=>leaveCalendar(()=>enterReview('daily',today()))));
 }
 
 function closeHeaderMenus(restoreFocus=false){
@@ -930,7 +955,7 @@ function bindCommon(){
   bindCalendar();
   bindActionButtons();
 }
-function navigate(route){state.route=route;state.navOpen=false;state.railOpen=false;document.title=`${TYPES[route]?.label||({overview:'概览',history:'历史复盘',actions:currentActionTemplate().pageTitle,backup:'数据备份',users:'账户管理'}[route]||'慎独')} · 慎独`;if(route==='overview')return renderOverview();if(TYPES[route])return renderReview(route,defaultPeriod(route),route==='decision');if(route==='history')return renderHistory();if(route==='actions')return renderActions();if(route==='backup')return renderBackup();if(route==='users')return renderUsers();renderReview('daily')}
+function navigate(route){if(TYPES[route])return enterReview(route,defaultPeriod(route),route==='decision');reviewNavigation.clear();state.route=route;state.navOpen=false;state.railOpen=false;document.title=`${TYPES[route]?.label||({overview:'概览',history:'历史复盘',actions:currentActionTemplate().pageTitle,backup:'数据备份',users:'账户管理'}[route]||'慎独')} · 慎独`;if(route==='overview')return renderOverview();if(route==='history')return renderHistory();if(route==='actions')return renderActions();if(route==='backup')return renderBackup();if(route==='users')return renderUsers();renderReview('daily')}
 async function refreshStats(){state.stats=await request('/api/stats')}
 async function refreshData(){const [me,rec,stats]=await Promise.all([request('/api/me'),request('/api/records'),request('/api/stats')]);state.user=me.user;state.stage=me.stage;state.theme=me.theme;state.records=rec.records;state.stats=stats;applyTheme(state.theme)}
 async function boot(user){cancelDailyTypewriter();setDailyImmersive(false);state.user=user;$('#app').innerHTML=`<div class="auth-panel"><div class="auth-card"><div class="skeleton" style="height:30px;margin-bottom:14px"></div><div class="skeleton" style="height:180px"></div></div></div>`;try{await refreshData();navigate('overview')}catch(e){if(e.status===401)return init();$('#app').innerHTML=`<div class="auth-panel"><div class="auth-card"><h1>暂时无法打开复盘室</h1><p>${esc(e.message)}</p><button class="btn btn-primary" id="retry">重试</button></div></div>`;$('#retry').addEventListener('click',()=>boot(user))}}

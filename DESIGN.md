@@ -132,7 +132,7 @@ components:
 
 历史与行动验证的记录插画由独立 `record-art.js` 从全量记录分配，同类优先未用图，再按本地关键词和ID稳定选择；不再一类固定一张，也不随搜索筛选重排配图。当前图池为65张已实际生成、逐图审阅的独立新场景：每日30、周7、月12、季4、年6、决策6。图片在 `assets/records/`，原始PNG、六组联系图和可本地打开的图册在 `output/imagegen/record-library/`；提示词与逐图审阅哈希在 `art/record-library/`。人物以细曲线和象牙白保持统一，姿态、道具和构图各不相同。WebP按概览六类配色归一化，透明来自本地边缘背景提取；不改概览、阶段日历或沉浸填写插画。部署仅使用本地图片。
 
-行动验证沿用纸感页头、两列分类卡片和手机单列布局，待验证与已验证分区保留。原行动和日期在卡片上明确呈现，长结果／调整可通过原生展开控件完整阅读；验证填写使用同风格局部对话框。配图仅为装饰，原最早验证日、预期与实际时间、重大决策结果／过程评估及提交锁定语义不变。
+行动验证沿用纸感页头、宽幅单条卡片和待验证／已验证分区。原计划先作为阅读锚点，结果与调整在同一连续区域内分栏，手机按顺序堆叠；使用细分隔线与字号层级，不再为计划和结果各套独立圆角框，不显示候、验装饰章。正文完整可读，标签只出现一次；记录图片、真实状态、日期与原有入口仍清晰可见。验证填写沿用局部对话框；最早验证日、预期与实际时间、重大决策结果／过程评估及提交锁定语义不变。
 
 轮播的具体日期按两行显示：第一行为年月日，第二行为“星期一”等完整星期名。无自定义标题时日期作为主要文字；有标题时日期置于标题之前。周、月、年周期使用各自的周期格式。
 
@@ -145,5 +145,5 @@ components:
 ## 2026-11-04 archive workspace refinement
 - Header review dropdown removed on desktop and mobile; overview category entries remain available.
 - Stage dialog switches among calendar/stage/pending while retaining shared statistics. Calendar no longer stacks below all other sections.
-- History/actions reading surface extends to 1480px. Actions use one full-width record per row with paired native disclosures, initially open; mobile stacks the pair.
+- History/actions reading surface extends to 1480px. Actions use one full-width record per row, with a continuous plan/result/adjustment reading area that stacks on mobile.
 - Existing records, verification eligibility, illustrations and overview layout remain unchanged.
