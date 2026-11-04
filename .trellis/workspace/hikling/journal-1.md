@@ -783,3 +783,25 @@ Aligned nine weekly/monthly/quarterly illustrations to overview icon palettes; e
 ### Status
 
 [OK] **Completed**
+
+
+## Session 35: Complete record illustrations and compact archive UI
+<!-- trellis-session: v=2 fp=975391662ddb490e -->
+
+**Date**: 2026-11-04
+**Task**: Complete record illustrations and compact archive UI
+**Branch**: `main`
+
+### Summary
+
+Integrated 65 unique reviewed illustrations; removed review navigation; compact calendar views; widened history and actions. Syntax and 85 tests passed, desktop/mobile browser checks passed.
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `33f1966` | Refine archive workspace and add 65 reviewed record illustrations |
+
+### Status
+
+[OK] **Completed**

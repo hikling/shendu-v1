@@ -8,7 +8,7 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 34
+- **Total Sessions**: 35
 - **Last Active**: 2026-11-04
 <!-- @@@/auto:current-status -->
 
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~785 | Active |
+| `journal-1.md` | ~807 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -29,6 +29,7 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 35 | 2026-11-04 | Complete record illustrations and compact archive UI | `33f1966` | `main` |
 | 34 | 2026-11-04 | 多插画历史与行动验证 | `6939c46` | `main` |
 | 33 | 2026-11-04 | 阶段日历与插画历史页 | `d3ab70e` | `main` |
 | 32 | 2026-11-04 | 固定验证等待期与六类场景衬底 | `ac33e48` | `main` |
