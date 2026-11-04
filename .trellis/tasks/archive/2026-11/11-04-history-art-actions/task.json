@@ -3,7 +3,7 @@
   "name": "history-art-actions",
   "title": "历史插画库与行动验证界面",
   "description": "分散历史记录插画并准备65张独立场景生成清单；行动验证沿用历史归档UI，保留验证等待期和提交逻辑。用户已选择先完成界面，待本机API密钥配置后再生成新图。",
-  "status": "in_progress",
+  "status": "completed",
   "dev_type": null,
   "scope": null,
   "package": null,
@@ -11,7 +11,7 @@
   "creator": "hikling",
   "assignee": "hikling",
   "createdAt": "2026-11-04",
-  "completedAt": null,
+  "completedAt": "2026-11-04",
   "branch": "codex/history-art-actions",
   "base_branch": "main",
   "worktree_path": null,
@@ -21,6 +21,6 @@
   "children": [],
   "parent": null,
   "relatedFiles": [],
-  "notes": "",
+  "notes": "本次交付界面、多插画分配与65张生成准备。用户已明确延期实际生成，待本机API密钥配置后继续；当前没有新生成图片。",
   "meta": {}
 }
