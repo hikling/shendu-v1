@@ -8,7 +8,7 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 36
+- **Total Sessions**: 37
 - **Last Active**: 2026-11-04
 <!-- @@@/auto:current-status -->
 
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~829 | Active |
+| `journal-1.md` | ~852 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -29,6 +29,7 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 37 | 2026-11-04 | Adopt real shadcn UI across shared controls and interactive surfaces | `3d74ac7`, `9ade9b4` | `main` |
 | 36 | 2026-11-04 | Fix review return destination and action reading layout | `9f6da1d` | `main` |
 | 35 | 2026-11-04 | Complete record illustrations and compact archive UI | `33f1966` | `main` |
 | 34 | 2026-11-04 | 多插画历史与行动验证 | `6939c46` | `main` |

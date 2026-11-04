@@ -827,3 +827,26 @@ Review exits return to history/actions with filters, focus and scroll; removed d
 ### Status
 
 [OK] **Completed**
+
+
+## Session 37: Adopt real shadcn UI across shared controls and interactive surfaces
+<!-- trellis-session: v=2 fp=f73b5ea50c51954d -->
+
+**Date**: 2026-11-04
+**Task**: Adopt real shadcn UI across shared controls and interactive surfaces
+**Branch**: `main`
+
+### Summary
+
+Integrated CLI-sourced shadcn React component islands, Radix dialogs/menus/tabs, DayPicker and Sonner across all applicable shared UI; preserved Shendu brand, palettes, artwork, immersive reviews and curved reel. Added registry/native form/overlay lifecycle contracts, meaningful DOM regressions, exact lockfile, build/license pipeline, Docker and resource smoke, README and rendered desktop/mobile QA evidence. Clean install/build/check/test passed (108/108); Linux/Compose/Docker/container/UI smoke passed GitHub run 41857958794 at 3d74ac7. Browser final lock was rejected by auto-review and not retried; existing read-only records and tests cover locking. No server/API/schema/security or verification policy changes. Task archived; final bookkeeping push and final HEAD CI checked before handoff.
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `3d74ac7` | Adopt shadcn UI across shared controls and interactive surfaces |
+| `9ade9b4` | Document successful Linux and Docker UI verification |
+
+### Status
+
+[OK] **Completed**
