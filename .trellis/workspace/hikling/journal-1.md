@@ -928,3 +928,26 @@ Corrected duplicate select arrows, removed ghost/account/menu hover fills with c
 ### Status
 
 [OK] **Completed**
+
+
+## Session 41: Overview flip and complete paper UI audit
+<!-- trellis-session: v=2 fp=18d48a7f2e2bf383 -->
+
+**Date**: 2026-11-05
+**Task**: Overview flip and complete paper UI audit
+**Branch**: `main`
+
+### Summary
+
+Removed theme color UI and preserved compatible motion settings; six overview entries flip in place with short labels and native navigation; unified authentication, connection and generic confirmation surfaces. Independent review fixed pending deletion ownership and contrast. Production build/check, 121 tests, resource smoke, desktop and narrow CUA passed; main CI 41954443952 succeeded. README, design contracts, audit and screenshots synchronized.
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `107a225` | Unify remaining paper UI and flip overview category entries |
+| `cf1b533` | Record flip UI acceptance and successful Linux CI |
+
+### Status
+
+[OK] **Completed**
