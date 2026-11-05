@@ -896,3 +896,35 @@ Corrected duplicate select arrows, removed ghost/account/menu hover fills with c
 ### Status
 
 [OK] **Completed**
+
+
+## Session 40: 历史复盘与个人空间插画界面重排
+<!-- trellis-session: v=2 fp=342ce13ece4920f9 -->
+
+**Date**: 2026-11-05
+**Task**: 历史复盘与个人空间插画界面重排
+**Branch**: `main`
+
+### Summary
+
+重排历史图文卡片，统一数据备份、账户管理、账户与安全、设置及下级弹窗的纸面插画风格；修复异步重试与820px表格结构。生产构建、112项测试、资源烟测、1280/820/390/320px浏览器、筛选返回、普通成员、白色主题、减少动态和503重试通过；功能提交Linux/Docker CI 41948020044成功。
+
+### Main Changes
+
+- 历史卡片显式伸展，紧凑图文与默认日期去重，保留筛选和来源返回。
+- 个人空间复用七张本地相关插画，保留账户权限、备份加密和原表单行为。
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `497862f` | Redesign history archive and unify illustrated workspace pages |
+| `19bcce1` | Record workspace UI acceptance and Linux build results |
+
+### Testing
+
+- [OK] npm test 112/112、npm run check、smoke:ui、git diff --check通过；隔离合成数据浏览器验收及截图齐全。
+
+### Status
+
+[OK] **Completed**
