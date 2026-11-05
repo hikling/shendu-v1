@@ -5,7 +5,6 @@ import {toast as sonnerToast} from 'sonner';
 import {Button} from './components/ui/button';
 import {Dialog,DialogContent,DialogTitle,DialogDescription} from './components/ui/dialog';
 import {DropdownMenu,DropdownMenuTrigger,DropdownMenuContent,DropdownMenuItem,DropdownMenuLabel} from './components/ui/dropdown-menu';
-import {Tabs,TabsList,TabsTrigger,TabsContent} from './components/ui/tabs';
 import {Calendar,CalendarDayButton} from './components/ui/calendar';
 import {Toaster} from './components/ui/sonner';
 import {mountComponent,enhanceUi,disposeUi} from './runtime';
@@ -47,28 +46,6 @@ export function showDialog(container,{html,className='',title='慎独',descripti
   body.querySelector('.modal-head h2')?.setAttribute('aria-hidden','true');
   body.querySelector('.modal-head p')?.setAttribute('aria-hidden','true');
   return body;
-}
-
-function RailSurface({container,header,stats,panels,onClose,returnFocus}){
-  const [view,setView]=React.useState('calendar');
-  return <Dialog open onOpenChange={open=>{if(!open)onClose()}}>
-    <DialogContent container={container} className="sd-surface sd-dialog stage-folio open" id="right-rail" data-view={view} overlayClassName="sd-surface sd-dialog-overlay rail-backdrop" showCloseButton={false} onOpenAutoFocus={event=>event.preventDefault()} onCloseAutoFocus={event=>event.preventDefault()}>
-      <DialogTitle className="sr-only">阶段与日历</DialogTitle><DialogDescription className="sr-only">每日足迹、当前阶段与待验证行动。</DialogDescription>
-      <div className="stage-folio-heading" data-legacy-rail="header" dangerouslySetInnerHTML={raw(header)}/>
-      <Tabs value={view} onValueChange={setView} className="stage-folio-tabs">
-        <TabsList className="stage-folio-nav" aria-label="阶段面板">
-          {[['calendar','每日足迹'],['stage','当前阶段'],['pending','待验证']].map(([id,label])=><TabsTrigger key={id} value={id} className="stage-folio-tab" data-rail-view={id} aria-pressed={view===id}>{label}</TabsTrigger>)}
-        </TabsList>
-        <div className="stage-folio-pages">{panels.map(({id,html})=><TabsContent key={id} value={id} forceMount hidden={view!==id} className="stage-folio-page" data-legacy-rail={id} dangerouslySetInnerHTML={raw(html)}/>)}</div>
-        <div className="stage-folio-footer" data-legacy-rail="stats" dangerouslySetInnerHTML={raw(stats)}/>
-      </Tabs>
-    </DialogContent>
-  </Dialog>;
-}
-export function showRail(container,options){
-  clearDialog(container);mountComponent(container,<RailSurface container={container} {...options}/>);
-  const bodies=[...container.querySelectorAll('[data-legacy-rail]')];dialogBodies.set(container,bodies);bodies.forEach(enhanceUi);
-  container.querySelector('#rail-dialog-title')?.setAttribute('aria-hidden','true');
 }
 
 function MenuSurface({trigger,items,label,className,controls}){

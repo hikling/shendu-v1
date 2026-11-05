@@ -32,13 +32,13 @@ test('legacy custom colors retain the approved brand while reduced motion still 
 });
 
 function settingsFixture(requestImpl,theme=legacyTheme()){
-  const dom=new JSDOM('<div id="modal-root" data-persistent="0"></div>'),document=dom.window.document;
-  const state={user:{displayName:'测试',username:'tester'},theme},calls=[],applied=[],notices=[];
+  const dom=new JSDOM('<main id="settings-page"></main><div id="modal-root" data-persistent="0"></div>'),document=dom.window.document;
+  const state={user:{displayName:'测试',username:'tester'},theme,dirty:false,saving:false},calls=[],applied=[],notices=[];
   const $=(selector,root=document)=>root.querySelector(selector),$$=(selector,root=document)=>[...root.querySelectorAll(selector)];
-  const openModal=html=>{$('#modal-root').innerHTML=html};
+  const shell=html=>{$('#settings-page').innerHTML=html};
   const request=async(path,options)=>{calls.push({path,...options});return requestImpl(options.body)};
-  const open=new Function('document','state','$','$$','openModal','workspaceDialogHead','workspaceArt','openSettingsTarget','FormData','request','applyTheme','toast',`${owner('openSettings','openSettingsTarget')}\nreturn openSettings;`)(
-    document,state,$,$$,openModal,()=>'<div class="modal-head"><h2>设置</h2><button data-close type="button">关闭</button></div>',()=>'',()=>{},dom.window.FormData,request,theme=>applied.push(theme),(...args)=>notices.push(args)
+  const open=new Function('document','state','$','$$','shell','spacePageHead','workspaceArt','openSettingsTarget','FormData','request','applyTheme','toast',`${owner('renderSettings','bindMotionPreferences')}\n${owner('bindMotionPreferences','openSettingsTarget')}\nreturn renderSettings;`)(
+    document,state,$,$$,shell,()=>'<header><h1>设置</h1></header>',()=>'',()=>{},dom.window.FormData,request,theme=>applied.push(theme),(...args)=>notices.push(args)
   );
   open();
   const form=$('#motion-form'),checkbox=form.elements.reduceMotion;
@@ -59,14 +59,14 @@ test('settings saves only motion through the existing API and preserves all lega
   assert.equal(original.reduceMotion,false);
   assert.equal(form.getAttribute('aria-busy'),'true');
   assert.equal($('fieldset',form).disabled,true);
-  assert.equal($('#modal-root').dataset.persistent,'1');
-  assert.ok($$('button').every(button=>button.disabled));
+  assert.equal(state.saving,true);
+  assert.equal($('#modal-root').childElementCount,0,'settings is a page, not a dialog');
   finish({theme:calls[0].body.theme});await flush();
   assert.deepEqual(state.theme,{...original,reduceMotion:true});
   assert.equal(applied[0],state.theme);assert.deepEqual(notices,[['动态偏好已保存']]);
   assert.equal(form.isConnected,true);assert.equal(form.hasAttribute('aria-busy'),false);
   assert.equal($('fieldset',form).disabled,false);assert.equal($('#modal-root').dataset.persistent,'0');
-  assert.ok($$('button').every(button=>!button.disabled));
+  assert.equal(state.saving,false);assert.equal(state.dirty,false);
   dom.window.close();
 });
 
@@ -76,8 +76,9 @@ test('failed motion save keeps the chosen preference available for retry without
     if(++attempt===1)throw new Error('连接失败');return {theme:body.theme};
   });
   const original=state.theme;
-  checkbox.checked=true;submit();await flush();
+  checkbox.checked=true;checkbox.dispatchEvent(new dom.window.Event('change',{bubbles:true}));submit();await flush();
   assert.equal(state.theme,original);assert.equal(checkbox.checked,true);
+  assert.equal(state.dirty,true);
   assert.deepEqual(notices,[['连接失败','error']]);
   assert.equal($('fieldset',form).disabled,false);assert.equal($('#modal-root').dataset.persistent,'0');
   submit();await flush();
@@ -86,12 +87,24 @@ test('failed motion save keeps the chosen preference available for retry without
   dom.window.close();
 });
 
-test('unchecking motion persists false and a replaced dialog keeps its own persistent guard',async()=>{
+test('obsolete motion completion cannot replace another account preference or release its newer write',async()=>{
+  let finish;
+  const {dom,state,calls,applied,notices,checkbox,submit}=settingsFixture(()=>new Promise(resolve=>{finish=resolve}));
+  checkbox.checked=true;submit();
+  const otherTheme={...legacyTheme(),reduceMotion:false,owner:'other'},newOwner={};
+  state.user={username:'other'};state.theme=otherTheme;state.settingsWriteOwner=newOwner;state.saving=true;
+  finish({theme:calls[0].body.theme});await flush();
+  assert.equal(state.theme,otherTheme);assert.equal(applied.length,0);assert.equal(notices.length,0);
+  assert.equal(state.saving,true);assert.equal(state.settingsWriteOwner,newOwner);
+  dom.window.close();
+});
+
+test('unchecking motion persists false while reauthentication remains a separate guarded dialog',async()=>{
   let finish;
   const {dom,state,calls,applied,$,checkbox,submit}=settingsFixture(()=>new Promise(resolve=>{finish=resolve}),{...legacyTheme(),reduceMotion:true});
   checkbox.checked=false;submit();
   assert.equal(calls[0].body.theme.reduceMotion,false);
-  // A session-expiry response may replace settings with a persistent login dialog.
+  // A session-expiry dialog overlays the retained settings page.
   $('#modal-root').innerHTML='<form id="reauth-form"></form>';
   $('#modal-root').dataset.persistent='1';
   finish({theme:calls[0].body.theme});await flush();

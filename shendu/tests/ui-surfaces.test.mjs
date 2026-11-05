@@ -77,16 +77,6 @@ test('controlled calendar month browsing preserves navigation nodes and keyboard
   }
 });
 
-test('stage folio uses linked persistent Tabs, one shared stats footer and no side decorations',async()=>{
-  ui.showRail(surface,{header:'<header class="stage-folio-header rail-dialog-header"><h2 id="rail-dialog-title">阶段与日历</h2><button id="rail-close">关闭</button></header>',stats:'<section class="stage-summary rail-stats">统计</section>',panels:[{id:'calendar',html:'<section id="test-calendar">日历</section>'},{id:'stage',html:'<section><input id="stage-field" value="保留"></section>'},{id:'pending',html:'<section>待验证</section>'}],onClose(){}});await settle();
-  assert.ok(surface.querySelector('#right-rail.stage-folio.open'));assert.equal(surface.querySelectorAll('.stage-summary').length,1);assert.equal(surface.querySelector('.stage-folio-footer').previousElementSibling.className,'stage-folio-pages');assert.equal(surface.querySelectorAll('img,.rail-side-decor,.rail-compact-decor').length,0);
-  const tabs=[...surface.querySelectorAll('[role="tab"]')];assert.equal(tabs.length,3);const field=surface.querySelector('#stage-field');field.value='保持内容';
-  assert.equal(surface.querySelectorAll('[role="tabpanel"]').length,3);assert.equal(surface.querySelectorAll('[role="tabpanel"][hidden]').length,2);
-  tabs[1].dispatchEvent(new MouseEvent('mousedown',{bubbles:true,button:0}));tabs[1].click();await settle();assert.equal(tabs[1].getAttribute('aria-selected'),'true');assert.equal(surface.querySelector('#test-calendar').closest('[role="tabpanel"]').hidden,true);assert.equal(surface.querySelector('#stage-field'),field);assert.equal(field.value,'保持内容');
-  assert.equal(surface.querySelector('.stage-folio-footer').closest('[role="tabpanel"]'),null);assert.equal(surface.querySelectorAll('[role="tabpanel"][hidden]').length,2);
-  ui.dismissDialog(surface);await settle();assert.equal(document.querySelector('[role="tabpanel"]'),null);
-});
-
 test('DropdownMenu keyboard opening and item selection have one interaction owner',async()=>{
   let selected=0;
   ui.showMenu(surface,{trigger:{html:'账户菜单',className:'header-account-trigger',props:{type:'button','aria-label':'账户菜单'}},label:'我的空间',items:[{html:'设置',onSelect:()=>{selected++;assert.equal(document.activeElement.getAttribute('aria-label'),'账户菜单')}}]});

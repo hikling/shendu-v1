@@ -5,7 +5,8 @@
 .workspace-settings{--workspace-tone:#875b21;--workspace-soft:#f8f0dd}
 .workspace-stage{--workspace-tone:#345585;--workspace-soft:#edf1f8}
 .workspace-guide{--workspace-tone:#15584e;--workspace-soft:#edf4ed}
-.main:has(.workspace-page){width:100%;max-width:1480px;margin-inline:auto;padding-inline:clamp(20px,3.9vw,58px)}
+.workspace:has(.workspace-page){width:100%;max-width:var(--content-width);margin-inline:auto;grid-template-columns:minmax(0,1fr)}
+.main:has(.workspace-page){width:100%;max-width:none;margin-inline:auto;padding-inline:var(--content-gutter)}
 .workspace-page{min-width:0;padding-bottom:36px}
 .workspace-page *,.workspace-dialog *{box-sizing:border-box}
 .workspace-hero{position:relative;display:grid;grid-template-columns:minmax(0,1fr) clamp(210px,24vw,290px);gap:34px;align-items:center;margin:0 5px 22px;padding:10px 8px 18px;min-height:245px;border-bottom:1px solid var(--workspace-line)}
@@ -22,6 +23,25 @@
 .workspace-backup-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px;align-items:stretch}
 .workspace-page .workspace-panel,.workspace-dialog .workspace-panel{min-width:0;margin:0;padding:23px 25px;border:1px solid var(--workspace-line);border-radius:20px;background:linear-gradient(135deg,#fffefa 62%,color-mix(in srgb,var(--workspace-soft) 75%,#fffefa));box-shadow:0 7px 20px #293e2d08;color:var(--workspace-ink)}
 .workspace-page .workspace-panel{display:flex;flex-direction:column;gap:0}
+.workspace-page .workspace-return{height:auto;min-height:32px;margin:0;padding:0;border:0;border-radius:0;background:transparent;box-shadow:none;color:var(--workspace-tone);font-size:.72rem;text-align:left}
+.workspace-page .workspace-return:hover{background:transparent;text-decoration:underline;text-underline-offset:5px}
+.workspace-settings.workspace-page .workspace-settings-menu{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px;border:0}
+.workspace-settings.workspace-page .settings-menu-item{display:grid;min-height:215px;grid-template-columns:minmax(0,1fr) 120px;grid-template-rows:auto;align-items:center;gap:12px;padding:26px 22px}
+.workspace-settings.workspace-page .workspace-setting-art{width:120px;align-self:center;margin:0}
+.workspace-settings.workspace-page [data-settings-target="guide"]{grid-column:auto;min-height:215px}
+.workspace-settings.workspace-page .workspace-motion-form{margin-top:24px;padding:23px 26px}
+.workspace-settings.workspace-page .workspace-motion-copy label{font-size:1.18rem}
+.workspace-settings.workspace-page .workspace-motion-copy p{font-size:.73rem}
+.workspace-stage .stage-edit-fields{min-width:0;margin:0;padding:0;border:0}
+.workspace-stage .stage-edit-fields[disabled]{opacity:.72}
+.workspace-stage .field input{width:100%;min-height:46px;height:auto;padding:11px 13px;border:1px solid #bac7b5;border-radius:11px;background:#fffefa;font-size:.78rem}
+.workspace-guide .guide-content{display:block;columns:2;column-gap:60px;padding:30px 36px}
+.workspace-guide .guide-content h3{break-after:avoid;font:900 1.2rem/1.6 "SimSun","宋体",serif;margin-top:25px;color:var(--workspace-tone)}
+.workspace-guide .guide-content h3:first-of-type{margin-top:0}
+.workspace-guide .guide-content p,.workspace-guide .guide-content li{font-size:.78rem;line-height:1.9;color:var(--workspace-muted)}
+.workspace-guide .guide-flow{column-span:all;margin-bottom:25px}
+@media(max-width:1100px){.workspace-settings.workspace-page .settings-menu-item{grid-template-columns:minmax(0,1fr) 85px;padding:23px 18px}.workspace-settings.workspace-page .workspace-setting-art{width:85px}}
+@media(max-width:820px){.workspace-settings.workspace-page .workspace-settings-menu{grid-template-columns:minmax(0,1fr);gap:15px}.workspace-settings.workspace-page .settings-menu-item,.workspace-settings.workspace-page [data-settings-target="guide"]{min-height:130px;grid-template-columns:minmax(0,1fr) 110px;padding:20px 22px}.workspace-settings.workspace-page .workspace-setting-art{width:110px}.workspace-settings.workspace-page .workspace-motion-form{padding:20px}.workspace-guide .guide-content{columns:1;padding:22px}.workspace-stage .field input{font-size:.75rem}}
 .workspace-panel-head{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;min-width:0;margin-bottom:13px}
 .workspace-panel-head>div{min-width:0}
 .workspace-panel-head .workspace-kicker{margin-bottom:6px;font-size:.57rem;letter-spacing:.1em}

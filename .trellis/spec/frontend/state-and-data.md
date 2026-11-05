@@ -2,7 +2,7 @@
 
 ## State
 
-`state` in `shendu/public/app.js` holds the user, stage, theme, records, stats, route, current record, dirty/saving flags, and menu/rail state. `boot()` calls `refreshData()` for `/api/me`, `/api/records`, and `/api/stats`, then opens `overview`. `applyTheme()` applies the fixed `DEFAULT_ACCENTS`, computes contrast and honors saved `reduceMotion`; old preset/color fields remain data-compatible but no longer select UI colors.
+`state` in `shendu/public/app.js` holds the user, stage, theme, records, stats, route, current record, dirty/saving flags, and menu and calendar month state. `boot()` calls `refreshData()` for `/api/me`, `/api/records`, and `/api/stats`, then opens `overview`. `applyTheme()` applies the fixed `DEFAULT_ACCENTS`, computes contrast and honors saved `reduceMotion`; old preset/color fields remain data-compatible but no longer select UI colors.
 
 Use `request()` for JSON API operations. It sends same-origin credentials and handles error responses. `sessionExpired()` keeps unsaved form content while reauthentication is shown. Escape data placed into template HTML with `esc()`; `toast()` passes a plain string to the singleton Sonner component, never raw HTML.
 
@@ -42,19 +42,23 @@ When waiting rules change, derive the eligibility date of existing completed rec
 Theme-color controls and `openTheme()` are removed. Settings owns the independent motion checkbox; old accounts must retain saved compatibility fields.
 
 ### Signatures
-`openSettings()` binds `#motion-form`; `PUT /api/settings` still accepts `{theme}` and returns the existing settings object. No server/schema change.
+`renderSettings()` binds `#motion-form`; `PUT /api/settings` still accepts `{theme}` and returns the existing settings object. No server/schema change.
 
 ### Contracts
 Read `new FormData(form).get('reduceMotion') === 'on'`, spread `state.theme`, then update only `reduceMotion`. Preserve preset, three colors and unknown compatibility fields. Apply returned theme only on success. `DEFAULT_ACCENTS` determines displayed colors on every load, including all-white legacy values.
 
 ### Validation / error matrix
-Unchecked -> send false. Pending -> one request, disabled fieldset/buttons and persistent Dialog. Failure -> show error, retain chosen checkbox and original saved state for retry. A replaced Dialog must keep its own persistent guard; old finally handlers only restore connected owners.
+Unchecked -> send false. Pending -> one request, disabled fieldset/buttons and guarded departure. Failure -> retain checkbox, original saved state and dirty flag for retry. Completion checks the connected form, account and request owner; old finally handlers cannot release a newer write.
 
 ### Good / base / bad cases
 Legacy all-white account retains fixed readable accents; ordinary accounts can save either motion value; a failed save must never silently reset the checkbox or drop legacy data.
 
 ### Tests required
-`tests/settings-motion.test.mjs` executes real form/API behavior: legacy colors, true/false, unknown field preservation, failure retry and replaced-dialog guards. Browser-check the genuine checkbox/label, saved motion and narrow layout in an isolated fixture without changing real account preferences.
+`tests/settings-motion.test.mjs` executes real form/API behavior: legacy colors, true/false, unknown field preservation, failure retry and obsolete form/account completion guards. Browser-check the genuine checkbox/label, saved motion and narrow layout in an isolated fixture without changing real account preferences.
 
 ### Wrong vs correct
 Wrong: save `{theme:{reduceMotion:true}}`, apply legacy colors or add another color menu. Correct: save `{theme:{...state.theme,reduceMotion:checked}}` and derive visual accents from `DEFAULT_ACCENTS`.
+
+## Workspace navigation and stage writes
+
+`settings`, `calendar`, `stage-settings` and `guide` are ordinary routes. Their navigation uses `attemptNavigate()`; motion/stage edits mark dirty, pending writes block departure, and failure retains the mounted values. Stage configuration submits every original stage/metric field,49 review-template keys and4 action prompts, retaining unknown compatibility metadata. Success applies only to the connected original form/account/write owner. Calendar review entry captures month/scroll/date focus as source context; review exit restores it instead of overview. Global Ctrl/Cmd+S requires an actual review route, never merely a retained current record.

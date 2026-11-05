@@ -1,0 +1,94 @@
+[
+  {
+    "cards": [
+      {
+        "display": "grid",
+        "left": 16,
+        "right": 367
+      },
+      {
+        "display": "grid",
+        "left": 16,
+        "right": 367
+      },
+      {
+        "display": "grid",
+        "left": 16,
+        "right": 367
+      }
+    ],
+    "dialogs": 0,
+    "page": "settings",
+    "scroll": 383,
+    "width": 390
+  },
+  {
+    "cards": [
+      {
+        "display": "grid",
+        "left": 20,
+        "right": 793
+      },
+      {
+        "display": "grid",
+        "left": 20,
+        "right": 793
+      },
+      {
+        "display": "grid",
+        "left": 20,
+        "right": 793
+      }
+    ],
+    "dialogs": 0,
+    "page": "settings",
+    "scroll": 813,
+    "width": 820
+  },
+  {
+    "page": "calendar",
+    "panels": [
+      {
+        "left": 20,
+        "right": 793
+      },
+      {
+        "left": 20,
+        "right": 793
+      },
+      {
+        "left": 20,
+        "right": 398.5
+      },
+      {
+        "left": 414.5,
+        "right": 793
+      }
+    ],
+    "scroll": 813,
+    "width": 820
+  },
+  {
+    "page": "calendar",
+    "panels": [
+      {
+        "left": 16,
+        "right": 367
+      },
+      {
+        "left": 16,
+        "right": 367
+      },
+      {
+        "left": 16,
+        "right": 367
+      },
+      {
+        "left": 16,
+        "right": 367
+      }
+    ],
+    "scroll": 383,
+    "width": 390
+  }
+]

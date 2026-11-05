@@ -1,0 +1,5 @@
+{"file": ".trellis/spec/frontend/architecture.md", "reason": "渲染与路由"}
+{"file": ".trellis/spec/frontend/component-islands.md", "reason": "组件岛/表单与焦点"}
+{"file": ".trellis/spec/frontend/state-and-data.md", "reason": "保存与离开保护"}
+{"file": ".trellis/spec/frontend/ui-quality.md", "reason": "既有品牌与布局"}
+{"file": ".trellis/spec/frontend/archive-and-workspace-ui.md", "reason": "统一工作区"}

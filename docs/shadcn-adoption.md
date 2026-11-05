@@ -6,17 +6,17 @@
 
 | 页面或控件 | 使用的组件 | 保留的业务契约 |
 | --- | --- | --- |
-| 登录、注册、账户、动态偏好和阶段设置 | Card、Button、Input、Textarea、NativeSelect、Label、Checkbox | 原有表单字段、校验、权限和提交接口；颜色设置已移除 |
-| 六类沉浸式复盘 | Button、Input、Textarea、NativeSelect、Label、Calendar | 所有问题的输入持续挂载；切题、收起答案、保存及错误重试不丢内容 |
+| 登录、注册、账户、动态偏好和阶段设置 | Card、Button、Input、Textarea、RadioGroup、Label、Checkbox | 原有表单字段、校验、权限和提交接口；颜色设置已移除 |
+| 六类沉浸式复盘 | Button、Input、Textarea、RadioGroup、Label、Calendar | 所有问题的输入持续挂载；切题、收起答案、保存及错误重试不丢内容 |
 | 验证日期 | Calendar（React DayPicker）、Button | 中文日期、六周高度、原日期字段、各类最早可选日期、历史只读 |
-| 阶段与日历 | Dialog、Tabs、Calendar、Progress、Button | 原始记录身份、草稿／完成／验证状态、统计跳转和阶段设置 |
-| 历史复盘、行动验证 | Card、Badge、Button、Input、NativeSelect、Dialog、Textarea | 分类插画、原筛选、完整正文、验证规则和退出后返回来源 |
+| 阶段与日历 | Calendar、Progress、Button、Card | 原始记录身份、草稿／完成／验证状态、统计跳转和阶段设置 |
+| 历史复盘、行动验证 | Card、Badge、Button、Input、RadioGroup、Dialog、Textarea | 分类插画、原筛选、完整正文、验证规则和退出后返回来源 |
 | 顶部账户与手机菜单 | DropdownMenu、Button | 相同入口及权限、方向键、Escape、关闭后焦点恢复 |
-| 确认、设置、验证、登录过期弹窗 | Dialog | 持久登录保护、保存中禁止退出、父子弹窗焦点 |
-| 备份与管理员页面 | Card、Table、Button、Input、NativeSelect、Checkbox、Badge、Dialog | 原加密、预览、恢复、权限及确认流程 |
+| 确认、验证、登录过期弹窗 | Dialog | 持久登录保护、保存中禁止退出、父子弹窗焦点 |
+| 备份与管理员页面 | Card、Table、Button、Input、RadioGroup、Checkbox、Badge、Dialog | 原加密、预览、恢复、权限及确认流程 |
 | 错误、状态、加载和通知 | Alert、Badge、Skeleton、Progress、Sonner | 原有真实状态与错误信息，无额外数据请求 |
 
-阶段 Dialog 采用单张书页式布局，宽度上限736px、高度上限650px；大月份标题、六行月历、记录状态图例与底部三项共享统计组成完整面板，左右六类装饰卡片已取消。真实 Tabs 每次只显示每日足迹、当前阶段或待验证中的一项；非当前面板保持挂载但 hidden，避免切换丢失已绑定的业务控件。矮屏压缩日期行距，仅空间不足时在当前面板内部滚动。样式独立在 `ui/stage.css`，避免旧侧栏样式干扰。顶部「复盘」下拉已移除，概览六类入口保持原位；普通页头 Button 和账户／手机菜单触发器在 hover、focus、active 时均保持无框透明，只用当前项文字色和独立焦点轮廓表达状态。
+设置、阶段与日历、阶段配置和指南采用普通工作区页面，共用暖纸背景和插画标题。日历为月历与阶段/待验证双栏，手机自然重排；没有阶段 Dialog、Tabs 或侧装饰卡。月历保持原记录身份、状态、统计及返回日期焦点。顶部仍为透明文字导航，当前项用字色和独立焦点轮廓表示。
 
 ## 定制界面的保留范围
 
@@ -28,9 +28,9 @@
 
 `ui/runtime.jsx` 是唯一挂载登记表。现有页面生成 HTML 后，`renderMarkup()` 先清理子组件，再同步挂载组件，最后由业务代码绑定事件。Card、Label 和 Button 中的旧模板内容由原生代码管理；React 不重复管理同一子节点列表。自绘区域通过明确的选择器或 `data-ui-native` / `data-ui-skip` 声明边界。
 
-复杂交互在 `ui/surfaces.jsx` 中显式组合。Dialog、DropdownMenu、Tabs 和 DayPicker 各自负责键盘与焦点行为，原有重复处理已移除。组件控件仍使用原始 ID、name 和 data 属性；没有数据模型迁移。
+复杂交互在 `ui/surfaces.jsx` 中显式组合。Dialog、DropdownMenu、RadioGroup 和 DayPicker 各自负责键盘与焦点行为，原有重复处理已移除。组件控件仍使用原始 ID、name 和 data 属性；没有数据模型迁移。
 
-应用、阶段层、确认框、通知分别挂在 body 下的 `#app`、`#rail-root`、`#modal-root`、`#toast-root`。`syncOverlayBackground()` 根据实际弹层统一管理应用 inert，子框打开时另使阶段父层 inert，关闭子框只恢复父层，最后一层关闭才恢复应用。新一轮子框先替换空挂载容器，避免被父 Radix 的隐藏快照遮蔽；不手动修改 Radix 的 aria-hidden 或额外绑定 Tab 陷阱。完整登录重置同时清理外部阶段层、确认框和 open 状态；持久重认证仍保留未保存编辑内容。
+应用、功能确认框、通知分别挂在 body 下的 `#app`、`#modal-root`、`#toast-root`；兼容 `#rail-root` 不再挂载页面。`syncOverlayBackground()` 只在实际功能 Dialog 存在时管理应用 inert。新一轮弹框替换空挂载容器，避免旧 Radix 隐藏快照；不手动修改 aria-hidden 或增加 Tab 陷阱。完整登录重置清理功能弹框；持久重认证保留编辑内容。
 
 Sonner 在初始化业务界面前挂载，使其既有 polite live region 在首个弹框及嵌套弹框中保持可用。编辑器日期、保存等状态有局部播报，不为整个应用添加 aria-live。Calendar 使用中文、固定六周和原 YYYY-MM-DD 字段；浏览月份不改值，显式选择才派发一次输入事件，锁定历史保留原月并禁止导航。
 
@@ -45,3 +45,5 @@ Sonner 在初始化业务界面前挂载，使其既有 polite live region 在�
 更新组件和主脚本时同时更新 `public/index.html` 及 `app.js` 中的资源版本，避免浏览器沿用旧的 immutable 缓存。CI 检查实际容器的 HTML、主脚本和组件 JS/CSS，不仅检查 API 健康。
 
 `npm run check` 检查原生脚本语法，`npm test` 先执行生产构建，再运行原有领域／安全测试及组件真实 DOM 回归。当前为 JavaScript 项目，没有独立 TypeScript 或 ESLint 配置；JSX 编译由 Vite 构建覆盖。DOM 测试覆盖字段／FormData、单次事件、保留隐藏答案、勾选框、菜单、日历、持久与嵌套弹窗、背景 inert、焦点恢复及登录清理；视觉、真实浏览器焦点和移动端边界另行验收。接口、记录、加密、权限和验证等待规则不因组件采用而改变。
+
+单值 select 的可见界面统一为真实 shadcn/Radix RadioGroup 选项组。原生字段隐藏但持续挂载，维持 name/id/value/FormData、required、禁用、重置与单次 input/change；标签和错误聚焦转到可见选项。选项多时自动换行，历史月份在未选年份时仍禁用。组件来源核对官方 new-york-v4 radio-group 源码；见[本轮验收](page-choice-qa/README.md)。

@@ -98,10 +98,10 @@ test('an old password completion cannot clear a newer account write owner',async
   pending[1].reject(new Error('请重试'));await settle();assert.equal(f.state.saving,false);assert.equal(f.state.accountWriteOwner,undefined);assert.equal($('#account-new-password').value,'new-private-password');
 });
 
-test('settings account destination closes its dialog before guarded navigation; other settings keep their back control',()=>{
-  const calls=[],container=$('#modal-root');
-  const openSettingsTarget=new Function('document','$','closeModal','attemptNavigate','navigate','openStage','openGuide','enhanceUi','openSettings',`${owner('openSettingsTarget')}\nreturn openSettingsTarget;`)(document,$,()=>calls.push('close'),next=>{calls.push('guard');next()},route=>calls.push(route),()=>{container.innerHTML='<div class="modal-head"><h2>阶段设置</h2></div>'},()=>{},ui.enhanceUi,()=>calls.push('settings'));
-  container.innerHTML='<div class="modal-head"><h2>设置</h2></div>';openSettingsTarget('account');assert.deepEqual(calls,['close','guard','users']);assert.equal($('.settings-back'),null);
-  openSettingsTarget('stage');assert.ok($('.settings-back'));$('.settings-back').click();assert.equal(calls.at(-1),'settings');
-  ui.disposeUi(container);container.replaceChildren();
+test('settings destinations use guarded page routes and stage editing remembers its parent',()=>{
+  const calls=[];
+  const openSettingsTarget=new Function('attemptNavigate','navigate','openStage',`${owner('openSettingsTarget')}\nreturn openSettingsTarget;`)(next=>{calls.push('guard');next()},route=>calls.push(route),route=>calls.push('stage:'+route));
+  openSettingsTarget('account');assert.deepEqual(calls,['guard','users']);
+  openSettingsTarget('guide');assert.deepEqual(calls.slice(-2),['guard','guide']);
+  openSettingsTarget('stage');assert.equal(calls.at(-1),'stage:settings');
 });

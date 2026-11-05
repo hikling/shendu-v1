@@ -16,8 +16,8 @@ function harness(){
   return {state,returns,navigation,discard(){state.dirty=false;const next=pending;pending=null;next?.()}};
 }
 
-test('all six review types return to their history or action origin and reading position',()=>{
-  for(const route of ['history','actions'])for(const type of ['daily','weekly','monthly','quarterly','yearly','decision']){
+test('all six review types return to their history, action or calendar origin and reading position',()=>{
+  for(const route of ['history','actions','calendar'])for(const type of ['daily','weekly','monthly','quarterly','yearly','decision']){
     const {state,returns,navigation}=harness();state.route=route;
     const filter={...state.filter};
     navigation.enter({type,record:{id:`${type}-saved`,type}});
@@ -53,10 +53,10 @@ test('new overview or calendar entries replace the prior visit instead of inheri
   state.route='overview';state.scrollY=100;
   navigation.enter({type:'weekly',record:null});navigation.exit();
   assert.deepEqual(returns.at(-1),{route:'overview',scrollY:100,recordId:null});
-  // A calendar can be opened while a review is active; that is a fresh visit.
-  state.route='daily';state.scrollY=900;
+  // A standalone calendar visit captures its own reading position.
+  state.route='calendar';state.scrollY=900;
   navigation.enter({type:'daily',record:{id:'calendar-record'}});navigation.exit();
-  assert.deepEqual(returns.at(-1),{route:'overview',scrollY:0,recordId:null});
+  assert.deepEqual(returns.at(-1),{route:'calendar',scrollY:900,recordId:'calendar-record'});
 });
 
 test('clearing on ordinary navigation and invalid sources cannot restore a stale destination',()=>{

@@ -1,10 +1,10 @@
-import {renderMarkup,enhanceUi,disposeUi,prepareDialogContainer,initializeToasts,showDialog,dismissDialog,showRail,showMenu,showVerificationCalendar,showStageCalendar,showToast} from './ui/shadcn.js?v=1.0.0-flip1';
+import {renderMarkup,enhanceUi,disposeUi,prepareDialogContainer,initializeToasts,showDialog,dismissDialog,showMenu,showVerificationCalendar,showStageCalendar,showToast} from './ui/shadcn.js?v=1.0.0-pages1';
 import {overviewRecordAppearances,overviewVerifiedRecords,overviewRecordExcerpt,overviewLoopMetrics,overviewRecordTitle,overviewDateParts} from './overview-reel.js?v=1.0.0-overview15';
 import {DAILY_STEPS,dailyStepIssues,dailyPrompts,dailyPromptIssues,dailyPromptNeighbor,dailyPromptOwner} from './daily-flow.js?v=1.0.0-overview25';
 import {dailyCalendarModel,dailyCalendarDateLabel} from './daily-calendar.js?v=1.0.0-art1';
 import {EXTENDED_FLOW,extendedPrompts,extendedPromptNeighbor,extendedPromptIssues,extendedReviewIssues} from './extended-flow.js?v=1.0.0-extended2';
 import {verificationMinimum} from './verification-policy.js?v=1.0.0-verification2';
-import {createReviewNavigator} from './review-navigation.js?v=1.0.0-return1';
+import {createReviewNavigator} from './review-navigation.js?v=1.0.0-pages1';
 import {RECORD_ART,recordArtAssignments} from './record-art.js?v=1.0.0-records1';
 const $ = (s, root = document) => root.querySelector(s);
 const $$ = (s, root = document) => [...root.querySelectorAll(s)];
@@ -85,7 +85,7 @@ function templatesForRecord(record){
 }
 function currentTemplateSnapshot(type){return{version:1,review:clone(currentReviewTemplate(type)),action:clone(currentActionTemplate())}}
 
-const state = { user:null, stage:null, theme:null, records:[], stats:{week:0,pending:0,total:0}, route:'overview', current:null, dirty:false, saving:false, navOpen:false, railOpen:false, reauthOpen:false, calendarMonth:null, dailySection:'intro', dailyPrompt:null, extendedPrompt:null, historyFilter:{q:'',type:'all',year:'all',month:'all'} };
+const state = { user:null, stage:null, theme:null, records:[], stats:{week:0,pending:0,total:0}, route:'overview', current:null, dirty:false, saving:false, navOpen:false, reauthOpen:false, calendarMonth:null, dailySection:'intro', dailyPrompt:null, extendedPrompt:null, historyFilter:{q:'',type:'all',year:'all',month:'all'} };
 const reviewNavigation=createReviewNavigator({
   source:()=>({route:state.route,scrollY:window.scrollY}),
   guard:next=>attemptNavigate(next),
@@ -98,7 +98,7 @@ const reviewNavigation=createReviewNavigator({
     navigate(context.route);
     requestAnimationFrame(()=>{
       if(state.route!==context.route)return;
-      const trigger=context.recordId?$$('[data-open-record]').find(button=>button.dataset.openRecord===context.recordId):null;
+      const trigger=context.recordId?$$('[data-open-record],[data-calendar-record]').find(button=>(button.dataset.openRecord||button.dataset.calendarRecord)===context.recordId):null;
       trigger?.focus({preventScroll:true});
       window.scrollTo({top:context.scrollY,behavior:'instant'});
     });
@@ -136,7 +136,7 @@ function newRecord(type,period){const data={answers:{},action:'',ifCondition:'',
 
 function renderAuth(info={}){
   cancelDailyTypewriter();setDailyImmersive(false);
-  dismissDialog($('#rail-root'));state.railOpen=false;closeModal(true);
+  dismissDialog($('#rail-root'));closeModal(true);
   reviewNavigation.clear();state.historyFilter={q:'',type:'all',year:'all',month:'all'};
   const registering=info.mode==='register'||info.firstRun;
   state.user=null;renderMarkup($('#app'),`<main class="auth-shell auth-paper-shell"><div class="auth-book">
@@ -172,14 +172,14 @@ function topbar(){
         ${headerLink('actions',actionLabel,state.stats.pending?`<span class="header-count">${Number(state.stats.pending)}</span>`:'')}
       </nav>
       <div class="header-actions">
-        <button class="header-rail-button" type="button" id="rail-toggle" aria-haspopup="dialog" aria-controls="right-rail" aria-expanded="false">阶段与日历</button>
+        <button class="header-rail-button ${state.route==='calendar'?'active':''}" type="button" id="rail-toggle" data-nav="calendar" ${state.route==='calendar'?'aria-current="page"':''}>阶段与日历</button>
         <div class="header-menu header-account-menu" data-ui-native>
           <button class="header-account-trigger" type="button" data-menu-trigger aria-expanded="false" aria-controls="account-menu" aria-label="账户菜单：${esc(accountName)}"><span class="header-avatar" aria-hidden="true">${esc(accountName[0])}</span><span class="header-account-name">${esc(accountName)}</span><span class="header-chevron" aria-hidden="true"></span></button>
           <div class="header-menu-panel account-menu" id="account-menu" hidden>
             <span class="header-menu-caption">我的空间</span>
             <button class="header-menu-item ${state.route==='backup'?'active':''}" type="button" data-nav="backup" ${state.route==='backup'?'aria-current="page"':''}>${navIcon('backup')}<span>数据备份</span></button>
             <button class="header-menu-item ${state.route==='users'?'active':''}" type="button" data-nav="users" ${state.route==='users'?'aria-current="page"':''}>${navIcon('users')}<span>账户管理</span></button>
-            <button class="header-menu-item" type="button" id="settings-trigger">${navIcon('monthly')}<span>设置</span></button>
+            <button class="header-menu-item ${state.route==='settings'?'active':''}" type="button" id="settings-trigger" data-nav="settings" ${state.route==='settings'?'aria-current="page"':''}>${navIcon('monthly')}<span>设置</span></button>
           </div>
         </div>
         <button class="header-mobile-trigger" type="button" id="menu-toggle" data-ui-native data-menu-trigger aria-expanded="false" aria-controls="mobile-nav" aria-label="打开顶部菜单"><span></span><span></span><span></span></button>
@@ -187,11 +187,11 @@ function topbar(){
     </div>
     <nav class="header-mobile-nav" id="mobile-nav" data-ui-native aria-label="手机导航" hidden>
       <div class="mobile-nav-main">${headerLink('overview','概览')}${headerLink('history','历史复盘')}${headerLink('actions',actionLabel)}</div>
-      <div class="mobile-nav-bottom"><button type="button" class="${state.route==='backup'?'active':''}" data-nav="backup" ${state.route==='backup'?'aria-current="page"':''}>数据备份</button><button type="button" class="${state.route==='users'?'active':''}" data-nav="users" ${state.route==='users'?'aria-current="page"':''}>账户管理</button><button type="button" id="mobile-settings-trigger">设置</button></div>
+      <div class="mobile-nav-bottom"><button type="button" class="${state.route==='backup'?'active':''}" data-nav="backup" ${state.route==='backup'?'aria-current="page"':''}>数据备份</button><button type="button" class="${state.route==='users'?'active':''}" data-nav="users" ${state.route==='users'?'aria-current="page"':''}>账户管理</button><button type="button" id="mobile-settings-trigger" data-nav="settings" ${state.route==='settings'?'aria-current="page"':''}>设置</button></div>
     </nav>
   </header>`;
 }
-function shell(content){cancelDailyTypewriter();setDailyImmersive(false);if($('#right-rail.open'))setRailOverlayOpen(false);overviewReelObserver?.disconnect();overviewReelObserver=null;const overview=state.route==='overview';renderMarkup($('#app'),`<div class="app-shell ${overview?'overview-shell':''}">${topbar()}<div class="workspace"><main class="main ${overview?'overview-main':''}" id="main-content">${content}</main></div></div>`);bindCommon()}
+function shell(content){cancelDailyTypewriter();setDailyImmersive(false);overviewReelObserver?.disconnect();overviewReelObserver=null;const overview=state.route==='overview';renderMarkup($('#app'),`<div class="app-shell ${overview?'overview-shell':''}">${topbar()}<div class="workspace"><main class="main ${overview?'overview-main':''}" id="main-content">${content}</main></div></div>`);bindCommon()}
 
 function overviewText(value,limit){const text=String(value??'').replace(/\s+/g,' ').trim(),points=Array.from(text);return points.length>limit?points.slice(0,limit).join('')+'…':text}
 function overviewRecordCard(record,appearance,duplicate=false,index=0){
@@ -287,23 +287,20 @@ const SPACE_PAGE_META = {
   history:{mark:'册',note:'循迹 · 归档有序'},
   actions:{mark:'验',note:'闭环 · 让行动有回音'},
   backup:{mark:'匣',note:'守存 · 密文归档'},
-  users:{mark:'印',note:'账户 · 安心记录'}
+  users:{mark:'印',note:'账户 · 安心记录'},
+  settings:{mark:'序',note:'日常 · 自有秩序'},calendar:{mark:'历',note:'在日常中 · 看见自己'},stage:{mark:'标',note:'定标 · 慢慢向前'},guide:{mark:'书',note:'循序 · 从容落笔'}
 };
 
-const WORKSPACE_SCENES={backup:'yearly-03-year-keep',users:'daily-29-share-help',account:'decision-04-decision-risk',settings:'monthly-08-month-workspace',stage:'quarterly-04-quarter-winter',guide:'daily-05-reading-corner'};
-const WORKSPACE_NOTES={account:'守护 · 安心记录',settings:'日常 · 自有秩序',stage:'定标 · 慢慢向前',guide:'循序 · 从容落笔'};
+const WORKSPACE_SCENES={backup:'yearly-03-year-keep',users:'daily-29-share-help',account:'decision-04-decision-risk',settings:'monthly-08-month-workspace',calendar:'daily-07-small-checklist',stage:'quarterly-04-quarter-winter',guide:'daily-05-reading-corner'};
 function workspaceArt(key,className=''){return `<span class="workspace-art ${esc(className)}" aria-hidden="true"><span class="workspace-art-paper"></span><img src="/assets/records/${esc(WORKSPACE_SCENES[key])}.webp?v=1.0.0-records1" alt="" width="640" height="640" draggable="false"></span>`}
 function spacePageHead(route,{title,description,action=''}){return `<header class="workspace-hero"><div class="workspace-hero-copy"><p class="workspace-kicker">${esc(SPACE_PAGE_META[route].note)}</p><h1 id="workspace-${esc(route)}-title">${esc(title)}</h1><p class="workspace-description">${esc(description)}</p>${action?`<div class="workspace-hero-action">${action}</div>`:''}</div>${workspaceArt(route,'workspace-hero-art')}</header>`}
-function workspaceDialogHead(key,title,description){return `<div class="modal-head workspace-dialog-head"><div class="workspace-dialog-copy"><span class="workspace-kicker">${esc(WORKSPACE_NOTES[key])}</span><h2>${esc(title)}</h2><p class="workspace-description">${esc(description)}</p></div>${workspaceArt(key,'workspace-dialog-art')}<button class="modal-close" type="button" data-close>×</button></div>`}
 
 function stageProgress(){const start=isoDate(state.stage.startDate),current=isoDate(today()),day=Math.max(1,Math.floor((current-start)/86400000)+1),days=Number(state.stage.days||90);return{day:Math.min(day,days),days,pct:Math.min(100,Math.max(0,day/days*100))}}
-function rightRail(){const p=stageProgress(),pending=state.records.filter(r=>r.status==='completed').sort((a,b)=>String(a.data.verifyDate).localeCompare(String(b.data.verifyDate))).slice(0,2),t=currentActionTemplate();return `<aside id="right-rail">
-  <header class="stage-folio-header rail-dialog-header"><div><p class="stage-folio-kicker">在日常中，看见自己</p><h2 id="rail-dialog-title">阶段与日历</h2></div><button class="stage-folio-close" id="rail-close" type="button" aria-label="关闭阶段与日历"><span>关闭</span><span aria-hidden="true">×</span></button></header>
-  ${statsHtml()}
-  <section class="stage-panel stage-panel-current rail-stage"><div class="stage-current-top"><span class="stage-panel-eyebrow">当前阶段</span><span class="stage-current-day">第 <strong>${p.day}</strong> / ${p.days} 天</span></div><h3>${esc(state.stage.name)}</h3><p class="stage-current-focus">${esc(state.stage.focus)}</p><div class="progress stage-current-progress" aria-label="当前阶段进度"><i style="width:${p.pct}%"></i></div><div class="stage-current-bottom"><span>${esc(formatDate(state.stage.startDate))} 起 · 共 ${p.days} 天</span><button type="button" class="stage-text-action" data-modal="stage">编辑阶段设置 <span aria-hidden="true">↗</span></button></div></section>
-  <section class="stage-panel stage-panel-calendar rail-calendar" id="rail-calendar"></section>
-  <section class="stage-panel stage-panel-pending rail-pending"><header class="stage-pending-header"><span class="stage-panel-eyebrow">最近待验证</span><span>${state.stats.pending} ${esc(t.countUnit)}</span></header>${pending.length?pending.map(r=>`<button type="button" class="stage-pending-item" data-open-action="${esc(r.id)}"><span class="stage-pending-meta"><span>${esc(TYPES[r.type].label)}</span><time>${esc(r.data.verifyDate||'未定日期')}</time></span><span class="stage-pending-copy">${esc(r.data.action||'未填写行动')}</span><span class="stage-pending-open" aria-hidden="true">↗</span></button>`).join(''):`<div class="stage-empty"><h3>暂时没有待验证行动</h3><p>完成复盘后，约定的行动会在这里等待回看。</p></div>`}<button type="button" class="stage-text-action stage-view-actions" data-nav="actions">查看全部行动 <span aria-hidden="true">→</span></button></section>
-</aside>`}
+function renderCalendar(){
+  const p=stageProgress(),pending=state.records.filter(record=>record.status==='completed').sort((a,b)=>String(a.data.verifyDate).localeCompare(String(b.data.verifyDate))).slice(0,2),t=currentActionTemplate();
+  shell(`<section class="workspace-page workspace-calendar" aria-labelledby="workspace-calendar-title">${spacePageHead('calendar',{title:'阶段与日历',description:'把每天留下的足迹，放回正在走的这一段路。'})}${statsHtml()}<div class="calendar-workspace-grid"><section class="workspace-panel calendar-paper" aria-labelledby="calendar-paper-title"><div class="calendar-paper-heading"><div><p class="workspace-kicker">一日一页 · 慢慢积累</p><h2 id="calendar-paper-title">每日足迹</h2></div><p>有记录的日子，随时翻开。</p></div><div id="stage-calendar"></div></section><div class="calendar-context"><section class="workspace-panel stage-panel stage-panel-current" aria-labelledby="calendar-current-title"><div class="stage-current-top"><span class="stage-panel-eyebrow">当前阶段</span><span class="stage-current-day">第 <strong>${p.day}</strong> / ${p.days} 天</span></div><h2 id="calendar-current-title">${esc(state.stage.name)}</h2><p class="stage-current-focus">${esc(state.stage.focus)}</p><div class="progress stage-current-progress" aria-label="当前阶段进度"><i style="width:${p.pct}%"></i></div><div class="stage-current-bottom"><span>${esc(formatDate(state.stage.startDate))} 起 · 共 ${p.days} 天</span><button type="button" class="stage-text-action" id="calendar-edit-stage">编辑阶段设置 <span aria-hidden="true">↗</span></button></div></section><section class="workspace-panel stage-panel stage-panel-pending" aria-labelledby="calendar-pending-title"><header class="stage-pending-header"><h2 id="calendar-pending-title">最近待验证</h2><span>${state.stats.pending} ${esc(t.countUnit)}</span></header>${pending.length?pending.map(record=>`<button type="button" class="stage-pending-item" data-open-action="${esc(record.id)}"><span class="stage-pending-meta"><span>${esc(TYPES[record.type].label)}</span><time>${esc(record.data.verifyDate||'未定日期')}</time></span><span class="stage-pending-copy">${esc(record.data.action||'未填写行动')}</span><span class="stage-pending-open" aria-hidden="true">↗</span></button>`).join(''):`<div class="stage-empty"><h3>暂时没有待验证行动</h3><p>完成复盘后，约定的行动会在这里等待回看。</p></div>`}<button type="button" class="stage-text-action stage-view-actions" data-nav="actions">查看全部行动 <span aria-hidden="true">→</span></button></section></div></div></section>`);
+  $('#calendar-edit-stage').addEventListener('click',()=>openStage('calendar'));bindCalendar();
+}
 
 function statsHtml(){const t=currentActionTemplate();return `<section class="stage-summary rail-stats" aria-label="复盘概览">
   <button type="button" class="stage-summary-item stage-summary-first" data-nav="daily"><span class="stage-summary-label">本周每日复盘 <span aria-hidden="true">↗</span></span><strong>${state.stats.week}<small> / 7 天</small></strong></button>
@@ -440,9 +437,9 @@ function startDailyTypewriter(){
   dailyTypingTimer=setTimeout(reveal,120);
 }
 function setDailyImmersive(open){
-  if(open){closeHeaderMenus();if($('#right-rail.open'))setRailOverlayOpen(false)}
+  if(open)closeHeaderMenus();
   $('.app-shell')?.classList.toggle('daily-immersive',open);
-  const header=$('#site-header');if(header){header.hidden=open;header.inert=open||!!$('#right-rail.open')}
+  const header=$('#site-header');if(header){header.hidden=open;header.inert=open}
 }
 function currentDailyPrompts(){return dailyPrompts(state.current.data.metrics?.length||0)}
 function dailyPromptCopy(prompt){
@@ -856,42 +853,40 @@ async function patchUser(id,body){try{await request(`/api/admin/users/${id}`,{me
 
 function settingsGuideHtml(){return `<div class="guide-flow">${['定标','事实','差距','机制','改变','验证'].map((x,i)=>`<div class="guide-step"><b>${String(i+1).padStart(2,'0')}</b><span>${x}</span></div>`).join('')}</div><h3>不同周期分别解决什么问题？</h3><p>每日看行动，不超过 8 分钟；每周找重复出现的条件；每月只选一个瓶颈和一个小实验；90 天重新校准方向；年度看人生结构；重大决策留下当时依据，避免事后诸葛亮。</p><h3>阶段指标怎么写？</h3><p>指标要能在一天结束时明确判断，而不是“变得更好”。例如把“提升收入能力”写成“专注 60 分钟，形成一个可展示的具体输出”。达标线是最低有效行动，不是理想状态。</p><h3>怎样避免越复盘越自责？</h3><ul><li>先写摄像头能拍到的事实，再写自己的解释。</li><li>一次只调整一个最可能影响结果的条件。</li><li>状态差时降低动作门槛，不把休息等同于失败。</li><li>验证的是方法，不是证明自己好或不好。</li></ul><h3>重大决定怎么回看？</h3><p>把过程质量与结果好坏分开。好结果可能来自运气，坏结果也不一定说明当时的判断错误。回到当时真正掌握的信息、可选方案和风险边界，再决定保留什么。</p>`}
 
-function openGuide(){openModal(`${workspaceDialogHead('guide','使用指南','用事实改善下一次行动。')}<div class="prose guide-content workspace-panel">${settingsGuideHtml()}</div>`,'workspace-dialog workspace-guide')}
-function openSettings(){
+function renderGuide(){shell(`<section class="workspace-page workspace-guide" aria-labelledby="workspace-guide-title">${spacePageHead('guide',{title:'使用指南',description:'用事实改善下一次行动。',action:'<button type="button" class="workspace-return" data-nav="settings">← 返回设置</button>'})}<div class="prose guide-content workspace-panel">${settingsGuideHtml()}</div></section>`)}
+
+function openSettings(){attemptNavigate(()=>navigate('settings'))}
+function renderSettings(){
   const items=[['account','账户管理','个人安全与成员管理'],['stage','阶段设置','目标与复盘问题'],['guide','使用指南','记录与验证方法']];
-  openModal(`${workspaceDialogHead('settings','设置',`${state.user.displayName||state.user.username} · ${state.user.username}`)}<div class="settings-menu workspace-settings-menu">${items.map(([key,label,note])=>`<button class="settings-menu-item" type="button" data-settings-target="${key}"><span class="workspace-setting-copy"><strong>${label}</strong><small>${note}</small><span class="workspace-setting-enter" aria-hidden="true">打开 <span>↗</span></span></span>${workspaceArt(key,'workspace-setting-art')}</button>`).join('')}</div><form id="motion-form" class="workspace-motion-form"><fieldset><div class="workspace-motion-copy"><label id="motion-label" for="settings-reduce-motion">减少动态效果</label><p id="motion-description">减弱移动与翻转，让阅读更安静。</p></div><input id="settings-reduce-motion" name="reduceMotion" type="checkbox" aria-labelledby="motion-label" aria-describedby="motion-description" ${state.theme?.reduceMotion?'checked':''}><button class="btn btn-primary" type="submit">保存偏好</button></fieldset></form>`,'workspace-dialog workspace-settings');
+  shell(`<section class="workspace-page workspace-settings" aria-labelledby="workspace-settings-title">${spacePageHead('settings',{title:'设置',description:'留出适合自己的节奏，让每一次记录更从容。'})}<div class="settings-menu workspace-settings-menu">${items.map(([key,label,note])=>`<button class="settings-menu-item" type="button" data-settings-target="${key}"><span class="workspace-setting-copy"><strong>${label}</strong><small>${note}</small><span class="workspace-setting-enter" aria-hidden="true">打开 <span>↗</span></span></span>${workspaceArt(key,'workspace-setting-art')}</button>`).join('')}</div><form id="motion-form" class="workspace-panel workspace-motion-form"><fieldset><div class="workspace-motion-copy"><label id="motion-label" for="settings-reduce-motion">减少动态效果</label><p id="motion-description">减弱移动与翻转，让阅读更安静。</p></div><input id="settings-reduce-motion" name="reduceMotion" type="checkbox" aria-labelledby="motion-label" aria-describedby="motion-description" ${state.theme?.reduceMotion?'checked':''}><button class="btn btn-primary" type="submit">保存偏好</button></fieldset></form></section>`);
   $$('[data-settings-target]').forEach(button=>button.addEventListener('click',()=>openSettingsTarget(button.dataset.settingsTarget)));
-  const form=$('#motion-form');
-  let saving=false;
-  form.addEventListener('submit',async e=>{
-    e.preventDefault();if(saving)return;
-    const theme={...state.theme,reduceMotion:new FormData(form).get('reduceMotion')==='on'},root=$('#modal-root'),persistent=root.dataset.persistent,controls=$$('button,fieldset',root).map(control=>[control,control.disabled]);
-    saving=true;root.dataset.persistent='1';form.setAttribute('aria-busy','true');controls.forEach(([control])=>{control.disabled=true});
-    try{const result=await request('/api/settings',{method:'PUT',body:{theme}});state.theme=result.theme||theme;applyTheme(state.theme);toast('动态偏好已保存')}
-    catch(err){toast(err.message,'error')}
-    finally{saving=false;if(form.isConnected){root.dataset.persistent=persistent;form.removeAttribute('aria-busy');controls.forEach(([control,disabled])=>{control.disabled=disabled})}}
+  bindMotionPreferences();
+}
+function bindMotionPreferences(){
+  const form=$('#motion-form'),account=state.user;let saving=false;
+  const current=()=>form.isConnected&&state.user===account;
+  form.addEventListener('change',()=>{state.dirty=$('[name="reduceMotion"]',form).checked!==!!state.theme?.reduceMotion});
+  form.addEventListener('submit',async event=>{
+    event.preventDefault();if(saving||!current())return;
+    const theme={...state.theme,reduceMotion:new FormData(form).get('reduceMotion')==='on'},fieldset=$('fieldset',form);
+    saving=true;state.settingsWriteOwner=form;state.saving=true;form.setAttribute('aria-busy','true');fieldset.disabled=true;
+    try{const result=await request('/api/settings',{method:'PUT',body:{theme}});if(!current())return;state.theme=result.theme||theme;state.dirty=false;applyTheme(state.theme);toast('动态偏好已保存')}
+    catch(error){if(current())toast(error.message,'error')}
+    finally{saving=false;if(state.settingsWriteOwner===form){state.saving=false;delete state.settingsWriteOwner}if(form.isConnected){form.removeAttribute('aria-busy');fieldset.disabled=false}}
   });
 }
 
 function openSettingsTarget(target){
-  if(target==='account'){closeModal();attemptNavigate(()=>navigate('users'));return}
-  else if(target==='stage')openStage();
-  else if(target==='guide')openGuide();
-  else return;
-  const header=$('#modal-root .modal-head');
-  if(!header)return;
-  const back=document.createElement('button');
-  back.type='button';back.className='settings-back';back.textContent='← 返回设置';
-  header.before(back);enhanceUi(back.parentElement);
-  $('.settings-back',$('#modal-root')).addEventListener('click',()=>openSettings());
+  if(target==='stage'){openStage('settings');return}
+  const route={account:'users',guide:'guide'}[target];if(route)attemptNavigate(()=>navigate(route));
 }
-
 const ACTION_PROMPT_FIELDS = [
   ['resultPrompt','通用问题 1 · 实际结果'],
   ['outcomePrompt','重大决策追加问题 1 · 结果'],
   ['processPrompt','重大决策追加问题 2 · 决策过程'],
   ['adjustmentPrompt','通用问题 2 · 保留或调整']
 ];
+
 function reviewTemplateEditor(type,template){
   const questionFields=QUESTIONS[type].map(([key],index)=>[key,`问题 ${index+1}`]);
   const fields=[...(type==='decision'?[["recordTitle","决定名称标题"]]:[]),...questionFields,['actionTitle','行动标题'],['obstacleTitle','阻碍预案标题'],['verifyDateTitle','验证日期标题']];
@@ -900,15 +895,29 @@ function reviewTemplateEditor(type,template){
 function actionTemplateEditor(template){return `<details class="template-panel action-template-panel"><summary><span class="template-type-icon action">验</span><span><b>行动验证</b><small>只修改提交验证时的四个问题</small></span><span class="template-chevron" aria-hidden="true"></span></summary><div class="template-panel-body"><div class="template-field-grid">${ACTION_PROMPT_FIELDS.map(([key,label])=>`<div class="field"><label>${label}</label><input aria-label="${esc(`行动验证 ${label}`)}" data-action-template data-template-key="${key}" maxlength="240" required value="${esc(template[key])}"></div>`).join('')}</div><button class="link-button template-reset" type="button" data-reset-action>恢复行动验证默认问题</button></div></details>`}
 function resetTemplateInputs(selector,defaults){$$(selector).forEach(input=>{input.value=defaults[input.dataset.templateKey]||''})}
 
-function openStage(){
+function openStage(returnRoute='settings'){attemptNavigate(()=>{state.settingsReturn=returnRoute; navigate('stage-settings')})}
+function renderStageSettings(){
   const s=clone(state.stage),reviewTemplates=Object.fromEntries(Object.keys(TYPES).map(type=>[type,mergeReviewTemplate(type,s.reviewTemplates?.[type])])),actionTemplate=mergeActionTemplate(s.actionTemplate);
-  openModal(`${workspaceDialogHead('stage','阶段与内容设置','模板只影响草稿和之后新建的复盘；已经完成、验证或锁定的记录保留当时内容。')}<form id="stage-form" class="workspace-form"><section class="stage-settings-section"><div class="settings-section-title"><span>01</span><div><h3>当前阶段</h3><p>设定阶段长度、关注方向和每日行动基线。</p></div></div><div class="input-grid"><div class="field"><label>当前阶段</label><select name="name">${['稳住底盘','建设能力','产出增长','扩张整合'].map(x=>`<option ${s.name===x?'selected':''}>${x}</option>`).join('')}</select></div><div class="field"><label>阶段开始日期</label><input name="startDate" type="date" value="${esc(s.startDate)}" required></div><div class="field"><label>阶段长度（7–366 天）</label><input name="days" type="number" min="7" max="366" value="${s.days}" required></div><div class="field"><label>这一阶段最想改善什么</label><input name="focus" maxlength="300" value="${esc(s.focus)}" required></div><div class="field"><label>睡眠达标线（小时）</label><input name="sleepTarget" type="number" min="0" max="24" step=".5" value="${s.sleepTarget}" required></div><div class="field"><label>精力观察线（0–100）</label><input name="energyTarget" type="number" min="0" max="100" step="10" value="${s.energyTarget}" required></div></div><div class="subsection"><h3>三项阶段指标</h3>${s.metrics.map((m,i)=>`<div class="input-grid"><div class="field"><label>指标 ${i+1}</label><input name="metricName${i}" maxlength="80" value="${esc(m.name)}" required></div><div class="field"><label>具体达标线</label><input name="metricTarget${i}" maxlength="240" value="${esc(m.target)}" required></div></div>`).join('')}</div><label class="quarter-toggle-card"><span class="quarter-toggle-art"><strong>90</strong><small>DAYS</small></span><span class="quarter-toggle-copy"><b>90 天复盘</b><small>启用 90 天阶段复盘，用更长周期校准方向。</small></span><input name="showQuarter" type="checkbox" ${s.showQuarter?'checked':''}><span class="quarter-switch" aria-hidden="true"></span></label></section><section class="stage-settings-section template-settings-section"><div class="settings-section-title"><span>02</span><div><h3>六类复盘内容</h3><p>只修改各类复盘下面的问题与输入项标题，不改变结构、状态或历史内容。</p></div></div><div class="template-list">${Object.keys(TYPES).map(type=>reviewTemplateEditor(type,reviewTemplates[type])).join('')}</div></section><section class="stage-settings-section template-settings-section"><div class="settings-section-title"><span>03</span><div><h3>行动验证内容</h3><p>和六类复盘一样，只修改提交验证时的问题标题，不改变页面、状态与按钮。</p></div></div>${actionTemplateEditor(actionTemplate)}</section><div class="modal-actions stage-save-actions"><button type="button" class="btn btn-ghost" data-close>取消</button><button class="btn btn-primary">保存全部设置</button></div></form>`,'wide workspace-dialog workspace-stage');
-  $$('[data-reset-review]').forEach(button=>button.addEventListener('click',()=>{const type=button.dataset.resetReview;resetTemplateInputs(`[data-review-template="${type}"]`,DEFAULT_REVIEW_TEMPLATES[type]);toast(`${TYPES[type].label}已恢复默认文案`)}));
-  $('[data-reset-action]')?.addEventListener('click',()=>{resetTemplateInputs('[data-action-template]',DEFAULT_ACTION_TEMPLATE);toast('行动验证已恢复默认问题')});
-  $('#stage-form').addEventListener('submit',async e=>{e.preventDefault();const f=new FormData(e.currentTarget),reviewTemplates=Object.fromEntries(Object.keys(TYPES).map(type=>[type,Object.fromEntries($$(`[data-review-template="${type}"]`,e.currentTarget).map(input=>[input.dataset.templateKey,input.value.trim()]))])),actionPrompts=Object.fromEntries($$('[data-action-template]',e.currentTarget).map(input=>[input.dataset.templateKey,input.value.trim()])),savedActionTemplate={...actionTemplate,...actionPrompts},stage={name:f.get('name'),startDate:f.get('startDate'),days:Number(f.get('days')),focus:f.get('focus'),sleepTarget:Number(f.get('sleepTarget')),energyTarget:Number(f.get('energyTarget')),showQuarter:f.get('showQuarter')==='on',metrics:[0,1,2].map(i=>({name:f.get(`metricName${i}`),target:f.get(`metricTarget${i}`)})),reviewTemplates,actionTemplate:savedActionTemplate};try{const result=await request('/api/settings',{method:'PUT',body:{stage}});state.stage=result.stage||stage;closeModal();toast('阶段与内容设置已保存');navigate(state.route)}catch(err){toast(err.message,'error')}})
+  shell(`<section class="workspace-page workspace-stage" aria-labelledby="workspace-stage-title">${spacePageHead('stage',{title:'阶段与内容设置',description:'模板只影响草稿和之后新建的复盘；已经完成、验证或锁定的记录保留当时内容。',action:'<button type="button" class="workspace-return" id="stage-settings-back">← 返回</button>'})}<form id="stage-form" class="workspace-form"><fieldset class="stage-edit-fields"><section class="workspace-panel stage-settings-section"><div class="settings-section-title"><span>01</span><div><h3>当前阶段</h3><p>设定阶段长度、关注方向和每日行动基线。</p></div></div><div class="input-grid"><div class="field"><label>当前阶段</label><select name="name">${['稳住底盘','建设能力','产出增长','扩张整合'].map(x=>`<option ${s.name===x?'selected':''}>${x}</option>`).join('')}</select></div><div class="field"><label>阶段开始日期</label><input name="startDate" type="date" value="${esc(s.startDate)}" required></div><div class="field"><label>阶段长度（7–366 天）</label><input name="days" type="number" min="7" max="366" value="${s.days}" required></div><div class="field"><label>这一阶段最想改善什么</label><input name="focus" maxlength="300" value="${esc(s.focus)}" required></div><div class="field"><label>睡眠达标线（小时）</label><input name="sleepTarget" type="number" min="0" max="24" step=".5" value="${s.sleepTarget}" required></div><div class="field"><label>精力观察线（0–100）</label><input name="energyTarget" type="number" min="0" max="100" step="10" value="${s.energyTarget}" required></div></div><div class="subsection"><h3>三项阶段指标</h3>${s.metrics.map((m,i)=>`<div class="input-grid"><div class="field"><label>指标 ${i+1}</label><input name="metricName${i}" maxlength="80" value="${esc(m.name)}" required></div><div class="field"><label>具体达标线</label><input name="metricTarget${i}" maxlength="240" value="${esc(m.target)}" required></div></div>`).join('')}</div><label class="quarter-toggle-card"><span class="quarter-toggle-art"><strong>90</strong><small>DAYS</small></span><span class="quarter-toggle-copy"><b>90 天复盘</b><small>启用 90 天阶段复盘，用更长周期校准方向。</small></span><input name="showQuarter" type="checkbox" ${s.showQuarter?'checked':''}><span class="quarter-switch" aria-hidden="true"></span></label></section><section class="workspace-panel stage-settings-section template-settings-section"><div class="settings-section-title"><span>02</span><div><h3>六类复盘内容</h3><p>只修改各类复盘下面的问题与输入项标题，不改变结构、状态或历史内容。</p></div></div><div class="template-list">${Object.keys(TYPES).map(type=>reviewTemplateEditor(type,reviewTemplates[type])).join('')}</div></section><section class="workspace-panel stage-settings-section template-settings-section"><div class="settings-section-title"><span>03</span><div><h3>行动验证内容</h3><p>和六类复盘一样，只修改提交验证时的问题标题，不改变页面、状态与按钮。</p></div></div>${actionTemplateEditor(actionTemplate)}</section><div class="modal-actions stage-save-actions"><button type="button" class="btn btn-ghost" id="stage-settings-cancel">取消</button><button class="btn btn-primary">保存全部设置</button></div></fieldset></form></section>`);
+  bindStageSettings(actionTemplate);
 }
-
-
+function bindStageSettings(actionTemplate){
+  const form=$('#stage-form'),account=state.user,returnRoute=state.settingsReturn==='calendar'?'calendar':'settings';let pending=false;
+  const current=()=>form.isConnected&&state.user===account;
+  const leave=()=>attemptNavigate(()=>navigate(returnRoute));
+  $('#stage-settings-back').addEventListener('click',leave);$('#stage-settings-cancel').addEventListener('click',leave);
+  form.addEventListener('input',()=>{state.dirty=true});form.addEventListener('change',()=>{state.dirty=true});
+  $$('[data-reset-review]',form).forEach(button=>button.addEventListener('click',()=>{const type=button.dataset.resetReview;resetTemplateInputs(`[data-review-template="${type}"]`,DEFAULT_REVIEW_TEMPLATES[type]);state.dirty=true;toast(`${TYPES[type].label}已恢复默认文案`)}));
+  $('[data-reset-action]',form)?.addEventListener('click',()=>{resetTemplateInputs('[data-action-template]',DEFAULT_ACTION_TEMPLATE);state.dirty=true;toast('行动验证已恢复默认问题')});
+  form.addEventListener('submit',async event=>{
+    event.preventDefault();if(pending||!current()||!form.reportValidity())return;
+    const f=new FormData(form),reviewTemplates=Object.fromEntries(Object.keys(TYPES).map(type=>[type,Object.fromEntries($$(`[data-review-template="${type}"]`,form).map(input=>[input.dataset.templateKey,input.value.trim()]))])),actionPrompts=Object.fromEntries($$('[data-action-template]',form).map(input=>[input.dataset.templateKey,input.value.trim()])),savedActionTemplate={...actionTemplate,...actionPrompts},stage={name:f.get('name'),startDate:f.get('startDate'),days:Number(f.get('days')),focus:f.get('focus'),sleepTarget:Number(f.get('sleepTarget')),energyTarget:Number(f.get('energyTarget')),showQuarter:f.get('showQuarter')==='on',metrics:[0,1,2].map(i=>({name:f.get(`metricName${i}`),target:f.get(`metricTarget${i}`)})),reviewTemplates,actionTemplate:savedActionTemplate};
+    pending=true;state.settingsWriteOwner=form;state.saving=true;form.setAttribute('aria-busy','true');$('fieldset',form).disabled=true;
+    try{const result=await request('/api/settings',{method:'PUT',body:{stage}});if(!current())return;state.stage=result.stage||stage;state.dirty=false;toast('阶段与内容设置已保存');navigate(returnRoute)}
+    catch(error){if(current())toast(error.message,'error')}
+    finally{pending=false;if(state.settingsWriteOwner===form){state.saving=false;delete state.settingsWriteOwner}if(form.isConnected){form.removeAttribute('aria-busy');$('fieldset',form).disabled=false}}
+  });
+}
 
 function bindAccountSecurity(){
   const form=$('#password-form'),logout=$('#logout'),account=state.user;
@@ -937,12 +946,12 @@ function syncOverlayBackground(){
   // Radix preserves aria-live descendants. Explicit inert ownership ensures a
   // review's live date/save status cannot expose its surrounding editor behind
   // a modal. Both overlay roots and the singleton toast live outside #app.
-  const app=$('#app');if(app)app.inert=!!($('#modal-root .modal')||$('#right-rail.open'));
+  const app=$('#app');if(app)app.inert=!!($('#modal-root .modal'));
 }
 
 function openModal(content,size='',persistent=false){
   cancelDailyTypewriter();const root=prepareDialogContainer($('#modal-root'));if(!root.children.length)modalReturnFocus=document.activeElement;
-  root.dataset.persistent=persistent?'1':'0';const parentRail=$('#right-rail.open');if(parentRail)parentRail.inert=true;
+  root.dataset.persistent=persistent?'1':'0';
   const template=document.createElement('template');template.innerHTML=content;
   const title=$('.modal-head h2',template.content)?.textContent||'慎独',description=$('.modal-head p',template.content)?.textContent||'';
   const customSurface=/\b(?:workspace-dialog|verification-dialog)\b/.test(size)||$('form:is(#backup-pass-form,#restore-password-form,#site-export-form,#site-inspect-form,#site-restore-form,#target-form,#delete-user-form,#user-form)',template.content);
@@ -954,13 +963,13 @@ function openModal(content,size='',persistent=false){
   setTimeout(()=>$('.modal input:not([type="hidden"]),.modal textarea,.modal button',root)?.focus(),0);
 }
 
-function closeModal(force=false){const root=$('#modal-root');if(!force&&(root.dataset.persistent==='1'||$('.modal[data-review-lock-busy]',root)))return;dismissDialog(root);root.dataset.persistent='0';const parentRail=$('#right-rail.open');if(parentRail)parentRail.inert=false;syncOverlayBackground();if(modalReturnFocus?.isConnected)modalReturnFocus.focus({preventScroll:true});modalReturnFocus=null}
+function closeModal(force=false){const root=$('#modal-root');if(!force&&(root.dataset.persistent==='1'||$('.modal[data-review-lock-busy]',root)))return;dismissDialog(root);root.dataset.persistent='0';syncOverlayBackground();if(modalReturnFocus?.isConnected)modalReturnFocus.focus({preventScroll:true});modalReturnFocus=null}
 
 function attemptNavigate(next){if(state.saving){toast('正在保存，请稍后再切换页面。','info');return}if(!state.dirty){next();return}openModal(`<div class="modal-head"><div><h2>这页还有未保存内容</h2><p>可以继续填写，或放弃刚才的修改。</p></div></div><div class="modal-actions"><button class="btn btn-primary" data-close>继续填写</button><button class="btn btn-danger" id="discard-change">放弃修改</button></div>`);$('#discard-change').addEventListener('click',()=>{state.dirty=false;closeModal();next()})}
 
 function bindCalendar(){
- const card=$('#rail-calendar');if(!card)return;
- showStageCalendar(card,{month:state.calendarMonth||today().slice(0,7),today:today(),records:state.records.filter(record=>record.type==='daily'),statusLabels:STATUS,onMonthChange:value=>{state.calendarMonth=value},onSelect:(date,record)=>{setRailOverlayOpen(false,true);attemptNavigate(()=>record?enterReview(record.type,record.period,false,record):enterReview('daily',date))}});
+ const card=$('#stage-calendar');if(!card)return;
+ showStageCalendar(card,{month:state.calendarMonth||today().slice(0,7),today:today(),records:state.records.filter(record=>record.type==='daily'),statusLabels:STATUS,onMonthChange:value=>{state.calendarMonth=value},onSelect:(date,record)=>{attemptNavigate(()=>record?enterReview(record.type,record.period,false,record):enterReview('daily',date))}});
 }
 
 let headerMenuControls=[];
@@ -973,33 +982,30 @@ function bindHeaderMenus(){
   if(account&&trigger&&panel){const options={trigger:{html:trigger.innerHTML,className:trigger.className,props:{type:'button','aria-label':trigger.getAttribute('aria-label')}},items:descriptors(panel),label:'我的空间'};disposeUi(account);account.replaceChildren();account.removeAttribute('data-ui-native');headerMenuControls.push(showMenu(account,options))}
   const mobile=$('#menu-toggle'),nav=$('#mobile-nav');if(mobile&&nav){const host=document.createElement('span');host.className='sd-mobile-menu-host';const options={trigger:{html:mobile.innerHTML,className:mobile.className,props:{type:'button',id:'menu-toggle','aria-label':'打开顶部菜单'}},items:descriptors(nav),className:'sd-menu-mobile',label:'慎独'};mobile.replaceWith(host);nav.remove();headerMenuControls.push(showMenu(host,options))}
 }
-function setRailOverlayOpen(open,restoreFocus=false){
- const container=$('#rail-root'),trigger=$('#rail-toggle');if(!container||!trigger)return;
- state.railOpen=open;trigger.setAttribute('aria-expanded',String(open));
- if(!open){dismissDialog(container);syncOverlayBackground();if(restoreFocus&&trigger.isConnected)trigger.focus({preventScroll:true});return}
- cancelDailyTypewriter();const template=document.createElement('template');template.innerHTML=rightRail();const rail=$('#right-rail',template.content);
- showRail(container,{header:$('.rail-dialog-header',rail).outerHTML,stats:$('.rail-stats',rail).outerHTML,panels:[['calendar','.rail-calendar'],['stage','.rail-stage'],['pending','.rail-pending']].map(([id,selector])=>({id,html:$(selector,rail).outerHTML})),onClose:()=>setRailOverlayOpen(false,true),returnFocus:trigger});
- syncOverlayBackground();
- const current=$('#right-rail');$('#rail-close').addEventListener('click',()=>setRailOverlayOpen(false,true));
- $$('[data-nav]',current).forEach(button=>button.addEventListener('click',()=>{setRailOverlayOpen(false,true);attemptNavigate(()=>navigate(button.dataset.nav))}));
- $$('[data-modal]',current).forEach(button=>button.addEventListener('click',()=>{if(button.dataset.modal==='stage')openStage()}));
- bindCalendar();bindActionButtons(current);$('#rail-close')?.focus();
-}
+
+
 function bindCommon(){
  bindHeaderMenus();
  $$('[data-nav]',$('#app')).forEach(button=>button.addEventListener('click',()=>{closeHeaderMenus();attemptNavigate(()=>navigate(button.dataset.nav))}));
- $$('[data-modal]',$('#app')).forEach(button=>button.addEventListener('click',()=>{closeHeaderMenus();if(button.dataset.modal==='stage')openStage()}));
- $('#rail-toggle')?.addEventListener('click',()=>{closeHeaderMenus();setRailOverlayOpen(!state.railOpen,true)});
  bindActionButtons();
 }
 
-function navigate(route){if(TYPES[route])return enterReview(route,defaultPeriod(route),route==='decision');reviewNavigation.clear();state.route=route;state.navOpen=false;state.railOpen=false;document.title=`${TYPES[route]?.label||({overview:'概览',history:'历史复盘',actions:currentActionTemplate().pageTitle,backup:'数据备份',users:'账户管理'}[route]||'慎独')} · 慎独`;if(route==='overview')return renderOverview();if(route==='history')return renderHistory();if(route==='actions')return renderActions();if(route==='backup')return renderBackup();if(route==='users')return renderUsers();renderReview('daily')}
+function navigate(route){
+ if(TYPES[route])return enterReview(route,defaultPeriod(route),route==='decision');
+ reviewNavigation.clear();state.route=route;state.navOpen=false;
+ document.title=`${({overview:'概览',history:'历史复盘',actions:currentActionTemplate().pageTitle,backup:'数据备份',users:'账户管理',settings:'设置',calendar:'阶段与日历','stage-settings':'阶段与内容设置',guide:'使用指南'}[route]||'慎独')} · 慎独`;
+ const render={overview:renderOverview,history:renderHistory,actions:renderActions,backup:renderBackup,users:renderUsers,settings:renderSettings,calendar:renderCalendar,'stage-settings':renderStageSettings,guide:renderGuide}[route];
+ if(render){const result=render();if(['settings','calendar','stage-settings','guide'].includes(route)){const heading=$('main h1');if(heading){heading.tabIndex=-1;heading.focus({preventScroll:true})}window.scrollTo({top:0,behavior:'instant'})}return result}
+ renderReview('daily');
+}
+
 async function refreshStats(){state.stats=await request('/api/stats')}
 async function refreshData(){const [me,rec,stats]=await Promise.all([request('/api/me'),request('/api/records'),request('/api/stats')]);state.user=me.user;state.stage=me.stage;state.theme=me.theme;state.records=rec.records;state.stats=stats;applyTheme(state.theme)}
 async function boot(user){cancelDailyTypewriter();setDailyImmersive(false);state.user=user;renderMarkup($('#app'),`<main class="connection-screen"><section class="connection-card" role="status"><div class="connection-brand"><span class="seal header-seal" aria-hidden="true">慎</span><span class="brand-cn header-wordmark">慎獨</span></div><div class="connection-art" aria-hidden="true"><img src="/assets/records/daily-01-morning-window.webp" alt="" width="640" height="640" draggable="false"></div><span class="legacy-kicker">稍候片刻</span><h1>正在翻开你的记录</h1><p>正在读取复盘与阶段资料。</p><div class="connection-loading" aria-hidden="true"><span></span><span></span><span></span></div></section></main>`);try{await refreshData();navigate('overview')}catch(e){if(e.status===401)return init();renderMarkup($('#app'),`<main class="connection-screen"><section class="connection-card"><div class="connection-brand"><span class="seal header-seal" aria-hidden="true">慎</span><span class="brand-cn header-wordmark">慎獨</span></div><div class="connection-art" aria-hidden="true"><img src="/assets/records/daily-28-night-lamp.webp" alt="" width="640" height="640" draggable="false"></div><span class="legacy-kicker">记录暂未连接</span><h1>暂时无法打开复盘室</h1><p>${esc(e.message)}</p><button class="btn btn-primary" id="retry">重试</button></section></main>`);$('#retry').addEventListener('click',()=>boot(user))}}
 async function init(){cancelDailyTypewriter();setDailyImmersive(false);try{const info=await request('/api/auth/state');if(info.user)await boot(info.user);else renderAuth(info)}catch(e){renderMarkup($('#app'),`<main class="connection-screen"><section class="connection-card"><div class="connection-brand"><span class="seal header-seal" aria-hidden="true">慎</span><span class="brand-cn header-wordmark">慎獨</span></div><div class="connection-art" aria-hidden="true"><img src="/assets/records/daily-01-morning-window.webp" alt="" width="640" height="640" draggable="false"></div><span class="legacy-kicker">连接暂时中断</span><h1>服务器连接失败</h1><p>请确认服务已经启动，然后再试一次。</p><button class="btn btn-primary" id="reconnect">重新连接</button></section></main>`);$('#reconnect').addEventListener('click',()=>location.reload())}}
 
 window.addEventListener('beforeunload',e=>{if(state.dirty){e.preventDefault();e.returnValue=''}});
-document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='s'&&state.current?.status==='draft'&&state.current.period===defaultPeriod(state.current.type)){e.preventDefault();saveCurrent().catch(()=>{})}});
+function saveShortcut(event){if((event.ctrlKey||event.metaKey)&&event.key.toLowerCase()==='s'&&TYPES[state.route]&&state.current?.status==='draft'&&state.current.period===defaultPeriod(state.current.type)){event.preventDefault();saveCurrent().catch(()=>{})}}
+document.addEventListener('keydown',saveShortcut);
 initializeToasts($('#toast-root'));
 init();

@@ -5,7 +5,7 @@ import {createElement} from 'react';
 import {createPortal} from 'react-dom';
 
 const dom = new JSDOM('<!doctype html><html><body><main id="test-root"></main></body></html>', {url: 'http://localhost/', pretendToBeVisual: true});
-for (const name of ['window', 'document', 'HTMLElement', 'HTMLInputElement', 'HTMLButtonElement', 'Node', 'Event', 'CustomEvent', 'MutationObserver', 'getComputedStyle']) {
+for (const name of ['window', 'document', 'HTMLElement', 'HTMLInputElement', 'HTMLButtonElement', 'HTMLFormElement', 'Node', 'Event', 'CustomEvent', 'MutationObserver', 'getComputedStyle']) {
   Object.defineProperty(globalThis, name, {value: name === 'getComputedStyle' ? dom.window.getComputedStyle.bind(dom.window) : dom.window[name], configurable: true});
 }
 Object.defineProperty(globalThis, 'navigator', {value: dom.window.navigator, configurable: true});
@@ -25,8 +25,8 @@ test('real primitives keep native forms, values, labels, readonly/disabled and f
   assert.equal(form.querySelector('select').dataset.slot, 'native-select');
   assert.equal(form.querySelector('label').dataset.slot, 'label');
   assert.equal(form.querySelector('label').control, form.querySelector('#sleep'));
-  assert.equal(form.querySelector('button').dataset.slot, 'button');
-  assert.equal(form.querySelector('button').type, 'submit');
+  assert.equal(form.querySelector('button[data-slot="button"]').dataset.slot, 'button');
+  assert.equal(form.querySelector('button[data-slot="button"]').type, 'submit');
   assert.equal(form.querySelector('[name=files]').value, '');
   assert.equal(form.querySelector('[name=color]').value, '#abcdef');
   assert.equal(form.querySelector('[name=locked]').readOnly, true);
