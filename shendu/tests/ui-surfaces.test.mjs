@@ -45,6 +45,12 @@ test('stage Calendar preserves original record identity and only today or record
   const selected=[],months=[],records=[{id:'original-id',period:'2026-11-02',status:'verified'},{id:'later-duplicate',period:'2026-11-02',status:'draft'},{id:'draft-id',period:'2026-11-01',status:'draft'},{id:'completed-id',period:'2026-11-05',status:'completed'}];
   ui.showStageCalendar(calendar,{month:'2026-11',today:'2026-11-04',records,statusLabels:{verified:'已验证',completed:'已完成',draft:'草稿'},onMonthChange:value=>months.push(value),onSelect:(date,record)=>selected.push({date,id:record?.id})});
   await settle();assert.equal(calendar.querySelectorAll('.rdp-week').length,6);
+  assert.ok([...calendar.querySelectorAll('.rdp-week')].every(row=>row.children.length===7));
+  assert.equal(calendar.querySelectorAll('.stage-day-lunar').length,30);
+  assert.equal(calendar.querySelector('[data-calendar-date="2026-11-07"] .stage-day-lunar').textContent,'立冬');
+  assert.equal(calendar.querySelector('[data-calendar-date="2026-11-22"]').dataset.solarTerm,'小雪');
+  assert.match(calendar.querySelector('[data-calendar-date="2026-11-07"]').getAttribute('aria-label'),/农历丙午年九月廿九，立冬/);
+  assert.equal(calendar.querySelectorAll('[data-outside="true"] button').length,0,'outside-month cells stay empty, not stray dates');
   assert.equal(calendar.querySelector('.stage-month-number').textContent,'11月');assert.equal(calendar.querySelector('.stage-month-year').textContent,'2026 年');
   assert.ok(calendar.querySelector('[data-calendar-date="2026-11-01"]').classList.contains('stage-day-draft'));assert.ok(calendar.querySelector('[data-calendar-date="2026-11-05"]').classList.contains('stage-day-completed'));
   assert.equal(calendar.querySelector('[data-calendar-date="2026-11-03"]').disabled,true);

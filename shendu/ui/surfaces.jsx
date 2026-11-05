@@ -8,6 +8,7 @@ import {DropdownMenu,DropdownMenuTrigger,DropdownMenuContent,DropdownMenuItem,Dr
 import {Calendar,CalendarDayButton} from './components/ui/calendar';
 import {Toaster} from './components/ui/sonner';
 import {mountComponent,enhanceUi,disposeUi} from './runtime';
+import {lunarMonthLabels} from './lunar-calendar';
 import './surfaces.css';
 import './stage.css';
 
@@ -78,12 +79,13 @@ function StageCaptionLabel({children,className,...props}){
 }
 function StageCalendar({month,today,records,statusLabels,onMonthChange,onSelect}){
   const [visible,setVisible]=React.useState(monthDate(month));
+  const displayed=calendarValue(visible).slice(0,7),almanac=React.useMemo(()=>lunarMonthLabels(displayed),[displayed]);
   const byDate=new Map();for(const record of records)if(!byDate.has(record.period))byDate.set(record.period,record);
   const Day=React.useCallback(function StageDay(props){
-    const value=calendarValue(props.day.date),record=byDate.get(value),status=record?.status||'',mark={verified:'✓',completed:'●',draft:'—'}[status]||'';
-    return <CalendarDayButton {...props} className={`stage-day ${status?'stage-day-'+status:''} ${value===today?'stage-day-today':''}`} data-calendar-date={value} data-calendar-record={record?.id} aria-label={`${props.day.date.getFullYear()}年${props.day.date.getMonth()+1}月${props.day.date.getDate()}日 星期${'日一二三四五六'[props.day.date.getDay()]}，${value===today?'今天，':''}${record?statusLabels[status]:'无记录'}`}><span className="stage-day-number">{props.day.date.getDate()}</span>{mark&&<span className="stage-day-mark" aria-hidden>{mark}</span>}</CalendarDayButton>;
-  },[records,statusLabels,today]);
-  const displayed=calendarValue(visible).slice(0,7),finished=records.filter(record=>record.period.startsWith(displayed)&&record.status!=='draft').length;
+    const value=calendarValue(props.day.date),record=byDate.get(value),status=record?.status||'',mark={verified:'✓',completed:'●',draft:'—'}[status]||'',lunar=almanac.get(value);
+    return <CalendarDayButton {...props} className={`stage-day ${status?'stage-day-'+status:''} ${value===today?'stage-day-today':''} ${lunar?.solarTerm?'stage-day-term':''}`} data-calendar-date={value} data-calendar-record={record?.id} data-solar-term={lunar?.solarTerm||undefined} aria-label={`${props.day.date.getFullYear()}年${props.day.date.getMonth()+1}月${props.day.date.getDate()}日 星期${'日一二三四五六'[props.day.date.getDay()]}，${value===today?'今天，':''}${record?statusLabels[status]:'无记录'}${lunar?`，${lunar.fullLabel}`:''}`}><span className="stage-day-number" aria-hidden>{props.day.date.getDate()}</span><span className="stage-day-lunar" aria-hidden>{lunar?.label}</span>{mark&&<span className="stage-day-mark" aria-hidden>{mark}</span>}</CalendarDayButton>;
+  },[records,statusLabels,today,almanac]);
+  const finished=records.filter(record=>record.period.startsWith(displayed)&&record.status!=='draft').length;
   return <div className="sd-surface sd-calendar stage-calendar">
     <Calendar mode="single" month={visible} onMonthChange={date=>{setVisible(date);onMonthChange(calendarValue(date).slice(0,7))}} onSelect={date=>{if(date)onSelect(calendarValue(date),byDate.get(calendarValue(date)))}} today={calendarDate(today)} locale={zhCN} weekStartsOn={1} fixedWeeks showOutsideDays={false} disabled={date=>calendarValue(date)!==today&&!byDate.has(calendarValue(date))} components={{DayButton:Day,CaptionLabel:StageCaptionLabel}} labels={calendarLabels} formatters={{formatCaption:date=>`${date.getFullYear()} 年 ${date.getMonth()+1} 月`,formatWeekdayName:date=>'一二三四五六日'[(date.getDay()+6)%7]}}/>
     <div className="stage-calendar-foot"><p>本月已完成 <strong>{finished}</strong> 天复盘</p><Button type="button" variant="ghost" className="stage-return-month" disabled={displayed===today.slice(0,7)} onClick={()=>{const date=monthDate(today.slice(0,7));setVisible(date);onMonthChange(today.slice(0,7))}}>回到本月 <span aria-hidden>↗</span></Button></div>

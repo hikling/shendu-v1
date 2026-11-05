@@ -14,19 +14,8 @@
 .sd-choice:has(select:disabled) .sd-choice-group{opacity:.72;pointer-events:none}
 .sd-choice .sd-choice-group[aria-invalid="true"] .sd-choice-item{border-color:var(--red,#aa2a23)}
 .metric-status-control:has(.sd-choice),.daily-editor .metric-status-control:has(.sd-choice){width:100%;height:auto;min-height:0;align-self:stretch}
-.metric-status-control:has(.sd-choice)>.metric-status-chevron,.history-filter-select:has(.sd-choice)>.select-chevron{display:none}
-/* Long option groups get a full reading row instead of the old select column. */
-.history-page .history-filters:has(.sd-choice){grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:start;gap:16px 22px}
-.history-page .history-filters:has(.sd-choice) .history-search-field,.history-page .history-filters:has(.sd-choice) .history-type-filter{grid-column:1/-1}
-.history-page .history-filters:has(.sd-choice) .history-search{width:100%;max-width:100%}
-.history-page .history-filter-select:has(.sd-choice){display:flex;align-items:stretch;min-width:0;gap:9px}
-.history-page .sd-choice .sd-choice-item{min-height:36px;padding:7px 11px 7px 27px;border-radius:8px;font-size:.67rem}
-.history-page .sd-choice .sd-choice-item:before{left:10px;width:8px;height:8px}
-.history-page .sd-choice-group{gap:6px}
-.history-page .sd-choice:has(#history-month:disabled) .sd-choice-item:not([data-state="checked"]){display:none}
+.metric-status-control:has(.sd-choice)>.metric-status-chevron{display:none}
 @media(max-width:620px){
- .history-page .history-filters:has(.sd-choice){grid-template-columns:minmax(0,1fr);gap:16px}
- .history-page .history-filters:has(.sd-choice) .history-filter-select{grid-column:1/-1}
  .sd-choice .sd-choice-item{min-height:40px;font-size:.72rem;padding-block:8px}
 }
 @media(prefers-reduced-motion:reduce){.sd-choice .sd-choice-item{transition:none}}

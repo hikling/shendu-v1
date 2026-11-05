@@ -1,0 +1,5 @@
+{"file": ".trellis/spec/frontend/architecture.md", "reason": "渲染与路由"}
+{"file": ".trellis/spec/frontend/component-islands.md", "reason": "组件岛与日期焦点"}
+{"file": ".trellis/spec/frontend/ui-quality.md", "reason": "已确认配色/排版与选择器"}
+{"file": ".trellis/spec/frontend/state-and-data.md", "reason": "保存与离开保护"}
+{"file": ".trellis/spec/frontend/archive-and-workspace-ui.md", "reason": "历史筛选/独立页面"}

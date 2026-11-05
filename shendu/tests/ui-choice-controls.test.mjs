@@ -12,6 +12,29 @@ const root=document.querySelector('#root'),settle=()=>new Promise(resolve=>setTi
 const $=s=>root.querySelector(s),$$=s=>[...root.querySelectorAll(s)];
 after(()=>{disposeUi(root);win.close()});
 
+test('history filters stay compact native selects with labels, values, disabled months and one change path',async()=>{
+  renderMarkup(root,'<section class="history-page"><form><label>复盘类型<select id="history-type" name="type"><option value="all">全部类型</option><option value="daily" selected>每日复盘</option></select><span class="select-chevron" aria-hidden="true"></span></label><label>年份<select id="history-year" name="year"><option value="all">全部年份</option><option value="2026" selected>2026 年</option></select><span class="select-chevron" aria-hidden="true"></span></label><label>月份<select id="history-month" name="month" disabled><option value="all">先选年份</option><option value="11">11 月</option></select><span class="select-chevron" aria-hidden="true"></span></label></form></section>');
+  assert.equal($$('[data-slot="native-select-wrapper"]').length,3);
+  assert.equal($('[role="radiogroup"]'),null);
+  const type=$('#history-type'),year=$('#history-year'),month=$('#history-month');
+  for(const select of [type,year,month]){
+    assert.equal(select.getAttribute('aria-hidden'),null);
+    assert.equal(select.tabIndex,0);
+    assert.equal(select.labels.length,1);
+    assert.equal(select.classList.contains('sd-choice-native'),false);
+  }
+  assert.equal(type.value,'daily');assert.equal(year.value,'2026');assert.equal(month.disabled,true);
+  assert.deepEqual([...new win.FormData($('form'))],[['type','daily'],['year','2026']]);
+  let changes=0,target;
+  type.addEventListener('change',event=>{changes++;target=event.target;});
+  type.value='all';type.dispatchEvent(new win.Event('change',{bubbles:true}));await settle();
+  assert.equal(changes,1);assert.equal(target,type);assert.equal(type.value,'all');
+  month.disabled=false;month.value='11';month.dispatchEvent(new win.Event('change',{bubbles:true}));
+  assert.equal(new win.FormData($('form')).get('month'),'11');
+  enhanceUi(root);assert.equal($('#history-type'),type);assert.equal($('#history-month'),month);
+  $('form').reset();assert.equal(type.value,'daily');assert.equal(month.value,'all');
+});
+
 test('direct shadcn choices preserve the one native value and emit one input/change event',async()=>{
   renderMarkup(root,'<form><label for="status">完成状态</label><select id="status" name="status"><option value="">未记录</option><option value="done" selected>已达标</option><option value="part">部分达标</option></select><button type="submit">保存</button></form>');
   const select=$('#status'),group=$('[role="radiogroup"]');

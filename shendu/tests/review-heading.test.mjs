@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import {JSDOM} from 'jsdom';
+import {reviewIntroLines} from '../public/review-intros.js';
 
 // Exercise the real native heading owner; these nodes intentionally stay outside React.
 const source=await readFile(new URL('../public/app.js',import.meta.url),'utf8');
@@ -11,7 +12,7 @@ function owner(name,next){
 }
 function headingFixture(){
   const dom=new JSDOM('<h2></h2>'),document=dom.window.document;
-  const render=new Function('document',`${owner('dailyIntroLines','dailyReviewHtml')}\n${owner('setReviewPromptHeading','setDailyPromptHeading')}\nreturn setReviewPromptHeading;`)(document);
+  const render=new Function('document','reviewIntroLines',`${owner('dailyIntroLines','dailyReviewHtml')}\n${owner('setReviewPromptHeading','setDailyPromptHeading')}\nreturn setReviewPromptHeading;`)(document,reviewIntroLines);
   return {heading:document.querySelector('h2'),render};
 }
 

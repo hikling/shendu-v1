@@ -773,13 +773,16 @@ body.reduce-motion .overview-record-card[aria-hidden="true"]{display:none}
 .daily-intro{display:flex;align-items:center;min-height:calc(100dvh - 104px);padding:30px clamp(32px,calc(var(--review-unit)*7.5),132px) 12vh;scroll-margin-top:0}
 .daily-intro-copy{width:51%;max-width:750px;position:relative;z-index:1}
 .daily-intro-kicker{margin:0 0 30px;color:var(--daily-warm);font-size:.76rem;font-weight:750;letter-spacing:.24em}
-#daily-intro-text{margin:0;color:var(--daily-ink);font:900 clamp(52px,calc(var(--review-unit)*5.6),88px)/1.5 "SimSun","宋体","Songti SC","Noto Serif SC",serif;-webkit-text-stroke:.18px currentColor;letter-spacing:.045em;text-wrap:balance;overflow-wrap:anywhere}
+#daily-intro-text{margin:0;color:var(--daily-ink);font:900 clamp(48px,calc(var(--review-unit)*5.6),80px)/1.48 "SimSun","宋体","Songti SC","Noto Serif SC",serif;-webkit-text-stroke:.18px currentColor;letter-spacing:.035em;text-wrap:balance;overflow-wrap:anywhere}
 .daily-typewriter,.daily-intro-line{display:block}
 .daily-intro-line:last-child{color:var(--daily-emphasis)}
 @media(min-width:821px){
   .daily-intro-copy{container-type:inline-size}
-  #daily-intro-text{font-size:min(clamp(52px,calc(var(--review-unit)*5.6),88px),calc(100cqw / var(--daily-intro-columns)));text-wrap:wrap}
+  #daily-intro-text{font-size:min(clamp(48px,calc(var(--review-unit)*5.6),80px),max(42px,calc(100cqw / var(--daily-intro-columns))));text-wrap:wrap}
+  .daily-intro-copy[data-intro-length="long"] #daily-intro-text{font-size:min(clamp(44px,calc(var(--review-unit)*4.7),66px),max(42px,calc(100cqw / var(--daily-intro-columns))));line-height:1.5}
 }
+.daily-intro-copy[data-intro-length="long"] .daily-intro-kicker{margin-bottom:24px}
+.daily-intro-copy[data-intro-length="long"] .btn{margin-top:32px}
 .daily-glyph{opacity:1;transition:opacity .16s ease}
 #daily-intro-text.is-typing .daily-glyph:not(.is-visible){opacity:0}
 .daily-art-flow .btn-primary{background:var(--daily-deep);color:#fff;box-shadow:none}
@@ -942,6 +945,7 @@ body.reduce-motion .overview-record-card[aria-hidden="true"]{display:none}
   .daily-intro-copy{width:100%;max-width:530px}
   .daily-intro-kicker{margin-bottom:24px;font-size:.66rem;letter-spacing:.18em}
   #daily-intro-text{max-width:10.5em;font-size:clamp(44px,7.3vw,58px);line-height:1.5;letter-spacing:.04em;text-wrap:pretty}
+  .daily-intro-copy[data-intro-length="long"] #daily-intro-text{font-size:clamp(36px,5.8vw,46px);line-height:1.5;letter-spacing:.025em}
   .daily-intro .btn{min-height:52px;margin-top:34px;padding:12px 23px;font-size:.7rem}
   .daily-intro .btn span{margin-left:20px}
   .daily-editor{order:2;min-height:calc(100dvh - 250px);padding:22px 30px 24px}
