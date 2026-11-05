@@ -951,3 +951,26 @@ Removed theme color UI and preserved compatible motion settings; six overview en
 ### Status
 
 [OK] **Completed**
+
+
+## Session 42: Entry composition, flip scatter and fixed review width
+<!-- trellis-session: v=2 fp=70371e1a057b72a5 -->
+
+**Date**: 2026-11-05
+**Task**: Entry composition, flip scatter and fixed review width
+**Branch**: `main`
+
+### Summary
+
+Refined overview heading and combined a 12-particle scatter with the in-place flip; redesigned login/register/first-admin as an illustrated 1120px book; capped all six review canvases at 1360px with consistent artwork and typography. Browser QA covered 1440/1920 plus all six at 320/390/820, authentication, keyboard and reduced motion. Build/check/121 tests, smoke and independent 28-test review passed. Feature main ad7238d Linux CI 41977907422 succeeded; docs/screenshots/specs updated. Final bookkeeping main sync and exact HEAD CI are checked by the active root session.
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `ad7238d` | Refine entry composition and constrain review canvases |
+| `2449f97` | Record entry composition acceptance and successful Linux CI |
+
+### Status
+
+[OK] **Completed**
