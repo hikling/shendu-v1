@@ -10,7 +10,7 @@
 - 登录／注册、首次管理员、加载／连接失败、持久重新认证、完成锁定／未保存／恢复／删除确认统一为本地插画纸面；已经定制的工作区和验证表单保留各自布局。
 - 备份目标删除使用真实Radix确认，只有明确确认才请求；等待期间阻止重复与关闭，延迟响应不能关闭后来打开的弹窗。
 
-完整页面与弹层清点见[审计清单](../../.trellis/tasks/11-05-overview-flip-and-ui-audit/research/ui-inventory.md)，代码审查见[独立审查](../../.trellis/tasks/11-05-overview-flip-and-ui-audit/research/independent-review.md)。任务归档后链接随收尾提交更新。
+完整页面与弹层清点见[审计清单](../../.trellis/tasks/archive/2026-11/11-05-overview-flip-and-ui-audit/research/ui-inventory.md)，代码审查见[独立审查](../../.trellis/tasks/archive/2026-11/11-05-overview-flip-and-ui-audit/research/independent-review.md)。
 
 ## 浏览器证据
 
@@ -41,4 +41,4 @@
 
 ## 仓库同步
 
-提交和对应完整SHA的GitHub CI结果在推送后记录。
+实现提交 `107a2256c4c9d94a020e43ee713ff9beb6ad8cb8` 已推送 `main`，对应[GitHub Actions #41954443952](https://github.com/hikling/shendu-v1/actions/runs/41954443952)通过：锁定依赖安装、构建／语法与完整测试、Compose校验／Docker构建、容器健康及实际本地前端资源烟测均成功。

@@ -12,4 +12,4 @@
 - 本轮没有真实数据、密码、备份、账户的浏览器写入；持久认证成功/失败、删除异步保护等边界由真实组件DOM及集成回归验证。
 - README/PRODUCT/DESIGN与前端规范更新。将较大的UI规范末尾独立为 `archive-and-workspace-ui.md`，防止上下文注入超过32KB截断；当前任务manifest同步引用。
 
-剩余收尾：提交并推送main，记录完整SHA的CI，归档本任务和记入开发日志。
+实现已提交并推送main：`107a2256c4c9d94a020e43ee713ff9beb6ad8cb8`。GitHub Actions `41954443952`的verify作业全部通过，覆盖完整测试、Compose与Docker构建、健康和前端资源烟测。验收证据另行提交后归档本任务并记入开发日志。
