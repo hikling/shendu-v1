@@ -28,3 +28,4 @@
 - 浏览器控制台最终无error/warn；临时viewport、标签和3192—3196隔离服务均已清理。
 - 浏览器没有填写或提交密码，没有执行账户/备份写操作；相关成功、失败、重复提交与旧所有者路径由合成DOM测试验证。本次不改变服务端、数据库、接口字段、依赖或插画资产。
 - [Trellis验收和CI记录](../../.trellis/tasks/archive/2026-11/11-05-unified-workspace-and-account/verification.md)。
+- 功能提交`00bd4d25a7880f9ff8b73c2a1444bb30f60aa501`已同步main，[Linux CI #41993966584](https://github.com/hikling/shendu-v1/actions/runs/41993966584)成功，含Docker构建与启动烟测。验收文档/归档后的最终提交另行核对CI。

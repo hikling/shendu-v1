@@ -11,4 +11,8 @@
 - README、DESIGN、前端规范和[实际截图/测量](../../../../../docs/unified-workspace-qa/README.md)已同步。
 - 临时浏览器标签、viewport与隔离服务已清理。
 
-仓库提交与Linux CI将在推送后追加精确SHA结果。
+功能提交：`00bd4d25a7880f9ff8b73c2a1444bb30f60aa501`，已推送`origin/main`。
+
+GitHub [Verify build #41993966584](https://github.com/hikling/shendu-v1/actions/runs/41993966584) 对应同一精确SHA，`completed/success`：Ubuntu24.04/Node24、锁定依赖安装、check/128项测试、Compose配置、Docker构建及容器启动/本地资源烟测全部通过。
+
+随后单独提交验收记录，再由Trellis脚本归档和记录日志；最终HEAD的CI结果在交付时核对，不把前述功能提交的CI误记为后续提交的结果。
