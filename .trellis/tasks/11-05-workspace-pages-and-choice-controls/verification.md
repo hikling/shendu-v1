@@ -10,4 +10,6 @@
 - 独立审查报告research/independent-review.md，所报手机卡片旧flex覆盖已修复并重验。
 - README/DESIGN/组件说明及5份前端规范已同步。
 
-main提交、远程CI：待提交后记录。
+main功能提交：2c71b4ea33a3f3282aae5b811b5f09e8a2094b14。
+
+GitHub Actions精确SHA检查：success，运行42002325411，https://github.com/hikling/shendu-v1/actions/runs/42002325411 。Linux构建、139项测试、Docker构建及容器资源烟测通过。验收记录之后仅有任务归档和日志提交，最终HEAD另行核对远程CI及本地/远程一致。
