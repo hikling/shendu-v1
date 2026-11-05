@@ -161,7 +161,7 @@ function navItems(className='header-menu-item'){return Object.entries(TYPES).fil
 function headerLink(route,label,extra=''){return `<button class="header-link ${state.route===route?'active':''}" type="button" data-nav="${route}" ${state.route===route?'aria-current="page"':''}>${esc(label)}${extra}</button>`}
 function headerBrandContent(){return '<span class="seal header-seal" aria-hidden="true">慎</span><span class="brand-cn header-wordmark">慎獨</span>'}
 function topbar(){
-  const admin=['admin','superadmin'].includes(state.user.role),actionLabel=currentActionTemplate().pageTitle;
+  const actionLabel=currentActionTemplate().pageTitle;
   const accountName=state.user.displayName||state.user.username;
   return `<header class="topbar shendu-header" id="site-header">
     <div class="header-inner">
@@ -178,8 +178,7 @@ function topbar(){
           <div class="header-menu-panel account-menu" id="account-menu" hidden>
             <span class="header-menu-caption">我的空间</span>
             <button class="header-menu-item ${state.route==='backup'?'active':''}" type="button" data-nav="backup" ${state.route==='backup'?'aria-current="page"':''}>${navIcon('backup')}<span>数据备份</span></button>
-            ${admin?`<button class="header-menu-item ${state.route==='users'?'active':''}" type="button" data-nav="users" ${state.route==='users'?'aria-current="page"':''}>${navIcon('users')}<span>账户管理</span></button>`:''}
-            <button class="header-menu-item" type="button" data-modal="account">${navIcon('users')}<span>账户与安全</span></button>
+            <button class="header-menu-item ${state.route==='users'?'active':''}" type="button" data-nav="users" ${state.route==='users'?'aria-current="page"':''}>${navIcon('users')}<span>账户管理</span></button>
             <button class="header-menu-item" type="button" id="settings-trigger">${navIcon('monthly')}<span>设置</span></button>
           </div>
         </div>
@@ -188,7 +187,7 @@ function topbar(){
     </div>
     <nav class="header-mobile-nav" id="mobile-nav" data-ui-native aria-label="手机导航" hidden>
       <div class="mobile-nav-main">${headerLink('overview','概览')}${headerLink('history','历史复盘')}${headerLink('actions',actionLabel)}</div>
-      <div class="mobile-nav-bottom"><button type="button" class="${state.route==='backup'?'active':''}" data-nav="backup" ${state.route==='backup'?'aria-current="page"':''}>数据备份</button>${admin?`<button type="button" class="${state.route==='users'?'active':''}" data-nav="users" ${state.route==='users'?'aria-current="page"':''}>账户管理</button>`:''}<button type="button" data-modal="account">账户与安全</button><button type="button" id="mobile-settings-trigger">设置</button></div>
+      <div class="mobile-nav-bottom"><button type="button" class="${state.route==='backup'?'active':''}" data-nav="backup" ${state.route==='backup'?'aria-current="page"':''}>数据备份</button><button type="button" class="${state.route==='users'?'active':''}" data-nav="users" ${state.route==='users'?'aria-current="page"':''}>账户管理</button><button type="button" id="mobile-settings-trigger">设置</button></div>
     </nav>
   </header>`;
 }
@@ -270,7 +269,7 @@ function overviewBurst(){
 function renderOverview(){
   const records=overviewRecords();
   const appearances=overviewRecordAppearances(records);
-  const categories=Object.entries(TYPES).map(([key,item])=>`<div class="overview-type-card type-${key}"><button class="overview-type-trigger" type="button" data-overview-type="${key}" data-nav="${key}" aria-label="进入${item.label}"><span class="overview-type-flip" aria-hidden="true"><span class="overview-type-mark overview-type-front"><img src="/assets/overview/${key}.svg?v=1.0.0-overview13" alt="" width="320" height="320"></span><span class="overview-type-back"><strong>${key==='quarterly'?'季度复盘':item.label}</strong></span></span>${overviewBurst()}</button></div>`).join('');
+  const categories=Object.entries(TYPES).map(([key,item])=>`<div class="overview-type-card type-${key}"><button class="overview-type-trigger" type="button" data-overview-type="${key}" data-nav="${key}" aria-label="进入${item.label}"><span class="overview-type-flip" aria-hidden="true"><span class="overview-type-mark overview-type-front"><img src="/assets/overview/${key}.svg?v=1.0.0-overview13" alt="" width="320" height="320"></span><span class="overview-type-back"><strong><span>${key==='quarterly'?'季度':item.label.slice(0,2)}</span><span>${key==='quarterly'?'复盘':item.label.slice(2)}</span></strong></span></span>${overviewBurst()}</button></div>`).join('');
   const cardSet=records.map((record,index)=>overviewRecordCard(record,appearances.get(record.id),false,index)).join('');
   const reel=records.length?`<div class="overview-reel" id="overview-reel">
       <div class="overview-reel-window" aria-label="已验证复盘摘要"><div class="overview-reel-track" style="--reel-count:${records.length}">${cardSet}</div></div>
@@ -288,7 +287,7 @@ const SPACE_PAGE_META = {
   history:{mark:'册',note:'循迹 · 归档有序'},
   actions:{mark:'验',note:'闭环 · 让行动有回音'},
   backup:{mark:'匣',note:'守存 · 密文归档'},
-  users:{mark:'印',note:'共管 · 权限有界'}
+  users:{mark:'印',note:'账户 · 安心记录'}
 };
 
 const WORKSPACE_SCENES={backup:'yearly-03-year-keep',users:'daily-29-share-help',account:'decision-04-decision-risk',settings:'monthly-08-month-workspace',stage:'quarterly-04-quarter-winter',guide:'daily-05-reading-corner'};
@@ -813,26 +812,53 @@ function openTargetModal(existing=null){openModal(`<div class="modal-head"><div>
 async function targetAction(id,action){try{toast(action==='test'?'正在测试连接…':'正在生成并上传加密备份…');await request(`/api/backup/targets/${id}/${action}`,{method:'POST'});toast(action==='test'?'连接测试成功':'外部备份完成');renderBackup()}catch(e){toast(e.message,'error')}}
 
 
+function accountSecurityHtml(){
+  const user=state.user,role=user.role==='superadmin'?'超级管理员':user.role==='admin'?'管理员':'成员';
+  return `<div class="workspace-account-grid"><section class="workspace-panel workspace-identity-panel" aria-labelledby="account-identity-title"><p class="workspace-kicker">我的账户 · 安心记录</p><h2 id="account-identity-title">${esc(user.displayName||user.username)}</h2><dl class="workspace-identity-details"><div><dt>用户名</dt><dd>${esc(user.username)}</dd></div><div><dt>账户角色</dt><dd>${role}</dd></div></dl>${workspaceArt('account','workspace-identity-art')}<div class="workspace-signout-panel"><p class="workspace-panel-description">如有未保存的复盘，请先保存或放弃修改再退出。</p><button class="btn btn-danger" id="logout" type="button">安全退出</button></div></section><form id="password-form" class="workspace-panel workspace-password-panel"><p class="workspace-kicker">为私人的记录 · 留一道门</p><h2>更新登录密码</h2><p class="workspace-panel-description">新密码至少 15 个字符，修改后需要重新登录。</p><fieldset><div class="field"><label for="account-current-password">当前密码</label><input id="account-current-password" name="currentPassword" type="password" required autocomplete="current-password"></div><div class="field"><label for="account-new-password">新密码</label><input id="account-new-password" name="newPassword" type="password" minlength="15" maxlength="128" required autocomplete="new-password"></div><button class="btn btn-primary" type="submit">修改密码</button></fieldset></form></div>`;
+}
 async function renderUsers(q=''){
-  shell(`<section class="workspace-page workspace-users" aria-labelledby="workspace-users-title">${spacePageHead('users',{title:'账户管理',description:'各自记录，彼此安心。管理员只管理账户状态，不会看到任何人的复盘正文。',action:'<button class="btn btn-primary" id="add-user">创建成员 <span aria-hidden="true">↗</span></button>'})}<div id="users-content" class="card workspace-panel users-card skeleton"></div></section>`);
+  const admin=['admin','superadmin'].includes(state.user.role);
+  shell(`<section class="workspace-page workspace-users" aria-labelledby="workspace-users-title">${spacePageHead('users',{title:'账户管理',description:'照顾好自己的账户，也为私人的记录留一道门。'})}${accountSecurityHtml()}${admin?`<section class="workspace-members" aria-labelledby="workspace-members-title"><div class="workspace-panel-head workspace-members-head"><div><p class="workspace-kicker">共管 · 权限有界</p><h2 id="workspace-members-title">成员管理</h2><p class="workspace-description">管理员只管理账户状态，不会看到任何人的复盘正文。</p></div><button class="btn btn-primary" id="add-user" type="button">创建成员 <span aria-hidden="true">↗</span></button></div><div id="users-content" class="card workspace-panel users-card skeleton"></div></section>`:''}</section>`);
+  bindAccountSecurity();
+  if(admin){$('#add-user').addEventListener('click',()=>openUserModal());await loadManagedUsers(q)}
+}
+async function loadManagedUsers(q=$('#user-search')?.value||''){
+  const owner=$('#users-content'),account=state.user;
+  if(!owner||!['admin','superadmin'].includes(account?.role))return;
+  const visit=Symbol();owner.usersVisit=visit;owner.setAttribute('aria-busy','true');
+  const current=()=>owner.isConnected&&owner.usersVisit===visit&&state.user===account;
   try{
     const data=await request(`/api/admin/users?q=${encodeURIComponent(q)}`);
-    $('#users-content').className='card workspace-panel users-card';
-    renderMarkup($('#users-content'),`<div class="workspace-panel-head workspace-users-tools"><label class="workspace-user-search"><span>查找账户</span><input id="user-search" placeholder="搜索用户名或称呼" value="${esc(q)}" aria-label="搜索账户"></label>${state.user.role==='superadmin'?`<label class="help registration-toggle"><input type="checkbox" id="registration-open" ${data.registrationOpen?'checked':''}> 允许公开注册</label>`:''}</div><div class="table-wrap users-table-wrap"><table class="table users-table"><thead><tr><th>称呼</th><th>用户名</th><th>加入日期</th><th>角色</th><th>状态</th><th>操作</th></tr></thead><tbody>${data.users.length?data.users.map(u=>`<tr><td data-label="称呼"><span class="workspace-person-name">${esc(u.displayName)}</span>${u.id===state.user.id?'<small class="workspace-self">当前账户</small>':''}</td><td data-label="用户名">${esc(u.username)}</td><td data-label="加入日期">${esc(u.createdAt.slice(0,10))}</td><td data-label="角色">${u.role==='superadmin'?'超级管理员':u.role==='admin'?'管理员':'成员'}</td><td data-label="状态"><span class="badge ${u.status==='active'?'completed':'overdue'}">${u.status==='active'?'正常':'停用'}</span></td><td data-label="操作">${u.id===state.user.id||u.role==='superadmin'||(state.user.role==='admin'&&u.role==='admin')?'—':`<div class="inline-actions"><button class="btn btn-ghost" data-user-toggle="${esc(u.id)}" data-status="${u.status==='active'?'disabled':'active'}">${u.status==='active'?'停用':'恢复'}</button><button class="btn btn-soft" data-user-reset="${esc(u.id)}">重置密码</button>${state.user.role==='superadmin'?`<button class="btn btn-ghost" data-user-role="${esc(u.id)}" data-role="${u.role==='admin'?'member':'admin'}">设为${u.role==='admin'?'成员':'管理员'}</button>`:''}<button class="btn btn-danger" data-user-delete="${esc(u.id)}">删除用户</button></div>`}</td></tr>`).join(''):'<tr class="workspace-empty-row"><td colspan="6" class="workspace-empty-cell">没有找到匹配的账户，试试其他用户名或称呼。</td></tr>'}</tbody></table></div>`);
-    bindUsers(data.users);
-  }catch(e){$('#users-content').className='card workspace-panel workspace-empty users-card';renderMarkup($('#users-content'),`<div><h3>加载失败</h3><p>${esc(e.message)}</p></div>`)}
+    if(!current())return;
+    owner.className='card workspace-panel users-card';
+    renderMarkup(owner,`<div class="workspace-panel-head workspace-users-tools"><label class="workspace-user-search"><span>查找账户</span><input id="user-search" placeholder="搜索用户名或称呼" value="${esc(q)}" aria-label="搜索账户"></label>${state.user.role==='superadmin'?`<label class="help registration-toggle"><input type="checkbox" id="registration-open" ${data.registrationOpen?'checked':''}> 允许公开注册</label>`:''}</div><div class="table-wrap users-table-wrap"><table class="table users-table"><thead><tr><th>称呼</th><th>用户名</th><th>加入日期</th><th>角色</th><th>状态</th><th>操作</th></tr></thead><tbody>${data.users.length?data.users.map(u=>`<tr><td data-label="称呼"><span class="workspace-person-name">${esc(u.displayName)}</span>${u.id===state.user.id?'<small class="workspace-self">当前账户</small>':''}</td><td data-label="用户名">${esc(u.username)}</td><td data-label="加入日期">${esc(u.createdAt.slice(0,10))}</td><td data-label="角色">${u.role==='superadmin'?'超级管理员':u.role==='admin'?'管理员':'成员'}</td><td data-label="状态"><span class="badge ${u.status==='active'?'completed':'overdue'}">${u.status==='active'?'正常':'停用'}</span></td><td data-label="操作">${u.id===state.user.id||u.role==='superadmin'||(state.user.role==='admin'&&u.role==='admin')?'—':`<div class="inline-actions"><button class="btn btn-ghost" data-user-toggle="${esc(u.id)}" data-status="${u.status==='active'?'disabled':'active'}">${u.status==='active'?'停用':'恢复'}</button><button class="btn btn-soft" data-user-reset="${esc(u.id)}">重置密码</button>${state.user.role==='superadmin'?`<button class="btn btn-ghost" data-user-role="${esc(u.id)}" data-role="${u.role==='admin'?'member':'admin'}">设为${u.role==='admin'?'成员':'管理员'}</button>`:''}<button class="btn btn-danger" data-user-delete="${esc(u.id)}">删除用户</button></div>`}</td></tr>`).join(''):'<tr class="workspace-empty-row"><td colspan="6" class="workspace-empty-cell">没有找到匹配的账户，试试其他用户名或称呼。</td></tr>'}</tbody></table></div>`);
+    bindUsers(data.users,owner);
+  }catch(error){
+    if(!current())return;
+    owner.className='card workspace-panel workspace-empty users-card';
+    renderMarkup(owner,`<div><h3>加载失败</h3><p>${esc(error.message)}</p><button class="btn btn-soft" id="users-retry" type="button">重新加载成员</button></div>`);
+    $('#users-retry',owner).addEventListener('click',()=>loadManagedUsers(q));
+  }finally{if(current())owner.removeAttribute('aria-busy')}
 }
 
-function bindUsers(users=[]){$('#user-search')?.addEventListener('change',e=>renderUsers(e.target.value));$('#registration-open')?.addEventListener('change',async e=>{try{await request('/api/admin/registration',{method:'PUT',body:{open:e.target.checked}});toast('公开注册设置已更新')}catch(err){toast(err.message,'error')}});$('#add-user')?.addEventListener('click',()=>openUserModal());$$('[data-user-toggle]').forEach(b=>b.addEventListener('click',()=>patchUser(b.dataset.userToggle,{status:b.dataset.status})));$$('[data-user-role]').forEach(b=>b.addEventListener('click',()=>patchUser(b.dataset.userRole,{role:b.dataset.role})));$$('[data-user-reset]').forEach(b=>b.addEventListener('click',()=>openUserModal(b.dataset.userReset)));$$('[data-user-delete]').forEach(b=>b.addEventListener('click',()=>{const target=users.find(u=>u.id===b.dataset.userDelete);if(target)openDeleteUserModal(target)}))}
-function openDeleteUserModal(target){openModal(`<div class="modal-head"><div><h2>永久删除用户</h2><p>删除后，${esc(target.displayName)} 的复盘、设置、会话和备份目标都会一并清除。</p></div><button class="modal-close" data-close>×</button></div><div class="backup-notice delete-warning">这项操作无法撤销。请先确认已经保存所需备份。</div><form id="delete-user-form"><div class="field"><label for="delete-user-confirm">输入用户名 <strong>${esc(target.username)}</strong> 确认</label><input id="delete-user-confirm" name="confirmationUsername" required autocomplete="off" autocapitalize="none" spellcheck="false"></div><div class="field"><label for="delete-user-password">你的当前登录密码</label><input id="delete-user-password" name="currentPassword" type="password" minlength="15" maxlength="128" required autocomplete="current-password"></div><div class="modal-actions"><button type="button" class="btn btn-ghost" data-close>取消</button><button class="btn btn-red" type="submit">永久删除此用户</button></div></form>`);$('#delete-user-form').addEventListener('submit',async e=>{e.preventDefault();const body=Object.fromEntries(new FormData(e.currentTarget)),normalizeUsername=value=>String(value||'').trim().normalize('NFKC').toLocaleLowerCase('zh-CN');if(normalizeUsername(body.confirmationUsername)!==normalizeUsername(target.username)){toast('输入的用户名与待删除账户不一致','error');return}try{await request(`/api/admin/users/${target.id}`,{method:'DELETE',body});closeModal();toast(`用户 ${target.username} 已永久删除`);renderUsers()}catch(err){toast(err.message,'error')}})}
-function openUserModal(resetId=null){openModal(`<div class="modal-head"><div><h2>${resetId?'重置成员密码':'创建新账户'}</h2><p>${resetId?'该账户现有登录会立即失效，复盘数据会保留。':'管理员创建的账户可以直接登录。'}</p></div><button class="modal-close" data-close>×</button></div><form id="user-form">${resetId?'':`<div class="input-grid"><div class="field"><label>称呼</label><input name="displayName" required maxlength="32"></div><div class="field"><label>用户名</label><input name="username" required minlength="3" maxlength="32"></div></div>${state.user.role==='superadmin'?`<div class="field"><label>角色</label><select name="role"><option value="member">成员</option><option value="admin">管理员</option></select></div>`:''}`}<div class="field"><label>${resetId?'新密码':'初始密码'}</label><input name="password" type="password" required minlength="15" maxlength="128" autocomplete="new-password"></div><div class="modal-actions"><button type="button" class="btn btn-ghost" data-close>取消</button><button class="btn btn-primary">确认</button></div></form>`);$('#user-form').addEventListener('submit',async e=>{e.preventDefault();try{const body=Object.fromEntries(new FormData(e.currentTarget));if(resetId)await request(`/api/admin/users/${resetId}`,{method:'PATCH',body:{password:body.password}});else await request('/api/admin/users',{method:'POST',body});closeModal();toast(resetId?'密码已重置':'账户已创建');renderUsers()}catch(err){toast(err.message,'error')}})}
-async function patchUser(id,body){try{await request(`/api/admin/users/${id}`,{method:'PATCH',body});toast('账户已更新');renderUsers()}catch(e){toast(e.message,'error')}}
+function bindUsers(users=[],owner=$('#users-content')){
+  $('#user-search',owner)?.addEventListener('change',e=>loadManagedUsers(e.target.value));
+  $('#registration-open',owner)?.addEventListener('change',async e=>{const control=e.target;try{await request('/api/admin/registration',{method:'PUT',body:{open:control.checked}});if(control.isConnected)toast('公开注册设置已更新')}catch(error){if(control.isConnected)toast(error.message,'error')}});
+  $$('[data-user-toggle]',owner).forEach(button=>button.addEventListener('click',()=>patchUser(button.dataset.userToggle,{status:button.dataset.status})));
+  $$('[data-user-role]',owner).forEach(button=>button.addEventListener('click',()=>patchUser(button.dataset.userRole,{role:button.dataset.role})));
+  $$('[data-user-reset]',owner).forEach(button=>button.addEventListener('click',()=>openUserModal(button.dataset.userReset)));
+  $$('[data-user-delete]',owner).forEach(button=>button.addEventListener('click',()=>{const target=users.find(user=>user.id===button.dataset.userDelete);if(target)openDeleteUserModal(target)}));
+}
+
+function openDeleteUserModal(target){openModal(`<div class="modal-head"><div><h2>永久删除用户</h2><p>删除后，${esc(target.displayName)} 的复盘、设置、会话和备份目标都会一并清除。</p></div><button class="modal-close" data-close>×</button></div><div class="backup-notice delete-warning">这项操作无法撤销。请先确认已经保存所需备份。</div><form id="delete-user-form"><div class="field"><label for="delete-user-confirm">输入用户名 <strong>${esc(target.username)}</strong> 确认</label><input id="delete-user-confirm" name="confirmationUsername" required autocomplete="off" autocapitalize="none" spellcheck="false"></div><div class="field"><label for="delete-user-password">你的当前登录密码</label><input id="delete-user-password" name="currentPassword" type="password" minlength="15" maxlength="128" required autocomplete="current-password"></div><div class="modal-actions"><button type="button" class="btn btn-ghost" data-close>取消</button><button class="btn btn-red" type="submit">永久删除此用户</button></div></form>`);$('#delete-user-form').addEventListener('submit',async e=>{e.preventDefault();const body=Object.fromEntries(new FormData(e.currentTarget)),normalizeUsername=value=>String(value||'').trim().normalize('NFKC').toLocaleLowerCase('zh-CN');if(normalizeUsername(body.confirmationUsername)!==normalizeUsername(target.username)){toast('输入的用户名与待删除账户不一致','error');return}try{await request(`/api/admin/users/${target.id}`,{method:'DELETE',body});closeModal();toast(`用户 ${target.username} 已永久删除`);loadManagedUsers()}catch(err){toast(err.message,'error')}})}
+function openUserModal(resetId=null){openModal(`<div class="modal-head"><div><h2>${resetId?'重置成员密码':'创建新账户'}</h2><p>${resetId?'该账户现有登录会立即失效，复盘数据会保留。':'管理员创建的账户可以直接登录。'}</p></div><button class="modal-close" data-close>×</button></div><form id="user-form">${resetId?'':`<div class="input-grid"><div class="field"><label>称呼</label><input name="displayName" required maxlength="32"></div><div class="field"><label>用户名</label><input name="username" required minlength="3" maxlength="32"></div></div>${state.user.role==='superadmin'?`<div class="field"><label>角色</label><select name="role"><option value="member">成员</option><option value="admin">管理员</option></select></div>`:''}`}<div class="field"><label>${resetId?'新密码':'初始密码'}</label><input name="password" type="password" required minlength="15" maxlength="128" autocomplete="new-password"></div><div class="modal-actions"><button type="button" class="btn btn-ghost" data-close>取消</button><button class="btn btn-primary">确认</button></div></form>`);$('#user-form').addEventListener('submit',async e=>{e.preventDefault();try{const body=Object.fromEntries(new FormData(e.currentTarget));if(resetId)await request(`/api/admin/users/${resetId}`,{method:'PATCH',body:{password:body.password}});else await request('/api/admin/users',{method:'POST',body});closeModal();toast(resetId?'密码已重置':'账户已创建');loadManagedUsers()}catch(err){toast(err.message,'error')}})}
+async function patchUser(id,body){try{await request(`/api/admin/users/${id}`,{method:'PATCH',body});toast('账户已更新');loadManagedUsers()}catch(e){toast(e.message,'error')}}
 
 function settingsGuideHtml(){return `<div class="guide-flow">${['定标','事实','差距','机制','改变','验证'].map((x,i)=>`<div class="guide-step"><b>${String(i+1).padStart(2,'0')}</b><span>${x}</span></div>`).join('')}</div><h3>不同周期分别解决什么问题？</h3><p>每日看行动，不超过 8 分钟；每周找重复出现的条件；每月只选一个瓶颈和一个小实验；90 天重新校准方向；年度看人生结构；重大决策留下当时依据，避免事后诸葛亮。</p><h3>阶段指标怎么写？</h3><p>指标要能在一天结束时明确判断，而不是“变得更好”。例如把“提升收入能力”写成“专注 60 分钟，形成一个可展示的具体输出”。达标线是最低有效行动，不是理想状态。</p><h3>怎样避免越复盘越自责？</h3><ul><li>先写摄像头能拍到的事实，再写自己的解释。</li><li>一次只调整一个最可能影响结果的条件。</li><li>状态差时降低动作门槛，不把休息等同于失败。</li><li>验证的是方法，不是证明自己好或不好。</li></ul><h3>重大决定怎么回看？</h3><p>把过程质量与结果好坏分开。好结果可能来自运气，坏结果也不一定说明当时的判断错误。回到当时真正掌握的信息、可选方案和风险边界，再决定保留什么。</p>`}
 
 function openGuide(){openModal(`${workspaceDialogHead('guide','使用指南','用事实改善下一次行动。')}<div class="prose guide-content workspace-panel">${settingsGuideHtml()}</div>`,'workspace-dialog workspace-guide')}
 function openSettings(){
-  const items=[['account','账户与安全','修改密码、安全退出'],['stage','阶段设置','目标与复盘问题'],['guide','使用指南','记录与验证方法']];
+  const items=[['account','账户管理','个人安全与成员管理'],['stage','阶段设置','目标与复盘问题'],['guide','使用指南','记录与验证方法']];
   openModal(`${workspaceDialogHead('settings','设置',`${state.user.displayName||state.user.username} · ${state.user.username}`)}<div class="settings-menu workspace-settings-menu">${items.map(([key,label,note])=>`<button class="settings-menu-item" type="button" data-settings-target="${key}"><span class="workspace-setting-copy"><strong>${label}</strong><small>${note}</small><span class="workspace-setting-enter" aria-hidden="true">打开 <span>↗</span></span></span>${workspaceArt(key,'workspace-setting-art')}</button>`).join('')}</div><form id="motion-form" class="workspace-motion-form"><fieldset><div class="workspace-motion-copy"><label id="motion-label" for="settings-reduce-motion">减少动态效果</label><p id="motion-description">减弱移动与翻转，让阅读更安静。</p></div><input id="settings-reduce-motion" name="reduceMotion" type="checkbox" aria-labelledby="motion-label" aria-describedby="motion-description" ${state.theme?.reduceMotion?'checked':''}><button class="btn btn-primary" type="submit">保存偏好</button></fieldset></form>`,'workspace-dialog workspace-settings');
   $$('[data-settings-target]').forEach(button=>button.addEventListener('click',()=>openSettingsTarget(button.dataset.settingsTarget)));
   const form=$('#motion-form');
@@ -848,7 +874,7 @@ function openSettings(){
 }
 
 function openSettingsTarget(target){
-  if(target==='account')openAccount();
+  if(target==='account'){closeModal();attemptNavigate(()=>navigate('users'));return}
   else if(target==='stage')openStage();
   else if(target==='guide')openGuide();
   else return;
@@ -884,10 +910,27 @@ function openStage(){
 
 
 
-function openAccount(){
-  openModal(`${workspaceDialogHead('account','账户与安全',`${state.user.displayName} · ${state.user.username}`)}<div class="workspace-account-grid"><form id="password-form" class="workspace-panel workspace-password-panel"><p class="workspace-kicker">为私人的记录 · 留一道门</p><h3>更新登录密码</h3><p class="workspace-panel-description">新密码至少 15 个字符，修改后需要重新登录。</p><div class="field"><label for="account-current-password">当前密码</label><input id="account-current-password" name="currentPassword" type="password" required autocomplete="current-password"></div><div class="field"><label for="account-new-password">新密码</label><input id="account-new-password" name="newPassword" type="password" minlength="15" maxlength="128" required autocomplete="new-password"></div><button class="btn btn-primary" type="submit">修改密码</button></form><section class="danger-zone workspace-panel workspace-signout-panel"><p class="workspace-kicker">暂别 · 记录仍在</p><h3>退出当前账户</h3><p class="help">如有未保存的复盘，系统会先阻止退出。</p><button class="btn btn-danger" id="logout">安全退出</button></section></div>`,'workspace-dialog workspace-account');
-  $('#password-form').addEventListener('submit',async e=>{e.preventDefault();try{await request('/api/me/password',{method:'POST',body:Object.fromEntries(new FormData(e.currentTarget))});toast('密码已修改，请重新登录');setTimeout(init,500)}catch(err){toast(err.message,'error')}});
-  $('#logout').addEventListener('click',async()=>{if(state.dirty){toast('请先保存或放弃当前修改','error');return}await request('/api/auth/logout',{method:'POST'});closeModal();init()});
+function bindAccountSecurity(){
+  const form=$('#password-form'),logout=$('#logout'),account=state.user;
+  let pending=false;
+  const current=()=>form.isConnected&&state.user===account;
+  const busy=value=>{pending=value;if(value){state.accountWriteOwner=form;state.saving=true;form.setAttribute('aria-busy','true')}else{if(state.accountWriteOwner===form){state.saving=false;delete state.accountWriteOwner}form.removeAttribute('aria-busy')}$('fieldset',form).disabled=value;logout.disabled=value};
+  const finish=()=>{if(current())busy(false);else if(state.accountWriteOwner===form){state.saving=false;delete state.accountWriteOwner}};
+  form.addEventListener('submit',async event=>{
+    event.preventDefault();if(pending||!current())return;
+    const body=Object.fromEntries(new FormData(form));busy(true);
+    try{await request('/api/me/password',{method:'POST',body});if(!current())return;form.reset();toast('密码已修改，请重新登录');await init()}
+    catch(error){if(current())toast(error.message,'error')}
+    finally{finish()}
+  });
+  logout.addEventListener('click',async()=>{
+    if(pending||!current())return;
+    if(state.dirty){toast('请先保存或放弃当前修改','error');return}
+    busy(true);
+    try{await request('/api/auth/logout',{method:'POST'});if(current())await init()}
+    catch(error){if(current())toast(error.message,'error')}
+    finally{finish()}
+  });
 }
 
 function syncOverlayBackground(){
@@ -924,7 +967,7 @@ let headerMenuControls=[];
 function closeHeaderMenus(restoreFocus=false){headerMenuControls.forEach(control=>control.close?.(restoreFocus))}
 function bindHeaderMenus(){
   headerMenuControls=[];
-  const action=button=>()=>{if(button.dataset.nav)attemptNavigate(()=>navigate(button.dataset.nav));else if(button.dataset.modal==='account')openAccount();else openSettings()};
+  const action=button=>()=>{if(button.dataset.nav)attemptNavigate(()=>navigate(button.dataset.nav));else openSettings()};
   const descriptors=panel=>$$('button',panel).map(button=>({html:button.innerHTML,className:button.className,current:button.hasAttribute('aria-current'),onSelect:action(button)}));
   const account=$('.header-account-menu'),trigger=$('[data-menu-trigger]',account),panel=$('#account-menu');
   if(account&&trigger&&panel){const options={trigger:{html:trigger.innerHTML,className:trigger.className,props:{type:'button','aria-label':trigger.getAttribute('aria-label')}},items:descriptors(panel),label:'我的空间'};disposeUi(account);account.replaceChildren();account.removeAttribute('data-ui-native');headerMenuControls.push(showMenu(account,options))}
@@ -945,7 +988,7 @@ function setRailOverlayOpen(open,restoreFocus=false){
 function bindCommon(){
  bindHeaderMenus();
  $$('[data-nav]',$('#app')).forEach(button=>button.addEventListener('click',()=>{closeHeaderMenus();attemptNavigate(()=>navigate(button.dataset.nav))}));
- $$('[data-modal]',$('#app')).forEach(button=>button.addEventListener('click',()=>{closeHeaderMenus();if(button.dataset.modal==='stage')openStage();if(button.dataset.modal==='account')openAccount()}));
+ $$('[data-modal]',$('#app')).forEach(button=>button.addEventListener('click',()=>{closeHeaderMenus();if(button.dataset.modal==='stage')openStage()}));
  $('#rail-toggle')?.addEventListener('click',()=>{closeHeaderMenus();setRailOverlayOpen(!state.railOpen,true)});
  bindActionButtons();
 }

@@ -111,7 +111,7 @@ Dialog 统一管理焦点约束、Escape 和遮罩关闭；业务代码保留初
 
 六类入口使用用户指定 Iconfont 合集 52510 的实际矢量插画，保留构图、按类别改色并添加「日、周、月、季、年、决」印记。来源、素材编号和调色映射在 `assets/overview/README.md`。每日书写、每周寻找规律、每月分类、阶段定位方向、年度里程碑与决策提问分别对应产品语义。顶部菜单继续使用 `NAV_ICON_PATHS`。
 
-鼠标悬停（仅支持悬停的设备）或键盘 `:focus-visible` 时，`.overview-type-flip` 在固定按钮内部绕Y轴翻转180°，用0.58秒曲线过渡显示类别浅色背板与简短名称。正反面均 `aria-hidden`、`pointer-events:none`，按钮保留唯一 `data-nav`、完整可访问名称及原命中区域；不设置展开状态、额外按钮或左右信息面板。其他入口位置不变；单击、Enter/Space 和触屏单击直接进入。桌面保持六个一行，小屏沿用原排布，文字按 `--type-size` 缩放并单行显示。翻面开始90—122ms后，独立 `.overview-type-burst` 的12枚短线、圆点与细环向四周散开，.78秒后消失，仅入场播放一次；用类别主色、深色及少量金色，不遮挡点击。系统或已保存的减少动态偏好隐藏散开层，使正反面立即替换，不旋转、不延迟。
+鼠标悬停（仅支持悬停的设备）或键盘 `:focus-visible` 时，`.overview-type-flip` 在固定按钮内部绕Y轴翻转180°，用0.58秒曲线过渡显示类别浅色背板与简短名称。正反面均 `aria-hidden`、`pointer-events:none`，按钮保留唯一 `data-nav`、完整可访问名称及原命中区域；不设置展开状态、额外按钮或左右信息面板。其他入口位置不变；单击、Enter/Space 和触屏单击直接进入。桌面保持六个一行，小屏沿用原排布，背面明确分成「每日 / 复盘」等两行，使用900宋体、1.25行高与clamp(21px,calc(var(--type-size)*.24),31px)字号；1280px屏幕实际26.88px，320px屏幕21.12px。翻面开始90—122ms后，独立 `.overview-type-burst` 的12枚短线、圆点与细环向四周散开，.78秒后消失，仅入场播放一次；用类别主色、深色及少量金色，不遮挡点击。系统或已保存的减少动态偏好隐藏散开层，使正反面立即替换，不旋转、不延迟。
 
 轮播装饰图使用用户确认授权的 Iconfont 53335 合集本地图片 `assets/reel-emotions/`，来源及映射见该目录 README。`overviewRecordAppearances()` 在本机批量按标题、正文和行动等明确关键词匹配，同时考虑验证结果与调整；完整15张素材均参与选择。明确匹配优先，同分时从最佳候选选择；无匹配时随机使用本轮尚未出现的图案，池耗尽后才允许回退重复。重新进入可换图，同一轮播中的循环副本一致，版式按ID稳定，不发送正文到外部服务。纯日期标题使用完整宽度，避免周几单字换行；装饰图片不参与指针命中。
 
@@ -134,7 +134,7 @@ Dialog 统一管理焦点约束、Escape 和遮罩关闭；业务代码保留初
 
 登录首页采用1120px上限的完整双页书页：左页保留红色印章、宋体慎獨、主句与晨窗插画，右页整合表单，不再套独立大圆角卡。820px及以下上下叠放，手机保留正常页面滚动。登录、注册、首次管理员共用此构图，原字段约束、显示密码与认证逻辑不变。
 
-六类沉浸复盘的背景继续铺满视口，顶部、引导和填写正文统一居中并以1360px封顶。字号、间距、内边距和插画尺寸也按同一构图单位封顶，绝对定位插画相对这条居中边界摆放。1440与1920屏幕仅改变整体位置，不再扩大内容；小屏沿用原重排与逐题操作。
+六类沉浸复盘的背景继续铺满视口，顶部、引导和填写正文统一居中，与历史复盘、行动验证共用 --content-width:1480px 外框和 --content-gutter:clamp(20px,4vw,64px) 内边距；820px及以下统一16px。1920px屏幕实际内容宽1352px。字号、间距与插画尺寸仍按原13.6px上限的构图单位封顶，绝对定位插画相对居中外框与共享留白摆放；小屏沿用原重排与逐题操作。
 
 阶段弹窗保留单张完整书页，不设置侧边六类卡片、半露标题标签或遮罩插画。以大号月份、安静的年份、日期状态和底部统计建立阅读层级；页签和文字操作悬停只改变文字或描边，不新增矩形底色。真实组件的焦点轮廓与当前页签标识保持可见。
 
@@ -161,3 +161,9 @@ Dialog 统一管理焦点约束、Escape 和遮罩关闭；业务代码保留初
 - Stage dialog switches among calendar/stage/pending while retaining shared statistics. Calendar no longer stacks below all other sections.
 - History/actions reading surface extends to 1480px. Actions use one full-width record per row, with a continuous plan/result/adjustment reading area that stacks on mobile.
 - Existing records, verification eligibility, illustrations and overview layout remain unchanged.
+
+## 2026-11-05 unified workspace and account
+
+历史复盘、数据备份、账户管理和设置的大背景共用行动验证原有暖纸径向渐变，由 styles.css 的 --workspace-canvas 唯一拥有；内部面板、功能配色和六类艺术画布维持各自层次。设置 Dialog 用明确选择器覆盖后加载的默认弹窗渐变。
+
+账户与安全并入账户管理页面，桌面/手机/设置只保留一个入口。所有角色均显示身份、修改自己的密码和安全退出；管理员在下方另有成员管理。身份与密码区桌面并排，820px及以下上下排列；成员搜索或操作只刷新列表，不销毁个人密码输入。普通成员不加载管理员接口，旧页面与过期请求不能覆盖当前内容。实际桌面、手机、角色和背景对照见 docs/unified-workspace-qa/README.md。

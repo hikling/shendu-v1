@@ -1,0 +1,128 @@
+[
+  {
+    "page": "进入每日复盘",
+    "editor": 320,
+    "padding": "16px",
+    "scroll": 320,
+    "viewport": 320
+  },
+  {
+    "page": "进入每周复盘",
+    "editor": 320,
+    "padding": "16px",
+    "scroll": 320,
+    "viewport": 320
+  },
+  {
+    "page": "进入每月复盘",
+    "editor": 320,
+    "padding": "16px",
+    "scroll": 320,
+    "viewport": 320
+  },
+  {
+    "page": "进入90 天复盘",
+    "editor": 320,
+    "padding": "16px",
+    "scroll": 320,
+    "viewport": 320
+  },
+  {
+    "page": "进入年度复盘",
+    "editor": 320,
+    "padding": "16px",
+    "scroll": 320,
+    "viewport": 320
+  },
+  {
+    "page": "进入重大决策",
+    "editor": 320,
+    "padding": "16px",
+    "scroll": 320,
+    "viewport": 320
+  },
+  {
+    "page": "进入每日复盘",
+    "editor": 383,
+    "padding": "16px",
+    "scroll": 383,
+    "viewport": 390
+  },
+  {
+    "page": "进入每周复盘",
+    "editor": 383,
+    "padding": "16px",
+    "scroll": 383,
+    "viewport": 390
+  },
+  {
+    "page": "进入每月复盘",
+    "editor": 383,
+    "padding": "16px",
+    "scroll": 383,
+    "viewport": 390
+  },
+  {
+    "page": "进入90 天复盘",
+    "editor": 383,
+    "padding": "16px",
+    "scroll": 383,
+    "viewport": 390
+  },
+  {
+    "page": "进入年度复盘",
+    "editor": 383,
+    "padding": "16px",
+    "scroll": 383,
+    "viewport": 390
+  },
+  {
+    "page": "进入重大决策",
+    "editor": 390,
+    "padding": "16px",
+    "scroll": 390,
+    "viewport": 390
+  },
+  {
+    "page": "进入每日复盘",
+    "editor": 813,
+    "padding": "16px",
+    "scroll": 813,
+    "viewport": 820
+  },
+  {
+    "page": "进入每周复盘",
+    "editor": 813,
+    "padding": "16px",
+    "scroll": 813,
+    "viewport": 820
+  },
+  {
+    "page": "进入每月复盘",
+    "editor": 813,
+    "padding": "16px",
+    "scroll": 813,
+    "viewport": 820
+  },
+  {
+    "page": "进入90 天复盘",
+    "editor": 813,
+    "padding": "16px",
+    "scroll": 813,
+    "viewport": 820
+  },
+  {
+    "page": "进入年度复盘",
+    "editor": 813,
+    "padding": "16px",
+    "scroll": 813,
+    "viewport": 820
+  },
+  {
+    "page": "进入重大决策",
+    "editor": 820,
+    "padding": "16px",
+    "scroll": 820,
+    "viewport": 820
+  }
+]

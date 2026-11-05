@@ -1,0 +1,5 @@
+{"file":".trellis/spec/frontend/index.md","reason":"Frontend predevelopment and quality gates"}
+{"file":".trellis/spec/frontend/architecture.md","reason":"Native app rendering and route ownership"}
+{"file":".trellis/spec/frontend/component-islands.md","reason":"Real shadcn roots, dialogs and disposal"}
+{"file":".trellis/spec/frontend/archive-and-workspace-ui.md","reason":"Workspace/account styles and permissions"}
+{"file":".trellis/spec/frontend/state-and-data.md","reason":"Unsaved and auth preservation"}

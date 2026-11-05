@@ -71,6 +71,40 @@
 .workspace-users .inline-actions .btn{padding:6px 10px;min-height:36px;font-size:.64rem}
 .workspace-page :focus-visible,.workspace-dialog :focus-visible{outline:2px solid #48634b;outline-offset:3px}
 
+/* Account management brings personal security and permitted member tools together. */
+.workspace-users .workspace-account-grid{grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:24px;margin-bottom:34px}
+.workspace-users.workspace-page .workspace-identity-panel{position:relative;isolation:isolate;min-width:0;overflow:hidden;display:flex;flex-direction:column;min-height:355px;padding-right:45%}
+.workspace-users .workspace-identity-panel h2{overflow-wrap:anywhere}
+.workspace-identity-details{display:grid;gap:15px;margin:20px 0 22px;font-family:"Noto Sans SC","Microsoft YaHei",sans-serif}
+.workspace-identity-details>div{display:grid;gap:4px;min-width:0}
+.workspace-identity-details dt{color:var(--workspace-muted);font-size:.65rem;line-height:1.6}
+.workspace-identity-details dd{margin:0;color:var(--workspace-ink);font-size:.82rem;font-weight:650;line-height:1.7;overflow-wrap:anywhere}
+.workspace-users .workspace-identity-art{position:absolute;z-index:-1;right:5px;top:46px;width:45%;max-width:225px}
+.workspace-users .workspace-signout-panel{margin-top:auto}
+.workspace-users .workspace-signout-panel .workspace-panel-description{font-size:.66rem}
+.workspace-users .workspace-password-panel fieldset{margin:0;padding:0;border:0;min-width:0}
+.workspace-users .workspace-password-panel .field{margin-bottom:20px}
+.workspace-users .workspace-password-panel .field label{font-size:.72rem;color:var(--workspace-ink)}
+.workspace-users .workspace-password-panel .field input{width:100%;min-height:46px;background:#fffefa;border:1px solid #b9c9b7;border-radius:11px;padding:11px 13px;font-size:.8rem}
+.workspace-users .workspace-password-panel button{margin-top:2px}
+.workspace-users .workspace-members{padding-top:27px;border-top:1px solid var(--workspace-line)}
+.workspace-users .workspace-members-head{display:flex;align-items:center;justify-content:space-between;gap:22px;margin:0 4px 21px}
+.workspace-users .workspace-members-head h2{margin:0;color:var(--workspace-ink);font:900 1.65rem/1.4 "SimSun","宋体","Noto Serif SC",serif;letter-spacing:.03em}
+.workspace-users .workspace-members-head .workspace-description{margin-top:10px;font-size:.72rem}
+.workspace-users #users-content[aria-busy="true"]{opacity:.7}
+@media(max-width:820px){
+ .workspace-users .workspace-account-grid{grid-template-columns:minmax(0,1fr);gap:18px}
+ .workspace-users.workspace-page .workspace-identity-panel{min-height:290px;padding-right:47%}
+ .workspace-users .workspace-identity-art{width:210px;max-width:43%;top:28px;right:13px}
+ .workspace-users .workspace-members-head{align-items:flex-start;flex-wrap:wrap;margin-inline:0;gap:15px}
+}
+@media(max-width:390px){
+ .workspace-users.workspace-page .workspace-identity-panel{padding-right:18px}
+ .workspace-users .workspace-identity-details{padding-right:38%}
+ .workspace-users .workspace-identity-art{width:125px;right:5px;top:70px}
+ .workspace-users .workspace-signout-panel{max-width:100%}
+}
+
 /* The same family remains inside the existing Radix Dialog, not a new route. */
 .sd-dialog.modal.workspace-dialog{width:min(800px,calc(100vw - 32px));padding:25px 28px;border:1px solid #d4ddca;border-radius:24px;background:linear-gradient(145deg,#fffef9 38%,var(--workspace-soft));box-shadow:0 25px 70px #162b2633}
 .sd-dialog.modal.wide.workspace-dialog{width:min(900px,calc(100vw - 32px))}

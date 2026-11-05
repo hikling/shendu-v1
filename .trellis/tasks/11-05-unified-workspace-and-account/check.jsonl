@@ -1,0 +1,4 @@
+{"file":".trellis/spec/frontend/index.md","reason":"Full frontend quality gates"}
+{"file":".trellis/spec/frontend/component-islands.md","reason":"Form semantics and interaction ownership"}
+{"file":".trellis/spec/frontend/ui-quality.md","reason":"Responsive/keyboard/motion contracts; task supersedes single-line and1360 width"}
+{"file":".trellis/spec/frontend/archive-and-workspace-ui.md","reason":"Account and permission integration"}

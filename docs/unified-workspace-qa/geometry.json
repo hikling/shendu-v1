@@ -1,0 +1,128 @@
+[
+  {
+    "page": "行动验证 5",
+    "content": {
+      "bottom": 6214.640625,
+      "height": 6161.640625,
+      "left": 280.5,
+      "right": 1632.5,
+      "top": 53,
+      "width": 1352,
+      "x": 280.5,
+      "y": 53
+    },
+    "outer": 1480,
+    "viewport": 1920
+  },
+  {
+    "page": "历史复盘",
+    "content": {
+      "bottom": 3253.078125,
+      "height": 3200.078125,
+      "left": 280.5,
+      "right": 1632.5,
+      "top": 53,
+      "width": 1352,
+      "x": 280.5,
+      "y": 53
+    },
+    "outer": 1480,
+    "viewport": 1920
+  },
+  {
+    "page": "进入每日复盘",
+    "editor": {
+      "bottom": 902.125,
+      "height": 798.125,
+      "left": 216.5,
+      "right": 1696.5,
+      "top": 104,
+      "width": 1480,
+      "x": 216.5,
+      "y": 104
+    },
+    "head": 1480,
+    "padding": "64px",
+    "viewport": 1920
+  },
+  {
+    "page": "进入每周复盘",
+    "editor": {
+      "bottom": 900,
+      "height": 796,
+      "left": 220,
+      "right": 1700,
+      "top": 104,
+      "width": 1480,
+      "x": 220,
+      "y": 104
+    },
+    "head": 1480,
+    "padding": "64px",
+    "viewport": 1920
+  },
+  {
+    "page": "进入每月复盘",
+    "editor": {
+      "bottom": 900,
+      "height": 796,
+      "left": 220,
+      "right": 1700,
+      "top": 104,
+      "width": 1480,
+      "x": 220,
+      "y": 104
+    },
+    "head": 1480,
+    "padding": "64px",
+    "viewport": 1920
+  },
+  {
+    "page": "进入90 天复盘",
+    "editor": {
+      "bottom": 900,
+      "height": 796,
+      "left": 220,
+      "right": 1700,
+      "top": 104,
+      "width": 1480,
+      "x": 220,
+      "y": 104
+    },
+    "head": 1480,
+    "padding": "64px",
+    "viewport": 1920
+  },
+  {
+    "page": "进入年度复盘",
+    "editor": {
+      "bottom": 900,
+      "height": 796,
+      "left": 220,
+      "right": 1700,
+      "top": 104,
+      "width": 1480,
+      "x": 220,
+      "y": 104
+    },
+    "head": 1480,
+    "padding": "64px",
+    "viewport": 1920
+  },
+  {
+    "page": "进入重大决策",
+    "editor": {
+      "bottom": 900,
+      "height": 796,
+      "left": 220,
+      "right": 1700,
+      "top": 104,
+      "width": 1480,
+      "x": 220,
+      "y": 104
+    },
+    "head": 1480,
+    "padding": "64px",
+    "viewport": 1920
+  }
+]

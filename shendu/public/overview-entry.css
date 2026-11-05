@@ -7,7 +7,8 @@
 .overview-type-front{transform:rotateY(0deg);transition:none}
 .overview-type-back{display:grid;place-items:center;padding:8px;border:1px solid color-mix(in srgb,var(--type-accent) 35%,var(--type-soft));background:var(--type-soft);box-shadow:0 14px 25px -9px color-mix(in srgb,var(--type-color) 28%,transparent);transform:rotateY(180deg)}
 .overview-type-back:before{content:"";position:absolute;inset:9px;border:1px solid color-mix(in srgb,var(--type-accent) 22%,transparent);border-radius:13px}
-.overview-type-back strong{color:var(--type-color);font:900 clamp(14px,calc(var(--type-size)*.17),22px)/1.4 "SimSun","宋体","Noto Serif SC",serif;letter-spacing:.02em;white-space:nowrap;-webkit-text-stroke:.12px currentColor}
+.overview-type-back strong{color:var(--type-color);font:900 clamp(21px,calc(var(--type-size)*.24),31px)/1.25 "SimSun","宋体","Noto Serif SC",serif;letter-spacing:.055em;text-align:center;-webkit-text-stroke:.12px currentColor}
+.overview-type-back strong>span{display:block;white-space:nowrap}
 .overview-type-trigger:focus-visible .overview-type-flip{transform:rotateY(180deg)}
 @media(hover:hover){.overview-type-trigger:hover .overview-type-flip{transform:rotateY(180deg)}}
 @media(max-width:1280px){.overview-type-front,.overview-type-back{border-radius:18px}}
