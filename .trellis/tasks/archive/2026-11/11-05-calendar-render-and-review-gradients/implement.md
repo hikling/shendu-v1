@@ -5,4 +5,4 @@
 - [x] 六类浅到原类别纸色的渐变背景与缓存。
 - [x] build/check/tests/资源烟测和浏览器多尺寸、切月/重入/六类检查。
 - [x] break-loop根因记录、规范/README/截图、提交main与CI：443189a，Actions 42024625579 success。
-- [ ] Trellis归档日志及最终干净同步。
+- Trellis归档、日志及最终同步由后续chore提交和对应远端Actions记录。
