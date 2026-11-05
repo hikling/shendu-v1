@@ -1,4 +1,4 @@
-import {renderMarkup,enhanceUi,disposeUi,prepareDialogContainer,initializeToasts,showDialog,dismissDialog,showRail,showMenu,showVerificationCalendar,showStageCalendar,showToast} from './ui/shadcn.js?v=1.0.0-space1';
+import {renderMarkup,enhanceUi,disposeUi,prepareDialogContainer,initializeToasts,showDialog,dismissDialog,showRail,showMenu,showVerificationCalendar,showStageCalendar,showToast} from './ui/shadcn.js?v=1.0.0-flip1';
 import {overviewRecordAppearances,overviewVerifiedRecords,overviewRecordExcerpt,overviewLoopMetrics,overviewRecordTitle,overviewDateParts} from './overview-reel.js?v=1.0.0-overview15';
 import {DAILY_STEPS,dailyStepIssues,dailyPrompts,dailyPromptIssues,dailyPromptNeighbor,dailyPromptOwner} from './daily-flow.js?v=1.0.0-overview25';
 import {dailyCalendarModel,dailyCalendarDateLabel} from './daily-calendar.js?v=1.0.0-art1';
@@ -19,14 +19,6 @@ const TYPES = {
   decision:{label:'重大决策',meta:'留依据 · 20–30m',position:'留依据',date:'date'}
 };
 const TYPE_ICONS = {daily:'日',weekly:'周',monthly:'月',quarterly:'季',yearly:'年',decision:'决'};
-const OVERVIEW_TYPE_DESCRIPTIONS = {
-  daily:'记下今天发生的事，找到一个值得带进明天的调整。',
-  weekly:'把七天的进展与阻碍放在一起，找到可重复的好方法。',
-  monthly:'对照目标与结果，聚焦下个月最值得改善的瓶颈。',
-  quarterly:'回看 90 天的真实变化，校准下一阶段的目标与方向。',
-  yearly:'留下这一年的重要坐标，想清来年珍惜什么、投入什么。',
-  decision:'写下选项、事实与取舍，留给未来检验当时的判断。'
-};
 const NAV_ICON_PATHS = {
   daily:'<rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8 9h8M8 13h8M8 17h5"/>',
   weekly:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4M17 3v4M3 10h18M7 14h4M14 14h3M7 18h4"/>',
@@ -41,10 +33,7 @@ const NAV_ICON_PATHS = {
 };
 function navIcon(route){return `<span class="${TYPE_ICONS[route]?'nav-type-icon type-'+route:'nav-glyph'}" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${NAV_ICON_PATHS[route]||NAV_ICON_PATHS.daily}</svg></span>`}
 const STATUS = {draft:'草稿',completed:'已完成',verified:'已验证'};
-const PALETTES = {
-  '潮汐青':['#176B67','#A86436','#536C9C'],'花间莓':['#A33770','#657637','#71609C'],'蓝色气息':['#466A9B','#A26A42','#7E619A'],
-  '琥珀微光':['#956322','#397A76','#A25556'],'薄荷新生':['#397C60','#A35C65','#5C6C9D'],'云上留白':['#535D62','#987447','#5E7890']
-};
+const DEFAULT_ACCENTS = {primary:'#176B67',secondary:'#A86436',tertiary:'#536C9C'};
 const QUOTES = {
   daily:['记下今天，想清明天。','回看一步，再向前走。','留一件事，带去明天。','今天到此，明天继续。','如实写下，慢慢看清。','把心放慢，把事看清。','记下发生，看见改变。','留点时间，听听自己。','写下事实，想好一步。','看见所得，也看遗憾。','看清来处，想好去处。','留住经验，试个改变。','收好今天，轻启明天。','此刻落笔，明日有据。'],
   weekly:['把七天放在一起，看看哪些事情反复发生。规律常常藏在几次相似的经历里。','这一周，哪一种安排让你更容易行动？把它留下，给下周一个可靠的起点。','不必用某一天评价整周。把高低起伏放在一起，再看真正的变化。','回看一周的时间，找出值得继续投入的地方。下周最多选三件重点。','重复的阻碍，值得换一种处理方式。把“再努力一点”改成具体的环境或流程调整。','哪些进展来自计划，哪些来自意外？两种收获都可以成为下一周的线索。','给完成的事留一点位置。及时交付、恢复秩序、说清需要，都是实际的进展。','这周有没有做了很多，却迟迟没有产出？下周试着把一个成果放在学习之前。','回看承诺，也回看容量。重要的事情，需要真实可用的时间来承接。','一周结束时，选一个成功条件和一个主要阻碍。先弄清楚，再做取舍。','不必把下周排满。留出缓冲，才能让真正重要的安排更有机会发生。','哪些事每次开始都很难？先缩小第一步，看看下一周是否更容易持续。','这周谁帮助过你，你又把时间留给了谁？把关系也放进生活的复盘里。','用一条证据决定保留，用一条证据决定改变。带着更清楚的节奏进入下周。'],
@@ -126,10 +115,10 @@ async function request(path, options = {}) {
   const res = await fetch(path,opts); const type=res.headers.get('content-type')||''; const data=type.includes('json')?await res.json():await res.blob();
   if(!res.ok){if(res.status===401&&state.user&&!state.reauthOpen&&!path.startsWith('/api/auth/'))sessionExpired();const e=new Error(data.message||'请求失败');e.code=data.error;e.status=res.status;throw e} return data;
 }
-function sessionExpired(){state.reauthOpen=true;openModal(`<div class="modal-head"><div><h2>登录已失效</h2><p>重新登录后，页面中尚未保存的内容仍会保留。</p></div></div><form id="reauth-form"><div class="field"><label>用户名</label><input name="username" value="${esc(state.user.username)}" readonly></div><div class="field"><label>密码</label><input name="password" type="password" minlength="15" required autocomplete="current-password"></div><div class="modal-actions"><button class="btn btn-primary">重新登录</button></div></form>`,'',true);$('#reauth-form').addEventListener('submit',async e=>{e.preventDefault();const res=await fetch('/api/auth/login',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify(Object.fromEntries(new FormData(e.currentTarget)))});const data=await res.json();if(!res.ok){toast(data.message||'登录失败','error');return}state.reauthOpen=false;closeModal(true);toast('已重新登录，请再次保存')})}
+function sessionExpired(){state.reauthOpen=true;openModal(`<div class="modal-head"><div><span class="legacy-kicker">记录仍在 · 重新连接</span><h2>登录已失效</h2><p>重新登录后，页面中尚未保存的内容仍会保留。</p></div><div class="legacy-dialog-art" aria-hidden="true"><img src="/assets/records/daily-28-night-lamp.webp" alt="" width="640" height="640" draggable="false"></div></div><form id="reauth-form"><div class="field"><label for="reauth-username">用户名</label><input id="reauth-username" name="username" value="${esc(state.user.username)}" readonly autocomplete="username"></div><div class="field"><label for="reauth-password">密码</label><input id="reauth-password" name="password" type="password" minlength="15" required autocomplete="current-password"></div><div class="modal-actions"><button class="btn btn-primary">重新登录</button></div></form>`,'legacy-reauth',true);$('#reauth-form').addEventListener('submit',async e=>{e.preventDefault();const res=await fetch('/api/auth/login',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify(Object.fromEntries(new FormData(e.currentTarget)))});const data=await res.json();if(!res.ok){toast(data.message||'登录失败','error');return}state.reauthOpen=false;closeModal(true);toast('已重新登录，请再次保存')})}
 function toast(message,kind='success'){showToast($('#toast-root'),message,kind)}
 function contrastFor(hex){const h=String(hex).replace('#','');if(!/^[0-9a-f]{6}$/i.test(h))return'#fff';const [r,g,b]=[0,2,4].map(i=>parseInt(h.slice(i,i+2),16)/255).map(v=>v<=.03928?v/12.92:((v+.055)/1.055)**2.4);return .2126*r+.7152*g+.0722*b>.52?'#201d19':'#fff'}
-function applyTheme(theme){const t=theme||state.theme||{},fallback=PALETTES['潮汐青'],r=document.documentElement;['primary','secondary','tertiary'].forEach((k,index)=>{const color=/^#[0-9a-f]{6}$/i.test(String(t[k]||''))?t[k]:fallback[index];r.style.setProperty(`--${k}`,color);r.style.setProperty(`--${k}-contrast`,contrastFor(color))});document.body.classList.toggle('reduce-motion',!!t.reduceMotion);if(t.reduceMotion)cancelDailyTypewriter()}
+function applyTheme(theme){const t=theme||state.theme||{},r=document.documentElement;Object.entries(DEFAULT_ACCENTS).forEach(([key,color])=>{r.style.setProperty(`--${key}`,color);r.style.setProperty(`--${key}-contrast`,contrastFor(color))});document.body.classList.toggle('reduce-motion',!!t.reduceMotion);if(t.reduceMotion)cancelDailyTypewriter()}
 const BEIJING_TIME_ZONE='Asia/Shanghai';
 function beijingDateParts(value=new Date()){const parts=new Intl.DateTimeFormat('en-US',{timeZone:BEIJING_TIME_ZONE,year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(value);const result=Object.fromEntries(parts.filter(x=>x.type!=='literal').map(x=>[x.type,x.value]));return{year:Number(result.year),month:Number(result.month),day:Number(result.day),iso:`${result.year}-${result.month}-${result.day}`}}
 function today(){return beijingDateParts().iso}
@@ -149,15 +138,17 @@ function renderAuth(info={}){
   cancelDailyTypewriter();setDailyImmersive(false);
   dismissDialog($('#rail-root'));state.railOpen=false;closeModal(true);
   reviewNavigation.clear();state.historyFilter={q:'',type:'all',year:'all',month:'all'};
-  state.user=null;renderMarkup($('#app'),`<main class="auth-shell">
-    <section class="auth-art"><div class="brand-lockup"><div class="brand-row"><div class="seal">慎</div><div class="brand-cn">慎獨</div></div></div>
-      <div class="auth-quote">“言寡尤，行寡悔，慎独存诚。”<small>把事实、调整与验证，留成一份不会被情绪改写的记录。</small></div></section>
-    <section class="auth-panel"><form class="auth-card" id="auth-form"><h1>${info.firstRun?'建立第一枚印契':'回到自己的复盘室'}</h1><p>${info.firstRun?'第一个注册账户将成为唯一超级管理员。':'你的记录只对当前账户可见。'}</p>
+  const registering=info.mode==='register'||info.firstRun;
+  state.user=null;renderMarkup($('#app'),`<main class="auth-shell auth-paper-shell">
+    <section class="auth-art"><div class="brand-lockup"><div class="brand-row"><span class="seal header-seal" aria-hidden="true">慎</span><span class="brand-cn header-wordmark">慎獨</span></div></div>
+      <div class="auth-story"><p class="legacy-kicker">个人成长 · 从一次回看开始</p><div class="auth-quote"><span>言寡尤，行寡悔</span><span>慎独存诚</span></div><p class="auth-story-note">记下事实，照见自己。<br>把下一步，留给更清醒的你。</p><div class="auth-scene" aria-hidden="true"><img src="/assets/records/daily-05-reading-corner.webp" alt="" width="640" height="640" draggable="false"></div></div>
+      <p class="auth-art-footer">一页记录，一点改变。</p></section>
+    <section class="auth-panel"><form class="auth-card" id="auth-form"><span class="legacy-kicker">${registering?'开始记录':'欢迎回来'}</span><h1>${info.firstRun?'建立自己的复盘室':registering?'为自己，留一页纸':'回到自己的复盘室'}</h1><p>${info.firstRun?'第一个注册账户将成为唯一超级管理员。':'你的记录只对当前账户可见。'}</p>
       ${info.mode==='register'||info.firstRun?`<div class="field"><label for="displayName">称呼</label><input id="displayName" name="displayName" maxlength="32" autocomplete="name" placeholder="例如：止水"></div>`:''}
       <div class="field"><label for="username">用户名</label><input id="username" name="username" minlength="3" maxlength="32" autocomplete="username" required placeholder="汉字、字母、数字或 _ . -"></div>
       <div class="field"><label for="password">密码</label><input id="password" name="password" minlength="15" maxlength="128" type="password" autocomplete="${info.mode==='register'||info.firstRun?'new-password':'current-password'}" required><span class="help">至少 15 个字符。请使用密码管理器保存。</span><label class="help password-visibility" for="show-password"><input id="show-password" type="checkbox"><span>显示密码</span></label></div>
-      <div class="error-text" id="auth-error"></div><button class="btn btn-primary btn-block" type="submit">${info.mode==='register'||info.firstRun?'创建账户并进入':'登录'}</button>
-      ${!info.firstRun&&info.registrationOpen?`<p class="help" style="text-align:center;margin:18px 0 0">${info.mode==='register'?'已有账户？':'还没有账户？'} <button class="link-button" type="button" id="auth-switch">${info.mode==='register'?'返回登录':'自行注册'}</button></p>`:''}
+      <div class="error-text" id="auth-error" role="status" aria-live="polite"></div><button class="btn btn-primary btn-block" type="submit">${registering?'创建账户并进入':'登录'}</button>
+      ${!info.firstRun&&info.registrationOpen?`<p class="help auth-switch-note">${info.mode==='register'?'已有账户？':'还没有账户？'} <button class="link-button" type="button" id="auth-switch">${info.mode==='register'?'返回登录':'自行注册'}</button></p>`:''}
     </form></section></main>`);
   $('#auth-form').addEventListener('submit',async e=>{e.preventDefault();const fd=new FormData(e.currentTarget);const registering=info.firstRun||info.mode==='register';try{const data=await request(`/api/auth/${registering?'register':'login'}`,{method:'POST',body:Object.fromEntries(fd)});await boot(data.user)}catch(err){$('#auth-error').textContent=err.message}});
   $('#show-password').addEventListener('change',e=>{$('#password').type=e.target.checked?'text':'password'});
@@ -271,13 +262,10 @@ function bindOverviewArc(){
   observer.observe(window);
   layout();
 }
-function overviewBurst(){
-  return `<span class="overview-type-burst" aria-hidden="true">${Array.from({length:16},(_,index)=>{const angle=index*Math.PI/8,reach=.84+(index%3)*.1;return `<i style="--burst-x:${(Math.sin(angle)*reach).toFixed(3)};--burst-y:${(-Math.cos(angle)*reach).toFixed(3)};--burst-turn:${index*67}deg;--burst-delay:${index%4*18}ms"></i>`}).join('')}</span>`;
-}
 function renderOverview(){
   const records=overviewRecords();
   const appearances=overviewRecordAppearances(records);
-  const categories=Object.entries(TYPES).map(([key,item])=>`<div class="overview-type-card type-${key}"><button class="overview-type-trigger" type="button" data-overview-type="${key}" data-nav="${key}" aria-expanded="false" aria-controls="overview-type-${key}" aria-label="进入${item.label}" aria-describedby="overview-type-description-${key}">${overviewBurst()}<span class="overview-type-mark" aria-hidden="true"><img src="/assets/overview/${key}.svg?v=1.0.0-overview13" alt="" width="320" height="320"></span></button><div class="overview-type-info" id="overview-type-${key}" role="group" aria-labelledby="overview-type-title-${key}" hidden><span class="overview-type-info-head"><strong id="overview-type-title-${key}">${item.label}</strong><span>${item.position}</span></span><p class="overview-type-description" id="overview-type-description-${key}">${OVERVIEW_TYPE_DESCRIPTIONS[key]}</p><span class="overview-type-info-footer"><span>${item.meta.split(' · ')[1].replace('m',' 分钟')}</span><button class="overview-type-enter" type="button" data-nav="${key}" aria-label="进入${item.label}">进入复盘 ↗</button></span></div></div>`).join('');
+  const categories=Object.entries(TYPES).map(([key,item])=>`<div class="overview-type-card type-${key}"><button class="overview-type-trigger" type="button" data-overview-type="${key}" data-nav="${key}" aria-label="进入${item.label}"><span class="overview-type-flip" aria-hidden="true"><span class="overview-type-mark overview-type-front"><img src="/assets/overview/${key}.svg?v=1.0.0-overview13" alt="" width="320" height="320"></span><span class="overview-type-back"><strong>${key==='quarterly'?'季度复盘':item.label}</strong></span></span></button></div>`).join('');
   const cardSet=records.map((record,index)=>overviewRecordCard(record,appearances.get(record.id),false,index)).join('');
   const reel=records.length?`<div class="overview-reel" id="overview-reel">
       <div class="overview-reel-window" aria-label="已验证复盘摘要"><div class="overview-reel-track" style="--reel-count:${records.length}">${cardSet}</div></div>
@@ -288,25 +276,7 @@ function renderOverview(){
     ${reel}
   </div>`);
   $('.overview-reel-track')?.addEventListener('click',event=>{const button=event.target.closest('[data-overview-record]');if(!button)return;const record=records.find(item=>item.id===button.dataset.overviewRecord);if(record?.status==='verified')enterReview(record.type,record.period,false,record)});
-  $$('[data-overview-type]').forEach(button=>{
-    const card=button.closest('.overview-type-card');
-    card.addEventListener('pointerenter',event=>{if(event.pointerType!=='touch')setOverviewType(button,true)});
-    card.addEventListener('pointerleave',event=>{if(event.pointerType!=='touch'&&card.classList.contains('is-expanded')&&!(card.contains(document.activeElement)&&document.activeElement.matches(':focus-visible')))closeOverviewTypes()});
-    card.addEventListener('focusin',event=>{if(event.target.matches(':focus-visible'))setOverviewType(button,true)});
-    card.addEventListener('focusout',event=>{if(!card.contains(event.relatedTarget)&&!card.matches(':hover')&&card.classList.contains('is-expanded'))closeOverviewTypes()});
-  });
   bindOverviewArc();
-}
-function setOverviewType(button,open){
-  if(button.getAttribute('aria-expanded')===String(open))return;
-  closeOverviewTypes();
-  if(open){button.closest('.overview-type-card').classList.add('is-expanded');button.setAttribute('aria-expanded','true');document.getElementById(button.getAttribute('aria-controls')).hidden=false}
-}
-function closeOverviewTypes(restoreFocus=false){
-  const active=$('.overview-type-card.is-expanded .overview-type-trigger');
-  // Close after restoring focus so its focusin handler cannot reopen an Escape-dismissed panel.
-  if(restoreFocus)active?.focus();
-  $$('.overview-type-card.is-expanded').forEach(card=>{card.classList.remove('is-expanded');$('.overview-type-trigger',card).setAttribute('aria-expanded','false');$('.overview-type-info',card).hidden=true});
 }
 
 const SPACE_PAGE_META = {
@@ -316,8 +286,8 @@ const SPACE_PAGE_META = {
   users:{mark:'印',note:'共管 · 权限有界'}
 };
 
-const WORKSPACE_SCENES={backup:'yearly-03-year-keep',users:'daily-29-share-help',account:'decision-04-decision-risk',settings:'monthly-08-month-workspace',theme:'monthly-06-month-experiment',stage:'quarterly-04-quarter-winter',guide:'daily-05-reading-corner'};
-const WORKSPACE_NOTES={account:'守护 · 安心记录',settings:'日常 · 自有秩序',theme:'设色 · 随心而定',stage:'定标 · 慢慢向前',guide:'循序 · 从容落笔'};
+const WORKSPACE_SCENES={backup:'yearly-03-year-keep',users:'daily-29-share-help',account:'decision-04-decision-risk',settings:'monthly-08-month-workspace',stage:'quarterly-04-quarter-winter',guide:'daily-05-reading-corner'};
+const WORKSPACE_NOTES={account:'守护 · 安心记录',settings:'日常 · 自有秩序',stage:'定标 · 慢慢向前',guide:'循序 · 从容落笔'};
 function workspaceArt(key,className=''){return `<span class="workspace-art ${esc(className)}" aria-hidden="true"><span class="workspace-art-paper"></span><img src="/assets/records/${esc(WORKSPACE_SCENES[key])}.webp?v=1.0.0-records1" alt="" width="640" height="640" draggable="false"></span>`}
 function spacePageHead(route,{title,description,action=''}){return `<header class="workspace-hero"><div class="workspace-hero-copy"><p class="workspace-kicker">${esc(SPACE_PAGE_META[route].note)}</p><h1 id="workspace-${esc(route)}-title">${esc(title)}</h1><p class="workspace-description">${esc(description)}</p>${action?`<div class="workspace-hero-action">${action}</div>`:''}</div>${workspaceArt(route,'workspace-hero-art')}</header>`}
 function workspaceDialogHead(key,title,description){return `<div class="modal-head workspace-dialog-head"><div class="workspace-dialog-copy"><span class="workspace-kicker">${esc(WORKSPACE_NOTES[key])}</span><h2>${esc(title)}</h2><p class="workspace-description">${esc(description)}</p></div>${workspaceArt(key,'workspace-dialog-art')}<button class="modal-close" type="button" data-close>×</button></div>`}
@@ -788,7 +758,17 @@ function bindBackup(status,targets=[]){
     }catch(err){toast(err.message,'error')}
   });
   $('#add-target')?.addEventListener('click',()=>openTargetModal());$$('[data-target-edit]').forEach(b=>b.addEventListener('click',()=>openTargetModal(targets.find(t=>t.id===b.dataset.targetEdit))));
-  $$('[data-target-test]').forEach(b=>b.addEventListener('click',()=>targetAction(b.dataset.targetTest,'test')));$$('[data-target-run]').forEach(b=>b.addEventListener('click',()=>targetAction(b.dataset.targetRun,'run')));$$('[data-target-delete]').forEach(b=>b.addEventListener('click',async()=>{if(!confirm('确定删除这个外部备份目标？'))return;try{await request(`/api/backup/targets/${b.dataset.targetDelete}`,{method:'DELETE'});toast('目标已删除');renderBackup()}catch(e){toast(e.message,'error')}}));
+  $$('[data-target-test]').forEach(b=>b.addEventListener('click',()=>targetAction(b.dataset.targetTest,'test')));$$('[data-target-run]').forEach(b=>b.addEventListener('click',()=>targetAction(b.dataset.targetRun,'run')));$$('[data-target-delete]').forEach(b=>b.addEventListener('click',()=>{
+    openModal(`<div class="modal-head"><div><h2>删除这个备份目标？</h2><p>删除后，系统将不再向这个目标发送备份。</p></div><button class="modal-close" data-close>×</button></div><div class="backup-notice">此操作仅移除连接配置，已经保存在远端的备份文件不会被删除。</div><div class="modal-actions"><button class="btn btn-ghost" type="button" data-close>取消</button><button class="btn btn-red" type="button" id="delete-target-confirm">确认删除目标</button></div>`);
+    $('#delete-target-confirm').addEventListener('click',async e=>{
+      const button=e.currentTarget;if(button.disabled)return;
+      const root=$('#modal-root'),persistent=root.dataset.persistent,controls=$$('button',root).map(control=>[control,control.disabled]);
+      root.dataset.persistent='1';controls.forEach(([control])=>{control.disabled=true});
+      try{await request(`/api/backup/targets/${b.dataset.targetDelete}`,{method:'DELETE'});if(button.isConnected){root.dataset.persistent=persistent;closeModal();toast('目标已删除');renderBackup()}}
+      catch(err){toast(err.message,'error')}
+      finally{if(button.isConnected){root.dataset.persistent=persistent;controls.forEach(([control,disabled])=>{control.disabled=disabled})}}
+    });
+  }));
   bindSiteBackup();
 }
 function downloadBlob(blob,filename){const url=URL.createObjectURL(blob),link=document.createElement('a');link.href=url;link.download=filename;document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),1000)}
@@ -847,14 +827,23 @@ function settingsGuideHtml(){return `<div class="guide-flow">${['定标','事实
 
 function openGuide(){openModal(`${workspaceDialogHead('guide','使用指南','用事实改善下一次行动。')}<div class="prose guide-content workspace-panel">${settingsGuideHtml()}</div>`,'workspace-dialog workspace-guide')}
 function openSettings(){
-  const items=[['account','账户与安全','修改密码、安全退出'],['theme','主题颜色','配色与动态效果'],['stage','阶段设置','目标与复盘问题'],['guide','使用指南','记录与验证方法']];
-  openModal(`${workspaceDialogHead('settings','设置',`${state.user.displayName||state.user.username} · ${state.user.username}`)}<div class="settings-menu workspace-settings-menu">${items.map(([key,label,note])=>`<button class="settings-menu-item" type="button" data-settings-target="${key}"><span class="workspace-setting-copy"><strong>${label}</strong><small>${note}</small><span class="workspace-setting-enter" aria-hidden="true">打开 <span>↗</span></span></span>${workspaceArt(key,'workspace-setting-art')}</button>`).join('')}</div>`,'workspace-dialog workspace-settings');
+  const items=[['account','账户与安全','修改密码、安全退出'],['stage','阶段设置','目标与复盘问题'],['guide','使用指南','记录与验证方法']];
+  openModal(`${workspaceDialogHead('settings','设置',`${state.user.displayName||state.user.username} · ${state.user.username}`)}<div class="settings-menu workspace-settings-menu">${items.map(([key,label,note])=>`<button class="settings-menu-item" type="button" data-settings-target="${key}"><span class="workspace-setting-copy"><strong>${label}</strong><small>${note}</small><span class="workspace-setting-enter" aria-hidden="true">打开 <span>↗</span></span></span>${workspaceArt(key,'workspace-setting-art')}</button>`).join('')}</div><form id="motion-form" class="workspace-motion-form"><fieldset><div class="workspace-motion-copy"><label id="motion-label" for="settings-reduce-motion">减少动态效果</label><p id="motion-description">减弱移动与翻转，让阅读更安静。</p></div><input id="settings-reduce-motion" name="reduceMotion" type="checkbox" aria-labelledby="motion-label" aria-describedby="motion-description" ${state.theme?.reduceMotion?'checked':''}><button class="btn btn-primary" type="submit">保存偏好</button></fieldset></form>`,'workspace-dialog workspace-settings');
   $$('[data-settings-target]').forEach(button=>button.addEventListener('click',()=>openSettingsTarget(button.dataset.settingsTarget)));
+  const form=$('#motion-form');
+  let saving=false;
+  form.addEventListener('submit',async e=>{
+    e.preventDefault();if(saving)return;
+    const theme={...state.theme,reduceMotion:new FormData(form).get('reduceMotion')==='on'},root=$('#modal-root'),persistent=root.dataset.persistent,controls=$$('button,fieldset',root).map(control=>[control,control.disabled]);
+    saving=true;root.dataset.persistent='1';form.setAttribute('aria-busy','true');controls.forEach(([control])=>{control.disabled=true});
+    try{const result=await request('/api/settings',{method:'PUT',body:{theme}});state.theme=result.theme||theme;applyTheme(state.theme);toast('动态偏好已保存')}
+    catch(err){toast(err.message,'error')}
+    finally{saving=false;if(form.isConnected){root.dataset.persistent=persistent;form.removeAttribute('aria-busy');controls.forEach(([control,disabled])=>{control.disabled=disabled})}}
+  });
 }
 
 function openSettingsTarget(target){
   if(target==='account')openAccount();
-  else if(target==='theme')openTheme();
   else if(target==='stage')openStage();
   else if(target==='guide')openGuide();
   else return;
@@ -863,7 +852,7 @@ function openSettingsTarget(target){
   const back=document.createElement('button');
   back.type='button';back.className='settings-back';back.textContent='← 返回设置';
   header.before(back);enhanceUi(back.parentElement);
-  $('.settings-back',$('#modal-root')).addEventListener('click',()=>{if(target==='theme')applyTheme(state.theme);openSettings()});
+  $('.settings-back',$('#modal-root')).addEventListener('click',()=>openSettings());
 }
 
 const ACTION_PROMPT_FIELDS = [
@@ -888,7 +877,6 @@ function openStage(){
   $('#stage-form').addEventListener('submit',async e=>{e.preventDefault();const f=new FormData(e.currentTarget),reviewTemplates=Object.fromEntries(Object.keys(TYPES).map(type=>[type,Object.fromEntries($$(`[data-review-template="${type}"]`,e.currentTarget).map(input=>[input.dataset.templateKey,input.value.trim()]))])),actionPrompts=Object.fromEntries($$('[data-action-template]',e.currentTarget).map(input=>[input.dataset.templateKey,input.value.trim()])),savedActionTemplate={...actionTemplate,...actionPrompts},stage={name:f.get('name'),startDate:f.get('startDate'),days:Number(f.get('days')),focus:f.get('focus'),sleepTarget:Number(f.get('sleepTarget')),energyTarget:Number(f.get('energyTarget')),showQuarter:f.get('showQuarter')==='on',metrics:[0,1,2].map(i=>({name:f.get(`metricName${i}`),target:f.get(`metricTarget${i}`)})),reviewTemplates,actionTemplate:savedActionTemplate};try{const result=await request('/api/settings',{method:'PUT',body:{stage}});state.stage=result.stage||stage;closeModal();toast('阶段与内容设置已保存');navigate(state.route)}catch(err){toast(err.message,'error')}})
 }
 
-function openTheme(){const original=clone(state.theme);openModal(`${workspaceDialogHead('theme','文房设色','主色用于章节与按钮，辅助色用于艺术编号，次色用于统计与细节。')}<form id="theme-form" class="workspace-form workspace-panel"><div class="palette-grid">${Object.entries(PALETTES).map(([n,c])=>`<button type="button" class="palette ${state.theme.preset===n?'active':''}" data-palette="${n}"><strong>${n}</strong><span class="swatches">${c.map(x=>`<i style="background:${x}"></i>`).join('')}</span></button>`).join('')}</div><div class="settings-grid" style="margin-top:18px">${[['primary','主色'],['secondary','辅助色'],['tertiary','次色']].map(([k,l])=>`<div class="field"><label>${l}</label><div class="color-row"><input type="color" data-color="${k}" value="${esc(state.theme[k])}"><input name="${k}" value="${esc(state.theme[k])}" pattern="#[0-9A-Fa-f]{6}"></div></div>`).join('')}</div><label class="help"><input name="reduceMotion" type="checkbox" ${state.theme.reduceMotion?'checked':''}> 减少动态效果</label><div class="modal-actions"><button type="button" class="btn btn-ghost" id="theme-reset">恢复默认</button><button type="button" class="btn btn-ghost" data-close>取消</button><button class="btn btn-primary">保存主题</button></div></form>`,'workspace-dialog workspace-theme');let draft=clone(state.theme);const sync=()=>{applyTheme(draft);$$('[data-color]').forEach(c=>{c.value=draft[c.dataset.color];$(`[name="${c.dataset.color}"]`,$('#theme-form')).value=draft[c.dataset.color]})};$$('[data-palette]').forEach(b=>b.addEventListener('click',()=>{const c=PALETTES[b.dataset.palette];draft={...draft,preset:b.dataset.palette,primary:c[0],secondary:c[1],tertiary:c[2]};sync()}));$$('[data-color]').forEach(c=>c.addEventListener('input',()=>{draft[c.dataset.color]=c.value;draft.preset='自定义';sync()}));$$('#theme-form input[name=primary],#theme-form input[name=secondary],#theme-form input[name=tertiary]').forEach(x=>x.addEventListener('input',()=>{if(/^#[0-9a-f]{6}$/i.test(x.value)){draft[x.name]=x.value;draft.preset='自定义';applyTheme(draft);$(`[data-color="${x.name}"]`).value=x.value}}));$('#theme-reset').addEventListener('click',()=>{const c=PALETTES['潮汐青'];draft={...draft,preset:'潮汐青',primary:c[0],secondary:c[1],tertiary:c[2]};sync()});$$('[data-close]').forEach(b=>b.addEventListener('click',()=>applyTheme(original)));$('#theme-form').addEventListener('submit',async e=>{e.preventDefault();const f=new FormData(e.currentTarget);draft.primary=f.get('primary');draft.secondary=f.get('secondary');draft.tertiary=f.get('tertiary');draft.reduceMotion=f.get('reduceMotion')==='on';try{const result=await request('/api/settings',{method:'PUT',body:{theme:draft}});state.theme=result.theme||draft;applyTheme(state.theme);closeModal();toast('主题已保存');navigate(state.route)}catch(err){toast(err.message,'error')}})}
 
 
 function openAccount(){
@@ -909,7 +897,9 @@ function openModal(content,size='',persistent=false){
   root.dataset.persistent=persistent?'1':'0';const parentRail=$('#right-rail.open');if(parentRail)parentRail.inert=true;
   const template=document.createElement('template');template.innerHTML=content;
   const title=$('.modal-head h2',template.content)?.textContent||'慎独',description=$('.modal-head p',template.content)?.textContent||'';
-  showDialog(root,{html:content,className:size,title,description,canClose:()=>root.dataset.persistent!=='1'&&!$('.modal[data-review-lock-busy]',root),onClose:()=>closeModal(),returnFocus:modalReturnFocus});
+  const customSurface=/\b(?:workspace-dialog|verification-dialog)\b/.test(size)||$('form:is(#backup-pass-form,#restore-password-form,#site-export-form,#site-inspect-form,#site-restore-form,#target-form,#delete-user-form,#user-form)',template.content);
+  if(!customSurface){const head=$('.modal-head',template.content);if(head&&!$('.legacy-dialog-art',head)){const art=$('#apply-restore,#delete-target-confirm',template.content)?'daily-23-protect-time':$('#confirm-complete',template.content)?'daily-30-tomorrow-bag':'daily-14-journal-page';head.insertAdjacentHTML('beforeend',`<div class="legacy-dialog-art" aria-hidden="true"><img src="/assets/records/${art}.webp" alt="" width="640" height="640" draggable="false"></div>`)}content=template.innerHTML}
+  showDialog(root,{html:content,className:customSurface?size:`legacy-dialog ${size}`,title,description,canClose:()=>root.dataset.persistent!=='1'&&!$('.modal[data-review-lock-busy]',root),onClose:()=>closeModal(),returnFocus:modalReturnFocus});
   syncOverlayBackground();
   $$('.modal-close',root).forEach(button=>button.setAttribute('aria-label','关闭弹窗'));
   if(!persistent)$$('[data-close]',root).forEach(button=>button.addEventListener('click',()=>closeModal()));
@@ -950,7 +940,7 @@ function setRailOverlayOpen(open,restoreFocus=false){
 function bindCommon(){
  bindHeaderMenus();
  $$('[data-nav]',$('#app')).forEach(button=>button.addEventListener('click',()=>{closeHeaderMenus();attemptNavigate(()=>navigate(button.dataset.nav))}));
- $$('[data-modal]',$('#app')).forEach(button=>button.addEventListener('click',()=>{closeHeaderMenus();if(button.dataset.modal==='theme')openTheme();if(button.dataset.modal==='stage')openStage();if(button.dataset.modal==='account')openAccount()}));
+ $$('[data-modal]',$('#app')).forEach(button=>button.addEventListener('click',()=>{closeHeaderMenus();if(button.dataset.modal==='stage')openStage();if(button.dataset.modal==='account')openAccount()}));
  $('#rail-toggle')?.addEventListener('click',()=>{closeHeaderMenus();setRailOverlayOpen(!state.railOpen,true)});
  bindActionButtons();
 }
@@ -958,12 +948,10 @@ function bindCommon(){
 function navigate(route){if(TYPES[route])return enterReview(route,defaultPeriod(route),route==='decision');reviewNavigation.clear();state.route=route;state.navOpen=false;state.railOpen=false;document.title=`${TYPES[route]?.label||({overview:'概览',history:'历史复盘',actions:currentActionTemplate().pageTitle,backup:'数据备份',users:'账户管理'}[route]||'慎独')} · 慎独`;if(route==='overview')return renderOverview();if(route==='history')return renderHistory();if(route==='actions')return renderActions();if(route==='backup')return renderBackup();if(route==='users')return renderUsers();renderReview('daily')}
 async function refreshStats(){state.stats=await request('/api/stats')}
 async function refreshData(){const [me,rec,stats]=await Promise.all([request('/api/me'),request('/api/records'),request('/api/stats')]);state.user=me.user;state.stage=me.stage;state.theme=me.theme;state.records=rec.records;state.stats=stats;applyTheme(state.theme)}
-async function boot(user){cancelDailyTypewriter();setDailyImmersive(false);state.user=user;renderMarkup($('#app'),`<div class="auth-panel"><div class="auth-card"><div class="skeleton" style="height:30px;margin-bottom:14px"></div><div class="skeleton" style="height:180px"></div></div></div>`);try{await refreshData();navigate('overview')}catch(e){if(e.status===401)return init();renderMarkup($('#app'),`<div class="auth-panel"><div class="auth-card"><h1>暂时无法打开复盘室</h1><p>${esc(e.message)}</p><button class="btn btn-primary" id="retry">重试</button></div></div>`);$('#retry').addEventListener('click',()=>boot(user))}}
-async function init(){cancelDailyTypewriter();setDailyImmersive(false);try{const info=await request('/api/auth/state');if(info.user)await boot(info.user);else renderAuth(info)}catch(e){renderMarkup($('#app'),`<div class="auth-panel"><div class="auth-card"><h1>服务器连接失败</h1><p>请确认服务已经启动，然后再试一次。</p><button class="btn btn-primary" id="reconnect">重新连接</button></div></div>`);$('#reconnect').addEventListener('click',()=>location.reload())}}
-
-document.addEventListener('pointerdown',event=>{if(!event.target.closest('.overview-type-card'))closeOverviewTypes();});
+async function boot(user){cancelDailyTypewriter();setDailyImmersive(false);state.user=user;renderMarkup($('#app'),`<main class="connection-screen"><section class="connection-card" role="status"><div class="connection-brand"><span class="seal header-seal" aria-hidden="true">慎</span><span class="brand-cn header-wordmark">慎獨</span></div><div class="connection-art" aria-hidden="true"><img src="/assets/records/daily-01-morning-window.webp" alt="" width="640" height="640" draggable="false"></div><span class="legacy-kicker">稍候片刻</span><h1>正在翻开你的记录</h1><p>正在读取复盘与阶段资料。</p><div class="connection-loading" aria-hidden="true"><span></span><span></span><span></span></div></section></main>`);try{await refreshData();navigate('overview')}catch(e){if(e.status===401)return init();renderMarkup($('#app'),`<main class="connection-screen"><section class="connection-card"><div class="connection-brand"><span class="seal header-seal" aria-hidden="true">慎</span><span class="brand-cn header-wordmark">慎獨</span></div><div class="connection-art" aria-hidden="true"><img src="/assets/records/daily-28-night-lamp.webp" alt="" width="640" height="640" draggable="false"></div><span class="legacy-kicker">记录暂未连接</span><h1>暂时无法打开复盘室</h1><p>${esc(e.message)}</p><button class="btn btn-primary" id="retry">重试</button></section></main>`);$('#retry').addEventListener('click',()=>boot(user))}}
+async function init(){cancelDailyTypewriter();setDailyImmersive(false);try{const info=await request('/api/auth/state');if(info.user)await boot(info.user);else renderAuth(info)}catch(e){renderMarkup($('#app'),`<main class="connection-screen"><section class="connection-card"><div class="connection-brand"><span class="seal header-seal" aria-hidden="true">慎</span><span class="brand-cn header-wordmark">慎獨</span></div><div class="connection-art" aria-hidden="true"><img src="/assets/records/daily-01-morning-window.webp" alt="" width="640" height="640" draggable="false"></div><span class="legacy-kicker">连接暂时中断</span><h1>服务器连接失败</h1><p>请确认服务已经启动，然后再试一次。</p><button class="btn btn-primary" id="reconnect">重新连接</button></section></main>`);$('#reconnect').addEventListener('click',()=>location.reload())}}
 
 window.addEventListener('beforeunload',e=>{if(state.dirty){e.preventDefault();e.returnValue=''}});
-document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('#modal-root').children.length&&!state.railOpen&&!$('[data-slot="dropdown-menu-content"]')&&state.route==='overview')closeOverviewTypes(true);if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='s'&&state.current?.status==='draft'&&state.current.period===defaultPeriod(state.current.type)){e.preventDefault();saveCurrent().catch(()=>{})}});
+document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='s'&&state.current?.status==='draft'&&state.current.period===defaultPeriod(state.current.type)){e.preventDefault();saveCurrent().catch(()=>{})}});
 initializeToasts($('#toast-root'));
 init();

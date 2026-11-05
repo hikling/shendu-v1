@@ -113,12 +113,15 @@ test('replacing a page disposes nested roots deepest first and logical portal ow
 });
 
 test('custom overview geometry and native disclosures stay authored while contained fields adopt primitives', () => {
-  renderMarkup(region, '<button class="overview-type-trigger">日</button><button class="overview-type-enter" type="button" data-nav="daily">进入复盘<span aria-hidden="true">↗</span></button><div class="overview-reel-track"><button class="overview-record-card">回看</button></div><details><summary>已写下的答案</summary><textarea>保留挂载</textarea></details><div data-ui-native><button>专用控件</button></div>');
-  assert.equal(region.querySelector('.overview-type-trigger').hasAttribute('data-slot'), false);
-  const enter = region.querySelector('.overview-type-enter');
-  assert.equal(enter.dataset.slot, 'button');
-  assert.equal(enter.dataset.nav, 'daily');
-  assert.equal(enter.querySelector('span').textContent, '↗');
+  renderMarkup(region, '<button class="overview-type-trigger" data-nav="daily" aria-label="进入每日复盘"><span class="overview-type-flip" aria-hidden="true"><span class="overview-type-front">日</span><span class="overview-type-back">每日复盘</span></span></button><div class="overview-reel-track"><button class="overview-record-card">回看</button></div><details><summary>已写下的答案</summary><textarea>保留挂载</textarea></details><div data-ui-native><button>专用控件</button></div>');
+  const entry = region.querySelector('.overview-type-trigger');
+  assert.equal(entry.hasAttribute('data-slot'), false);
+  assert.equal(entry.dataset.nav, 'daily');
+  assert.equal(entry.querySelector('.overview-type-back').textContent, '每日复盘');
+  let navigations = 0;
+  entry.addEventListener('click', () => navigations++);
+  entry.querySelector('.overview-type-back').click();
+  assert.equal(navigations, 1, 'both faces retain one native navigation owner');
   assert.equal(region.querySelector('.overview-record-card').hasAttribute('data-slot'), false);
   assert.equal(region.querySelector('summary').textContent, '已写下的答案');
   assert.equal(region.querySelector('textarea').dataset.slot, 'textarea');

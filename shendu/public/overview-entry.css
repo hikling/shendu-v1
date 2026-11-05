@@ -1,0 +1,28 @@
+/* The six entries turn within their original footprint; navigation stays native. */
+.overview-type-trigger{perspective:850px;color:var(--type-color);cursor:pointer}
+.overview-type-trigger:focus-visible{outline-color:var(--type-color);outline-offset:5px}
+.overview-type-flip{position:relative;display:block;width:100%;height:100%;transform-style:preserve-3d;transition:transform .58s cubic-bezier(.22,.7,.18,1);pointer-events:none}
+.overview-type-front,.overview-type-back{position:absolute;inset:0;width:100%;height:100%;backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:20px;pointer-events:none}
+.overview-type-front{transform:rotateY(0deg);transition:none}
+.overview-type-back{display:grid;place-items:center;padding:8px;border:1px solid color-mix(in srgb,var(--type-accent) 35%,var(--type-soft));background:var(--type-soft);box-shadow:0 14px 25px -9px color-mix(in srgb,var(--type-color) 28%,transparent);transform:rotateY(180deg)}
+.overview-type-back:before{content:"";position:absolute;inset:9px;border:1px solid color-mix(in srgb,var(--type-accent) 22%,transparent);border-radius:13px}
+.overview-type-back strong{color:var(--type-color);font:900 clamp(14px,calc(var(--type-size)*.17),22px)/1.4 "SimSun","宋体","Noto Serif SC",serif;letter-spacing:.02em;white-space:nowrap;-webkit-text-stroke:.12px currentColor}
+.overview-type-trigger:focus-visible .overview-type-flip{transform:rotateY(180deg)}
+@media(hover:hover){.overview-type-trigger:hover .overview-type-flip{transform:rotateY(180deg)}}
+@media(max-width:1280px){.overview-type-front,.overview-type-back{border-radius:18px}}
+@media(max-width:540px){.overview-type-front,.overview-type-back{border-radius:17px}.overview-type-back strong{letter-spacing:0}}
+/* With motion reduced the two faces swap instantly, without a 3D turn. */
+body.reduce-motion .overview-type-flip,body.reduce-motion .overview-type-trigger:focus-visible .overview-type-flip{transition:none;transform:none}
+body.reduce-motion .overview-type-front,body.reduce-motion .overview-type-back{transform:none}
+body.reduce-motion .overview-type-back{opacity:0}
+body.reduce-motion .overview-type-trigger:focus-visible .overview-type-front{opacity:0}
+body.reduce-motion .overview-type-trigger:focus-visible .overview-type-back{opacity:1}
+@media(hover:hover){body.reduce-motion .overview-type-trigger:hover .overview-type-flip{transform:none}body.reduce-motion .overview-type-trigger:hover .overview-type-front{opacity:0}body.reduce-motion .overview-type-trigger:hover .overview-type-back{opacity:1}}
+@media(prefers-reduced-motion:reduce){
+ .overview-type-flip,.overview-type-trigger:focus-visible .overview-type-flip{transition:none;transform:none}
+ .overview-type-front,.overview-type-back{transform:none}
+ .overview-type-back{opacity:0}
+ .overview-type-trigger:focus-visible .overview-type-front{opacity:0}
+ .overview-type-trigger:focus-visible .overview-type-back{opacity:1}
+}
+@media(prefers-reduced-motion:reduce) and (hover:hover){.overview-type-trigger:hover .overview-type-flip{transform:none}.overview-type-trigger:hover .overview-type-front{opacity:0}.overview-type-trigger:hover .overview-type-back{opacity:1}}

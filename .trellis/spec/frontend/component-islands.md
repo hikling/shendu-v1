@@ -21,7 +21,7 @@ NativeSelect has one arrow owner: the primitive's SVG is hidden by the adapter; 
 
 DayPicker component overrides must have stable component identities. The local Calendar Root/Chevron/WeekNumber are declared at module scope; an inline Root function inside Calendar remounts the whole date surface whenever its controlled month changes, discarding the activated month button and focus. Do not compensate with a second focus manager. Actual DOM regression must retain the same root/previous/next nodes and the activated button focus through repeated month/year browsing for both stage and verification calendars, without selecting a date.
 
-Child combinators still see the host even when its layout box disappears. Preserve host-aware equivalents for paired-field labels, afterword Cards, timing/status Badges and responsive table/list alignment. Header route Buttons and account/mobile DropdownMenu Buttons retain the approved text-only treatment in idle, hover, focus and active states: transparent background, no border/radius/shadow; use route text color plus a separate readable focus outline. Keep category-specific focus colors and white-theme contrast; do not restore shadcn's default filled header treatment.
+Child combinators still see the host even when its layout box disappears. Preserve host-aware equivalents for paired-field labels, afterword Cards, timing/status Badges and responsive table/list alignment. Header route Buttons and account/mobile DropdownMenu Buttons retain the approved text-only treatment in idle, hover, focus and active states: transparent background, no border/radius/shadow; use route text color plus a separate readable focus outline. Keep category-specific focus colors and fixed-palette contrast with legacy color data; do not restore shadcn's default filled header treatment.
 
 Card/Label/Button template descendants are opaque to React. Keep custom title/typewriter/reel nodes native, and use DOM text nodes or escaped HTML. Never parse unescaped record content into JSX/HTML. No prototype monkeypatches, blind HTML-to-React tree conversion, MutationObserver remounts, moving React nodes out of their root, or a second root registry.
 
@@ -50,7 +50,7 @@ Build `ui/entry.jsx` with Vite library mode to `public/ui/`, `publicDir:false`, 
 | Confirmation above live review date/save status | App stays inert; dialog and toast remain available; final close restores the editor |
 | Full auth reset with a stage/child open | External roots are disposed, open state cleared and login is interactive |
 | Browse month / choose disabled date | No input event, dirty change or saved date rewrite |
-| White custom theme | Readable text/boundaries/focus remain visible |
+| Legacy all-white color data | Fixed accents remain readable; motion preference still applies |
 | Missing built resource/license | Build or deployment smoke fails; API health alone is insufficient |
 
 ## Good / base / bad cases
@@ -59,8 +59,8 @@ Good: Card owns opaque form markup, Input has its own disjoint root, native coll
 
 ## Tests required
 
-Actual DOM tests import the production build and assert native values/FormData/events, hidden field retention, nested-root disposal, checkbox, progress semantics, menus, calendars and guarded/nested Dialog behavior. Overlay regressions execute the real app ownership helpers against index.html roots, including live review descendants, first-modal toast, repeated child visits, focus return and full auth teardown. Keep all domain/security/navigation tests. Browser gate includes auth, overview, all six review types, history/actions, settings, backups/admin, desktop and 320/390/820px, custom white themes, reduced motion, console, focus and layout. JSX compilation is part of build/pretest; this JavaScript package has no separate TypeScript or ESLint gate. Deployed smoke checks `/healthz`, HTML and real local JS/CSS.
+Actual DOM tests import the production build and assert native values/FormData/events, hidden field retention, nested-root disposal, checkbox, progress semantics, menus, calendars and guarded/nested Dialog behavior. Overlay regressions execute the real app ownership helpers against index.html roots, including live review descendants, first-modal toast, repeated child visits, focus return and full auth teardown. Keep all domain/security/navigation tests. Browser gate includes auth, overview, all six review types, history/actions, settings, backups/admin, desktop and 320/390/820px, legacy all-white color data, reduced motion, console, focus and layout. JSX compilation is part of build/pretest; this JavaScript package has no separate TypeScript or ESLint gate. Deployed smoke checks `/healthz`, HTML and real local JS/CSS.
 
 ## Wrong vs correct
 
-Wrong: `container.innerHTML = nextHtml` while it contains registered roots. Correct: `renderMarkup(container,nextHtml)` before native handlers bind. Wrong: preserving both Tailwind `translate` and legacy `transform:translate` on the same dialog. Correct: `.sd-dialog` has one position owner, with the other translation explicitly disabled. Wrong: using `.nextElementSibling` to pair color inputs through hosts. Correct: query the text field by its stable `name`.
+Wrong: `container.innerHTML = nextHtml` while it contains registered roots. Correct: `renderMarkup(container,nextHtml)` before native handlers bind. Wrong: preserving both Tailwind `translate` and legacy `transform:translate` on the same dialog. Correct: `.sd-dialog` has one position owner, with the other translation explicitly disabled. Wrong: using `.nextElementSibling` to find a related field through hosts. Correct: query the actual control by its stable ID/name; read Checkbox via its native form field.

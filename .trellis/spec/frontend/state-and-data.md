@@ -2,7 +2,7 @@
 
 ## State
 
-`state` in `shendu/public/app.js` holds the user, stage, theme, records, stats, route, current record, dirty/saving flags, and menu/rail state. `boot()` calls `refreshData()` for `/api/me`, `/api/records`, and `/api/stats`, then opens `overview`. `applyTheme()` maps saved colors to CSS variables.
+`state` in `shendu/public/app.js` holds the user, stage, theme, records, stats, route, current record, dirty/saving flags, and menu/rail state. `boot()` calls `refreshData()` for `/api/me`, `/api/records`, and `/api/stats`, then opens `overview`. `applyTheme()` applies the fixed `DEFAULT_ACCENTS`, computes contrast and honors saved `reduceMotion`; old preset/color fields remain data-compatible but no longer select UI colors.
 
 Use `request()` for JSON API operations. It sends same-origin credentials and handles error responses. `sessionExpired()` keeps unsaved form content while reauthentication is shown. Escape data placed into template HTML with `esc()`; `toast()` passes a plain string to the singleton Sonner component, never raw HTML.
 
@@ -35,3 +35,26 @@ The motion reel fills the measured path with a whole number of complete rounds. 
 For a reel period in YYYY-MM-DD, `overviewDateParts()` provides a calendar-date line and full 星期一/星期日 weekday line from the stored period; use both lines in the card, including with a custom title. Split the normalized period out of legacy titles instead of displaying it twice. Weekly/monthly/yearly periods continue to use `formatDate()`. Do not change other views or stored data.
 
 When waiting rules change, derive the eligibility date of existing completed records from their original completed_at (created_at fallback), without rewriting verifyDate, answers, status or prior verification. dueBadge must report waiting before that absolute minimum even when an old expected date has passed; action buttons and submission guards use the same earliestActualVerification boundary. Already verified records retain their original result and timing.
+
+## Motion preference compatibility
+
+### Scope / trigger
+Theme-color controls and `openTheme()` are removed. Settings owns the independent motion checkbox; old accounts must retain saved compatibility fields.
+
+### Signatures
+`openSettings()` binds `#motion-form`; `PUT /api/settings` still accepts `{theme}` and returns the existing settings object. No server/schema change.
+
+### Contracts
+Read `new FormData(form).get('reduceMotion') === 'on'`, spread `state.theme`, then update only `reduceMotion`. Preserve preset, three colors and unknown compatibility fields. Apply returned theme only on success. `DEFAULT_ACCENTS` determines displayed colors on every load, including all-white legacy values.
+
+### Validation / error matrix
+Unchecked -> send false. Pending -> one request, disabled fieldset/buttons and persistent Dialog. Failure -> show error, retain chosen checkbox and original saved state for retry. A replaced Dialog must keep its own persistent guard; old finally handlers only restore connected owners.
+
+### Good / base / bad cases
+Legacy all-white account retains fixed readable accents; ordinary accounts can save either motion value; a failed save must never silently reset the checkbox or drop legacy data.
+
+### Tests required
+`tests/settings-motion.test.mjs` executes real form/API behavior: legacy colors, true/false, unknown field preservation, failure retry and replaced-dialog guards. Browser-check the genuine checkbox/label, saved motion and narrow layout in an isolated fixture without changing real account preferences.
+
+### Wrong vs correct
+Wrong: save `{theme:{reduceMotion:true}}`, apply legacy colors or add another color menu. Correct: save `{theme:{...state.theme,reduceMotion:checked}}` and derive visual accents from `DEFAULT_ACCENTS`.

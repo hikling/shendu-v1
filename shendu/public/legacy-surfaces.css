@@ -1,0 +1,120 @@
+/* Remaining authentication and notice surfaces share the approved paper family. */
+.auth-paper-shell,.connection-screen,.legacy-dialog{
+  --legacy-ink:#293b35;--legacy-muted:#61716a;--legacy-tone:#15584e;--legacy-line:#d4ddce;--legacy-paper:#fffef9;
+  color:var(--legacy-ink);font-family:"Noto Sans SC","Microsoft YaHei",sans-serif;
+}
+.legacy-kicker{display:block;color:#63765a;font-size:.62rem;font-weight:700;line-height:1.7;letter-spacing:.1em}
+.auth-paper-shell{grid-template-columns:minmax(0,1.08fr) minmax(0,.92fr);gap:clamp(30px,5vw,84px);padding:clamp(28px,4.8vw,78px) max(28px,calc((100vw - 1220px)/2));background:linear-gradient(125deg,#f7f7ed 0%,#fffdf7 48%,#edf2e8 100%)}
+.auth-paper-shell .auth-art{padding:0 clamp(22px,3vw,52px) 0 0;overflow:visible;min-width:0;border-right:1px solid var(--legacy-line);background:transparent;color:var(--legacy-ink)}
+.auth-paper-shell .auth-art:before,.auth-paper-shell .auth-art:after{content:none}
+.auth-paper-shell .brand-row,.connection-brand{display:flex;align-items:center;gap:12px}
+.auth-paper-shell .brand-cn,.connection-brand .brand-cn{font-family:"Noto Serif SC","Songti SC","STSong",serif;color:#2e352b}
+.auth-story{position:relative;display:flex;flex-direction:column;align-items:flex-start;margin:auto 0;padding:40px 0 15px;min-width:0}
+.auth-story>.legacy-kicker{margin:0 0 17px}
+.auth-paper-shell .auth-quote{max-width:100%;margin:0;font:900 clamp(1.85rem,3.1vw,2.65rem)/1.7 "SimSun","宋体","Noto Serif SC",serif;letter-spacing:.045em;color:#2e493c;overflow-wrap:anywhere}
+.auth-quote>span{display:block}
+.auth-story-note{margin:17px 0 0;font-size:.74rem;line-height:1.95;color:var(--legacy-muted)}
+.auth-scene{position:relative;align-self:center;width:min(340px,85%);margin:0 0 -7px;isolation:isolate;pointer-events:none}
+.auth-scene:before{content:"";position:absolute;z-index:-1;inset:24% 3% 7%;border-radius:45% 55% 47% 53%;background:#e7eddc;transform:rotate(-7deg)}
+.auth-scene:after{content:"";position:absolute;inset:20% 0 1% 8%;z-index:-1;border:1px solid #cad5bd;border-radius:54% 46% 56% 44%;transform:rotate(8deg)}
+.auth-scene img,.connection-art img,.legacy-dialog-art img{display:block;width:100%;height:auto;object-fit:contain;pointer-events:none;user-select:none}
+.auth-art-footer{margin:5px 0 0;color:var(--legacy-muted);font-size:.62rem;line-height:1.8;letter-spacing:.07em}
+.auth-paper-shell .auth-panel{padding:0;min-width:0;align-content:center}
+.auth-paper-shell .auth-card{width:min(440px,100%);padding:31px clamp(22px,2.6vw,36px) 30px;border:1px solid #d4ddce;border-radius:24px;background:#fffef9;box-shadow:0 14px 42px #2f432510,inset 0 1px white}
+.auth-paper-shell .auth-card>.legacy-kicker{margin-bottom:12px}
+.auth-paper-shell .auth-card h1{margin:0 0 12px;color:var(--legacy-ink);font:900 clamp(1.6rem,2.6vw,2rem)/1.5 "SimSun","宋体","Noto Serif SC",serif;letter-spacing:.025em;overflow-wrap:anywhere}
+.auth-paper-shell .auth-card>p{margin:0 0 25px;color:var(--legacy-muted);font-size:.72rem;line-height:1.85}
+.auth-paper-shell .field,.legacy-dialog .field{min-width:0;gap:8px;margin-bottom:18px}
+.auth-paper-shell .field label,.legacy-dialog .field label{font-size:.73rem;line-height:1.6;font-weight:700;color:#455e4d}
+.auth-paper-shell .field input:not([type="checkbox"]),.legacy-dialog .field :is(input:not([type="checkbox"]),select,textarea){min-width:0;width:100%;min-height:46px;padding:11px 13px;border:1px solid #bdcbb7;border-radius:11px;background:#fffefa;color:var(--legacy-ink);font-size:.77rem;line-height:1.6;box-shadow:inset 0 1px 3px #2f422b06}
+.auth-paper-shell .field input::placeholder,.legacy-dialog .field input::placeholder{color:var(--legacy-muted);opacity:1}
+.auth-paper-shell .field input:focus,.legacy-dialog .field :is(input,select,textarea):focus{border-color:var(--legacy-tone);box-shadow:0 0 0 2px #15584e1a}
+.auth-paper-shell .field .help{font-size:.65rem;line-height:1.8;color:var(--legacy-muted)}
+.auth-paper-shell .password-visibility{margin-top:3px;gap:9px}
+.auth-paper-shell .password-visibility [role="checkbox"]{flex-shrink:0;border-color:#72886a;color:white;box-shadow:none}
+.auth-paper-shell .password-visibility [role="checkbox"][data-state="checked"]{background:#15584e;border-color:#15584e}
+.auth-paper-shell .error-text{margin:3px 0 13px;font-size:.7rem;line-height:1.7;color:#9b382c;overflow-wrap:anywhere}
+.auth-paper-shell .btn,.connection-screen .btn,.legacy-dialog .btn{height:auto;min-height:44px;max-width:100%;padding:11px 17px;font-size:.73rem;line-height:1.6;white-space:normal;overflow-wrap:anywhere;box-shadow:none}
+.auth-paper-shell .btn-primary,.connection-screen .btn-primary,.legacy-dialog .btn-primary{background:#15584e;border-color:#15584e;color:#fff}
+.auth-paper-shell .btn-primary:hover,.connection-screen .btn-primary:hover,.legacy-dialog .btn-primary:hover{background:#15584e;border-color:#15584e;box-shadow:0 5px 12px #153b2820}
+.auth-paper-shell .auth-card>.auth-switch-note{margin:20px 0 0;padding-top:18px;border-top:1px solid #e2e7dc;text-align:center;font-size:.68rem}
+.auth-paper-shell .link-button{padding:4px 5px;background:transparent;border:0;color:#15584e;font-size:inherit;font-weight:700;white-space:normal}
+.auth-paper-shell .link-button:hover{text-decoration:underline;text-underline-offset:4px}
+.auth-paper-shell :focus-visible,.connection-screen :focus-visible,.legacy-dialog :focus-visible{outline:2px solid #48634b;outline-offset:3px}
+
+/* Explicit opt-in only: specialized workspace/verification Dialogs stay intact. */
+.sd-dialog.modal.legacy-dialog{width:min(640px,calc(100vw - 32px));padding:27px 29px;border:1px solid var(--legacy-line);border-radius:24px;background:linear-gradient(145deg,#fffef9 48%,#edf3e7);box-shadow:0 25px 70px #162b2633}
+.legacy-dialog .modal-head{position:relative;display:grid;grid-template-columns:minmax(0,1fr) 132px;align-items:center;gap:16px;margin:0 0 21px;padding:0 18px 18px 0;border-bottom:1px solid var(--legacy-line);min-width:0}
+.legacy-dialog .modal-head>div{min-width:0}
+.legacy-dialog .modal-head h2{margin:0;font:900 clamp(1.45rem,3vw,1.85rem)/1.5 "SimSun","宋体","Noto Serif SC",serif;color:var(--legacy-ink);letter-spacing:.025em;overflow-wrap:anywhere}
+.legacy-dialog .modal-head p{margin:11px 0 0;font-size:.72rem;line-height:1.9;color:var(--legacy-muted);overflow-wrap:anywhere}
+.legacy-dialog .modal-head .legacy-kicker{margin-bottom:7px}
+.legacy-dialog-art{width:132px;align-self:center;justify-self:end;pointer-events:none}
+.legacy-dialog .modal-close{position:absolute;right:-10px;top:-9px;display:grid;place-items:center;width:36px;height:36px;min-width:36px;min-height:36px;background:#fffefa;border:1px solid #cbd5c2;border-radius:50%;color:#53664c;box-shadow:none}
+.legacy-dialog .lock-summary{margin:0 0 19px;padding:15px 17px;border:1px solid #d0dac5;border-radius:13px;background:#f2f5e9;color:#435b44;font-size:.73rem;line-height:1.95;overflow-wrap:anywhere}
+.legacy-dialog .backup-notice{margin:0 0 18px;padding:14px 16px;border:1px solid #dcbfa8;border-radius:13px;background:#fff5e9;color:#80512e;font-size:.72rem;line-height:1.9;overflow-wrap:anywhere}
+.legacy-dialog .modal-actions{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;margin-top:20px;padding-top:18px;border-top:1px solid var(--legacy-line)}
+.legacy-dialog .btn-ghost{background:#fffefa;border-color:#cbd7c2;color:#465849}
+.legacy-dialog .btn-ghost:hover{background:#fffefa;text-decoration:underline;text-underline-offset:4px}
+.legacy-dialog .btn:is(.btn-red,.btn-danger){background:#fff2eb;border-color:#d4b3a6;color:#963b2d}
+.legacy-dialog .btn:is(.btn-red,.btn-danger):hover{background:#fff2eb;border-color:#b27561;text-decoration:underline;text-underline-offset:4px}
+.legacy-dialog .field input[readonly]{background:#f1f4ea;color:#596956;border-color:#d5ddcb}
+.legacy-reauth .modal-head{padding-right:0}
+.legacy-reauth #reauth-form>.field:first-child{margin-bottom:17px}
+
+/* Boot and connection errors use the same identity without an interactive shell. */
+.connection-screen{display:grid;place-items:center;min-height:100dvh;padding:32px 20px;background:radial-gradient(ellipse at 30% 15%,#edf3e4 0%,transparent 58%),#faf9f2}
+.connection-card{width:min(500px,100%);padding:28px 36px 34px;border:1px solid #d4ddce;border-radius:25px;background:#fffef9;box-shadow:0 15px 42px #2f432510;text-align:center;min-width:0}
+.connection-brand{justify-content:center;margin-bottom:7px}
+.connection-art{width:min(220px,76%);margin:10px auto 0;pointer-events:none}
+.connection-card>.legacy-kicker{margin:0 0 8px}
+.connection-card h1{margin:0;font:900 clamp(1.5rem,3vw,1.85rem)/1.55 "SimSun","宋体","Noto Serif SC",serif;overflow-wrap:anywhere}
+.connection-card p{margin:13px 0 22px;color:var(--legacy-muted);font-size:.73rem;line-height:1.9;overflow-wrap:anywhere}
+.connection-loading{display:flex;justify-content:center;gap:8px;padding:0 0 4px}
+.connection-loading span{width:6px;height:6px;border-radius:50%;background:#6e8c63}
+.connection-loading span:nth-child(2){opacity:.65}
+.connection-loading span:nth-child(3){opacity:.35}
+
+@media(min-width:1440px){.auth-paper-shell{padding-block:48px}.auth-scene{width:350px}}
+@media(max-width:1000px) and (min-width:821px){.auth-paper-shell{gap:28px;padding-inline:30px}.auth-paper-shell .auth-art{padding-right:25px}.auth-paper-shell .auth-quote{font-size:1.85rem}.auth-paper-shell .auth-card{padding:26px 23px}.auth-scene{width:290px}}
+@media(max-width:820px){
+  .auth-paper-shell{grid-template-columns:minmax(0,1fr);gap:24px;padding:27px max(22px,calc((100vw - 620px)/2)) 34px;align-content:start}
+  .auth-paper-shell .auth-art{min-height:0;padding:0;border-right:0;border-bottom:1px solid var(--legacy-line)}
+  .auth-story{display:block;padding:27px 190px 22px 0;margin:0;min-height:212px}
+  .auth-story>.legacy-kicker{margin-bottom:10px;font-size:.58rem}
+  .auth-paper-shell .auth-quote{font-size:1.75rem;line-height:1.65;letter-spacing:.025em}
+  .auth-story-note{margin:10px 0 0;font-size:.66rem;line-height:1.8}
+  .auth-scene{position:absolute;right:0;bottom:8px;width:185px;max-width:42%;margin:0}
+  .auth-art-footer{display:none}
+  .auth-paper-shell .auth-panel{display:block;padding:0}
+  .auth-paper-shell .auth-card{width:100%;padding:27px 30px}
+}
+@media(max-width:540px){
+  .auth-paper-shell{padding:22px 18px 28px;gap:21px}
+  .auth-story{padding:22px 102px 21px 0;min-height:0}
+  .auth-story>.legacy-kicker{font-size:.5rem;letter-spacing:.035em}
+  .auth-paper-shell .auth-quote{font-size:clamp(1.15rem,5.5vw,1.55rem);line-height:1.8;letter-spacing:0}
+  .auth-story-note{font-size:.61rem;line-height:1.8;margin-top:9px}
+  .auth-scene{width:115px;max-width:38%;bottom:17px;right:-2px}
+  .auth-paper-shell .auth-card{padding:24px 20px;border-radius:20px}
+  .auth-paper-shell .auth-card h1{font-size:1.6rem}
+  .auth-paper-shell .auth-card>p{font-size:.69rem;margin-bottom:21px}
+  .auth-paper-shell .field input:not([type="checkbox"]){font-size:.75rem}
+  .sd-dialog.modal.legacy-dialog{width:calc(100vw - 24px);max-width:calc(100vw - 24px);padding:22px 17px;border-radius:20px}
+  .legacy-dialog .modal-head{grid-template-columns:minmax(0,1fr) 88px;gap:10px;padding:0 8px 16px 0;margin-bottom:18px}
+  .legacy-dialog .modal-head h2{font-size:1.4rem;line-height:1.55}
+  .legacy-dialog .modal-head p{font-size:.67rem;line-height:1.85;margin-top:8px}
+  .legacy-dialog-art{width:88px}
+  .legacy-dialog .modal-close{width:32px;height:32px;min-width:32px;min-height:32px;top:-7px;right:-7px}
+  .legacy-dialog .modal-head .legacy-kicker{font-size:.53rem;letter-spacing:.025em}
+  .legacy-dialog .lock-summary,.legacy-dialog .backup-notice{font-size:.68rem;padding:12px 13px}
+  .legacy-dialog .modal-actions{gap:8px;margin-top:18px;padding-top:15px}
+  .legacy-dialog .modal-actions .btn{font-size:.68rem;padding:10px 12px}
+  .connection-screen{padding:24px 16px}
+  .connection-card{padding:24px 21px 29px;border-radius:21px}
+  .connection-art{width:190px}
+  .connection-card h1{font-size:1.5rem}
+}
+@media(max-width:360px){.auth-paper-shell{padding-inline:14px}.auth-story{padding-right:91px}.auth-scene{width:101px}.auth-paper-shell .auth-card{padding-inline:17px}.legacy-dialog .modal-head{grid-template-columns:minmax(0,1fr) 70px;gap:8px}.legacy-dialog-art{width:70px}.legacy-dialog .modal-head h2{font-size:1.25rem}}
+@media(prefers-reduced-motion:reduce){.auth-paper-shell *,.connection-screen *,.legacy-dialog *{animation:none!important;transition:none!important}}
+body.reduce-motion .auth-paper-shell *,body.reduce-motion .connection-screen *,body.reduce-motion .legacy-dialog *{animation:none!important;transition:none!important}

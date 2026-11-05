@@ -6,7 +6,7 @@
 
 | 页面或控件 | 使用的组件 | 保留的业务契约 |
 | --- | --- | --- |
-| 登录、注册、账户、主题和阶段设置 | Card、Button、Input、Textarea、NativeSelect、Label、Checkbox | 原有表单字段、校验、权限和提交接口 |
+| 登录、注册、账户、动态偏好和阶段设置 | Card、Button、Input、Textarea、NativeSelect、Label、Checkbox | 原有表单字段、校验、权限和提交接口；颜色设置已移除 |
 | 六类沉浸式复盘 | Button、Input、Textarea、NativeSelect、Label、Calendar | 所有问题的输入持续挂载；切题、收起答案、保存及错误重试不丢内容 |
 | 验证日期 | Calendar（React DayPicker）、Button | 中文日期、六周高度、原日期字段、各类最早可选日期、历史只读 |
 | 阶段与日历 | Dialog、Tabs、Calendar、Progress、Button | 原始记录身份、草稿／完成／验证状态、统计跳转和阶段设置 |
@@ -34,9 +34,9 @@
 
 Sonner 在初始化业务界面前挂载，使其既有 polite live region 在首个弹框及嵌套弹框中保持可用。编辑器日期、保存等状态有局部播报，不为整个应用添加 aria-live。Calendar 使用中文、固定六周和原 YYYY-MM-DD 字段；浏览月份不改值，显式选择才派发一次输入事件，锁定历史保留原月并禁止导航。
 
-`ui/styles.css` 仅导入 Tailwind theme/utilities，不导入 Preflight。组件语义色映射现有纸色、墨色、账户主题和类别颜色；`--ui-muted` 与原正文的 `--muted` 分开。`compat.css` 和 `surfaces.css` 处理挂载层、组件布局与原页面的衔接。已确认的红印章、宋体、六类配色、插画和概览构图继续保留。
+`ui/styles.css` 仅导入 Tailwind theme/utilities，不导入 Preflight。组件语义色映射现有纸色、墨色、固定品牌配色和类别颜色；`--ui-muted` 与原正文的 `--muted` 分开。`compat.css` 和 `surfaces.css` 处理挂载层、组件布局与原页面的衔接。已确认的红印章、宋体、六类配色、插画和概览构图继续保留。
 
-`display:contents` 挂载层仍是真实 DOM 祖先；旧 CSS 的直接子选择器需要显式适配，不能据此假定宿主不存在。配对输入标签、验证时间 Badge、只读附记 Card 和窄屏列表／表格均保留对应样式。可访问名称、可见焦点及自定义白色主题对比必须在真实页面核查。
+`display:contents` 挂载层仍是真实 DOM 祖先；旧 CSS 的直接子选择器需要显式适配，不能据此假定宿主不存在。配对输入标签、验证时间 Badge、只读附记 Card 和窄屏列表／表格均保留对应样式。可访问名称、可见焦点及旧账户颜色被忽略后的固定配色对比必须在真实页面核查。
 
 ## 构建与部署
 

@@ -1,0 +1,5 @@
+{"file":".trellis/spec/frontend/architecture.md","reason":"rendering and listeners"}
+{"file":".trellis/spec/frontend/state-and-data.md","reason":"settings payload and unsaved guards"}
+{"file":".trellis/spec/frontend/component-islands.md","reason":"form and overlay integrity"}
+{"file":".trellis/spec/frontend/ui-quality.md","reason":"accessibility and responsive boundaries"}
+{"file": ".trellis/spec/frontend/archive-and-workspace-ui.md", "reason": "illustrated authentication, workspace and confirmation contracts"}

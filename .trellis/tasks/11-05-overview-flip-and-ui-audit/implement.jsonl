@@ -1,0 +1,5 @@
+{"file":".trellis/spec/frontend/architecture.md","reason":"template rendering and event ownership"}
+{"file":".trellis/spec/frontend/state-and-data.md","reason":"settings and navigation compatibility"}
+{"file":".trellis/spec/frontend/component-islands.md","reason":"real shadcn form and focus contracts"}
+{"file":".trellis/spec/frontend/ui-quality.md","reason":"approved brand and scoped visual changes"}
+{"file": ".trellis/spec/frontend/archive-and-workspace-ui.md", "reason": "illustrated authentication, workspace and confirmation contracts"}
