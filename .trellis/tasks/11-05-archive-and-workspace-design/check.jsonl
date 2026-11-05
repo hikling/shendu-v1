@@ -1,0 +1,4 @@
+{"file":".trellis/spec/frontend/architecture.md","reason":"render and event binding review"}
+{"file":".trellis/spec/frontend/state-and-data.md","reason":"behavior preservation"}
+{"file":".trellis/spec/frontend/ui-quality.md","reason":"visual and responsive gates"}
+{"file":".trellis/spec/frontend/component-islands.md","reason":"forms, overlays and cache versions"}

@@ -25,6 +25,8 @@ Child combinators still see the host even when its layout box disappears. Preser
 
 Card/Label/Button template descendants are opaque to React. Keep custom title/typewriter/reel nodes native, and use DOM text nodes or escaped HTML. Never parse unescaped record content into JSX/HTML. No prototype monkeypatches, blind HTML-to-React tree conversion, MutationObserver remounts, moving React nodes out of their root, or a second root registry.
 
+An archive card is a genuine Button with opaque native content, so its page layout must explicitly override the primitive's `items-center`/`justify-center`. `.history-record` uses a column with `align-items:stretch`, `justify-content:flex-start` and zero gap; its top/body/footer each declare full width. The copy column aligns to its start. Otherwise short titles, dates and status spans float at different centers even though the outer card is correctly sized. Check the rendered card rather than inferring alignment from template nesting.
+
 Dispose before every live subtree replacement/removal, including asynchronous backup/admin content and dialog bodies. Detached `template.innerHTML` for parsing remains valid. Raw heading `replaceChildren` and busy-button label updates are safe only in documented native/opaque regions.
 
 Dialog/Menu/Tabs/DayPicker are the sole focus/keyboard owner for their surface. Busy/persistent close checks remain business callbacks; the app chooses initial/return focus without adding another Tab trap or document Escape handler. Month browsing never writes a date; explicit selection updates the original YYYY-MM-DD field once. Use local calendar fields rather than `toISOString()` to avoid timezone shifts. Locked historical dates show their original month even before the current minimum.

@@ -1,0 +1,4 @@
+{"file":".trellis/spec/frontend/architecture.md","reason":"native templates and rendering ownership"}
+{"file":".trellis/spec/frontend/state-and-data.md","reason":"preserve filters, settings and backup behavior"}
+{"file":".trellis/spec/frontend/ui-quality.md","reason":"scoped paper art layout"}
+{"file":".trellis/spec/frontend/component-islands.md","reason":"shadcn hosts and Dialog contracts"}
