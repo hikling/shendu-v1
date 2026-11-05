@@ -33,4 +33,4 @@
 - 独立复核另跑28项控件/认证/导航/动态偏好测试全部通过；无代码修复项。[独立报告](../../.trellis/tasks/archive/2026-11/11-05-entry-composition-and-review-width/research/independent-review.md)。
 - `git diff --check`：通过。
 
-远端main与Linux CI结果在提交后记录。
+功能提交 [`ad7238d43791e13cb634ee3944bf01454d999b96`](https://github.com/hikling/shendu-v1/commit/ad7238d43791e13cb634ee3944bf01454d999b96) 已推送main，[Linux CI #41977907422](https://github.com/hikling/shendu-v1/actions/runs/41977907422) completed/success：Ubuntu24.04、Node24、锁定依赖安装、构建/脚本/全量测试、Compose配置、Docker镜像及容器资源烟测均通过。后续归档/日志提交会再次核对最终HEAD的CI。

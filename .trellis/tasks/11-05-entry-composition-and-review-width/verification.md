@@ -7,4 +7,4 @@
 - 独立审查无代码问题；相关28项测试通过。构建、check、全量121项测试、资源烟测、diff-check均通过。
 - 规范更新：overview-only散开所有权、双减少动态、固定画布与构图单位、认证书页契约；README和DESIGN同步。
 
-等待main提交与远端CI，然后归档记录日志。
+功能提交ad7238d43791e13cb634ee3944bf01454d999b96已同步main，[Linux CI](https://github.com/hikling/shendu-v1/actions/runs/41977907422) completed/success，含依赖、构建/测试、Compose/Docker及容器烟测。由finish-work归档并记录日志后，根会话继续同步和核对最终HEAD CI。
