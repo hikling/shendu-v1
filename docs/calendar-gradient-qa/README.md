@@ -28,4 +28,4 @@
 - 独立审查未发现额外缺陷，相关组件回归8/8通过。
 - `git diff --check`通过；README、DESIGN、组件说明及规范已更新。
 
-main精确提交与CI在最终同步时记录。
+功能提交 `443189a4e3882735deae55216c50e3f885e58d08` 已同步 main；对应 [GitHub Actions 42024625579](https://github.com/hikling/shendu-v1/actions/runs/42024625579) 已成功，覆盖 Linux 构建、检查、测试与 Docker/资源烟测。Trellis 归档和日志随后单独提交。

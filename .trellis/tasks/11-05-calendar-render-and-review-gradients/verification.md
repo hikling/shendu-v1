@@ -9,4 +9,4 @@
 - 共享验证日历保留原选中2026-11-04和历史锁定，日历记录退出返回原日期焦点。无真实账户/数据修改。
 - README/DESIGN/组件说明、frontend规范及break-loop分析已同步，docs/calendar-gradient-qa包含实际截图、计算值和控制台结果（无error/warn）。
 
-待main精确SHA CI及Trellis最终归档同步。
+功能提交 `443189a4e3882735deae55216c50e3f885e58d08` 已同步 main；精确 SHA 的 GitHub Actions [42024625579](https://github.com/hikling/shendu-v1/actions/runs/42024625579) 结论为 success（Linux 构建、检查、测试与 Docker/资源烟测）。验收记录单独提交后进行 Trellis 归档和日志记录，最终同步再核对 HEAD 与远端及 CI。
