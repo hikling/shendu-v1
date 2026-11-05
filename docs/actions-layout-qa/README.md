@@ -33,4 +33,4 @@
 - 从已验证记录打开年度复盘后退出，返回行动验证，恢复原阅读位置（验收记录为 `scrollY=4695`）。
 - 浏览器检查的可见插画加载正常，控制台无 error/warn。窗口尺寸覆盖已恢复，测试标签已关闭。
 
-远端 Linux、Compose、Docker 构建及容器资源检查由 [Verify build 工作流](../../.github/workflows/verify.yml)执行；状态以 GitHub 上对应 main 提交的运行结果为准。
+功能提交 `a9b38afa5df2e5fcdbd7c590c2d2ab7209f66c21` 的 [Linux 验证运行](https://github.com/hikling/shendu-v1/actions/runs/41941861432)已成功：锁定依赖安装、脚本／112 项测试、Compose 配置、Docker 镜像构建、容器健康与前端资源烟测全部通过。后续文档及 Trellis 归档提交的状态以 GitHub 对应 main 提交的运行结果为准。
