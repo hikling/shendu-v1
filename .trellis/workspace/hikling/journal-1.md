@@ -1020,3 +1020,26 @@ Refined overview heading and combined a 12-particle scatter with the in-place fl
 ### Status
 
 [OK] **Completed**
+
+
+## Session 45: History filters, lunar calendar and varied review openings
+<!-- trellis-session: v=2 fp=2f4127aff3602ee5 -->
+
+**Date**: 2026-11-05
+**Task**: History filters, lunar calendar and varied review openings
+**Branch**: `main`
+
+### Summary
+
+Restored compact shadcn history filters; added local lunar and solar-term annotations with aligned calendar layout; added 72 category-specific shuffled opening lines. Build/check/149 tests/resource smoke and desktop 320/390/820px visual checks passed. Feature main SHA 9144f6d passed Linux CI 42020001624. Updated README/DESIGN/spec and QA evidence; final bookkeeping synchronization follows.
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `9144f6d` | Restore compact history filters and add lunar calendar and varied review openings |
+| `1a9093e` | Record lunar calendar and varied opening acceptance with successful Linux CI |
+
+### Status
+
+[OK] **Completed**
