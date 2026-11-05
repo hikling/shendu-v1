@@ -1043,3 +1043,26 @@ Restored compact shadcn history filters; added local lunar and solar-term annota
 ### Status
 
 [OK] **Completed**
+
+
+## Session 46: Calendar rendering and category review gradients
+<!-- trellis-session: v=2 fp=a00831c597f68d20 -->
+
+**Date**: 2026-11-05
+**Task**: Calendar rendering and category review gradients
+**Branch**: `main`
+
+### Summary
+
+Separated calendar day button and cell styles; moved legend to the upper right and centered month navigation; added six category gradients. Build/check/150 tests, responsive browser QA and exact work SHA Linux CI 42024625579 passed. User-specific duplicate painting did not reproduce on the old baseline; recorded structural conflict and evidence boundary. QA screenshots and specifications updated; isolated fixture servers stopped.
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `443189a` | Fix calendar cell styling and center navigation with category review gradients |
+| `6a1b9a3` | Record calendar and gradient acceptance with successful Linux CI |
+
+### Status
+
+[OK] **Completed**
