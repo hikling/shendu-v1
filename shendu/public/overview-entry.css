@@ -1,4 +1,5 @@
 /* The six entries turn within their original footprint; navigation stays native. */
+.overview-types-heading h2{font-size:.78rem;font-weight:650;letter-spacing:.07em;color:var(--overview-muted)}
 .overview-type-trigger{perspective:850px;color:var(--type-color);cursor:pointer}
 .overview-type-trigger:focus-visible{outline-color:var(--type-color);outline-offset:5px}
 .overview-type-flip{position:relative;display:block;width:100%;height:100%;transform-style:preserve-3d;transition:transform .58s cubic-bezier(.22,.7,.18,1);pointer-events:none}
@@ -11,7 +12,22 @@
 @media(hover:hover){.overview-type-trigger:hover .overview-type-flip{transform:rotateY(180deg)}}
 @media(max-width:1280px){.overview-type-front,.overview-type-back{border-radius:18px}}
 @media(max-width:540px){.overview-type-front,.overview-type-back{border-radius:17px}.overview-type-back strong{letter-spacing:0}}
+/* A separate, pointer-inert layer scatters around the turning card. */
+.overview-type-burst{position:absolute;inset:0;z-index:2;pointer-events:none}
+.overview-type-burst i{position:absolute;left:50%;top:50%;width:5px;height:12px;border-radius:2px;background:var(--type-accent);opacity:0;pointer-events:none}
+.overview-type-burst i:nth-child(3n){width:7px;height:7px;border-radius:50%;background:var(--type-color)}
+.overview-type-burst i:nth-child(3n+1){width:8px;height:8px;border:1.5px solid var(--type-accent);border-radius:50%;background:transparent}
+.overview-type-burst i:nth-child(4n){background:#c4a25b}
+.overview-type-trigger:focus-visible .overview-type-burst i{animation:overview-flip-spark .78s cubic-bezier(.16,.7,.25,1) var(--burst-delay) both}
+@media(hover:hover){.overview-type-trigger:hover .overview-type-burst i{animation:overview-flip-spark .78s cubic-bezier(.16,.7,.25,1) var(--burst-delay) both}}
+@keyframes overview-flip-spark{
+  0%{opacity:0;transform:translate(-50%,-50%) translate(calc(var(--type-size)*var(--burst-x)*.5),calc(var(--type-size)*var(--burst-y)*.5)) rotate(0deg) scale(.45)}
+  20%{opacity:.9}
+  70%{opacity:.65}
+  100%{opacity:0;transform:translate(-50%,-50%) translate(calc(var(--type-size)*var(--burst-x)),calc(var(--type-size)*var(--burst-y))) rotate(var(--burst-turn)) scale(.8)}
+}
 /* With motion reduced the two faces swap instantly, without a 3D turn. */
+body.reduce-motion .overview-type-burst{display:none}
 body.reduce-motion .overview-type-flip,body.reduce-motion .overview-type-trigger:focus-visible .overview-type-flip{transition:none;transform:none}
 body.reduce-motion .overview-type-front,body.reduce-motion .overview-type-back{transform:none}
 body.reduce-motion .overview-type-back{opacity:0}
@@ -19,6 +35,7 @@ body.reduce-motion .overview-type-trigger:focus-visible .overview-type-front{opa
 body.reduce-motion .overview-type-trigger:focus-visible .overview-type-back{opacity:1}
 @media(hover:hover){body.reduce-motion .overview-type-trigger:hover .overview-type-flip{transform:none}body.reduce-motion .overview-type-trigger:hover .overview-type-front{opacity:0}body.reduce-motion .overview-type-trigger:hover .overview-type-back{opacity:1}}
 @media(prefers-reduced-motion:reduce){
+ .overview-type-burst{display:none}
  .overview-type-flip,.overview-type-trigger:focus-visible .overview-type-flip{transition:none;transform:none}
  .overview-type-front,.overview-type-back{transform:none}
  .overview-type-back{opacity:0}

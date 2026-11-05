@@ -1,0 +1,5 @@
+{"file": ".trellis/spec/frontend/architecture.md", "reason": "render and navigation ownership"}
+{"file": ".trellis/spec/frontend/state-and-data.md", "reason": "preserve form state"}
+{"file": ".trellis/spec/frontend/component-islands.md", "reason": "real component and focus ownership"}
+{"file": ".trellis/spec/frontend/ui-quality.md", "reason": "visual and motion contracts"}
+{"file": ".trellis/spec/frontend/archive-and-workspace-ui.md", "reason": "authentication constraints"}

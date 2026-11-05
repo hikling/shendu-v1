@@ -139,17 +139,19 @@ function renderAuth(info={}){
   dismissDialog($('#rail-root'));state.railOpen=false;closeModal(true);
   reviewNavigation.clear();state.historyFilter={q:'',type:'all',year:'all',month:'all'};
   const registering=info.mode==='register'||info.firstRun;
-  state.user=null;renderMarkup($('#app'),`<main class="auth-shell auth-paper-shell">
-    <section class="auth-art"><div class="brand-lockup"><div class="brand-row"><span class="seal header-seal" aria-hidden="true">慎</span><span class="brand-cn header-wordmark">慎獨</span></div></div>
-      <div class="auth-story"><p class="legacy-kicker">个人成长 · 从一次回看开始</p><div class="auth-quote"><span>言寡尤，行寡悔</span><span>慎独存诚</span></div><p class="auth-story-note">记下事实，照见自己。<br>把下一步，留给更清醒的你。</p><div class="auth-scene" aria-hidden="true"><img src="/assets/records/daily-05-reading-corner.webp" alt="" width="640" height="640" draggable="false"></div></div>
-      <p class="auth-art-footer">一页记录，一点改变。</p></section>
-    <section class="auth-panel"><form class="auth-card" id="auth-form"><span class="legacy-kicker">${registering?'开始记录':'欢迎回来'}</span><h1>${info.firstRun?'建立自己的复盘室':registering?'为自己，留一页纸':'回到自己的复盘室'}</h1><p>${info.firstRun?'第一个注册账户将成为唯一超级管理员。':'你的记录只对当前账户可见。'}</p>
+  state.user=null;renderMarkup($('#app'),`<main class="auth-shell auth-paper-shell"><div class="auth-book">
+    <section class="auth-art"><div class="brand-lockup"><div class="brand-row"><span class="seal header-seal" aria-hidden="true">慎</span><span class="brand-cn header-wordmark">慎獨</span></div><span class="auth-brand-note">个人成长复盘</span></div>
+      <div class="auth-story"><p class="legacy-kicker">在日常里，慢慢看见自己</p><div class="auth-quote"><span>言寡尤，行寡悔</span><span>慎独存诚</span></div><p class="auth-story-note">把经历写下，<br>把清醒留给下一步。</p></div>
+      <div class="auth-scene" aria-hidden="true"><span class="auth-scene-paper"></span><img src="/assets/records/daily-01-morning-window.webp" alt="" width="640" height="640" draggable="false"></div>
+      <div class="auth-art-footer"><span>记录事实</span><i aria-hidden="true"></i><span>调整行动</span><i aria-hidden="true"></i><span>验证改变</span></div></section>
+    <section class="auth-panel"><form class="auth-card" id="auth-form"><div class="auth-form-head"><span class="legacy-kicker">${registering?'从这一页开始':'好久不见，欢迎回来'}</span><h1>${info.firstRun?'<span>建立自己的</span><strong>复盘室</strong>':registering?'<span>为自己，</span><strong>留一页纸</strong>':'<span>回到自己的</span><strong>复盘室</strong>'}</h1><p>${info.firstRun?'第一个注册账户将成为唯一超级管理员。':'留一段安静的时间，接着写下自己的故事。'}</p></div>
       ${info.mode==='register'||info.firstRun?`<div class="field"><label for="displayName">称呼</label><input id="displayName" name="displayName" maxlength="32" autocomplete="name" placeholder="例如：止水"></div>`:''}
       <div class="field"><label for="username">用户名</label><input id="username" name="username" minlength="3" maxlength="32" autocomplete="username" required placeholder="汉字、字母、数字或 _ . -"></div>
       <div class="field"><label for="password">密码</label><input id="password" name="password" minlength="15" maxlength="128" type="password" autocomplete="${info.mode==='register'||info.firstRun?'new-password':'current-password'}" required><span class="help">至少 15 个字符。请使用密码管理器保存。</span><label class="help password-visibility" for="show-password"><input id="show-password" type="checkbox"><span>显示密码</span></label></div>
       <div class="error-text" id="auth-error" role="status" aria-live="polite"></div><button class="btn btn-primary btn-block" type="submit">${registering?'创建账户并进入':'登录'}</button>
       ${!info.firstRun&&info.registrationOpen?`<p class="help auth-switch-note">${info.mode==='register'?'已有账户？':'还没有账户？'} <button class="link-button" type="button" id="auth-switch">${info.mode==='register'?'返回登录':'自行注册'}</button></p>`:''}
-    </form></section></main>`);
+      <p class="auth-privacy-note"><span aria-hidden="true"></span>你的记录，只属于你。</p>
+    </form></section></div></main>`);
   $('#auth-form').addEventListener('submit',async e=>{e.preventDefault();const fd=new FormData(e.currentTarget);const registering=info.firstRun||info.mode==='register';try{const data=await request(`/api/auth/${registering?'register':'login'}`,{method:'POST',body:Object.fromEntries(fd)});await boot(data.user)}catch(err){$('#auth-error').textContent=err.message}});
   $('#show-password').addEventListener('change',e=>{$('#password').type=e.target.checked?'text':'password'});
   $('#auth-switch')?.addEventListener('click',()=>renderAuth({...info,mode:info.mode==='register'?'login':'register'}));
@@ -262,10 +264,13 @@ function bindOverviewArc(){
   observer.observe(window);
   layout();
 }
+function overviewBurst(){
+  return `<span class="overview-type-burst" aria-hidden="true">${Array.from({length:12},(_,index)=>{const angle=index*Math.PI/6,reach=.78+(index%3)*.06;return `<i style="--burst-x:${(Math.sin(angle)*reach).toFixed(3)};--burst-y:${(-Math.cos(angle)*reach).toFixed(3)};--burst-turn:${index*53}deg;--burst-delay:${90+index%3*16}ms"></i>`}).join('')}</span>`;
+}
 function renderOverview(){
   const records=overviewRecords();
   const appearances=overviewRecordAppearances(records);
-  const categories=Object.entries(TYPES).map(([key,item])=>`<div class="overview-type-card type-${key}"><button class="overview-type-trigger" type="button" data-overview-type="${key}" data-nav="${key}" aria-label="进入${item.label}"><span class="overview-type-flip" aria-hidden="true"><span class="overview-type-mark overview-type-front"><img src="/assets/overview/${key}.svg?v=1.0.0-overview13" alt="" width="320" height="320"></span><span class="overview-type-back"><strong>${key==='quarterly'?'季度复盘':item.label}</strong></span></span></button></div>`).join('');
+  const categories=Object.entries(TYPES).map(([key,item])=>`<div class="overview-type-card type-${key}"><button class="overview-type-trigger" type="button" data-overview-type="${key}" data-nav="${key}" aria-label="进入${item.label}"><span class="overview-type-flip" aria-hidden="true"><span class="overview-type-mark overview-type-front"><img src="/assets/overview/${key}.svg?v=1.0.0-overview13" alt="" width="320" height="320"></span><span class="overview-type-back"><strong>${key==='quarterly'?'季度复盘':item.label}</strong></span></span>${overviewBurst()}</button></div>`).join('');
   const cardSet=records.map((record,index)=>overviewRecordCard(record,appearances.get(record.id),false,index)).join('');
   const reel=records.length?`<div class="overview-reel" id="overview-reel">
       <div class="overview-reel-window" aria-label="已验证复盘摘要"><div class="overview-reel-track" style="--reel-count:${records.length}">${cardSet}</div></div>

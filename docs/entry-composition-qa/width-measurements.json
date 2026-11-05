@@ -1,0 +1,266 @@
+{
+  "daily": [
+    {
+      "els": [
+        {
+          "c": "daily-scene-art",
+          "id": "",
+          "w": 584.796875,
+          "x": 757.3125
+        },
+        {
+          "c": "daily-flow-head",
+          "id": "",
+          "w": 1360,
+          "x": 36.5
+        },
+        {
+          "c": "daily-editor",
+          "id": "daily-editor",
+          "w": 1360,
+          "x": 36.5
+        },
+        {
+          "c": "",
+          "id": "daily-prompt-title",
+          "w": 601.109375,
+          "x": 138.5
+        }
+      ],
+      "viewport": 1440
+    },
+    {
+      "els": [
+        {
+          "c": "daily-scene-art",
+          "id": "",
+          "w": 584.796875,
+          "x": 997.3125
+        },
+        {
+          "c": "daily-flow-head",
+          "id": "",
+          "w": 1360,
+          "x": 276.5
+        },
+        {
+          "c": "daily-editor",
+          "id": "daily-editor",
+          "w": 1360,
+          "x": 276.5
+        },
+        {
+          "c": "",
+          "id": "daily-prompt-title",
+          "w": 601.109375,
+          "x": 378.5
+        }
+      ],
+      "viewport": 1920
+    }
+  ],
+  "extended": [
+    {
+      "category": "进入每月复盘",
+      "editor": 1360,
+      "head": 1360,
+      "scroll": 1920,
+      "viewport": 1920
+    },
+    {
+      "category": "进入每月复盘",
+      "editor": 1360,
+      "head": 1360,
+      "scroll": 1440,
+      "viewport": 1440
+    },
+    {
+      "category": "进入90 天复盘",
+      "editor": 1360,
+      "head": 1360,
+      "scroll": 1920,
+      "viewport": 1920
+    },
+    {
+      "category": "进入90 天复盘",
+      "editor": 1360,
+      "head": 1360,
+      "scroll": 1440,
+      "viewport": 1440
+    },
+    {
+      "category": "进入年度复盘",
+      "editor": 1360,
+      "head": 1360,
+      "scroll": 1920,
+      "viewport": 1920
+    },
+    {
+      "category": "进入年度复盘",
+      "editor": 1360,
+      "head": 1360,
+      "scroll": 1440,
+      "viewport": 1440
+    },
+    {
+      "category": "进入重大决策",
+      "editor": 1360,
+      "head": 1360,
+      "scroll": 1920,
+      "viewport": 1920
+    },
+    {
+      "category": "进入重大决策",
+      "editor": 1360,
+      "head": 1360,
+      "scroll": 1440,
+      "viewport": 1440
+    }
+  ],
+  "narrow": [
+    {
+      "category": "进入每日复盘",
+      "art": 160,
+      "head": 320,
+      "scroll": 320,
+      "title": 272,
+      "viewport": 320
+    },
+    {
+      "category": "进入每周复盘",
+      "art": 160,
+      "head": 320,
+      "scroll": 320,
+      "title": 272,
+      "viewport": 320
+    },
+    {
+      "category": "进入每月复盘",
+      "art": 160,
+      "head": 320,
+      "scroll": 320,
+      "title": 272,
+      "viewport": 320
+    },
+    {
+      "category": "进入90 天复盘",
+      "art": 160,
+      "head": 320,
+      "scroll": 320,
+      "title": 272,
+      "viewport": 320
+    },
+    {
+      "category": "进入年度复盘",
+      "art": 160,
+      "head": 320,
+      "scroll": 320,
+      "title": 272,
+      "viewport": 320
+    },
+    {
+      "category": "进入重大决策",
+      "art": 160,
+      "head": 320,
+      "scroll": 320,
+      "title": 272,
+      "viewport": 320
+    },
+    {
+      "category": "进入每日复盘",
+      "art": 160,
+      "head": 383,
+      "scroll": 383,
+      "title": 335,
+      "viewport": 390
+    },
+    {
+      "category": "进入每周复盘",
+      "art": 160,
+      "head": 383,
+      "scroll": 383,
+      "title": 335,
+      "viewport": 390
+    },
+    {
+      "category": "进入每月复盘",
+      "art": 160,
+      "head": 383,
+      "scroll": 383,
+      "title": 335,
+      "viewport": 390
+    },
+    {
+      "category": "进入90 天复盘",
+      "art": 160,
+      "head": 383,
+      "scroll": 383,
+      "title": 335,
+      "viewport": 390
+    },
+    {
+      "category": "进入年度复盘",
+      "art": 160,
+      "head": 383,
+      "scroll": 383,
+      "title": 335,
+      "viewport": 390
+    },
+    {
+      "category": "进入重大决策",
+      "art": 160,
+      "head": 390,
+      "scroll": 390,
+      "title": 342,
+      "viewport": 390
+    },
+    {
+      "category": "进入每日复盘",
+      "art": 190,
+      "head": 813,
+      "scroll": 813,
+      "title": 572,
+      "viewport": 820
+    },
+    {
+      "category": "进入每周复盘",
+      "art": 190,
+      "head": 813,
+      "scroll": 813,
+      "title": 660,
+      "viewport": 820
+    },
+    {
+      "category": "进入每月复盘",
+      "art": 190,
+      "head": 813,
+      "scroll": 813,
+      "title": 660,
+      "viewport": 820
+    },
+    {
+      "category": "进入90 天复盘",
+      "art": 190,
+      "head": 813,
+      "scroll": 813,
+      "title": 660,
+      "viewport": 820
+    },
+    {
+      "category": "进入年度复盘",
+      "art": 190,
+      "head": 813,
+      "scroll": 813,
+      "title": 660,
+      "viewport": 820
+    },
+    {
+      "category": "进入重大决策",
+      "art": 190,
+      "head": 820,
+      "scroll": 820,
+      "title": 660,
+      "viewport": 820
+    }
+  ]
+}
