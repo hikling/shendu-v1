@@ -164,4 +164,4 @@ npm test
 
 仓库的 [构建检查](.github/workflows/verify.yml)会在 Linux 上安装锁定依赖、构建组件、运行脚本与测试、解析 Compose 配置、构建 Docker 镜像，并启动容器检查 `/healthz`、HTML 与实际 JavaScript/CSS 资源。本地启动后可运行 `npm run smoke:ui -- http://127.0.0.1:3000` 检查这些资源。
 
-新版界面截图：[紧凑日历](docs/calendar-compact.jpg)、[宽幅历史复盘](docs/history-wide.jpg)、[行动验证阅读区](docs/actions-reading.jpg)、[手机行动验证](docs/actions-reading-mobile.jpg)、[手机历史复盘](docs/history-art-mobile.jpg)。从历史复盘或行动验证打开记录，退出后返回原列表并保留历史筛选。插画完整预览见[本地画廊](output/imagegen/record-library/gallery.html)。
+新版界面截图：[紧凑日历](docs/calendar-compact.jpg)、[宽幅历史复盘](docs/history-wide.jpg)、[行动验证阅读区](docs/actions-layout-qa/verified-desktop.png)、[手机行动验证](docs/actions-layout-qa/verified-mobile.png)、[手机历史复盘](docs/history-art-mobile.jpg)。行动验证大插画、数量与日期排版见[本次验收记录](docs/actions-layout-qa/README.md)。从历史复盘或行动验证打开记录，退出后返回原列表并保留历史筛选。插画完整预览见[本地画廊](output/imagegen/record-library/gallery.html)。

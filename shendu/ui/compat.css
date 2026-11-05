@@ -39,7 +39,7 @@
 .extended-review-flow .extended-contingency-prompt .daily-contingency-field > .sd-ui-host > label { margin-bottom: 8px; }
 .daily-afterword > .sd-ui-host > .card { border: 1px solid var(--line); border-radius: 6px; background: var(--daily-white); box-shadow: none; }
 .verification-times > .sd-ui-host > .badge { justify-self: end; }
-.actions-page .verification-times > .sd-ui-host > .badge { grid-column: 1/-1; justify-self: start; max-width: 100%; padding: 4px 8px; border-color: #c6d5be; background: #eef5e7; color: #426039; font-size: .58rem; white-space: normal; overflow-wrap: anywhere; }
+.actions-page .verification-times > .sd-ui-host > .badge { grid-column: 1/-1; justify-self: start; max-width: 100%; padding: 4px 8px; border-color: #c6d5be; background: #eef5e7; color: #426039; font-size: .67rem; white-space: normal; overflow-wrap: anywhere; }
 .actions-page .verification-times > .sd-ui-host > .badge.overdue { border-color: #e3c4ac; background: #fff0e4; color: #8c4a2a; }
 @media (max-width: 620px) { .verification-times > .sd-ui-host > .badge { justify-self: start; } }
 @media (max-width: 700px) { .users-table td > .sd-ui-host > .badge { justify-self: start; } }
