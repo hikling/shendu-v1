@@ -723,7 +723,7 @@ body.reduce-motion .overview-record-card[aria-hidden="true"]{display:none}
   --daily-paper:#e9edf7;--daily-white:#f8faff;--daily-ink:#142844;--daily-emphasis:#17635b;--daily-warm:#8b5c30;--daily-stage-color:#15584e;
   --daily-deep:color-mix(in srgb,var(--primary) 12%,#152b54);--daily-accent:color-mix(in srgb,var(--primary) 18%,#2746a5);
   --ink:var(--daily-ink);--ink-2:#435b78;--muted:#526b84;--line:#b9c7dd;--sheet:var(--daily-white);
-  position:relative;isolation:isolate;width:100%;min-height:100dvh;overflow-x:clip;color:var(--daily-ink);background:var(--daily-paper);
+  position:relative;isolation:isolate;width:100%;min-height:100dvh;overflow-x:clip;color:var(--daily-ink);background:linear-gradient(135deg,var(--daily-white) 0%,color-mix(in srgb,var(--daily-white) 55%,var(--daily-paper)) 36%,var(--daily-paper) 88%);
   font-family:"Noto Sans SC","Microsoft YaHei","PingFang SC",sans-serif;
 }
 .daily-art-flow :focus-visible{outline:2px solid var(--daily-accent);outline-offset:6px}

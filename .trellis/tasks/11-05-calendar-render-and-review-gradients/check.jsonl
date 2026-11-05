@@ -1,0 +1,5 @@
+{"file": ".trellis/spec/frontend/architecture.md", "reason": "Preserve existing component and review contracts"}
+{"file": ".trellis/spec/frontend/component-islands.md", "reason": "Preserve existing component and review contracts"}
+{"file": ".trellis/spec/frontend/ui-quality.md", "reason": "Preserve existing component and review contracts"}
+{"file": ".trellis/spec/frontend/state-and-data.md", "reason": "Preserve existing component and review contracts"}
+{"file": ".trellis/spec/frontend/archive-and-workspace-ui.md", "reason": "Preserve existing component and review contracts"}

@@ -30,6 +30,8 @@ test('verification Calendar has six weeks, preserves date-only values and does n
   const selections=[],months=[];
   ui.showVerificationCalendar(calendar,{value:'2026-11-14',month:'2026-11',minimum:'2026-11-11',locked:false,today:'2026-11-04',onSelect:value=>selections.push(value),onMonthChange:value=>months.push(value)});
   await settle();assert.equal(calendar.querySelectorAll('.rdp-week').length,6);assert.equal(calendar.querySelectorAll('[data-verify-day][tabindex="0"]').length,1);
+  assert.equal(calendar.querySelectorAll('button.rdp-day').length,0,'day controls must not inherit the table-cell layout identity');
+  assert.equal(calendar.querySelectorAll('button.rdp-day_button').length,30);
   assert.equal(calendar.querySelector('[data-verify-day="2026-11-10"]').disabled,true);
   calendar.querySelector('[data-verify-day="2026-11-14"]').click();await settle();assert.deepEqual(selections,['2026-11-14']);
   calendar.querySelector('[aria-label="下个月"]').click();await settle();assert.equal(months.at(-1),'2026-12');assert.equal(selections.length,1);
@@ -51,6 +53,12 @@ test('stage Calendar preserves original record identity and only today or record
   assert.equal(calendar.querySelector('[data-calendar-date="2026-11-22"]').dataset.solarTerm,'小雪');
   assert.match(calendar.querySelector('[data-calendar-date="2026-11-07"]').getAttribute('aria-label'),/农历丙午年九月廿九，立冬/);
   assert.equal(calendar.querySelectorAll('[data-outside="true"] button').length,0,'outside-month cells stay empty, not stray dates');
+  assert.equal(calendar.querySelectorAll('button.rdp-day').length,0,'the table-cell class must remain exclusive to td elements');
+  assert.equal(calendar.querySelectorAll('td.rdp-day').length,42);
+  assert.equal(calendar.querySelectorAll('button.rdp-day_button').length,30);
+  const stageRoot=calendar.querySelector('.stage-calendar'),legend=stageRoot.querySelector('.stage-calendar-legend'),picker=stageRoot.querySelector('[data-slot="calendar"]');
+  assert.equal(stageRoot.firstElementChild.querySelector('.stage-calendar-legend'),legend,'status legend precedes the month picker in its top toolbar');
+  assert.ok(legend.compareDocumentPosition(picker)&Node.DOCUMENT_POSITION_FOLLOWING);
   assert.equal(calendar.querySelector('.stage-month-number').textContent,'11月');assert.equal(calendar.querySelector('.stage-month-year').textContent,'2026 年');
   assert.ok(calendar.querySelector('[data-calendar-date="2026-11-01"]').classList.contains('stage-day-draft'));assert.ok(calendar.querySelector('[data-calendar-date="2026-11-05"]').classList.contains('stage-day-completed'));
   assert.equal(calendar.querySelector('[data-calendar-date="2026-11-03"]').disabled,true);
@@ -61,6 +69,26 @@ test('stage Calendar preserves original record identity and only today or record
   calendar.querySelector('[aria-label="下个月"]').click();await settle();assert.equal(months.at(-1),'2026-12');assert.equal(selected.length,2);assert.equal(calendar.querySelectorAll('.rdp-week').length,6);assert.equal(calendar.querySelector('.stage-month-number').textContent,'12月');
   calendar.querySelector('.stage-return-month').click();await settle();assert.equal(months.at(-1),'2026-11');assert.equal(selected.length,2);assert.equal(calendar.querySelector('.stage-return-month').disabled,true);assert.equal(calendar.querySelector('[data-calendar-date="2026-11-02"]').dataset.calendarRecord,'original-id');
   ui.disposeUi(calendar);calendar.replaceChildren();
+});
+
+test('empty stage months keep one date button per civil day across six-week and year transitions',async()=>{
+  const months=[],selections=[];
+  ui.showStageCalendar(calendar,{month:'2026-11',today:'2026-11-05',records:[],statusLabels:{verified:'已验证',completed:'已完成',draft:'草稿'},onMonthChange:value=>months.push(value),onSelect:value=>selections.push(value)});
+  const inspect=(month,total)=>{
+    const rows=[...calendar.querySelectorAll('tbody .rdp-week')],cells=rows.flatMap(row=>[...row.children]),buttons=[...calendar.querySelectorAll('[data-calendar-date]')];
+    assert.equal(rows.length,6);assert.ok(rows.every(row=>row.children.length===7));
+    assert.equal(cells.length,42);assert.equal(buttons.length,total);assert.equal(new Set(buttons.map(button=>button.dataset.calendarDate)).size,total);
+    assert.ok(buttons.every(button=>button.dataset.calendarDate.startsWith(month)&&button.classList.contains('rdp-day_button')&&!button.classList.contains('rdp-day')));
+    assert.ok(cells.filter(cell=>cell.dataset.hidden==='true').every(cell=>cell.textContent===''&&!cell.querySelector('button')),'all outside-month cells are structurally empty');
+    assert.equal(buttons.filter(button=>button.querySelector('.stage-day-number').textContent==='1').length,1,'day one exists only once even without an opaque record background');
+  };
+  await settle();inspect('2026-11',30);
+  const next=calendar.querySelector('[aria-label="下个月"]');next.focus();
+  next.click();await settle();inspect('2026-12',31);assert.equal(document.activeElement,next);
+  next.click();await settle();inspect('2027-01',31);assert.equal(document.activeElement,next);
+  calendar.querySelector('[aria-label="上个月"]').click();await settle();inspect('2026-12',31);
+  calendar.querySelector('.stage-return-month').click();await settle();inspect('2026-11',30);
+  assert.deepEqual(months,['2026-12','2027-01','2026-12','2026-11']);assert.deepEqual(selections,[]);
 });
 
 test('controlled calendar month browsing preserves navigation nodes and keyboard focus',async()=>{

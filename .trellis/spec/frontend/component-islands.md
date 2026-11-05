@@ -64,3 +64,9 @@ Actual DOM tests import the production build and assert native values/FormData/e
 ## Wrong vs correct
 
 Wrong: `container.innerHTML = nextHtml` while it contains registered roots. Correct: `renderMarkup(container,nextHtml)` before native handlers bind. Wrong: preserving both Tailwind `translate` and legacy `transform:translate` on the same dialog. Correct: `.sd-dialog` has one position owner, with the other translation explicitly disabled. Wrong: using `.nextElementSibling` to find a related field through hosts. Correct: query the actual control by its stable ID/name; read Checkbox via its native form field.
+
+## Calendar cell and button identity
+
+`CalendarDayButton` uses `getDefaultClassNames().day_button` (`rdp-day_button`); the enclosing DayPicker td alone uses `.rdp-day`. Never assign `.rdp-day` to a nested control. Table geometry must target actual cells (`td.rdp-day`), and control layout remains flex. A more specific display override on the button does not remove other cell-property collisions. Test stage and verification calendars together when shared Calendar code changes.
+
+A structurally correct DOM cannot prove a browser painted empty cells correctly. For repeated/stray glyph reports, inspect both empty and populated months, transparent disabled day1, first/last weeks, month/year transitions, resize and real screenshots. Assert42cells/sixrows/sevencolumns, one control per actual civil day, empty outside cells, exclusive class identities, unchanged record/disabled values and stable month-button focus. Do not fix drawing artifacts by cropping or hiding valid dates. Record any unreproduced environment-specific symptom accurately.
