@@ -997,3 +997,26 @@ Refined overview heading and combined a 12-particle scatter with the in-place fl
 ### Status
 
 [OK] **Completed**
+
+
+## Session 44: 独立设置日历页面与直接选项交互
+<!-- trellis-session: v=2 fp=5ce2edd8b65ac918 -->
+
+**Date**: 2026-11-05
+**Task**: 独立设置日历页面与直接选项交互
+**Branch**: `main`
+
+### Summary
+
+将全站单值下拉改为真实shadcn RadioGroup直接选项，保留原字段和事件；设置、阶段与日历、阶段配置和指南改为统一暖纸插画独立页面，保留保存与离开保护；修复月份标题遮挡鼠标，日历退出恢复原日期焦点。全量139项、最终相关18项、桌面及320/390/820px浏览器、失败保留、成员与减少动态模式通过；README与前端规范同步，main功能提交Linux CI 42002325411成功。
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `2c71b4e` | Replace dropdowns with direct choices and make settings and calendar full pages |
+| `06adac6` | Record workspace pages acceptance and successful Linux CI |
+
+### Status
+
+[OK] **Completed**
