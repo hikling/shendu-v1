@@ -8,7 +8,7 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 38
+- **Total Sessions**: 39
 - **Last Active**: 2026-11-05
 <!-- @@@/auto:current-status -->
 
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~875 | Active |
+| `journal-1.md` | ~898 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -29,6 +29,7 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 39 | 2026-11-05 | 行动验证大插画与紧凑日期排版 | `a9b38af`, `57d0c51` | `main` |
 | 38 | 2026-11-05 | Fix control visual conflicts and redesign stage calendar | `49227b4`, `226980c` | `main` |
 | 37 | 2026-11-04 | Adopt real shadcn UI across shared controls and interactive surfaces | `3d74ac7`, `9ade9b4` | `main` |
 | 36 | 2026-11-04 | Fix review return destination and action reading layout | `9f6da1d` | `main` |

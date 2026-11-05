@@ -873,3 +873,26 @@ Corrected duplicate select arrows, removed ghost/account/menu hover fills with c
 ### Status
 
 [OK] **Completed**
+
+
+## Session 39: 行动验证大插画与紧凑日期排版
+<!-- trellis-session: v=2 fp=f4aaa0a69c31d556 -->
+
+**Date**: 2026-11-05
+**Task**: 行动验证大插画与紧凑日期排版
+**Branch**: `main`
+
+### Summary
+
+行动页头插画放大延伸到绿色框，等待和已验证统计移入内容区右侧；记录插画跨标题日期，时间放大相邻，正文紧凑完整。112/112测试、生产构建、语法、资源烟测及1280/820/390/320浏览器检查通过；原记录退出恢复行动页阅读位置，控制台无异常。功能提交已推送main，Linux/Compose/Docker/容器资源CI 41941861432成功；截图与验收记录在docs/actions-layout-qa。
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `a9b38af` | Refine action artwork and compact verification dates |
+| `57d0c51` | Record action layout acceptance and Linux build results |
+
+### Status
+
+[OK] **Completed**
