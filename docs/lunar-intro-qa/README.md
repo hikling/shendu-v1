@@ -33,4 +33,4 @@
 - 农历测试覆盖春节前后、闰六月、立春/清明/立冬/小雪/冬至/小寒、跨年、闰日及三个本地时区。日期与节气均本地计算，不发送复盘内容。
 - `git diff --check`：通过。
 
-main提交与精确SHA的CI结果在最终同步后记录。
+功能提交`9144f6dd0b922b6281a292a223d7cda81b0d1799`已推送main，[对应GitHub Actions](https://github.com/hikling/shendu-v1/actions/runs/42020001624)成功，包含Linux构建、全套测试、Docker构建及部署资源烟测。Trellis归档和日志在后续记录提交中同步。

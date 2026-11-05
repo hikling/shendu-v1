@@ -8,4 +8,4 @@
 - 月度与决策窄屏额外抽样长句/四行诗词，文字、插画、按钮互不遮挡，无横向溢出。普通成员reduceMotion直接显示全文，固定配色可读，console无error/warn。
 - README、DESIGN、组件说明及frontend规范已同步。截图和DOM几何见docs/lunar-intro-qa/。
 
-待最终main提交与CI、Trellis归档日志闭环。
+功能提交9144f6dd0b922b6281a292a223d7cda81b0d1799已推送main；GitHub Actions 42020001624 completed/success，Linux检查、149项测试、Docker构建及资源烟测均通过。随后执行Trellis归档日志并同步最终HEAD。
