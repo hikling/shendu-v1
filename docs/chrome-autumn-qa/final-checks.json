@@ -1,0 +1,4811 @@
+{
+  "baseUrl": "http://127.0.0.1:3192",
+  "results": [
+    {
+      "browser": "chrome",
+      "version": "157.0.8103.38",
+      "mode": "normal",
+      "checks": [
+        {
+          "label": "chrome-normal-initial",
+          "month": "2026年11月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-normal-1",
+          "month": "2026年10月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-normal-2",
+          "month": "2026年9月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-normal-3",
+          "month": "2026年8月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-normal-4",
+          "month": "2026年7月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-normal-5",
+          "month": "2026年6月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-normal-6",
+          "month": "2026年5月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-normal-7",
+          "month": "2026年4月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-normal-8",
+          "month": "2026年3月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-normal-9",
+          "month": "2026年2月",
+          "dates": 28,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-normal-10",
+          "month": "2026年1月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-normal-11",
+          "month": "2025年12月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-normal-12",
+          "month": "2025年11月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-normal-13",
+          "month": "2025年10月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-normal-14",
+          "month": "2025年9月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-normal-15",
+          "month": "2025年8月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-normal-16",
+          "month": "2025年7月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-normal-17",
+          "month": "2025年6月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-normal-18",
+          "month": "2025年5月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-normal-19",
+          "month": "2025年4月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-normal-20",
+          "month": "2025年3月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-normal-21",
+          "month": "2025年2月",
+          "dates": 28,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-normal-22",
+          "month": "2025年1月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-normal-23",
+          "month": "2024年12月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-normal-24",
+          "month": "2024年11月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-normal-25",
+          "month": "2024年10月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-normal-26",
+          "month": "2024年9月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-normal-27",
+          "month": "2024年8月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-normal-28",
+          "month": "2024年7月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-normal-29",
+          "month": "2024年6月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-normal-30",
+          "month": "2024年5月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-normal-31",
+          "month": "2024年4月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-normal-32",
+          "month": "2024年3月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-normal-33",
+          "month": "2024年2月",
+          "dates": 29,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-normal-34",
+          "month": "2024年1月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-normal-35",
+          "month": "2023年12月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-normal-36",
+          "month": "2023年11月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-normal-37",
+          "month": "2023年10月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-normal-38",
+          "month": "2023年9月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-normal-39",
+          "month": "2023年10月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-normal-40",
+          "month": "2023年11月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-normal-41",
+          "month": "2023年12月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-normal-42",
+          "month": "2024年1月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-normal-43",
+          "month": "2024年2月",
+          "dates": 29,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-normal-44",
+          "month": "2024年3月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-normal-45",
+          "month": "2024年4月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-normal-46",
+          "month": "2024年5月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-normal-47",
+          "month": "2024年6月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-normal-48",
+          "month": "2024年7月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-normal-49",
+          "month": "2024年8月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-normal-50",
+          "month": "2024年9月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-normal-51",
+          "month": "2024年10月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-normal-52",
+          "month": "2024年11月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-normal-53",
+          "month": "2024年12月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-normal-54",
+          "month": "2025年1月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-normal-55",
+          "month": "2025年2月",
+          "dates": 28,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-normal-56",
+          "month": "2025年3月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-normal-57",
+          "month": "2025年4月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-normal-58",
+          "month": "2025年5月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-normal-59",
+          "month": "2025年6月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-normal-60",
+          "month": "2025年7月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-normal-61",
+          "month": "2025年8月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-normal-62",
+          "month": "2025年9月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-normal-63",
+          "month": "2025年10月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-normal-64",
+          "month": "2025年11月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-normal-65",
+          "month": "2025年12月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-normal-66",
+          "month": "2026年1月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-normal-67",
+          "month": "2026年2月",
+          "dates": 28,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-normal-68",
+          "month": "2026年3月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-normal-69",
+          "month": "2026年4月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-normal-70",
+          "month": "2026年5月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-normal-71",
+          "month": "2026年6月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-normal-72",
+          "month": "2026年7月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-normal-73",
+          "month": "2026年8月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-normal-74",
+          "month": "2026年9月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-normal-75",
+          "month": "2026年10月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-normal-76",
+          "month": "2026年11月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-normal-77",
+          "month": "2026年12月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-normal-78",
+          "month": "2027年1月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-normal-79",
+          "month": "2027年2月",
+          "dates": 28,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-normal-80",
+          "month": "2027年3月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-normal-81",
+          "month": "2027年4月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-normal-82",
+          "month": "2027年5月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-normal-83",
+          "month": "2027年6月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-normal-84",
+          "month": "2027年7月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-normal-85",
+          "month": "2027年8月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-normal-86",
+          "month": "2027年9月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-normal-87",
+          "month": "2027年10月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-normal-88",
+          "month": "2027年11月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-normal-89",
+          "month": "2027年12月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-normal-90",
+          "month": "2028年1月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-normal-91",
+          "month": "2028年2月",
+          "dates": 29,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-normal-92",
+          "month": "2028年3月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-normal-93",
+          "month": "2028年4月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-normal-94",
+          "month": "2028年5月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-normal-95",
+          "month": "2028年6月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-normal-96",
+          "month": "2028年7月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-normal-97",
+          "month": "2028年8月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-normal-98",
+          "month": "2028年9月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-normal-99",
+          "month": "2028年10月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-normal-100",
+          "month": "2028年11月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-normal-101",
+          "month": "2028年12月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-normal-102",
+          "month": "2029年1月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-normal-103",
+          "month": "2029年2月",
+          "dates": 28,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-normal-104",
+          "month": "2029年3月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-normal-105",
+          "month": "2029年4月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-normal-106",
+          "month": "2029年5月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-normal-107",
+          "month": "2029年6月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-normal-108",
+          "month": "2029年7月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-normal-109",
+          "month": "2029年8月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-normal-110",
+          "month": "2029年9月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-normal-111",
+          "month": "2029年10月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-normal-112",
+          "month": "2029年11月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-normal-113",
+          "month": "2029年12月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-normal-114",
+          "month": "2030年1月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "return-current",
+          "month": "2026年11月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-normal-820",
+          "month": "2026年11月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-normal-390",
+          "month": "2026年11月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-normal-320",
+          "month": "2026年11月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-normal-119",
+          "month": "2026年10月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-normal-120",
+          "month": "2026年9月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-normal-121",
+          "month": "2026年8月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-normal-122",
+          "month": "2026年7月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-normal-123",
+          "month": "2026年6月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-normal-124",
+          "month": "2026年5月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-normal-125",
+          "month": "2026年4月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-normal-126",
+          "month": "2026年3月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-normal-127",
+          "month": "2026年2月",
+          "dates": 28,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-normal-128",
+          "month": "2026年1月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-normal-129",
+          "month": "2025年12月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-normal-130",
+          "month": "2025年11月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "record-return",
+          "month": "2025年11月",
+          "dates": 30,
+          "weeks": 6
+        }
+      ],
+      "errors": [],
+      "passed": true
+    },
+    {
+      "browser": "chrome",
+      "version": "157.0.8103.38",
+      "mode": "offset-only",
+      "checks": [
+        {
+          "label": "chrome-offset-only-initial",
+          "month": "2026年11月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-offset-only-1",
+          "month": "2026年10月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-offset-only-2",
+          "month": "2026年9月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-offset-only-3",
+          "month": "2026年8月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-offset-only-4",
+          "month": "2026年7月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-offset-only-5",
+          "month": "2026年6月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-offset-only-6",
+          "month": "2026年5月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-offset-only-7",
+          "month": "2026年4月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-offset-only-8",
+          "month": "2026年3月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-offset-only-9",
+          "month": "2026年2月",
+          "dates": 28,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-offset-only-10",
+          "month": "2026年1月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-offset-only-11",
+          "month": "2025年12月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-offset-only-12",
+          "month": "2025年11月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-offset-only-13",
+          "month": "2025年10月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-offset-only-14",
+          "month": "2025年9月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-offset-only-15",
+          "month": "2025年8月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-offset-only-16",
+          "month": "2025年7月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-offset-only-17",
+          "month": "2025年6月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-offset-only-18",
+          "month": "2025年5月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-offset-only-19",
+          "month": "2025年4月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-offset-only-20",
+          "month": "2025年3月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-offset-only-21",
+          "month": "2025年2月",
+          "dates": 28,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-offset-only-22",
+          "month": "2025年1月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-offset-only-23",
+          "month": "2024年12月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-offset-only-24",
+          "month": "2024年11月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-offset-only-25",
+          "month": "2024年10月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-offset-only-26",
+          "month": "2024年9月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-offset-only-27",
+          "month": "2024年8月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-offset-only-28",
+          "month": "2024年7月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-offset-only-29",
+          "month": "2024年6月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-offset-only-30",
+          "month": "2024年5月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-offset-only-31",
+          "month": "2024年4月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-offset-only-32",
+          "month": "2024年3月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-offset-only-33",
+          "month": "2024年2月",
+          "dates": 29,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-offset-only-34",
+          "month": "2024年1月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-offset-only-35",
+          "month": "2023年12月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-offset-only-36",
+          "month": "2023年11月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-offset-only-37",
+          "month": "2023年10月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-offset-only-38",
+          "month": "2023年9月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-offset-only-39",
+          "month": "2023年10月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-offset-only-40",
+          "month": "2023年11月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-offset-only-41",
+          "month": "2023年12月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-offset-only-42",
+          "month": "2024年1月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-offset-only-43",
+          "month": "2024年2月",
+          "dates": 29,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-offset-only-44",
+          "month": "2024年3月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-offset-only-45",
+          "month": "2024年4月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-offset-only-46",
+          "month": "2024年5月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-offset-only-47",
+          "month": "2024年6月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-offset-only-48",
+          "month": "2024年7月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-offset-only-49",
+          "month": "2024年8月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-offset-only-50",
+          "month": "2024年9月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-offset-only-51",
+          "month": "2024年10月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-offset-only-52",
+          "month": "2024年11月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-offset-only-53",
+          "month": "2024年12月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-offset-only-54",
+          "month": "2025年1月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-offset-only-55",
+          "month": "2025年2月",
+          "dates": 28,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-offset-only-56",
+          "month": "2025年3月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-offset-only-57",
+          "month": "2025年4月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-offset-only-58",
+          "month": "2025年5月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-offset-only-59",
+          "month": "2025年6月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-offset-only-60",
+          "month": "2025年7月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-offset-only-61",
+          "month": "2025年8月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-offset-only-62",
+          "month": "2025年9月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-offset-only-63",
+          "month": "2025年10月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-offset-only-64",
+          "month": "2025年11月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-offset-only-65",
+          "month": "2025年12月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-offset-only-66",
+          "month": "2026年1月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-offset-only-67",
+          "month": "2026年2月",
+          "dates": 28,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-offset-only-68",
+          "month": "2026年3月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-offset-only-69",
+          "month": "2026年4月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-offset-only-70",
+          "month": "2026年5月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-offset-only-71",
+          "month": "2026年6月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-offset-only-72",
+          "month": "2026年7月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-offset-only-73",
+          "month": "2026年8月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-offset-only-74",
+          "month": "2026年9月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-offset-only-75",
+          "month": "2026年10月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-offset-only-76",
+          "month": "2026年11月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-offset-only-77",
+          "month": "2026年12月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-offset-only-78",
+          "month": "2027年1月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-offset-only-79",
+          "month": "2027年2月",
+          "dates": 28,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-offset-only-80",
+          "month": "2027年3月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-offset-only-81",
+          "month": "2027年4月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-offset-only-82",
+          "month": "2027年5月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-offset-only-83",
+          "month": "2027年6月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-offset-only-84",
+          "month": "2027年7月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-offset-only-85",
+          "month": "2027年8月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-offset-only-86",
+          "month": "2027年9月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-offset-only-87",
+          "month": "2027年10月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-offset-only-88",
+          "month": "2027年11月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-offset-only-89",
+          "month": "2027年12月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-offset-only-90",
+          "month": "2028年1月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-offset-only-91",
+          "month": "2028年2月",
+          "dates": 29,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-offset-only-92",
+          "month": "2028年3月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-offset-only-93",
+          "month": "2028年4月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-offset-only-94",
+          "month": "2028年5月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-offset-only-95",
+          "month": "2028年6月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-offset-only-96",
+          "month": "2028年7月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-offset-only-97",
+          "month": "2028年8月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-offset-only-98",
+          "month": "2028年9月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-offset-only-99",
+          "month": "2028年10月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-offset-only-100",
+          "month": "2028年11月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-offset-only-101",
+          "month": "2028年12月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-offset-only-102",
+          "month": "2029年1月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-offset-only-103",
+          "month": "2029年2月",
+          "dates": 28,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-offset-only-104",
+          "month": "2029年3月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-offset-only-105",
+          "month": "2029年4月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-offset-only-106",
+          "month": "2029年5月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-offset-only-107",
+          "month": "2029年6月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-offset-only-108",
+          "month": "2029年7月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-offset-only-109",
+          "month": "2029年8月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-offset-only-110",
+          "month": "2029年9月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-offset-only-111",
+          "month": "2029年10月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-offset-only-112",
+          "month": "2029年11月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-offset-only-113",
+          "month": "2029年12月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-offset-only-114",
+          "month": "2030年1月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "return-current",
+          "month": "2026年11月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-offset-only-820",
+          "month": "2026年11月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-offset-only-390",
+          "month": "2026年11月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-offset-only-320",
+          "month": "2026年11月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-offset-only-119",
+          "month": "2026年10月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-offset-only-120",
+          "month": "2026年9月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-offset-only-121",
+          "month": "2026年8月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-offset-only-122",
+          "month": "2026年7月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-offset-only-123",
+          "month": "2026年6月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-offset-only-124",
+          "month": "2026年5月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-offset-only-125",
+          "month": "2026年4月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-offset-only-126",
+          "month": "2026年3月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-offset-only-127",
+          "month": "2026年2月",
+          "dates": 28,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-offset-only-128",
+          "month": "2026年1月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-offset-only-129",
+          "month": "2025年12月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-offset-only-130",
+          "month": "2025年11月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "record-return",
+          "month": "2025年11月",
+          "dates": 30,
+          "weeks": 6
+        }
+      ],
+      "errors": [],
+      "passed": true
+    },
+    {
+      "browser": "chrome",
+      "version": "157.0.8103.38",
+      "mode": "local-getters",
+      "checks": [
+        {
+          "label": "chrome-local-getters-initial",
+          "month": "2026年11月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-local-getters-1",
+          "month": "2026年10月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-local-getters-2",
+          "month": "2026年9月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-local-getters-3",
+          "month": "2026年8月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-local-getters-4",
+          "month": "2026年7月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-local-getters-5",
+          "month": "2026年6月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-local-getters-6",
+          "month": "2026年5月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-local-getters-7",
+          "month": "2026年4月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-local-getters-8",
+          "month": "2026年3月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-local-getters-9",
+          "month": "2026年2月",
+          "dates": 28,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-local-getters-10",
+          "month": "2026年1月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-local-getters-11",
+          "month": "2025年12月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-local-getters-12",
+          "month": "2025年11月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-local-getters-13",
+          "month": "2025年10月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-local-getters-14",
+          "month": "2025年9月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-local-getters-15",
+          "month": "2025年8月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-local-getters-16",
+          "month": "2025年7月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-local-getters-17",
+          "month": "2025年6月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-local-getters-18",
+          "month": "2025年5月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-local-getters-19",
+          "month": "2025年4月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-local-getters-20",
+          "month": "2025年3月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-local-getters-21",
+          "month": "2025年2月",
+          "dates": 28,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-local-getters-22",
+          "month": "2025年1月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-local-getters-23",
+          "month": "2024年12月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-local-getters-24",
+          "month": "2024年11月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-local-getters-25",
+          "month": "2024年10月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-local-getters-26",
+          "month": "2024年9月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-local-getters-27",
+          "month": "2024年8月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-local-getters-28",
+          "month": "2024年7月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-local-getters-29",
+          "month": "2024年6月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-local-getters-30",
+          "month": "2024年5月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-local-getters-31",
+          "month": "2024年4月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-local-getters-32",
+          "month": "2024年3月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-local-getters-33",
+          "month": "2024年2月",
+          "dates": 29,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-local-getters-34",
+          "month": "2024年1月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-local-getters-35",
+          "month": "2023年12月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-local-getters-36",
+          "month": "2023年11月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-local-getters-37",
+          "month": "2023年10月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-local-getters-38",
+          "month": "2023年9月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-local-getters-39",
+          "month": "2023年10月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-local-getters-40",
+          "month": "2023年11月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-local-getters-41",
+          "month": "2023年12月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-local-getters-42",
+          "month": "2024年1月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-local-getters-43",
+          "month": "2024年2月",
+          "dates": 29,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-local-getters-44",
+          "month": "2024年3月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-local-getters-45",
+          "month": "2024年4月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-local-getters-46",
+          "month": "2024年5月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-local-getters-47",
+          "month": "2024年6月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-local-getters-48",
+          "month": "2024年7月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-local-getters-49",
+          "month": "2024年8月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-local-getters-50",
+          "month": "2024年9月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-local-getters-51",
+          "month": "2024年10月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-local-getters-52",
+          "month": "2024年11月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-local-getters-53",
+          "month": "2024年12月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-local-getters-54",
+          "month": "2025年1月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-local-getters-55",
+          "month": "2025年2月",
+          "dates": 28,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-local-getters-56",
+          "month": "2025年3月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-local-getters-57",
+          "month": "2025年4月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-local-getters-58",
+          "month": "2025年5月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-local-getters-59",
+          "month": "2025年6月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-local-getters-60",
+          "month": "2025年7月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-local-getters-61",
+          "month": "2025年8月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-local-getters-62",
+          "month": "2025年9月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-local-getters-63",
+          "month": "2025年10月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-local-getters-64",
+          "month": "2025年11月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-local-getters-65",
+          "month": "2025年12月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-local-getters-66",
+          "month": "2026年1月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-local-getters-67",
+          "month": "2026年2月",
+          "dates": 28,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-local-getters-68",
+          "month": "2026年3月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-local-getters-69",
+          "month": "2026年4月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-local-getters-70",
+          "month": "2026年5月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-local-getters-71",
+          "month": "2026年6月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-local-getters-72",
+          "month": "2026年7月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-local-getters-73",
+          "month": "2026年8月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-local-getters-74",
+          "month": "2026年9月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-local-getters-75",
+          "month": "2026年10月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-local-getters-76",
+          "month": "2026年11月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-local-getters-77",
+          "month": "2026年12月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-local-getters-78",
+          "month": "2027年1月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-local-getters-79",
+          "month": "2027年2月",
+          "dates": 28,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-local-getters-80",
+          "month": "2027年3月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-local-getters-81",
+          "month": "2027年4月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-local-getters-82",
+          "month": "2027年5月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-local-getters-83",
+          "month": "2027年6月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-local-getters-84",
+          "month": "2027年7月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-local-getters-85",
+          "month": "2027年8月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-local-getters-86",
+          "month": "2027年9月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-local-getters-87",
+          "month": "2027年10月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-local-getters-88",
+          "month": "2027年11月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-local-getters-89",
+          "month": "2027年12月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-local-getters-90",
+          "month": "2028年1月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-local-getters-91",
+          "month": "2028年2月",
+          "dates": 29,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-local-getters-92",
+          "month": "2028年3月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-local-getters-93",
+          "month": "2028年4月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-local-getters-94",
+          "month": "2028年5月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-local-getters-95",
+          "month": "2028年6月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-local-getters-96",
+          "month": "2028年7月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-local-getters-97",
+          "month": "2028年8月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-local-getters-98",
+          "month": "2028年9月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-local-getters-99",
+          "month": "2028年10月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-local-getters-100",
+          "month": "2028年11月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-local-getters-101",
+          "month": "2028年12月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-local-getters-102",
+          "month": "2029年1月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-local-getters-103",
+          "month": "2029年2月",
+          "dates": 28,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-local-getters-104",
+          "month": "2029年3月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-local-getters-105",
+          "month": "2029年4月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-local-getters-106",
+          "month": "2029年5月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-local-getters-107",
+          "month": "2029年6月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-local-getters-108",
+          "month": "2029年7月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-local-getters-109",
+          "month": "2029年8月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-local-getters-110",
+          "month": "2029年9月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-local-getters-111",
+          "month": "2029年10月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-local-getters-112",
+          "month": "2029年11月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-local-getters-113",
+          "month": "2029年12月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-local-getters-114",
+          "month": "2030年1月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "return-current",
+          "month": "2026年11月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-local-getters-820",
+          "month": "2026年11月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-local-getters-390",
+          "month": "2026年11月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-local-getters-320",
+          "month": "2026年11月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-local-getters-119",
+          "month": "2026年10月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-local-getters-120",
+          "month": "2026年9月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-local-getters-121",
+          "month": "2026年8月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-local-getters-122",
+          "month": "2026年7月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-local-getters-123",
+          "month": "2026年6月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-local-getters-124",
+          "month": "2026年5月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-local-getters-125",
+          "month": "2026年4月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-local-getters-126",
+          "month": "2026年3月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-local-getters-127",
+          "month": "2026年2月",
+          "dates": 28,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-local-getters-128",
+          "month": "2026年1月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-local-getters-129",
+          "month": "2025年12月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-local-getters-130",
+          "month": "2025年11月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "record-return",
+          "month": "2025年11月",
+          "dates": 30,
+          "weeks": 6
+        }
+      ],
+      "errors": [],
+      "passed": true
+    },
+    {
+      "browser": "chrome",
+      "version": "157.0.8103.38",
+      "mode": "partial-setters",
+      "checks": [
+        {
+          "label": "chrome-partial-setters-initial",
+          "month": "2026年11月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-partial-setters-1",
+          "month": "2026年10月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-partial-setters-2",
+          "month": "2026年9月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-partial-setters-3",
+          "month": "2026年8月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-partial-setters-4",
+          "month": "2026年7月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-partial-setters-5",
+          "month": "2026年6月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-partial-setters-6",
+          "month": "2026年5月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-partial-setters-7",
+          "month": "2026年4月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-partial-setters-8",
+          "month": "2026年3月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-partial-setters-9",
+          "month": "2026年2月",
+          "dates": 28,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-partial-setters-10",
+          "month": "2026年1月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-partial-setters-11",
+          "month": "2025年12月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-partial-setters-12",
+          "month": "2025年11月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-partial-setters-13",
+          "month": "2025年10月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-partial-setters-14",
+          "month": "2025年9月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-partial-setters-15",
+          "month": "2025年8月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-partial-setters-16",
+          "month": "2025年7月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-partial-setters-17",
+          "month": "2025年6月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-partial-setters-18",
+          "month": "2025年5月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-partial-setters-19",
+          "month": "2025年4月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-partial-setters-20",
+          "month": "2025年3月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-partial-setters-21",
+          "month": "2025年2月",
+          "dates": 28,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-partial-setters-22",
+          "month": "2025年1月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-partial-setters-23",
+          "month": "2024年12月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-partial-setters-24",
+          "month": "2024年11月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-partial-setters-25",
+          "month": "2024年10月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-partial-setters-26",
+          "month": "2024年9月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-partial-setters-27",
+          "month": "2024年8月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-partial-setters-28",
+          "month": "2024年7月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-partial-setters-29",
+          "month": "2024年6月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-partial-setters-30",
+          "month": "2024年5月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-partial-setters-31",
+          "month": "2024年4月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-partial-setters-32",
+          "month": "2024年3月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-partial-setters-33",
+          "month": "2024年2月",
+          "dates": 29,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-partial-setters-34",
+          "month": "2024年1月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-partial-setters-35",
+          "month": "2023年12月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-partial-setters-36",
+          "month": "2023年11月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-partial-setters-37",
+          "month": "2023年10月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-partial-setters-38",
+          "month": "2023年9月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-partial-setters-39",
+          "month": "2023年10月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-partial-setters-40",
+          "month": "2023年11月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-partial-setters-41",
+          "month": "2023年12月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-partial-setters-42",
+          "month": "2024年1月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-partial-setters-43",
+          "month": "2024年2月",
+          "dates": 29,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-partial-setters-44",
+          "month": "2024年3月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-partial-setters-45",
+          "month": "2024年4月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-partial-setters-46",
+          "month": "2024年5月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-partial-setters-47",
+          "month": "2024年6月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-partial-setters-48",
+          "month": "2024年7月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-partial-setters-49",
+          "month": "2024年8月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-partial-setters-50",
+          "month": "2024年9月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-partial-setters-51",
+          "month": "2024年10月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-partial-setters-52",
+          "month": "2024年11月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-partial-setters-53",
+          "month": "2024年12月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-partial-setters-54",
+          "month": "2025年1月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-partial-setters-55",
+          "month": "2025年2月",
+          "dates": 28,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-partial-setters-56",
+          "month": "2025年3月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-partial-setters-57",
+          "month": "2025年4月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-partial-setters-58",
+          "month": "2025年5月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-partial-setters-59",
+          "month": "2025年6月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-partial-setters-60",
+          "month": "2025年7月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-partial-setters-61",
+          "month": "2025年8月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-partial-setters-62",
+          "month": "2025年9月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-partial-setters-63",
+          "month": "2025年10月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-partial-setters-64",
+          "month": "2025年11月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-partial-setters-65",
+          "month": "2025年12月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-partial-setters-66",
+          "month": "2026年1月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-partial-setters-67",
+          "month": "2026年2月",
+          "dates": 28,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-partial-setters-68",
+          "month": "2026年3月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-partial-setters-69",
+          "month": "2026年4月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-partial-setters-70",
+          "month": "2026年5月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-partial-setters-71",
+          "month": "2026年6月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-partial-setters-72",
+          "month": "2026年7月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-partial-setters-73",
+          "month": "2026年8月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-partial-setters-74",
+          "month": "2026年9月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-partial-setters-75",
+          "month": "2026年10月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-partial-setters-76",
+          "month": "2026年11月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-partial-setters-77",
+          "month": "2026年12月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-partial-setters-78",
+          "month": "2027年1月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-partial-setters-79",
+          "month": "2027年2月",
+          "dates": 28,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-partial-setters-80",
+          "month": "2027年3月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-partial-setters-81",
+          "month": "2027年4月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-partial-setters-82",
+          "month": "2027年5月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-partial-setters-83",
+          "month": "2027年6月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-partial-setters-84",
+          "month": "2027年7月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-partial-setters-85",
+          "month": "2027年8月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-partial-setters-86",
+          "month": "2027年9月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-partial-setters-87",
+          "month": "2027年10月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-partial-setters-88",
+          "month": "2027年11月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-partial-setters-89",
+          "month": "2027年12月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-partial-setters-90",
+          "month": "2028年1月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-partial-setters-91",
+          "month": "2028年2月",
+          "dates": 29,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-partial-setters-92",
+          "month": "2028年3月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-partial-setters-93",
+          "month": "2028年4月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-partial-setters-94",
+          "month": "2028年5月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-partial-setters-95",
+          "month": "2028年6月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-partial-setters-96",
+          "month": "2028年7月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-partial-setters-97",
+          "month": "2028年8月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-partial-setters-98",
+          "month": "2028年9月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-partial-setters-99",
+          "month": "2028年10月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-partial-setters-100",
+          "month": "2028年11月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-partial-setters-101",
+          "month": "2028年12月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-partial-setters-102",
+          "month": "2029年1月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-partial-setters-103",
+          "month": "2029年2月",
+          "dates": 28,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-partial-setters-104",
+          "month": "2029年3月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-partial-setters-105",
+          "month": "2029年4月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-partial-setters-106",
+          "month": "2029年5月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-partial-setters-107",
+          "month": "2029年6月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-partial-setters-108",
+          "month": "2029年7月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-partial-setters-109",
+          "month": "2029年8月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-partial-setters-110",
+          "month": "2029年9月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-partial-setters-111",
+          "month": "2029年10月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-partial-setters-112",
+          "month": "2029年11月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-partial-setters-113",
+          "month": "2029年12月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-partial-setters-114",
+          "month": "2030年1月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "return-current",
+          "month": "2026年11月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-partial-setters-820",
+          "month": "2026年11月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-partial-setters-390",
+          "month": "2026年11月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-partial-setters-320",
+          "month": "2026年11月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-partial-setters-119",
+          "month": "2026年10月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-partial-setters-120",
+          "month": "2026年9月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-partial-setters-121",
+          "month": "2026年8月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-partial-setters-122",
+          "month": "2026年7月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-partial-setters-123",
+          "month": "2026年6月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-partial-setters-124",
+          "month": "2026年5月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-partial-setters-125",
+          "month": "2026年4月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-partial-setters-126",
+          "month": "2026年3月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-partial-setters-127",
+          "month": "2026年2月",
+          "dates": 28,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-partial-setters-128",
+          "month": "2026年1月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-partial-setters-129",
+          "month": "2025年12月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "chrome-partial-setters-130",
+          "month": "2025年11月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "record-return",
+          "month": "2025年11月",
+          "dates": 30,
+          "weeks": 6
+        }
+      ],
+      "errors": [],
+      "passed": true
+    },
+    {
+      "browser": "edge",
+      "version": "156.0.4314.58",
+      "mode": "normal",
+      "checks": [
+        {
+          "label": "edge-normal-initial",
+          "month": "2026年11月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "edge-normal-1",
+          "month": "2026年10月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-normal-2",
+          "month": "2026年9月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "edge-normal-3",
+          "month": "2026年8月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-normal-4",
+          "month": "2026年7月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-normal-5",
+          "month": "2026年6月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "edge-normal-6",
+          "month": "2026年5月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-normal-7",
+          "month": "2026年4月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "edge-normal-8",
+          "month": "2026年3月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-normal-9",
+          "month": "2026年2月",
+          "dates": 28,
+          "weeks": 6
+        },
+        {
+          "label": "edge-normal-10",
+          "month": "2026年1月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-normal-11",
+          "month": "2025年12月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-normal-12",
+          "month": "2025年11月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "edge-normal-13",
+          "month": "2025年10月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-normal-14",
+          "month": "2025年9月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "edge-normal-15",
+          "month": "2025年8月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-normal-16",
+          "month": "2025年7月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-normal-17",
+          "month": "2025年6月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "edge-normal-18",
+          "month": "2025年5月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-normal-19",
+          "month": "2025年4月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "edge-normal-20",
+          "month": "2025年3月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-normal-21",
+          "month": "2025年2月",
+          "dates": 28,
+          "weeks": 6
+        },
+        {
+          "label": "edge-normal-22",
+          "month": "2025年1月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-normal-23",
+          "month": "2024年12月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-normal-24",
+          "month": "2024年11月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "edge-normal-25",
+          "month": "2024年10月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-normal-26",
+          "month": "2024年9月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "edge-normal-27",
+          "month": "2024年8月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-normal-28",
+          "month": "2024年7月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-normal-29",
+          "month": "2024年6月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "edge-normal-30",
+          "month": "2024年5月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-normal-31",
+          "month": "2024年4月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "edge-normal-32",
+          "month": "2024年3月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-normal-33",
+          "month": "2024年2月",
+          "dates": 29,
+          "weeks": 6
+        },
+        {
+          "label": "edge-normal-34",
+          "month": "2024年1月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-normal-35",
+          "month": "2023年12月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-normal-36",
+          "month": "2023年11月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "edge-normal-37",
+          "month": "2023年10月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-normal-38",
+          "month": "2023年9月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "edge-normal-39",
+          "month": "2023年10月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-normal-40",
+          "month": "2023年11月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "edge-normal-41",
+          "month": "2023年12月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-normal-42",
+          "month": "2024年1月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-normal-43",
+          "month": "2024年2月",
+          "dates": 29,
+          "weeks": 6
+        },
+        {
+          "label": "edge-normal-44",
+          "month": "2024年3月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-normal-45",
+          "month": "2024年4月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "edge-normal-46",
+          "month": "2024年5月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-normal-47",
+          "month": "2024年6月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "edge-normal-48",
+          "month": "2024年7月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-normal-49",
+          "month": "2024年8月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-normal-50",
+          "month": "2024年9月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "edge-normal-51",
+          "month": "2024年10月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-normal-52",
+          "month": "2024年11月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "edge-normal-53",
+          "month": "2024年12月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-normal-54",
+          "month": "2025年1月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-normal-55",
+          "month": "2025年2月",
+          "dates": 28,
+          "weeks": 6
+        },
+        {
+          "label": "edge-normal-56",
+          "month": "2025年3月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-normal-57",
+          "month": "2025年4月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "edge-normal-58",
+          "month": "2025年5月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-normal-59",
+          "month": "2025年6月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "edge-normal-60",
+          "month": "2025年7月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-normal-61",
+          "month": "2025年8月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-normal-62",
+          "month": "2025年9月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "edge-normal-63",
+          "month": "2025年10月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-normal-64",
+          "month": "2025年11月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "edge-normal-65",
+          "month": "2025年12月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-normal-66",
+          "month": "2026年1月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-normal-67",
+          "month": "2026年2月",
+          "dates": 28,
+          "weeks": 6
+        },
+        {
+          "label": "edge-normal-68",
+          "month": "2026年3月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-normal-69",
+          "month": "2026年4月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "edge-normal-70",
+          "month": "2026年5月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-normal-71",
+          "month": "2026年6月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "edge-normal-72",
+          "month": "2026年7月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-normal-73",
+          "month": "2026年8月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-normal-74",
+          "month": "2026年9月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "edge-normal-75",
+          "month": "2026年10月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-normal-76",
+          "month": "2026年11月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "edge-normal-77",
+          "month": "2026年12月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-normal-78",
+          "month": "2027年1月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-normal-79",
+          "month": "2027年2月",
+          "dates": 28,
+          "weeks": 6
+        },
+        {
+          "label": "edge-normal-80",
+          "month": "2027年3月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-normal-81",
+          "month": "2027年4月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "edge-normal-82",
+          "month": "2027年5月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-normal-83",
+          "month": "2027年6月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "edge-normal-84",
+          "month": "2027年7月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-normal-85",
+          "month": "2027年8月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-normal-86",
+          "month": "2027年9月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "edge-normal-87",
+          "month": "2027年10月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-normal-88",
+          "month": "2027年11月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "edge-normal-89",
+          "month": "2027年12月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-normal-90",
+          "month": "2028年1月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-normal-91",
+          "month": "2028年2月",
+          "dates": 29,
+          "weeks": 6
+        },
+        {
+          "label": "edge-normal-92",
+          "month": "2028年3月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-normal-93",
+          "month": "2028年4月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "edge-normal-94",
+          "month": "2028年5月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-normal-95",
+          "month": "2028年6月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "edge-normal-96",
+          "month": "2028年7月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-normal-97",
+          "month": "2028年8月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-normal-98",
+          "month": "2028年9月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "edge-normal-99",
+          "month": "2028年10月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-normal-100",
+          "month": "2028年11月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "edge-normal-101",
+          "month": "2028年12月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-normal-102",
+          "month": "2029年1月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-normal-103",
+          "month": "2029年2月",
+          "dates": 28,
+          "weeks": 6
+        },
+        {
+          "label": "edge-normal-104",
+          "month": "2029年3月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-normal-105",
+          "month": "2029年4月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "edge-normal-106",
+          "month": "2029年5月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-normal-107",
+          "month": "2029年6月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "edge-normal-108",
+          "month": "2029年7月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-normal-109",
+          "month": "2029年8月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-normal-110",
+          "month": "2029年9月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "edge-normal-111",
+          "month": "2029年10月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-normal-112",
+          "month": "2029年11月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "edge-normal-113",
+          "month": "2029年12月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-normal-114",
+          "month": "2030年1月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "return-current",
+          "month": "2026年11月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "edge-normal-820",
+          "month": "2026年11月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "edge-normal-390",
+          "month": "2026年11月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "edge-normal-320",
+          "month": "2026年11月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "edge-normal-119",
+          "month": "2026年10月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-normal-120",
+          "month": "2026年9月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "edge-normal-121",
+          "month": "2026年8月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-normal-122",
+          "month": "2026年7月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-normal-123",
+          "month": "2026年6月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "edge-normal-124",
+          "month": "2026年5月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-normal-125",
+          "month": "2026年4月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "edge-normal-126",
+          "month": "2026年3月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-normal-127",
+          "month": "2026年2月",
+          "dates": 28,
+          "weeks": 6
+        },
+        {
+          "label": "edge-normal-128",
+          "month": "2026年1月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-normal-129",
+          "month": "2025年12月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-normal-130",
+          "month": "2025年11月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "record-return",
+          "month": "2025年11月",
+          "dates": 30,
+          "weeks": 6
+        }
+      ],
+      "errors": [],
+      "passed": true
+    },
+    {
+      "browser": "edge",
+      "version": "156.0.4314.58",
+      "mode": "partial-setters",
+      "checks": [
+        {
+          "label": "edge-partial-setters-initial",
+          "month": "2026年11月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "edge-partial-setters-1",
+          "month": "2026年10月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-partial-setters-2",
+          "month": "2026年9月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "edge-partial-setters-3",
+          "month": "2026年8月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-partial-setters-4",
+          "month": "2026年7月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-partial-setters-5",
+          "month": "2026年6月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "edge-partial-setters-6",
+          "month": "2026年5月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-partial-setters-7",
+          "month": "2026年4月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "edge-partial-setters-8",
+          "month": "2026年3月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-partial-setters-9",
+          "month": "2026年2月",
+          "dates": 28,
+          "weeks": 6
+        },
+        {
+          "label": "edge-partial-setters-10",
+          "month": "2026年1月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-partial-setters-11",
+          "month": "2025年12月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-partial-setters-12",
+          "month": "2025年11月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "edge-partial-setters-13",
+          "month": "2025年10月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-partial-setters-14",
+          "month": "2025年9月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "edge-partial-setters-15",
+          "month": "2025年8月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-partial-setters-16",
+          "month": "2025年7月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-partial-setters-17",
+          "month": "2025年6月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "edge-partial-setters-18",
+          "month": "2025年5月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-partial-setters-19",
+          "month": "2025年4月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "edge-partial-setters-20",
+          "month": "2025年3月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-partial-setters-21",
+          "month": "2025年2月",
+          "dates": 28,
+          "weeks": 6
+        },
+        {
+          "label": "edge-partial-setters-22",
+          "month": "2025年1月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-partial-setters-23",
+          "month": "2024年12月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-partial-setters-24",
+          "month": "2024年11月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "edge-partial-setters-25",
+          "month": "2024年10月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-partial-setters-26",
+          "month": "2024年9月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "edge-partial-setters-27",
+          "month": "2024年8月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-partial-setters-28",
+          "month": "2024年7月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-partial-setters-29",
+          "month": "2024年6月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "edge-partial-setters-30",
+          "month": "2024年5月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-partial-setters-31",
+          "month": "2024年4月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "edge-partial-setters-32",
+          "month": "2024年3月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-partial-setters-33",
+          "month": "2024年2月",
+          "dates": 29,
+          "weeks": 6
+        },
+        {
+          "label": "edge-partial-setters-34",
+          "month": "2024年1月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-partial-setters-35",
+          "month": "2023年12月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-partial-setters-36",
+          "month": "2023年11月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "edge-partial-setters-37",
+          "month": "2023年10月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-partial-setters-38",
+          "month": "2023年9月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "edge-partial-setters-39",
+          "month": "2023年10月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-partial-setters-40",
+          "month": "2023年11月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "edge-partial-setters-41",
+          "month": "2023年12月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-partial-setters-42",
+          "month": "2024年1月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-partial-setters-43",
+          "month": "2024年2月",
+          "dates": 29,
+          "weeks": 6
+        },
+        {
+          "label": "edge-partial-setters-44",
+          "month": "2024年3月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-partial-setters-45",
+          "month": "2024年4月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "edge-partial-setters-46",
+          "month": "2024年5月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-partial-setters-47",
+          "month": "2024年6月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "edge-partial-setters-48",
+          "month": "2024年7月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-partial-setters-49",
+          "month": "2024年8月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-partial-setters-50",
+          "month": "2024年9月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "edge-partial-setters-51",
+          "month": "2024年10月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-partial-setters-52",
+          "month": "2024年11月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "edge-partial-setters-53",
+          "month": "2024年12月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-partial-setters-54",
+          "month": "2025年1月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-partial-setters-55",
+          "month": "2025年2月",
+          "dates": 28,
+          "weeks": 6
+        },
+        {
+          "label": "edge-partial-setters-56",
+          "month": "2025年3月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-partial-setters-57",
+          "month": "2025年4月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "edge-partial-setters-58",
+          "month": "2025年5月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-partial-setters-59",
+          "month": "2025年6月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "edge-partial-setters-60",
+          "month": "2025年7月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-partial-setters-61",
+          "month": "2025年8月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-partial-setters-62",
+          "month": "2025年9月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "edge-partial-setters-63",
+          "month": "2025年10月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-partial-setters-64",
+          "month": "2025年11月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "edge-partial-setters-65",
+          "month": "2025年12月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-partial-setters-66",
+          "month": "2026年1月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-partial-setters-67",
+          "month": "2026年2月",
+          "dates": 28,
+          "weeks": 6
+        },
+        {
+          "label": "edge-partial-setters-68",
+          "month": "2026年3月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-partial-setters-69",
+          "month": "2026年4月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "edge-partial-setters-70",
+          "month": "2026年5月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-partial-setters-71",
+          "month": "2026年6月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "edge-partial-setters-72",
+          "month": "2026年7月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-partial-setters-73",
+          "month": "2026年8月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-partial-setters-74",
+          "month": "2026年9月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "edge-partial-setters-75",
+          "month": "2026年10月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-partial-setters-76",
+          "month": "2026年11月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "edge-partial-setters-77",
+          "month": "2026年12月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-partial-setters-78",
+          "month": "2027年1月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-partial-setters-79",
+          "month": "2027年2月",
+          "dates": 28,
+          "weeks": 6
+        },
+        {
+          "label": "edge-partial-setters-80",
+          "month": "2027年3月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-partial-setters-81",
+          "month": "2027年4月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "edge-partial-setters-82",
+          "month": "2027年5月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-partial-setters-83",
+          "month": "2027年6月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "edge-partial-setters-84",
+          "month": "2027年7月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-partial-setters-85",
+          "month": "2027年8月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-partial-setters-86",
+          "month": "2027年9月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "edge-partial-setters-87",
+          "month": "2027年10月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-partial-setters-88",
+          "month": "2027年11月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "edge-partial-setters-89",
+          "month": "2027年12月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-partial-setters-90",
+          "month": "2028年1月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-partial-setters-91",
+          "month": "2028年2月",
+          "dates": 29,
+          "weeks": 6
+        },
+        {
+          "label": "edge-partial-setters-92",
+          "month": "2028年3月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-partial-setters-93",
+          "month": "2028年4月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "edge-partial-setters-94",
+          "month": "2028年5月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-partial-setters-95",
+          "month": "2028年6月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "edge-partial-setters-96",
+          "month": "2028年7月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-partial-setters-97",
+          "month": "2028年8月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-partial-setters-98",
+          "month": "2028年9月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "edge-partial-setters-99",
+          "month": "2028年10月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-partial-setters-100",
+          "month": "2028年11月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "edge-partial-setters-101",
+          "month": "2028年12月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-partial-setters-102",
+          "month": "2029年1月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-partial-setters-103",
+          "month": "2029年2月",
+          "dates": 28,
+          "weeks": 6
+        },
+        {
+          "label": "edge-partial-setters-104",
+          "month": "2029年3月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-partial-setters-105",
+          "month": "2029年4月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "edge-partial-setters-106",
+          "month": "2029年5月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-partial-setters-107",
+          "month": "2029年6月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "edge-partial-setters-108",
+          "month": "2029年7月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-partial-setters-109",
+          "month": "2029年8月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-partial-setters-110",
+          "month": "2029年9月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "edge-partial-setters-111",
+          "month": "2029年10月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-partial-setters-112",
+          "month": "2029年11月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "edge-partial-setters-113",
+          "month": "2029年12月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-partial-setters-114",
+          "month": "2030年1月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "return-current",
+          "month": "2026年11月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "edge-partial-setters-820",
+          "month": "2026年11月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "edge-partial-setters-390",
+          "month": "2026年11月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "edge-partial-setters-320",
+          "month": "2026年11月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "edge-partial-setters-119",
+          "month": "2026年10月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-partial-setters-120",
+          "month": "2026年9月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "edge-partial-setters-121",
+          "month": "2026年8月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-partial-setters-122",
+          "month": "2026年7月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-partial-setters-123",
+          "month": "2026年6月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "edge-partial-setters-124",
+          "month": "2026年5月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-partial-setters-125",
+          "month": "2026年4月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "edge-partial-setters-126",
+          "month": "2026年3月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-partial-setters-127",
+          "month": "2026年2月",
+          "dates": 28,
+          "weeks": 6
+        },
+        {
+          "label": "edge-partial-setters-128",
+          "month": "2026年1月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-partial-setters-129",
+          "month": "2025年12月",
+          "dates": 31,
+          "weeks": 6
+        },
+        {
+          "label": "edge-partial-setters-130",
+          "month": "2025年11月",
+          "dates": 30,
+          "weeks": 6
+        },
+        {
+          "label": "record-return",
+          "month": "2025年11月",
+          "dates": 30,
+          "weeks": 6
+        }
+      ],
+      "errors": [],
+      "passed": true
+    }
+  ]
+}

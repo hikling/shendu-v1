@@ -11,8 +11,8 @@ function dateParts(value){
     : /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(value||''))?.slice(1).map(Number);
   if(!parts||parts.some(part=>!Number.isInteger(part)))throw new RangeError('Invalid calendar date');
   const [year,month,day]=parts;
-  const check=new Date(0);check.setFullYear(year,month-1,day);check.setHours(12,0,0,0);
-  if(year<1||year>9999||check.getFullYear()!==year||check.getMonth()+1!==month||check.getDate()!==day)throw new RangeError('Invalid calendar date');
+  const check=new Date(0);check.setUTCFullYear(year,month-1,day);check.setUTCHours(12,0,0,0);
+  if(year<1||year>9999||check.getUTCFullYear()!==year||check.getUTCMonth()+1!==month||check.getUTCDate()!==day)throw new RangeError('Invalid calendar date');
   return parts;
 }
 
@@ -31,9 +31,9 @@ export function lunarDateLabel(value){
 
 export function lunarMonthLabels(month){
   const [year,number]=dateParts(`${month}-01`);
-  const end=new Date(0);end.setFullYear(year,number,0);end.setHours(12,0,0,0);
+  const end=new Date(0);end.setUTCFullYear(year,number,0);end.setUTCHours(12,0,0,0);
   const days=new Map();
-  for(let day=1;day<=end.getDate();day++){
+  for(let day=1;day<=end.getUTCDate();day++){
     const value=`${String(year).padStart(4,'0')}-${pad(number)}-${pad(day)}`;
     days.set(value,lunarDateLabel(value));
   }

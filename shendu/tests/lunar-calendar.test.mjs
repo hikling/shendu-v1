@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {spawnSync} from 'node:child_process';
 import {lunarDateLabel,lunarMonthLabels} from '../ui/lunar-calendar.js';
+import {installCalendarTimezoneSpoof} from './helpers/calendar-timezone.cjs';
 
 test('Spring Festival and the preceding lunar year remain correct across solar and lunar new years',()=>{
   const first=lunarDateLabel('2026-02-17');
@@ -49,5 +50,17 @@ test('annotations use explicit local calendar fields rather than timezone-sensit
     const annotations=JSON.parse(result.stdout);
     assert.equal(annotations[0].date,'2026-02-17');assert.deepEqual(annotations[0],annotations[1]);
     baseline??=annotations;assert.deepEqual(annotations,baseline);
+  }
+});
+
+test('lunar annotations and Gregorian validation ignore inconsistent local timezone overrides',()=>{
+  const months=['2025-09','2025-10','2025-11','2025-12','2026-10','2026-11','2028-02'];
+  const expected=months.map(month=>[...lunarMonthLabels(month)]);
+  for(const mode of ['local-getters','partial-setters']){
+    const restore=installCalendarTimezoneSpoof({mode,targetZone:'America/New_York'});
+    try{
+      assert.deepEqual(months.map(month=>[...lunarMonthLabels(month)]),expected);
+      for(const invalid of ['2025-11-31','2026-02-29','2026-13-01'])assert.throws(()=>lunarDateLabel(invalid),RangeError);
+    }finally{restore()}
   }
 });

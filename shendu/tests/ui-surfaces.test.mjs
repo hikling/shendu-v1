@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {JSDOM} from 'jsdom';
+import {installCalendarTimezoneSpoof} from './helpers/calendar-timezone.cjs';
 
 const dom=new JSDOM('<!doctype html><body><button id="origin">打开</button><div id="surface"></div><div id="calendar"></div></body>',{url:'http://localhost'});
 const win=dom.window;
@@ -137,6 +138,45 @@ test('controlled calendar month browsing preserves navigation nodes and keyboard
     assert.deepEqual(selections,[],`${type} month browsing never selects a date`);
     ui.disposeUi(calendar);calendar.replaceChildren();
   }
+});
+
+test('stage calendar survives inconsistent timezone getters and setters through autumn and year boundaries',async()=>{
+  const originalZone=process.env.TZ;process.env.TZ='Asia/Shanghai';
+  try{for(const mode of ['partial-setters','local-getters']){
+    const restore=installCalendarTimezoneSpoof({mode,targetZone:'America/New_York'}),months=[],selections=[];
+    try{
+      const record={id:'autumn-original',period:'2025-11-02',status:'verified'};
+      ui.showStageCalendar(calendar,{month:'2025-09',today:'2025-11-06',records:[record],statusLabels:{verified:'已验证'},onMonthChange:value=>months.push(value),onSelect:(date,record)=>selections.push({date,id:record?.id})});
+      await settle();
+      const root=calendar.querySelector('[data-slot="calendar"]'),next=calendar.querySelector('[aria-label="下个月"]');
+      for(let index=0;index<29;index++){
+        const y=2025+Math.floor((8+index)/12),m=(8+index)%12+1,month=`${y}-${String(m).padStart(2,'0')}`;
+        const total=new Date(Date.UTC(y,m,0)).getUTCDate(),rows=[...calendar.querySelectorAll('.rdp-week')],buttons=[...calendar.querySelectorAll('[data-calendar-date]')];
+        assert.equal(rows.length,6,`${mode} ${month}: exactly six weeks`);
+        assert.ok(rows.every(row=>row.children.length===7),`${mode} ${month}: no duplicate/retained cells`);
+        assert.equal(buttons.length,total,`${mode} ${month}: one button per civil day`);
+        buttons.forEach((button,day)=>{
+          assert.equal(button.dataset.calendarDate,`${month}-${String(day+1).padStart(2,'0')}`);
+          assert.equal(button.querySelector('.stage-day-number').textContent,String(day+1));
+          assert.ok(button.querySelector('.stage-day-lunar').textContent);
+          const column=(new Date(Date.UTC(y,m-1,day+1)).getUTCDay()+6)%7+1;
+          assert.equal(button.parentElement.style.gridColumnStart,String(column));
+          assert.equal(rows.indexOf(button.closest('.rdp-week')),Math.floor(((new Date(Date.UTC(y,m-1,1)).getUTCDay()+6)%7+day)/7));
+        });
+        if(month==='2025-11'){
+          const button=calendar.querySelector('[data-calendar-date="2025-11-02"]');
+          assert.equal(button.dataset.calendarRecord,record.id);assert.match(button.getAttribute('aria-label'),/星期日，已验证/);
+          button.click();await settle();assert.deepEqual(selections,[{date:record.period,id:record.id}]);
+        }
+        next.focus();next.click();await settle();
+        assert.equal(document.activeElement,next);assert.equal(calendar.querySelector('[data-slot="calendar"]'),root);
+        assert.ok(buttons.every(button=>!button.isConnected),'old dates are removed on month change');
+      }
+      assert.equal(months.length,29);assert.equal(selections.length,1,'browsing never selects');
+      calendar.querySelector('.stage-return-month').click();await settle();
+      assert.equal(months.at(-1),'2025-11');assert.equal(calendar.querySelector('[data-calendar-date="2025-11-02"]').dataset.calendarRecord,record.id);
+    }finally{ui.disposeUi(calendar);calendar.replaceChildren();restore()}
+  }}finally{if(originalZone===undefined)delete process.env.TZ;else process.env.TZ=originalZone}
 });
 
 test('DropdownMenu keyboard opening and item selection have one interaction owner',async()=>{
