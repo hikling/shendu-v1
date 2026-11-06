@@ -1,6 +1,7 @@
 services:
   shendu:
-    build: .
+    image: shendu-deploy:installed
+    pull_policy: never
     container_name: shendu
     restart: unless-stopped
     security_opt:

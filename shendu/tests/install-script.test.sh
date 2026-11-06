@@ -16,7 +16,7 @@ export real_cat real_ln real_install
 tools_dir="$suite_dir/tools"
 mkdir -p "$tools_dir" "$suite_dir/templates"
 # No real apt, Docker, Git, curl or OpenSSL can be reached through the test PATH.
-for utility in awk basename chmod cmp cp cut date dirname find grep head install ln mkdir mktemp mv od pwd readlink rm rmdir sed sleep sort stat tail tr wc; do
+for utility in awk basename chmod cmp cp cut date dirname find grep head install ln mkdir mktemp mv od pwd readlink rm rmdir sed sha256sum sleep sort stat tail tr wc; do
   utility_path="$(command -v "$utility")"
   ln -s "$utility_path" "$tools_dir/$utility"
 done
@@ -47,6 +47,9 @@ case " $* " in
   *' openssl '*) cp "$MOCK_TEMPLATES/openssl" "$MOCK_BIN/openssl" ;;
 esac
 case " $* " in
+  *' curl '*) cp "$MOCK_TEMPLATES/curl" "$MOCK_BIN/curl" ;;
+esac
+case " $* " in
   *' docker-ce '*) cp "$MOCK_TEMPLATES/docker" "$MOCK_BIN/docker" ;;
 esac
 MOCK
@@ -74,7 +77,19 @@ case " $* " in
 esac
 case "$*" in
   'compose version'*) [ "${MOCK_COMPOSE_BAD:-0}" != 1 ] ;;
-  info*) [ "${MOCK_DAEMON_STOPPED:-0}" != 1 ] || [ -f "$MOCK_CASE/daemon-started" ] ;;
+  info*)
+    [ "${MOCK_DAEMON_STOPPED:-0}" != 1 ] || [ -f "$MOCK_CASE/daemon-started" ] || exit 1
+    case "$*" in *--format*) printf '%s\n' "${MOCK_PLATFORM:-linux x86_64}" ;; esac
+    ;;
+  'image inspect'*)
+    [ "${MOCK_IMAGE_CACHED:-0}" = 1 ] || [ -f "$MOCK_CASE/image-loaded" ] || exit 1
+    [ "${MOCK_IMAGE_META_BAD:-0}" != 1 ] || { printf 'wrong-label linux amd64\n'; exit 0; }
+    case "${MOCK_PLATFORM:-linux x86_64}" in *arm64|*aarch64) arch=arm64 ;; *) arch=amd64 ;; esac
+    printf '0123456789abcdef0123456789abcdef01234567 linux %s\n' "$arch"
+    ;;
+  load*) [ "${MOCK_IMAGE_LOAD_FAIL:-0}" != 1 ] || exit 1; : > "$MOCK_CASE/image-loaded" ;;
+  build*) [ "${MOCK_BUILD_FAIL:-0}" != 1 ] || exit 1; : > "$MOCK_CASE/image-loaded" ;;
+  inspect*) printf 'healthy\n' ;;
   'compose config'*) [ "${MOCK_CONFIG_FAIL:-0}" != 1 ] ;;
   'compose build'*) [ "${MOCK_BUILD_FAIL:-0}" != 1 ] ;;
   'compose pull'*) [ "${MOCK_PULL_FAIL:-0}" != 1 ] ;;
@@ -111,9 +126,20 @@ cat > "$suite_dir/templates/curl" <<'MOCK'
 printf 'curl %s\n' "$*" >> "$MOCK_LOG"
 [ "${MOCK_DOWNLOAD_FAIL:-0}" != 1 ] || exit 22
 while [ "$#" -gt 0 ]; do
+  case "$1" in https://github.com/hikling/shendu-v1/releases/download/*) image_url="$1" ;; esac
   if [ "$1" = -o ]; then
     shift
-    printf 'mock Docker signing key\n' > "$1"
+    case "${image_url:-}" in
+      *.sha256)
+        if [ "${MOCK_CHECKSUM_BAD:-0}" = 1 ]; then printf 'invalid checksum\n' > "$1"
+        else printf 'mock image archive\n' | sha256sum > "$1"; fi
+        ;;
+      *.tar.gz)
+        printf 'mock image archive\n' > "$1"
+        [ "${MOCK_IMAGE_BYTES_BAD:-0}" != 1 ] || printf 'corruption\n' >> "$1"
+        ;;
+      *) printf 'mock Docker signing key\n' > "$1" ;;
+    esac
     exit 0
   fi
   shift
@@ -133,6 +159,8 @@ case " $* " in
   *' remote.origin.url '*) printf '%s\n' "${MOCK_ORIGIN:-https://github.com/hikling/shendu-v1.git}" ;;
   *' symbolic-ref '*) printf '%s\n' "${MOCK_BRANCH:-main}" ;;
   *' diff '*) [ "${MOCK_DIRTY:-0}" != 1 ] ;;
+  *' rev-parse HEAD:shendu '*) printf '0123456789abcdef0123456789abcdef01234567\n' ;;
+  *' rev-parse '*) printf 'mock-sha\n' ;;
   *) exit 0 ;;
 esac
 MOCK
@@ -161,6 +189,7 @@ new_case() {
   cp "$suite_dir/templates/"* "$MOCK_BIN/"
   : > "$MOCK_LOG"
   unset MOCK_UID MOCK_OS MOCK_OS_VERSION MOCK_APT_FAIL MOCK_COMPOSE_BAD MOCK_DAEMON_STOPPED MOCK_CONFIG_FAIL MOCK_BUILD_FAIL MOCK_PULL_FAIL MOCK_HEALTH_FAIL MOCK_SMOKE_FAIL MOCK_OPENSSL_FAIL MOCK_DOWNLOAD_FAIL MOCK_CLONE_FAIL MOCK_ORIGIN MOCK_BRANCH MOCK_DIRTY MOCK_PASSWORD_RACE MOCK_SNAPSHOT_FAIL MOCK_SNAPSHOT_EXEC_FAIL MOCK_INSTALL_PARTIAL_FAIL SHENDU_SNAPSHOT_PASSWORD SHENDU_SNAPSHOT_PASSWORD_FILE
+  unset MOCK_IMAGE_CACHED MOCK_IMAGE_LOAD_FAIL MOCK_CHECKSUM_BAD MOCK_IMAGE_BYTES_BAD MOCK_IMAGE_META_BAD MOCK_PLATFORM SHENDU_BUILD_FROM_SOURCE SHENDU_UPDATE_GIT_ONLY
   # Redirect only system package-source paths in the copied scripts; OS detection
   # is supplied by the fake cat command. All actual installer logic stays intact.
   sed "s|/etc/apt/|$MOCK_CASE/etc/apt/|g" "$repo_dir/install.sh" > "$MOCK_CASE/install.sh"
@@ -173,6 +202,7 @@ new_case() {
   : > "$MOCK_FIXTURE/shendu/Caddyfile"
   cp "$repo_dir/shendu/scripts/update.sh" "$MOCK_FIXTURE/shendu/scripts/update.sh"
   cp "$repo_dir/shendu/scripts/site-backup.sh" "$MOCK_FIXTURE/shendu/scripts/site-backup.sh"
+  cp "$repo_dir/shendu/scripts/prepare-image.sh" "$MOCK_FIXTURE/shendu/scripts/prepare-image.sh"
   app_dir="$MOCK_FIXTURE/shendu"
   output="$MOCK_CASE/output.log"
 }
@@ -188,6 +218,12 @@ run_snapshot() {
 }
 run_update() {
   SHENDU_UPDATE_REEXEC=1 SHENDU_BACKUP_BEFORE_UPDATE=y SHENDU_UPDATE_GIT_ONLY=1 PATH="$MOCK_BIN:$tools_dir" /bin/sh "$app_dir/scripts/update.sh" "$MOCK_FIXTURE" > "$output" 2>&1 < /dev/null
+}
+run_image() {
+  PATH="$MOCK_BIN:$tools_dir" /bin/sh "$app_dir/scripts/prepare-image.sh" > "$output" 2>&1 < /dev/null
+}
+run_full_update() {
+  SHENDU_UPDATE_REEXEC=1 SHENDU_BACKUP_BEFORE_UPDATE=y PATH="$MOCK_BIN:$tools_dir" /bin/sh "$app_dir/scripts/update.sh" "$MOCK_FIXTURE" > "$output" 2>&1 < /dev/null
 }
 fail() {
   printf 'FAILED case %s: %s\n' "$case_number" "$*" >&2
@@ -211,7 +247,9 @@ run_app reviews.acme.org || fail 'fresh install failed'
 grep -Fx 'SHENDU_DOMAIN=reviews.acme.org' "$app_dir/.env" >/dev/null || fail 'domain was not configured'
 grep -Fx 'SHENDU_MASTER_KEY=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' "$app_dir/.env" >/dev/null || fail 'fresh key was not configured'
 [ "$(stat -c %a "$app_dir/.env")" = 600 ] || fail '.env permissions are not 600'
-assert_logged 'compose build'
+assert_logged 'docker load'
+assert_not_logged 'docker build'
+assert_not_logged 'compose build'
 assert_logged '--wait-timeout'
 assert_logged 'node scripts/smoke-ui.mjs http://127.0.0.1:3000'
 assert_not_logged 'apt-get'
@@ -225,7 +263,7 @@ pass 'domain arguments are normalized before writing fresh configuration'
 new_case
 MOCK_OS_VERSION=13; export MOCK_OS_VERSION
 run_app reviews.acme.org || fail 'Debian 13 install failed'
-assert_logged 'compose build'
+assert_logged 'docker load'
 pass 'Debian 13 is supported as well as Debian 12'
 
 new_case
@@ -323,12 +361,12 @@ assert_not_logged 'compose build'
 assert_not_logged 'openssl'
 pass 'invalid existing key is rejected instead of regenerated'
 
-for failing_stage in BUILD HEALTH SMOKE; do
+for failing_stage in IMAGE_LOAD HEALTH SMOKE; do
   new_case
   eval "MOCK_${failing_stage}_FAIL=1; export MOCK_${failing_stage}_FAIL"
   expect_app_failure reviews.acme.org
   [ -f "$app_dir/.env" ] || fail 'failure removed generated config'
-  if [ "$failing_stage" = BUILD ]; then assert_not_logged 'compose up'; fi
+  if [ "$failing_stage" = IMAGE_LOAD ]; then assert_not_logged 'compose up'; fi
   pass "$failing_stage failure returns nonzero and preserves configuration for retry"
 done
 
@@ -516,5 +554,95 @@ assert_not_logged 'fetch --prune'
 assert_not_logged 'compose build'
 [ -z "$(find "$app_dir/tmp" -type f -print -quit)" ] || fail 'failed update left snapshot password temporary files'
 pass 'required pre-update snapshot failure stops before Git or container changes'
+
+new_case
+existing_env
+MOCK_IMAGE_CACHED=1; export MOCK_IMAGE_CACHED
+run_app || fail 'warm install failed'
+cmp "$app_dir/.env" "$MOCK_CASE/env-before" || fail 'warm install changed config'
+assert_not_logged 'curl'
+assert_not_logged 'docker load'
+assert_not_logged 'docker build'
+assert_not_logged 'compose build'
+grep -F 'shendu-deploy:0123456789abcdef0123456789abcdef01234567-amd64' "$app_dir/compose.override.yaml" >/dev/null || fail 'wrong local image selection'
+pass 'warm deployment reuses the verified image with no download or compilation'
+
+for failure in DOWNLOAD_FAIL CHECKSUM_BAD IMAGE_BYTES_BAD IMAGE_LOAD_FAIL IMAGE_META_BAD; do
+  new_case
+  printf '# Managed by Shendu prepare-image.sh. Do not edit.\nservices:\n  shendu:\n    image: old-known-image\n' > "$app_dir/compose.override.yaml"
+  cp "$app_dir/compose.override.yaml" "$MOCK_CASE/override-before"
+  eval "MOCK_$failure=1; export MOCK_$failure"
+  if run_image; then fail "image $failure unexpectedly succeeded"; fi
+  cmp "$app_dir/compose.override.yaml" "$MOCK_CASE/override-before" || fail 'failed image changed active selection'
+  assert_not_logged 'docker build'
+  assert_not_logged 'compose up'
+  case "$failure" in DOWNLOAD_FAIL|CHECKSUM_BAD|IMAGE_BYTES_BAD) assert_not_logged 'docker load' ;; esac
+  [ -z "$(find "$app_dir/tmp" -type f -print -quit 2>/dev/null)" ] || fail 'failed image left partial download'
+  pass "image $failure preserves active selection and cleans downloads without build fallback"
+done
+
+new_case
+printf 'services:\n  shendu:\n    image: my-custom-image\n' > "$app_dir/compose.override.yaml"
+cp "$app_dir/compose.override.yaml" "$MOCK_CASE/override-before"
+if run_image; then fail 'user override was overwritten'; fi
+cmp "$app_dir/compose.override.yaml" "$MOCK_CASE/override-before" || fail 'custom override changed'
+assert_not_logged 'curl'
+pass 'custom Compose override is protected before any download'
+
+new_case
+printf 'keep linked config\n' > "$MOCK_CASE/linked-config"
+ln -s "$MOCK_CASE/linked-config" "$app_dir/compose.override.yaml"
+if run_image; then fail 'linked override accepted'; fi
+grep -Fx 'keep linked config' "$MOCK_CASE/linked-config" >/dev/null || fail 'linked target modified'
+assert_not_logged 'curl'
+pass 'symbolic-link override is rejected without touching its target'
+
+new_case
+MOCK_PLATFORM='linux aarch64'; export MOCK_PLATFORM
+run_image || fail 'arm64 image failed'
+assert_logged 'shendu-linux-arm64.tar.gz'
+grep -F -- '-arm64' "$app_dir/compose.override.yaml" >/dev/null || fail 'arm64 override missing'
+pass 'ARM64 Docker daemon selects its native image'
+
+new_case
+MOCK_PLATFORM='windows amd64'; export MOCK_PLATFORM
+if run_image; then fail 'unsupported daemon platform accepted'; fi
+assert_not_logged 'curl'
+assert_not_logged 'docker load'
+pass 'unsupported Docker platform fails before downloading'
+
+new_case
+SHENDU_BUILD_FROM_SOURCE=1; export SHENDU_BUILD_FROM_SOURCE
+run_image || fail 'explicit source build failed'
+assert_logged 'docker build --build-arg SHENDU_SOURCE_TREE='
+assert_not_logged 'curl'
+pass 'source compilation is available only when explicitly selected'
+
+new_case
+mkdir -p "$MOCK_FIXTURE/.git" "$app_dir/data"
+existing_env
+printf 'original key\n' > "$app_dir/data/backup-master.key"
+cp "$app_dir/data/backup-master.key" "$MOCK_CASE/key-before"
+run_full_update || fail 'full prebuilt update failed'
+assert_logged 'fetch --prune origin main'
+assert_logged 'docker load'
+assert_logged 'compose up -d --no-deps shendu'
+assert_logged 'node scripts/smoke-ui.mjs http://127.0.0.1:3000'
+assert_not_logged 'docker build'
+assert_not_logged 'compose build'
+cmp "$app_dir/.env" "$MOCK_CASE/env-before" || fail 'update changed .env'
+cmp "$app_dir/data/backup-master.key" "$MOCK_CASE/key-before" || fail 'update changed key'
+pass 'full update snapshots first, loads a prebuilt image, checks health/UI and retains config/key'
+
+new_case
+mkdir -p "$MOCK_FIXTURE/.git" "$app_dir/data"
+existing_env
+printf 'original key\n' > "$app_dir/data/backup-master.key"
+MOCK_IMAGE_BYTES_BAD=1; export MOCK_IMAGE_BYTES_BAD
+if run_full_update; then fail 'corrupt update image accepted'; fi
+assert_not_logged 'compose up'
+assert_not_logged 'docker build'
+cmp "$app_dir/.env" "$MOCK_CASE/env-before" || fail 'failed update changed config'
+pass 'corrupt update image stops before replacing any running container'
 
 printf 'Passed %s isolated installation scenarios.\n' "$case_number"

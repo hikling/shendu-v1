@@ -41,9 +41,11 @@
 curl -fsSL https://raw.githubusercontent.com/hikling/shendu-v1/main/install.sh -o shendu-install.sh && sh shendu-install.sh
 ```
 
-按提示输入域名，例如 `review.example.com`，不带 `https://`。脚本自动下载到 `/opt/shendu-v1`、安装缺少的依赖、生成密钥、构建并启动 **Docker Compose + Caddy**，最后检查应用与前端资源并显示访问地址。已有 Docker 和配置会被沿用，宿主机无需安装 Node.js，也无需手动修改 `.env`。
+按提示输入域名，例如 `review.example.com`，不带 `https://`。脚本自动下载到 `/opt/shendu-v1`、安装缺少的依赖、生成密钥，下载并校验 GitHub Actions 已构建好的镜像，再启动 **Docker Compose + Caddy**。最后检查应用与前端资源并显示访问地址。已有 Docker 和配置会被沿用，宿主机无需安装 Node.js，也无需手动修改 `.env`。
 
-如果提示找不到 `curl`，先执行一次 `apt-get update && apt-get install -y curl`，再运行上面的命令。首次构建需要等待；HTTPS 证书由 Caddy 自动申请，取决于域名解析和端口连通。
+**默认不在服务器执行 `npm ci`、前端编译或应用镜像构建。** 支持 Linux amd64/arm64；相同版本已有镜像时直接复用。首次部署仍需下载镜像并可能安装 Docker，耗时取决于网络。若该版本镜像尚未发布，脚本会明确停止，等待 Actions 发布成功后重试。
+
+如果提示找不到 `curl`，先执行一次 `apt-get update && apt-get install -y curl`。HTTPS 证书由 Caddy 自动申请，取决于域名解析和端口连通。
 
 完成后打开显示的 HTTPS 地址。第一个注册账户会成为超级管理员，随后自动关闭公开注册。
 
@@ -67,10 +69,12 @@ npm start
 在 root shell 执行：
 
 ```sh
-sh /opt/shendu-v1/shendu/scripts/update.sh /opt/shendu-v1
+shendu_updater=$(mktemp)
+curl -fsSL https://raw.githubusercontent.com/hikling/shendu-v1/main/shendu/scripts/update.sh -o "$shendu_updater" && sh "$shendu_updater" /opt/shendu-v1
+rm -f "$shendu_updater"
 ```
 
-脚本会询问是否先创建整站加密快照，建议输入 `y`；然后拉取 `origin/main`、重新构建并检查容器健康。它要求部署目录是无本地代码改动的 `main` 分支 Git 克隆，并保留现有 `.env`。完整过程见[更新与检查](docs/deployment.md#更新与检查)。
+使用最新更新器可避免旧脚本继续本机编译。脚本会询问是否先创建整站加密快照，建议输入 `y`；然后拉取 `origin/main`、准备对应版本的预构建镜像并检查健康与前端资源。它要求部署目录是无本地代码改动的 `main` 分支 Git 克隆，保留现有 `.env`、密钥、数据和备份。完整过程见[更新与检查](docs/deployment.md#更新与检查)。
 
 ## 数据与备份
 

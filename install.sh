@@ -45,7 +45,7 @@ if [ -e "$repo_dir" ]; then
   echo '复用现有项目目录；不会拉取或覆盖代码。升级现有站点请使用更新脚本。'
 else
   echo '正在下载慎独 main 分支……'
-  git clone --branch main --single-branch https://github.com/hikling/shendu-v1.git "$repo_dir" || fail '项目下载失败；请检查服务器能否连接 GitHub，再重试。'
+  git clone --depth 1 --branch main --single-branch https://github.com/hikling/shendu-v1.git "$repo_dir" || fail '项目下载失败；请检查服务器能否连接 GitHub，再重试。'
 fi
 
 [ -f "$repo_dir/shendu/scripts/install.sh" ] && [ -f "$repo_dir/shendu/compose.yaml" ] || fail '项目不完整，缺少安装脚本或 Compose 配置。'

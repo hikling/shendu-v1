@@ -21,14 +21,15 @@ printf '旧站副本：%s\n' "$backup_dir"
 ## 2. 克隆新仓库并复制配置、数据
 
 ```sh
-git clone https://github.com/hikling/shendu-v1.git /opt/shendu-v1
+git clone --depth 1 https://github.com/hikling/shendu-v1.git /opt/shendu-v1
 cd /opt/shendu-v1/shendu
 cp -a /opt/Shendu/shendu/.env .env
 mkdir -p data tmp
 cp -a /opt/Shendu/shendu/data/. data/
 chmod 600 .env
 docker compose config >/dev/null
-docker compose up -d --build
+sh scripts/prepare-image.sh
+docker compose up -d
 docker compose ps
 ```
 

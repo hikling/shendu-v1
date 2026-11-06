@@ -19,7 +19,7 @@
 curl -fsSL https://raw.githubusercontent.com/hikling/shendu-v1/main/install.sh -o shendu-install.sh && sh shendu-install.sh
 ```
 
-只需按提示填写域名。脚本依次下载仓库、补齐依赖、生成 `.env`、构建镜像、等待容器健康、检查实际 JS/CSS，再显示访问地址。下载失败时不会执行脚本。若服务器缺少 `curl`，先运行 `apt-get update && apt-get install -y curl`。
+只需按提示填写域名。脚本依次浅克隆当前代码、补齐依赖、生成 `.env`、下载并校验 CI 预构建镜像、等待容器健康、检查实际 JS/CSS，再显示访问地址。服务器默认不安装 npm 依赖、不编译前端、不构建应用镜像。下载失败时不会执行安装入口脚本。若服务器缺少 `curl`，先运行 `apt-get update && apt-get install -y curl`。
 
 也可直接提供域名与安装路径，省去提问：
 
@@ -33,7 +33,7 @@ sh shendu-install.sh review.example.com /srv/shendu-v1
 sh /opt/shendu-v1/shendu/scripts/install.sh review.example.com
 ```
 
-安装器会复用可用的 Docker Engine 和 Compose v2；没有 Docker 时使用官方 Debian 软件源安装。已存在但不完整的 Docker 安装会给出修复提示，不会擅自卸载现有软件。启动前会验证配置，构建失败不会主动停止正在运行的旧容器。
+安装器会复用可用的 Docker Engine 和 Compose v2；没有 Docker 时使用官方 Debian 软件源安装。已存在但不完整的 Docker 安装会给出修复提示，不会擅自卸载现有软件。镜像下载、校验或加载失败时，不替换正在运行的旧容器，也不自动转为耗时的本机编译。
 
 安装中断后可重跑原命令：已有 `.env` 保持原样，原密钥、数据、备份和 Caddy 卷保留；若目录中有数据却缺少 `.env`，会停止并要求恢复配置。域名参数与已有配置冲突时也会停止。不要通过删除配置或数据“重新安装”。
 
@@ -61,7 +61,8 @@ sh /opt/shendu-v1/shendu/scripts/install.sh review.example.com
 cd /opt/shendu-v1/shendu
 chmod 600 .env
 docker compose config >/dev/null
-docker compose up -d --build
+sh scripts/prepare-image.sh
+docker compose up -d
 docker compose ps
 ```
 
@@ -75,7 +76,17 @@ docker compose ps
 
 [Caddyfile](../shendu/Caddyfile)会为符合条件的公网域名[自动申请 HTTPS 证书](https://caddyserver.com/docs/automatic-https)。证书和配置保存在 Docker 的 `caddy_data`、`caddy_config` 命名卷中。DNS 未指向服务器或端口被阻断时，证书无法正常签发。
 
-[Dockerfile](../shendu/Dockerfile)在独立构建阶段执行 `npm ci` 和 `npm run build`。运行镜像使用 Node.js 24，包含服务端、静态资源和编译产物；宿主机无需安装 Node.js。入口脚本为挂载目录校正权限后，以普通 `node` 用户运行应用。
+[Dockerfile](../shendu/Dockerfile)由 GitHub Actions 在原生 amd64/arm64 机器上构建并测试，独立构建阶段执行 `npm ci` 和 `npm run build`，复用 BuildKit 缓存。运行镜像使用 Node.js 24，包含服务端、静态资源和编译产物；宿主机无需安装 Node.js。入口脚本为挂载目录校正权限后，以普通 `node` 用户运行应用。
+
+### 预构建镜像与本机缓存
+
+`prepare-image.sh` 按 `git rev-parse HEAD:shendu` 的应用目录版本和 Docker 平台选择镜像，从公开 GitHub Release `deploy-<应用目录版本>` 下载压缩镜像和 SHA-256 校验文件；无需登录镜像仓库。只有两种平台的测试和镜像检查都通过后才发布。下载后校验 SHA-256、镜像源码标签和平台，再写入安装器管理的 `compose.override.yaml`。该文件不包含密钥，不进入 Git 或镜像；`.env` 不会被改写。普通 Compose 和快照命令自动使用同一镜像。
+
+相同版本的本机镜像通过检查后直接复用，不下载、不编译。仅 README、Trellis 记录等应用目录外的变化会复用同一版本。`compose.override.yaml` 或 `.yml` 如有自行维护的配置，安装器会停止，需先自行合并/保存配置，不能直接覆盖。
+
+默认部署耗时主要是首次 Docker/Caddy/应用镜像下载与启动；网络慢仍可能等待，但不再受服务器编译能力限制。如果提示镜像尚未发布，先查看 [Actions](https://github.com/hikling/shendu-v1/actions/workflows/verify.yml)，等待成功后重试，不要换成随机版本。
+
+需要自行编译时可明确执行 `SHENDU_BUILD_FROM_SOURCE=1 sh scripts/prepare-image.sh`，再 `docker compose up -d`；这是可选的源码路径。基于源码的 Docker 构建仍需联网和足够内存，耗时不会由预构建路径保证。
 
 ## 首次启动与检查
 
@@ -97,7 +108,9 @@ curl -fsS "https://$shendu_domain/healthz"
 在 root shell 执行：
 
 ```sh
-sh /opt/shendu-v1/shendu/scripts/update.sh /opt/shendu-v1
+shendu_updater=$(mktemp)
+curl -fsSL https://raw.githubusercontent.com/hikling/shendu-v1/main/shendu/scripts/update.sh -o "$shendu_updater" && sh "$shendu_updater" /opt/shendu-v1
+rm -f "$shendu_updater"
 ```
 
 更新脚本要求：
@@ -108,7 +121,9 @@ sh /opt/shendu-v1/shendu/scripts/update.sh /opt/shendu-v1
 
 脚本首先校验配置，再询问是否创建更新前整站加密快照。**建议输入 `y`；直接回车或非交互运行默认跳过备份。** 已选择备份却生成失败时，更新会停止。
 
-随后脚本快进更新 `origin/main`、拉取 Caddy、构建新应用镜像，并启动应用等待健康检查。构建期间旧应用继续运行；应用通过检查后再启动完整服务。核对：
+下载最新更新器可让仍在使用旧版脚本的服务器直接采用快速部署。旧更新器会把自己复制后执行，单纯在其运行中拉取新代码不能改变已经运行的旧流程。
+
+随后脚本快进更新 `origin/main`、拉取 Caddy、下载/复用准确版本的应用镜像，再启动应用等待健康与前端资源检查。镜像准备期间旧应用继续运行；应用通过检查后再启动完整服务。核对：
 
 ```sh
 cd /opt/shendu-v1/shendu
@@ -118,7 +133,7 @@ shendu_domain=$(sed -n 's/^SHENDU_DOMAIN=//p' .env)
 curl -fsS "https://$shendu_domain/healthz"
 ```
 
-保留 `.env`、完整 `data/`、`data/backup-master.key` 和 Caddy 卷。不要为“刷新版本”删除数据库或主密钥。GitHub 的 `main` 或 CI 已更新，不代表现有服务器容器自动更新；需要完成拉取和镜像重建。
+保留 `.env`、完整 `data/`、`data/backup-master.key` 和 Caddy 卷。不要为“刷新版本”删除数据库或主密钥。GitHub 的 `main` 或 CI 已更新，不代表现有服务器容器自动更新；需要运行更新器准备并切换镜像。
 
 ## 数据与备份
 
@@ -132,6 +147,7 @@ curl -fsS "https://$shendu_domain/healthz"
 | `backups/*.shendu-db` | 服务器整站加密快照 |
 | `tmp/` | 导入与备份过程中的临时文件 |
 | `.env` | 域名、密钥与容器环境配置 |
+| `compose.override.yaml` | 安装器选择的已校验本机镜像，不含密钥 |
 
 `data/` 和 `tmp/` 是宿主机挂载目录，重建容器不会删除它们。这些运行资料、`.env` 和备份文件不会作为项目代码提交到 Git。
 
@@ -216,11 +232,11 @@ docker compose ps
 docker compose logs --tail=200 shendu
 ```
 
-按日志检查构建依赖、数据目录权限与原主密钥是否匹配。`/healthz` 为 503 且提示 `data_key_unavailable` 时，应恢复原密钥与对应配置；不要随机生成新密钥替换旧站密钥。
+按日志检查镜像准备、数据目录权限与原主密钥是否匹配。`/healthz` 为 503 且提示 `data_key_unavailable` 时，应恢复原密钥与对应配置；不要随机生成新密钥替换旧站密钥。
 
 ### 更新后仍是旧界面
 
-先确认已执行更新脚本并完成镜像重建，再用 Windows `Ctrl+F5` 强制刷新。手机可清除本站缓存后重开。仅执行 `git pull` 不会更新正在运行的镜像。
+先确认已执行最新更新脚本并切换到对应镜像，再用 Windows `Ctrl+F5` 强制刷新。手机可清除本站缓存后重开。仅执行 `git pull` 不会更新正在运行的镜像。
 
 ### 服务器存在本地代码修改
 

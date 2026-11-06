@@ -121,8 +121,8 @@ docker compose config >/dev/null
 echo "[5/7] 拉取新版 Caddy 镜像（当前网站继续运行）……"
 docker compose pull caddy
 
-echo "[6/7] 构建新版应用镜像（当前网站继续运行）……"
-docker compose build --pull shendu
+echo "[6/7] 准备已通过 CI 的应用镜像（当前网站继续运行）……"
+sh "$app_dir/scripts/prepare-image.sh" || fail '镜像准备失败，原应用容器仍保持运行。'
 
 echo "[7/7] 启动新版应用并等待健康检查……"
 docker compose up -d --no-deps shendu
@@ -148,6 +148,7 @@ fi
 
 echo "应用健康检查通过，正在启动完整服务并清理旧容器……"
 docker compose up -d --remove-orphans
+docker compose exec -T shendu node scripts/smoke-ui.mjs http://127.0.0.1:3000 || fail '应用前端资源检查失败，请查看日志。'
 docker compose ps
 
 version="$(sed -n '1p' VERSION 2>/dev/null || true)"

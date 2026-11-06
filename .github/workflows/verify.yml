@@ -10,14 +10,28 @@ permissions:
 
 jobs:
   verify:
-    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: amd64
+            runner: ubuntu-24.04
+          - arch: arm64
+            runner: ubuntu-24.04-arm
+    runs-on: ${{ matrix.runner }}
+    outputs:
+      tree: ${{ steps.source.outputs.tree }}
     steps:
       - uses: actions/checkout@v4
+      - name: Identify immutable application source
+        id: source
+        run: echo "tree=$(git rev-parse HEAD:shendu)" >> "$GITHUB_OUTPUT"
       - name: Verify isolated installation scenarios
         run: |
           sh -n install.sh
           sh -n shendu/scripts/install.sh
           sh -n shendu/scripts/update.sh
+          sh -n shendu/scripts/prepare-image.sh
           sh -n shendu/scripts/site-backup.sh
           sh -n shendu/scripts/docker-entrypoint.sh
           sh -n shendu/tests/install-script.test.sh
@@ -29,13 +43,14 @@ jobs:
           cache-dependency-path: shendu/package-lock.json
       - name: Install locked frontend dependencies
         working-directory: shendu
-        run: npm ci
+        run: npm ci --no-audit --no-fund
       - name: Check scripts and tests
         working-directory: shendu
         run: |
           npm run check
           npm test
-      - name: Validate Compose configuration and build image
+      - uses: docker/setup-buildx-action@v3
+      - name: Validate Compose configuration
         working-directory: shendu
         run: |
           cp .env.example .env
@@ -46,11 +61,22 @@ jobs:
             const { services } = JSON.parse(readFileSync(0, "utf8"));
             if (Object.keys(services.caddy.environment).some(key => key !== "SHENDU_DOMAIN")) throw new Error("Caddy must receive only its domain, never application secrets");
             if (services.shendu.environment.SHENDU_TRUST_PROXY !== "true") throw new Error("Private Compose upstream must explicitly trust Caddy");
+            if (services.shendu.build || services.shendu.pull_policy !== "never") throw new Error("Default server deployment must use a prepared image without building");
           '
-          docker build -t shendu-ci .
+      - name: Build cached native image
+        uses: docker/build-push-action@v6
+        with:
+          context: shendu
+          load: true
+          tags: shendu-deploy:${{ steps.source.outputs.tree }}-${{ matrix.arch }}
+          build-args: SHENDU_SOURCE_TREE=${{ steps.source.outputs.tree }}
+          cache-from: type=gha,scope=shendu-${{ matrix.arch }}
+          cache-to: type=gha,mode=max,scope=shendu-${{ matrix.arch }}
       - name: Start image and check health
+        env:
+          IMAGE: shendu-deploy:${{ steps.source.outputs.tree }}-${{ matrix.arch }}
         run: |
-          docker run -d --name shendu-ci -p 127.0.0.1:43127:3000 shendu-ci
+          docker run -d --name shendu-ci -p 127.0.0.1:43127:3000 "$IMAGE"
           for attempt in $(seq 1 30); do
             if curl -fsS http://127.0.0.1:43127/healthz; then
               node shendu/scripts/smoke-ui.mjs http://127.0.0.1:43127
@@ -60,6 +86,94 @@ jobs:
           done
           docker logs shendu-ci
           exit 1
+      - name: Package verified image
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        env:
+          IMAGE: shendu-deploy:${{ steps.source.outputs.tree }}-${{ matrix.arch }}
+          ARCH: ${{ matrix.arch }}
+        run: |
+          set -euo pipefail
+          mkdir -p deploy-images
+          docker save "$IMAGE" | gzip -1 > "deploy-images/shendu-linux-$ARCH.tar.gz"
+          cd deploy-images
+          sha256sum "shendu-linux-$ARCH.tar.gz" > "shendu-linux-$ARCH.tar.gz.sha256"
+      - uses: actions/upload-artifact@v4
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        with:
+          name: deploy-images-${{ matrix.arch }}
+          path: deploy-images/*
+          compression-level: 0
+          retention-days: 1
       - name: Clean up smoke container
         if: always()
         run: docker rm -f shendu-ci || true
+
+  publish:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: verify
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    concurrency:
+      group: deploy-${{ needs.verify.outputs.tree }}
+      cancel-in-progress: false
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: deploy-images-*
+          path: deploy-images
+          merge-multiple: true
+      - name: Publish immutable public deployment assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          TREE: ${{ needs.verify.outputs.tree }}
+          COMMIT: ${{ github.sha }}
+        run: |
+          tag="deploy-$TREE"
+          if ! gh release view "$tag" >/dev/null 2>&1; then
+            gh release create "$tag" --target "$COMMIT" --title "Deployment $TREE" --notes 'Verified Linux amd64/arm64 images. Deployment scripts verify SHA-256 and source identity before use.' --latest=false
+          fi
+          existing=$(gh release view "$tag" --json assets --jq '.assets[].name')
+          for asset in deploy-images/*; do
+            name=$(basename "$asset")
+            if ! printf '%s\n' "$existing" | grep -Fx "$name" >/dev/null; then
+              gh release upload "$tag" "$asset"
+            fi
+          done
+
+  download-smoke:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [verify, publish]
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: amd64
+            runner: ubuntu-24.04
+          - arch: arm64
+            runner: ubuntu-24.04-arm
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download publicly, verify, load and reuse the deployment image
+        env:
+          IMAGE: shendu-deploy:${{ needs.verify.outputs.tree }}-${{ matrix.arch }}
+        run: |
+          # No token or registry login is supplied to this real deployment path.
+          sh shendu/scripts/prepare-image.sh
+          sh shendu/scripts/prepare-image.sh | tee /tmp/shendu-image-reuse.log
+          grep -F '复用本机已验证镜像' /tmp/shendu-image-reuse.log
+          docker run -d --name shendu-download-ci -p 127.0.0.1:43127:3000 "$IMAGE"
+          for attempt in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:43127/healthz; then
+              docker exec shendu-download-ci node scripts/smoke-ui.mjs http://127.0.0.1:3000
+              exit $?
+            fi
+            sleep 1
+          done
+          docker logs shendu-download-ci
+          exit 1
+      - name: Clean up downloaded image container
+        if: always()
+        run: docker rm -f shendu-download-ci || true

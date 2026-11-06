@@ -111,8 +111,9 @@ lock_acquired=1
 
 packages=''
 command -v openssl >/dev/null 2>&1 || packages="$packages openssl"
+command -v curl >/dev/null 2>&1 || packages="$packages curl"
 if ! command -v docker >/dev/null 2>&1; then
-  packages="$packages ca-certificates curl"
+  packages="$packages ca-certificates"
 fi
 if [ -n "$packages" ]; then
   echo '正在安装缺少的系统依赖……'
@@ -154,8 +155,8 @@ mkdir -p data tmp backups
 
 echo '[1/4] 校验部署配置……'
 docker compose config >/dev/null || fail 'Compose 配置无效，请核对原 .env；配置未被覆盖。'
-echo '[2/4] 构建应用并获取 Caddy 镜像……'
-docker compose build --pull shendu || fail '应用构建失败；已保留配置和数据，可重新运行安装命令。'
+echo '[2/4] 准备预构建应用镜像并获取 Caddy……'
+sh "$script_dir/prepare-image.sh" || fail '应用镜像准备失败；已保留配置和数据，可重新运行安装命令。'
 docker compose pull caddy || fail 'Caddy 镜像下载失败；可检查网络后重试。'
 echo '[3/4] 启动服务并等待健康检查……'
 if ! docker compose up -d --wait --wait-timeout 180; then

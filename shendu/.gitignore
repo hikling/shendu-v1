@@ -1,5 +1,7 @@
 .env
 .env.install.*
+compose.override.yaml
+.deploy-image.override.*
 data/*
 !data/.gitkeep
 tmp/*

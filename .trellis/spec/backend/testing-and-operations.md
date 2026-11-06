@@ -22,7 +22,7 @@ Keep `pinnedHttpsRequest` request and response error/abort handling symmetric: r
 
 ### 1. Scope and ownership
 
-Root `install.sh` bootstraps a fresh Debian 12/13 Git checkout. `shendu/scripts/install.sh` owns configuration, missing Docker installation, build, startup and internal smoke checks. `shendu/scripts/update.sh` remains the code-upgrade owner. Installation changes must not edit application UI, runtime data, encryption or record behavior.
+Root `install.sh` bootstraps a fresh shallow Debian 12/13 Git checkout. `shendu/scripts/install.sh` owns configuration, missing Docker installation, prebuilt image preparation, startup and internal smoke checks. `shendu/scripts/update.sh` remains the code-upgrade owner. Installation changes must not edit application UI, runtime data, encryption or record behavior.
 
 ### 2. Signatures and inputs
 
@@ -47,3 +47,11 @@ Fresh interactive install: `sh install.sh`. Explicit unattended input/custom pat
 ### 7. Common mistakes
 
 Do not generate a fresh key because an old `.env` is missing, replace an existing `.env` to change domains, source `.env`, print full `docker compose config`, execute a failed download, or use a fresh-install rerun as a code update. Container-local smoke validates the app and assets, not public DNS/TLS; report the HTTPS address while explaining that Caddy certificate issuance needs reachable DNS and ports.
+
+### 8. Prebuilt image contract
+
+Default install/update must call shared `scripts/prepare-image.sh`, never run `npm ci`, Vite or `docker compose build` on the deployment host. Native amd64/arm64 CI builds/tests/smokes both platforms before publishing compressed Docker images and SHA-256 files to public release `deploy-<git rev-parse HEAD:shendu>`. The tree identity excludes documentation/journal-only commits and includes all application/build inputs. BuildKit caches locked dependencies; source compilation is an explicit `SHENDU_BUILD_FROM_SOURCE=1` option, never a silent failure fallback.
+
+Image preparation identifies the Docker daemon platform, checks tracked source cleanliness ignoring chmod-only changes, and accepts only the exact tree label/OS/architecture. Warm local images skip downloads. Cold downloads require valid checksum and post-load identity before atomic publication of an adjacent managed `compose.override.yaml`; preserve .env byte-for-byte, reject linked/user-owned overrides, clean partial downloads and preserve old selection on failure. Base Compose uses a local placeholder with `pull_policy: never` and no build. The generated override is ignored by Git/Docker and used by ordinary Compose and backup commands. Fail clearly if an artifact is unavailable, without replacing the old running container.
+
+The old updater self-copies before fetching; it cannot pick up a new algorithm midway. Transition docs must fetch the current updater first, while allowing direct local updater use once updated. Updates retain pre-fetch optional snapshots and perform both health and real UI smoke after image selection. Validate Linux failure/reuse/full-update scenarios and anonymous real release download/load/start on both native architectures. CI publication is immutable per application tree and must not overwrite existing asset names; repository access/HTTPS are the checksum trust boundary. Network/download time remains a real deployment cost, so do not promise a fixed number of seconds.
