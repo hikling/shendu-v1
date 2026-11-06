@@ -357,7 +357,7 @@ existing_env
 run_bootstrap reviews.acme.org "$MOCK_FIXTURE" || fail 'valid checkout rerun failed'
 cmp "$app_dir/.env" "$MOCK_CASE/env-before" || fail 'bootstrap rerun rewrote .env'
 assert_not_logged 'clone'
-if grep -E '^git .* (fetch|pull|reset)( |$)' "$MOCK_LOG" >/dev/null; then
+if grep -E '^git (.* )?(fetch|pull|reset)( |$)' "$MOCK_LOG" >/dev/null; then
   fail 'bootstrap must not update or reset existing Git code'
 fi
 pass 'existing valid checkout reruns without fetching, resetting or changing config'
