@@ -16,6 +16,8 @@
 
 The long-username issue is fixed with scoped `white-space:normal;overflow-wrap:anywhere`. Chrome rendered acceptance now asserts every text rectangle stays within its account cell, in addition to shared column coordinates and first-line alignment. All40 states at eight widths pass, including long usernames and real operation controls. Main-session build and153 tests, script check and static-resource smoke pass. README links were checked and its real GitHub Markdown render inspected. See `docs/workspace-readme-qa/README.md` and `final-checks.json`; remote synchronization and Linux CI are verified during task closure.
 
+Work commit `df85d2c39363712f6f137cc9f81cf27262d11552` is on remote main. [Exact-commit Linux CI](https://github.com/hikling/shendu-v1/actions/runs/42182127600) completed successfully, including Compose and Docker smoke checks. No application source was changed after the40-state rendered acceptance. Isolated fixture ports3192/3193 are closed.
+
 ## Review evidence
 
 - Read PRD/design/implementation/check contexts and frontend archive/workspace/component-island contracts.
