@@ -1238,3 +1238,27 @@ Reviewed all production source groups with backup, deploy, frontend and independ
 ### Status
 
 [OK] **Completed**
+
+
+## Session 54: Fast prebuilt-image deployment and public installation verification
+<!-- trellis-session: v=2 fp=3c0ce0e112e523bb -->
+
+**Date**: 2026-11-06
+**Task**: Fast prebuilt-image deployment and public installation verification
+**Branch**: `main`
+
+### Summary
+
+Diagnosed server-local npm288s/Vite159s and image download work from screenshot. Default install/update now load checksum/source/platform-verified CI images; warm identical source reuses local image with no application download or build; shallow clone and cached native CI builds added. Preserved UI/runtime/data/keys/backups and explicit source-build option. README/migration/specs synchronized. Both native architectures passed59 isolated Linux scenarios and179 tests, real publication, anonymous downloads/reuse, real Compose mounts/health/UI and encrypted snapshot. Final integration CI42206706914 success; actual source tree remains caef846643f768369c5f872abfba7f6d5fa1a3ac with public assets.
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `27b7c30` | Deploy verified prebuilt images instead of compiling on servers |
+| `2865769` | Exercise downloaded images with real Compose and snapshot mounts |
+| `c655233` | Read the final host snapshot path in Compose smoke verification |
+
+### Status
+
+[OK] **Completed**
