@@ -1,0 +1,4 @@
+{"file": ".trellis/spec/backend/http-and-security.md", "reason": "API auth and backup rules"}
+{"file": ".trellis/spec/backend/runtime-and-data.md", "reason": "Key persistence and encrypted data contracts"}
+{"file": ".trellis/spec/backend/testing-and-operations.md", "reason": "Backup tests and install contracts"}
+{"file": ".trellis/spec/frontend/component-islands.md", "reason": "DOM and form ownership"}

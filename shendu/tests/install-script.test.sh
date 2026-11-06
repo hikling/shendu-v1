@@ -9,8 +9,10 @@ suite_dir="$(mktemp -d "${TMPDIR:-/tmp}/shendu-install-test.XXXXXX")"
 trap 'rm -rf -- "$suite_dir"' EXIT
 trap 'exit 130' HUP INT TERM
 real_cat="$(command -v cat)"
+real_ln="$(command -v ln)"
+real_install="$(command -v install)"
 setsid_path="$(command -v setsid)"
-export real_cat
+export real_cat real_ln real_install
 tools_dir="$suite_dir/tools"
 mkdir -p "$tools_dir" "$suite_dir/templates"
 # No real apt, Docker, Git, curl or OpenSSL can be reached through the test PATH.
@@ -51,6 +53,25 @@ MOCK
 cat > "$suite_dir/templates/docker" <<'MOCK'
 #!/bin/sh
 printf 'docker %s\n' "$*" >> "$MOCK_LOG"
+case " $* " in
+  *' snapshot '*)
+    case "$*" in 'compose exec'*) [ "${MOCK_SNAPSHOT_EXEC_FAIL:-0}" != 1 ] || exit 1 ;; esac
+    snapshot_path=''
+    password_path=''
+    while [ "$#" -gt 0 ]; do
+      case "$1" in
+        snapshot) shift; snapshot_path="$1" ;;
+        --password-file) shift; password_path="$1" ;;
+      esac
+      shift
+    done
+    [ "${MOCK_SNAPSHOT_FAIL:-0}" != 1 ] || exit 1
+    case "$snapshot_path:$password_path" in /app/tmp/*:/app/tmp/*) ;; *) exit 2 ;; esac
+    cp ".${password_path#/app}" "$MOCK_CASE/password-used"
+    printf 'encrypted snapshot fixture\n' > ".${snapshot_path#/app}"
+    exit 0
+    ;;
+esac
 case "$*" in
   'compose version'*) [ "${MOCK_COMPOSE_BAD:-0}" != 1 ] ;;
   info*) [ "${MOCK_DAEMON_STOPPED:-0}" != 1 ] || [ -f "$MOCK_CASE/daemon-started" ] ;;
@@ -61,6 +82,23 @@ case "$*" in
   'compose exec'*) [ "${MOCK_SMOKE_FAIL:-0}" != 1 ] ;;
   *) exit 0 ;;
 esac
+MOCK
+cat > "$suite_dir/templates/ln" <<'MOCK'
+#!/bin/sh
+for destination do :; done
+if [ "${MOCK_PASSWORD_RACE:-0}" = 1 ] && [ "$destination" = "$MOCK_FIXTURE/shendu/data/server-backup.password" ]; then
+  printf '%s\n' cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc > "$destination"
+fi
+exec "$real_ln" "$@"
+MOCK
+cat > "$suite_dir/templates/install" <<'MOCK'
+#!/bin/sh
+if [ "${MOCK_INSTALL_PARTIAL_FAIL:-0}" = 1 ]; then
+  for destination do :; done
+  printf 'truncated backup\n' > "$destination"
+  exit 1
+fi
+exec "$real_install" "$@"
 MOCK
 cat > "$suite_dir/templates/openssl" <<'MOCK'
 #!/bin/sh
@@ -122,7 +160,7 @@ new_case() {
   mkdir -p "$MOCK_BIN" "$MOCK_FIXTURE/shendu/scripts" "$MOCK_CASE/etc/apt/keyrings" "$MOCK_CASE/etc/apt/sources.list.d"
   cp "$suite_dir/templates/"* "$MOCK_BIN/"
   : > "$MOCK_LOG"
-  unset MOCK_UID MOCK_OS MOCK_OS_VERSION MOCK_APT_FAIL MOCK_COMPOSE_BAD MOCK_DAEMON_STOPPED MOCK_CONFIG_FAIL MOCK_BUILD_FAIL MOCK_PULL_FAIL MOCK_HEALTH_FAIL MOCK_SMOKE_FAIL MOCK_OPENSSL_FAIL MOCK_DOWNLOAD_FAIL MOCK_CLONE_FAIL MOCK_ORIGIN MOCK_BRANCH MOCK_DIRTY
+  unset MOCK_UID MOCK_OS MOCK_OS_VERSION MOCK_APT_FAIL MOCK_COMPOSE_BAD MOCK_DAEMON_STOPPED MOCK_CONFIG_FAIL MOCK_BUILD_FAIL MOCK_PULL_FAIL MOCK_HEALTH_FAIL MOCK_SMOKE_FAIL MOCK_OPENSSL_FAIL MOCK_DOWNLOAD_FAIL MOCK_CLONE_FAIL MOCK_ORIGIN MOCK_BRANCH MOCK_DIRTY MOCK_PASSWORD_RACE MOCK_SNAPSHOT_FAIL MOCK_SNAPSHOT_EXEC_FAIL MOCK_INSTALL_PARTIAL_FAIL SHENDU_SNAPSHOT_PASSWORD SHENDU_SNAPSHOT_PASSWORD_FILE
   # Redirect only system package-source paths in the copied scripts; OS detection
   # is supplied by the fake cat command. All actual installer logic stays intact.
   sed "s|/etc/apt/|$MOCK_CASE/etc/apt/|g" "$repo_dir/install.sh" > "$MOCK_CASE/install.sh"
@@ -133,7 +171,8 @@ new_case() {
   # The test fixture is a complete deployment source boundary, not real app data.
   : > "$MOCK_FIXTURE/shendu/Dockerfile"
   : > "$MOCK_FIXTURE/shendu/Caddyfile"
-  : > "$MOCK_FIXTURE/shendu/scripts/update.sh"
+  cp "$repo_dir/shendu/scripts/update.sh" "$MOCK_FIXTURE/shendu/scripts/update.sh"
+  cp "$repo_dir/shendu/scripts/site-backup.sh" "$MOCK_FIXTURE/shendu/scripts/site-backup.sh"
   app_dir="$MOCK_FIXTURE/shendu"
   output="$MOCK_CASE/output.log"
 }
@@ -143,6 +182,12 @@ run_app() {
 }
 run_bootstrap() {
   PATH="$MOCK_BIN:$tools_dir" /bin/sh "$MOCK_CASE/install.sh" "$@" > "$output" 2>&1 < /dev/null
+}
+run_snapshot() {
+  PATH="$MOCK_BIN:$tools_dir" /bin/sh "$app_dir/scripts/site-backup.sh" "$@" > "$output" 2>&1 < /dev/null
+}
+run_update() {
+  SHENDU_UPDATE_REEXEC=1 SHENDU_BACKUP_BEFORE_UPDATE=y SHENDU_UPDATE_GIT_ONLY=1 PATH="$MOCK_BIN:$tools_dir" /bin/sh "$app_dir/scripts/update.sh" "$MOCK_FIXTURE" > "$output" 2>&1 < /dev/null
 }
 fail() {
   printf 'FAILED case %s: %s\n' "$case_number" "$*" >&2
@@ -390,5 +435,86 @@ expect_app_failure reviews.acme.org
 assert_not_logged 'apt-get'
 assert_not_logged 'compose build'
 pass 'unsupported OS stops before server changes'
+
+new_case
+run_snapshot || fail 'fresh server snapshot failed'
+[ -s "$app_dir/data/server-backup.password" ] || fail 'snapshot password was not created'
+cmp "$app_dir/data/server-backup.password" "$MOCK_CASE/password-used" || fail 'snapshot used a different password'
+[ "$(stat -c %a "$app_dir/data/server-backup.password")" = 600 ] || fail 'snapshot password permissions are not 600'
+[ "$(find "$app_dir/backups" -type f | wc -l)" -eq 1 ] || fail 'snapshot was not published'
+[ -z "$(find "$app_dir/tmp" -type f -print -quit)" ] || fail 'temporary snapshot or password remains'
+pass 'snapshot creates a private password, publishes output and cleans secret temporary files'
+
+new_case
+mkdir -p "$app_dir/data"
+printf '  password with spaces\nand newline  \r\n' > "$app_dir/data/server-backup.password"
+cp "$app_dir/data/server-backup.password" "$MOCK_CASE/password-before"
+run_snapshot || fail 'existing multiline snapshot password failed'
+cmp "$app_dir/data/server-backup.password" "$MOCK_CASE/password-before" || fail 'original snapshot password changed'
+cmp "$MOCK_CASE/password-used" "$MOCK_CASE/password-before" || fail 'snapshot password bytes were normalized'
+assert_not_logged 'openssl'
+pass 'snapshot uses original password-file bytes, preserving whitespace and line endings'
+
+new_case
+MOCK_PASSWORD_RACE=1; export MOCK_PASSWORD_RACE
+run_snapshot || fail 'concurrent password publication failed'
+grep -Fx cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc "$app_dir/data/server-backup.password" >/dev/null || fail 'concurrent winning password was overwritten'
+cmp "$app_dir/data/server-backup.password" "$MOCK_CASE/password-used" || fail 'snapshot ignored concurrently published password'
+pass 'concurrent first snapshots share the winning password instead of overwriting it'
+
+new_case
+MOCK_SNAPSHOT_EXEC_FAIL=1; export MOCK_SNAPSHOT_EXEC_FAIL
+run_snapshot || fail 'snapshot temporary-container fallback failed'
+assert_logged 'compose run --rm --no-deps shendu'
+cmp "$app_dir/data/server-backup.password" "$MOCK_CASE/password-used" || fail 'fallback used a different password'
+[ -z "$(find "$app_dir/tmp" -type f -print -quit)" ] || fail 'fallback left secret temporary files'
+pass 'snapshot falls back to a temporary container with the same password'
+
+new_case
+MOCK_SNAPSHOT_FAIL=1; export MOCK_SNAPSHOT_FAIL
+if run_snapshot; then fail 'failed snapshot unexpectedly succeeded'; fi
+[ -z "$(find "$app_dir/backups" -type f -print -quit)" ] || fail 'failed snapshot published output'
+[ -z "$(find "$app_dir/tmp" -type f -print -quit)" ] || fail 'failed snapshot left secret temporary files'
+[ -s "$app_dir/data/server-backup.password" ] || fail 'failure deleted recovery password'
+pass 'snapshot failure preserves recovery password and publishes no partial output'
+
+new_case
+mkdir -p "$app_dir/data"
+printf 'preserved snapshot password\n' > "$app_dir/data/server-backup.password"
+cp "$app_dir/data/server-backup.password" "$MOCK_CASE/password-before"
+MOCK_INSTALL_PARTIAL_FAIL=1; export MOCK_INSTALL_PARTIAL_FAIL
+if run_snapshot; then fail 'partial output copy unexpectedly succeeded'; fi
+[ -z "$(find "$app_dir/backups" -type f -print -quit)" ] || fail 'copy failure left a final or staged backup'
+[ -z "$(find "$app_dir/tmp" -type f -print -quit)" ] || fail 'copy failure left temporary snapshot or password'
+cmp "$app_dir/data/server-backup.password" "$MOCK_CASE/password-before" || fail 'copy failure changed recovery password'
+pass 'partial output copy failure publishes no backup and cleans its staging file'
+
+new_case
+if run_snapshot "$app_dir/tmp"; then fail 'temporary directory accepted as final output'; fi
+assert_not_logged 'openssl'
+assert_not_logged 'snapshot /app/tmp/'
+[ -z "$(find "$app_dir/tmp" -type f -print -quit)" ] || fail 'invalid output directory created temporary files'
+pass 'snapshot rejects its own temporary directory as a final destination'
+
+new_case
+mkdir -p "$MOCK_FIXTURE/.git" "$app_dir/data"
+existing_env
+printf '%s\n' bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb > "$app_dir/data/backup-master.key"
+run_update || fail 'update backup delegation failed'
+cmp "$app_dir/data/server-backup.password" "$MOCK_CASE/password-used" || fail 'update did not use shared snapshot password'
+assert_logged 'fetch --prune origin main'
+[ "$(find "$app_dir/backups" -type f | wc -l)" -eq 1 ] || fail 'update did not preserve a snapshot'
+pass 'update delegates to the shared snapshot path before fetching code'
+
+new_case
+mkdir -p "$MOCK_FIXTURE/.git" "$app_dir/data"
+existing_env
+printf '%s\n' bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb > "$app_dir/data/backup-master.key"
+MOCK_SNAPSHOT_FAIL=1; export MOCK_SNAPSHOT_FAIL
+if run_update; then fail 'update continued after snapshot failure'; fi
+assert_not_logged 'fetch --prune'
+assert_not_logged 'compose build'
+[ -z "$(find "$app_dir/tmp" -type f -print -quit)" ] || fail 'failed update left snapshot password temporary files'
+pass 'required pre-update snapshot failure stops before Git or container changes'
 
 printf 'Passed %s isolated installation scenarios.\n' "$case_number"

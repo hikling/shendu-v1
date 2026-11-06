@@ -50,8 +50,10 @@ sh /opt/shendu-v1/shendu/scripts/install.sh review.example.com
 | `SHENDU_MASTER_KEY` | 安装脚本生成的 64 位十六进制值 | 服务器内部数据与备份凭据的加密密钥 |
 | `SHENDU_MASTER_KEY_PATH` | `/app/data/backup-master.key` | 容器内持久化的原主密钥路径 |
 | `SHENDU_SECURE_COOKIE` | `true` | 自带 Caddy 提供 HTTPS 时保持开启；仅本机 HTTP 调试使用 `false` |
+| `SHENDU_TRUST_PROXY` | Compose 明确设为 `true` | 允许从可信代理的 `X-Forwarded-For` 读取限流地址；直接 Node.js 运行默认关闭，勿在端口公开时开启 |
 | `SHENDU_DATA_DIR` | `/app/data` | 容器内数据库目录，挂载到宿主机 `./data` |
-| `SHENDU_TMP_DIR` | `/app/tmp` | 容器内临时文件目录，挂载到宿主机 `./tmp` |
+
+快照工具固定使用容器内 `/app/tmp`，挂载到宿主机 `./tmp`；旧版 `.env` 中的 `SHENDU_TMP_DIR` 已不再使用，保留该旧变量不会影响升级。
 
 自动安装已完成配置校验和启动。只有手动维护配置后，才需要在应用目录重新检查并启动：
 
@@ -68,6 +70,8 @@ docker compose ps
 ### HTTPS 与服务结构
 
 [compose.yaml](../shendu/compose.yaml)包含应用 `shendu` 和反向代理 `caddy`；应用不直接映射宿主机端口，Caddy 通过内部网络访问 `shendu:3000`。
+
+只有应用容器接收数据加密配置，Caddy 仅接收域名。自带 Compose 在封闭的应用网络中开启可信代理模式；自行使用 Node.js 或修改端口映射时，默认保持 `SHENDU_TRUST_PROXY=false`，避免客户端伪造转发地址绕过限流。
 
 [Caddyfile](../shendu/Caddyfile)会为符合条件的公网域名[自动申请 HTTPS 证书](https://caddyserver.com/docs/automatic-https)。证书和配置保存在 Docker 的 `caddy_data`、`caddy_config` 命名卷中。DNS 未指向服务器或端口被阻断时，证书无法正常签发。
 
@@ -151,6 +155,8 @@ sh scripts/site-backup.sh
 ```
 
 快照默认写到 `backups/`；首次需要时生成 `data/server-backup.password`，权限为 `600`。备份包和恢复密码应分别另存到服务器之外。脚本会优先使用运行中的容器，失败时尝试临时容器；输出文件只有生成成功后才会保存。
+
+更新前备份和手动快照共用同一份密码文件；并发首次备份也不会覆盖已生成的密码。现有密码文件会按原字节使用，不会删除其中的空格或换行。不要把快照输出设置为数据库、SQLite 的 `-wal`/`-shm` 文件、主密钥或密码文件；CLI 会拒绝这类覆盖。
 
 服务器快照恢复由 `scripts/admin-cli.mjs restore` 执行，需使用对应密码文件；应先停应用并在隔离环境演练，确保配置、数据库和主密钥作为一组恢复。个人与网页整站恢复使用应用内各自入口，不要仅凭文件扩展名互换工具。
 

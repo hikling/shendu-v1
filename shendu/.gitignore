@@ -1,4 +1,5 @@
 .env
+.env.install.*
 data/*
 !data/.gitkeep
 tmp/*

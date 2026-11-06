@@ -1,8 +1,8 @@
 import { after, before, test } from 'node:test';
 import assert from 'node:assert/strict';
 import { spawn, spawnSync } from 'node:child_process';
-import { once } from 'node:events';
-import { mkdtempSync, readFileSync, writeFileSync, mkdirSync, rmSync, existsSync, statSync } from 'node:fs';
+import { once, EventEmitter } from 'node:events';
+import { mkdtempSync, readFileSync, writeFileSync, mkdirSync, rmSync, existsSync, statSync, symlinkSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import net from 'node:net';
@@ -60,7 +60,7 @@ before(async () => {
   const listener = net.createServer(); listener.listen(0, '127.0.0.1'); await once(listener, 'listening');
   const port = listener.address().port; await new Promise(resolve => listener.close(resolve));
   base = `http://127.0.0.1:${port}`;
-  child = spawn(process.execPath, ['server.mjs'], { cwd: appDir, env: { ...process.env, SHENDU_PORT: String(port), SHENDU_DATA_DIR: dataDir, SHENDU_TMP_DIR: join(root, 'uploads'), SHENDU_MASTER_KEY: '', SHENDU_MASTER_KEY_PATH: join(dataDir, 'backup-master.key') }, stdio: ['ignore', 'pipe', 'pipe'] });
+  child = spawn(process.execPath, ['server.mjs'], { cwd: appDir, env: { ...process.env, SHENDU_PORT: String(port), SHENDU_DATA_DIR: dataDir, SHENDU_MASTER_KEY: '', SHENDU_MASTER_KEY_PATH: join(dataDir, 'backup-master.key') }, stdio: ['ignore', 'pipe', 'pipe'] });
   child.stdout.on('data', b => { logs += b; }); child.stderr.on('data', b => { logs += b; });
   let ready = false;
   for (let i = 0; i < 150 && !ready; i++) {
@@ -217,6 +217,24 @@ test('主密钥及快照写入失败保留旧文件；输出不能覆盖数据�
   assert.throws(() => atomicWriteFile(file, Symbol('invalid data'))); assert.equal(readFileSync(file, 'utf8'), 'previous');
   for (const output of [join(dataDir, 'shendu.db'), join(dataDir, 'backup-master.key'), passwordFile]) assert.notEqual(cli('snapshot', output).status, 0);
 });
+test('快照输出拒绝 SQLite 边车文件和目录别名，原数据库与密钥保持不变', () => {
+  const snapshot = join(root, 'output-guard.shendu-db'), directory = join(root, 'output-guard-data');
+  assert.equal(cli('snapshot', snapshot).status, 0);
+  assert.equal(cli('restore', snapshot, directory).status, 0);
+  const database = join(directory, 'shendu.db'), key = join(directory, 'backup-master.key');
+  const beforeDatabase = readFileSync(database), beforeKey = readFileSync(key);
+  const alias = join(root, 'output-guard-alias');
+  symlinkSync(directory, alias, process.platform === 'win32' ? 'junction' : 'dir');
+  for (const output of [database + '-wal', database + '-shm', join(alias, 'shendu.db'), join(alias, 'backup-master.key')]) {
+    const result = cli('snapshot', output, directory);
+    assert.notEqual(result.status, 0, output);
+    assert.match(result.stderr, /备份输出不能覆盖/);
+    assert.deepEqual(readFileSync(database), beforeDatabase);
+    assert.deepEqual(readFileSync(key), beforeKey);
+  }
+  assert.equal(existsSync(database + '-wal'), false);
+  assert.equal(existsSync(database + '-shm'), false);
+});
 test('网页整站导出检查解压上限，避免生成无法导入的高压缩率文件', () => {
   const source = readFileSync(join(appDir, 'server.mjs'), 'utf8');
   const implementation = source.slice(source.indexOf('function createSiteBackupBuffer('), source.indexOf('function siteBackupTextFrom('));
@@ -323,6 +341,75 @@ test('跨站写入、非当前周期、修改已锁定记录被拒绝', async ()
   assert.equal((await api('/api/records', { method: 'PUT', body: { type: 'daily', period: '2099-01-01', data: {} } })).status, 400);
   const record = (await api(`/api/records/${recordId}`)).value.record;
   assert.equal((await api('/api/records', { method: 'PUT', body: record })).status, 409);
+});
+test('外部备份响应中断或超限只使本次请求失败，正常响应仍可完成', async () => {
+  const source = readFileSync(join(appDir, 'server.mjs'), 'utf8');
+  const implementation = source.slice(source.indexOf('function pinnedHttpsRequest('), source.indexOf('const awsDate ='));
+  for (const failure of ['error', 'closed-error', 'aborted', 'oversize', null]) {
+    const response = new EventEmitter(); response.statusCode = 200;
+    const request = new EventEmitter(); let callback, cleared = false;
+    request.end = () => callback(response);
+    request.destroy = error => queueMicrotask(() => { request.emit('error', error); request.emit('close'); });
+    const context = {
+      Buffer, URL,
+      https: { request(_options, onResponse) { callback = onResponse; return request; } },
+      setTimeout() { return 1; }, clearTimeout() { cleared = true; }
+    };
+    const transport = runInNewContext(implementation + ';pinnedHttpsRequest', context);
+    const target = new URL('https://backup.acme.org/object');
+    const pending = transport({ url: target, addresses: [{ address: '93.184.216.34', family: 4 }] }, target, { maxResponseBytes: 4 });
+    if (failure) {
+      if (failure === 'closed-error') { request.emit('close'); request.destroy = () => {}; }
+      assert.doesNotThrow(() => {
+        if (failure === 'error' || failure === 'closed-error') response.emit('error', new Error('connection reset'));
+        else if (failure === 'aborted') response.emit('aborted');
+        else { response.emit('data', Buffer.from('too large')); response.emit('end'); }
+      });
+      await assert.rejects(pending, /connection reset|响应中断|返回内容过大/);
+    } else {
+      response.emit('data', Buffer.from('ok')); response.emit('end'); request.emit('close');
+      assert.equal((await pending).body.toString(), 'ok');
+    }
+    assert.equal(cleared, true, 'request deadline is cleared when the connection closes');
+  }
+});
+test('外部备份在解密和生成文件前限制账户及全局并发，成功失败均释放名额', async () => {
+  const source = readFileSync(join(appDir, 'server.mjs'), 'utf8');
+  const implementation = source.slice(source.indexOf('const activeExternalBackupUsers ='), source.indexOf('function saveBackupOutcome('));
+  let decrypted = 0, generated = 0;
+  const uploads = [];
+  const context = {
+    normalizeBackupConfig(_kind, config) { return config; },
+    decryptSecret(config) { decrypted++; if (config === 'invalid') throw new Error('invalid credential'); return config; },
+    getBackupPassword() { return 'test-backup-password'; },
+    createBackupBuffer() { generated++; return Buffer.from('encrypted backup'); },
+    accountBackupFilename() { return 'backup.shendu'; }, randomBytes, randomUUID: () => 'test',
+    uploadWebdav() { return new Promise((resolve, reject) => uploads.push({ resolve, reject })); }
+  };
+  const run = runInNewContext(implementation + ';runExternalBackup', context);
+  const target = userId => ({ user_id: userId, kind: 'webdav', encrypted_config: {} });
+  const first = [1, 2, 3, 4].map(userId => run(target(userId)));
+  const busy = error => error.status === 429 && error.code === 'backup_busy';
+  await assert.rejects(run(target(1), true), busy, 'connection tests share the account lock');
+  await assert.rejects(run(target(5)), busy, 'four retained bodies is the global limit');
+  assert.equal(decrypted, 4, 'busy requests cannot decrypt credentials');
+  assert.equal(generated, 4, 'busy requests cannot derive keys or allocate backup bodies');
+  assert.equal(uploads.length, 4, 'busy requests cannot reach a remote target');
+
+  uploads[0].resolve(); await first[0];
+  const fifth = run(target(5));
+  assert.equal(uploads.length, 5, 'successful completion releases the global slot');
+  uploads[1].reject(new Error('upload failed'));
+  await assert.rejects(first[1], /upload failed/);
+  const retry = run(target(2));
+  assert.equal(uploads.length, 6, 'failed upload releases its account and global slots');
+  for (const upload of uploads.slice(2)) upload.resolve();
+  await Promise.all([first[2], first[3], fifth, retry]);
+
+  await assert.rejects(run({ ...target(6), encrypted_config: 'invalid' }), /invalid credential/);
+  const preparationRetry = run(target(6));
+  assert.equal(uploads.length, 7, 'credential failure releases the slot before any upload');
+  uploads[6].resolve(); await preparationRetry;
 });
 test('外部备份拒绝本机、内网、非 HTTPS 和包含 URL 凭据的地址', async () => {
   for (const url of ['https://127.0.0.1', 'https://0x7f000001', 'https://[::1]', 'https://[::ffff:127.0.0.1]', 'https://169.254.169.254', 'http://example.com', 'https://user:pass@example.com']) {

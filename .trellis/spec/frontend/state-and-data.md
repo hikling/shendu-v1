@@ -62,3 +62,24 @@ Wrong: save `{theme:{reduceMotion:true}}`, apply legacy colors or add another co
 ## Workspace navigation and stage writes
 
 `settings`, `calendar`, `stage-settings` and `guide` are ordinary routes. Their navigation uses `attemptNavigate()`; motion/stage edits mark dirty, pending writes block departure, and failure retains the mounted values. Stage configuration submits every original stage/metric field,49 review-template keys and4 action prompts, retaining unknown compatibility metadata. Success applies only to the connected original form/account/write owner. Calendar review entry captures month/scroll/date focus as source context; review exit restores it instead of overview. Global Ctrl/Cmd+S requires an actual review route, never merely a retained current record.
+
+
+## Backup, authentication and verification async ownership
+
+### Scope and signatures
+
+Applies to `renderBackup`, personal/site file reads and inspect/import/export, external-target writes/actions, `renderAuth`, `sessionExpired`, and `openVerification`. Shared `dialogWriteTask(anchor)` owns pending modal writes. `refreshData(isCurrent = () => true)` returns `false` without committing stale account/caller results and `true` after applying an accepted refresh.
+
+### Contracts
+
+- Read native FormData before disabling controls. Pending login/register/reauth and dialog writes send one request; disabling visible controls alone is not a duplicate-submit guard.
+- Associate asynchronous results with the exact connected form/button, modal, original account object and page where applicable. Backup page loads and file reads also need visit/read tokens; a later visit may reuse the same element ID.
+- `dialogWriteTask` prevents duplicate submit events across handler-local tasks, makes the pending modal persistent, sets `state.saving`, and disables its native controls. On completion it restores the previous disabled/persistent state only for that same connected modal, and releases only its own `state.dialogWriteOwner`. A forced reauth/replacement must remain intact.
+- Stale responses cannot download old-account exports, apply previews/import results, commit refreshed records/settings, close another modal, write errors into another form, navigate or release a newer write owner. Personal restore consumes the refresh boolean before closing; an accepted refresh replaces `state.user`, so do not reject it afterward merely because the returned user object has a new identity.
+- Failed requests retain mounted values/passwords for retry. Reauth catches fetch/JSON failures and preserves the original unsaved editor on both failure and success. Full logged-out rendering clears `reauthOpen`.
+- Verification sends the original result/adjustment/outcome/process payload and existing eligibility rules. Pending submission blocks dismissal and navigation. Once verification succeeds, apply its locked record; failure of the optional stats refresh must not invite another irreversible verification submission. Stats and rendering also require the original owner.
+- Passwords, imported encrypted text and plaintext review contents remain transient in page/form closures; never copy them into localStorage/sessionStorage, logs or remote artwork APIs.
+
+### Validation and tests
+
+Use actual JSDOM plus the built shadcn bridge in `tests/backup-ui.test.mjs`, `tests/auth-ui.test.mjs`, `tests/verification-ui.test.mjs` and `tests/ui-overlay-inert.test.mjs`. Cover success/exact payload, duplicate submits, failure/retry, pending cancel/navigation, forced replacement/account changes, late file reads/downloads/errors, and old finally handlers preserving newer write owners. Server backup schema/crypto/ownership/transactions remain the final authority and have separate security tests.

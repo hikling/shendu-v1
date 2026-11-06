@@ -9,7 +9,7 @@
 
 ## Render and bind
 
-Page functions return HTML strings. `renderMarkup()` cleans old component roots and synchronously enhances new controls before listeners bind. `renderReview()` calls `shell(content)` then `bindReview()`; `shell()` calls `bindCommon()`. A rerender removes old listeners, so every new control needs a binding path. Complex dialogs, menus, Tabs and calendars use explicit surface helpers; remove duplicate legacy keyboard/focus owners.
+Page functions return HTML strings. `renderMarkup()` cleans old component roots and synchronously enhances new controls before listeners bind. `renderReview()` calls `shell(content)` then `bindReview()`; `shell()` calls `bindCommon()`. A rerender removes old listeners, so every new control needs a binding path. Complex dialogs, menus and calendars use explicit surface helpers; remove duplicate legacy keyboard/focus owners.
 
 The six review types share `TYPES`, `QUESTIONS`, and `renderReview()`. Daily content is split into `dailyEvidence()`, `dailyReflection()`, `dailyActionFields()`, and `dailyJournal()` in `app.js`; the other five use `extendedReviewHtml()` and `EXTENDED_FLOW` from `extended-flow.js`. Both branches reuse the art canvas, answer disclosures and calendar, while preserving separate prompt state. Extend shared code for common behavior and the relevant flow branch for type-specific behavior.
 

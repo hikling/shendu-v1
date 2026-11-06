@@ -8,6 +8,16 @@ For changes to encrypted fields, restore, sessions, or account ownership, update
 
 The Docker builder runs `npm ci` and `npm run build`, then the native-server runtime copies `public/ui/` from it. Keep the UI source, Vite config, lockfile and license helper in the build context. `public/ui/` and `node_modules/` are ignored source artifacts. `npm run smoke:ui -- <base-url>` verifies health plus real HTML/JS/CSS MIME types and local component imports; do not accept a healthy backend with missing frontend resources. CI performs this against the built container.
 
+## Backup tooling safety
+
+`site-backup.sh [output-dir] [manual|pre-update]` is the shared server snapshot wrapper; `update.sh` delegates to it before fetching code when the user opts into a backup. Publish the first `data/server-backup.password` with an adjacent private temporary file and no-clobber hard link, so concurrent runs reuse the winning password. Never normalize the password file: the CLI removes exactly one final line ending, so copy original bytes to a random private per-invocation file. Clean temporary password/snapshot files on success and failure, and publish a backup output only after the CLI succeeds.
+
+The final output copy must use private adjacent staging on the destination filesystem, followed by no-clobber publication only after the copy succeeds. A partial-copy/disk-full error must leave neither a final-looking backup nor its staging file. Reject an output directory physically equal to the application's transient `tmp` directory before password creation. This protects complete-file visibility; do not describe it as power-loss durability or live offline-restore safety.
+
+CLI snapshot/migration output must not alias the active DB, SQLite `-wal`/`-shm`, original key or password file, including linked parent directories. Resolve path aliases before comparing. CLI restore is an offline administrator operation requiring a stopped application; checkpoint checks cannot prove an idle application has no open connection. Tests must exercise byte preservation and failed restore rollback with isolated data.
+
+Keep `pinnedHttpsRequest` request and response error/abort handling symmetric: reject the operation directly and destroy the request even when it has already closed. Oversized and truncated responses must never settle as a successful external backup. Caddy receives only its domain, never the application's master key; enforce this on resolved Compose configuration in CI.
+
 ## Automated server installation contract
 
 ### 1. Scope and ownership

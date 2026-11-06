@@ -37,7 +37,7 @@ test('服务端拒绝过早预期日期和实际验证；等待期前一天拒�
   const listener=net.createServer();listener.listen(0,'127.0.0.1');await once(listener,'listening');
   const port=listener.address().port;await new Promise(resolve=>listener.close(resolve));
   const base=`http://127.0.0.1:${port}`;
-  const child=spawn(process.execPath,['server.mjs'],{cwd:appDir,env:{...process.env,SHENDU_PORT:String(port),SHENDU_DATA_DIR:join(root,'data'),SHENDU_TMP_DIR:join(root,'tmp'),SHENDU_MASTER_KEY:'',SHENDU_MASTER_KEY_PATH:join(root,'data','backup-master.key')},stdio:['ignore','pipe','pipe']});
+  const child=spawn(process.execPath,['server.mjs'],{cwd:appDir,env:{...process.env,SHENDU_PORT:String(port),SHENDU_DATA_DIR:join(root,'data'),SHENDU_MASTER_KEY:'',SHENDU_MASTER_KEY_PATH:join(root,'data','backup-master.key')},stdio:['ignore','pipe','pipe']});
   let output='';child.stdout.on('data',chunk=>{output+=chunk});child.stderr.on('data',chunk=>{output+=chunk});
   t.after(async()=>{if(child.exitCode===null){const exited=once(child,'exit');child.kill('SIGTERM');await exited}rmSync(root,{recursive:true,force:true})});
   let ready=false;for(let i=0;i<150&&!ready;i++){try{ready=(await fetch(base+'/healthz')).ok}catch{}if(!ready)await new Promise(resolve=>setTimeout(resolve,20))}

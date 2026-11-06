@@ -9,6 +9,7 @@ services:
     environment:
       TZ: Asia/Shanghai
       SHENDU_MASTER_KEY_PATH: /app/data/backup-master.key
+      SHENDU_TRUST_PROXY: 'true'
     volumes:
       - ./data:/app/data
       - ./tmp:/app/tmp
@@ -26,7 +27,8 @@ services:
     depends_on:
       shendu:
         condition: service_healthy
-    env_file: .env
+    environment:
+      SHENDU_DOMAIN: ${SHENDU_DOMAIN:?请先设置域名}
     ports:
       - "80:80"
       - "443:443"

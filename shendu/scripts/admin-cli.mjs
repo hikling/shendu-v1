@@ -1,5 +1,5 @@
-import { readFileSync, writeFileSync, copyFileSync, existsSync, mkdirSync, unlinkSync, renameSync, chmodSync } from 'node:fs';
-import { dirname, resolve, join } from 'node:path';
+import { readFileSync, writeFileSync, copyFileSync, existsSync, mkdirSync, unlinkSync, renameSync, chmodSync, realpathSync } from 'node:fs';
+import { dirname, basename, resolve, join } from 'node:path';
 import { gzipSync, gunzipSync } from 'node:zlib';
 import { randomBytes, randomUUID, pbkdf2Sync, createCipheriv, createDecipheriv } from 'node:crypto';
 import { DatabaseSync } from 'node:sqlite';
@@ -10,7 +10,13 @@ const [command, output, passwordArgument, passwordFileArgument] = process.argv.s
 const dataDir = resolve(process.env.SHENDU_DATA_DIR || './data');
 const database = join(dataDir, 'shendu.db');
 const masterKeyPath = resolve(process.env.SHENDU_MASTER_KEY_PATH || join(dataDir, 'backup-master.key'));
-if(database===masterKeyPath)throw new Error('数据库与内部密钥不能使用同一个文件路径');
+// Resolve existing parent aliases as well as files: output directories can be links.
+function canonicalPath(file) {
+  const absolute = resolve(file);
+  const path = existsSync(absolute) ? realpathSync(absolute) : join(canonicalPath(dirname(absolute)), basename(absolute));
+  return process.platform === 'win32' ? path.toLowerCase() : path;
+}
+if(canonicalPath(database)===canonicalPath(masterKeyPath))throw new Error('数据库与内部密钥不能使用同一个文件路径');
 const password=passwordArgument==='--password-file'&&passwordFileArgument?readFileSync(resolve(passwordFileArgument),'utf8').replace(/\r?\n$/,''):passwordArgument;
 
 function usage() {
@@ -38,7 +44,8 @@ function open(buffer) {
 }
 
 if (command === 'snapshot' || command === 'migration') {
-  if([database,masterKeyPath,passwordArgument==='--password-file'?resolve(passwordFileArgument):null].includes(resolve(output)))throw new Error('备份输出不能覆盖正在使用的数据库、内部密钥或密码文件');
+  const protectedFiles=[database,`${database}-wal`,`${database}-shm`,masterKeyPath,...(passwordArgument==='--password-file'?[resolve(passwordFileArgument)]:[])];
+  if(protectedFiles.some(file=>canonicalPath(file)===canonicalPath(output)))throw new Error('备份输出不能覆盖正在使用的数据库、SQLite 边车文件、内部密钥或密码文件');
   if (!existsSync(database)) throw new Error('找不到数据库，请先启动慎独');
   const temp=join(dataDir,`.snapshot-${process.pid}.db`);let snapshotDb;
   try {

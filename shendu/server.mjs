@@ -1,6 +1,6 @@
 import http from 'node:http';
 import https from 'node:https';
-import { readFileSync, existsSync, mkdirSync, statSync, createReadStream, writeFileSync, appendFileSync, unlinkSync, readdirSync, chmodSync } from 'node:fs';
+import { readFileSync, existsSync, mkdirSync, statSync, createReadStream, chmodSync } from 'node:fs';
 import { join, extname, resolve, dirname, sep } from 'node:path';
 import { DatabaseSync } from 'node:sqlite';
 import { randomBytes, randomUUID, scryptSync, timingSafeEqual, createHash, createHmac, createCipheriv, createDecipheriv, pbkdf2Sync } from 'node:crypto';
@@ -13,13 +13,13 @@ import { verificationMinimum } from './public/verification-policy.js';
 process.umask(0o077);
 const PORT = Number(process.env.SHENDU_PORT || 3000);
 const DATA_DIR = resolve(process.env.SHENDU_DATA_DIR || './data');
-const TMP_DIR = resolve(process.env.SHENDU_TMP_DIR || './tmp');
 const PUBLIC_DIR = resolve('./public');
 const COOKIE_SECURE = process.env.SHENDU_SECURE_COOKIE === 'true';
+// Forwarded addresses are trustworthy only behind an explicitly protected proxy.
+const TRUST_PROXY = process.env.SHENDU_TRUST_PROXY === 'true';
 const MASTER_KEY_PATH = resolve(process.env.SHENDU_MASTER_KEY_PATH || join(DATA_DIR, 'backup-master.key'));
 const DATABASE_PATH = join(DATA_DIR, 'shendu.db');
 mkdirSync(DATA_DIR, { recursive: true });
-mkdirSync(TMP_DIR, { recursive: true });
 let masterKey = null;
 let masterKeyError = null;
 
@@ -423,14 +423,6 @@ const validEntityId = value => /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab]
 // Keep their IDs intact so encrypted content and restored links retain identity.
 const validStoredRecordId = value => typeof value==='string'&&value.length>0&&value.length<=100&&!/[\x00-\x1f\x7f/\\]/.test(value);
 const validStoredRecordPeriod = value => typeof value==='string'&&value.length>0&&value.length<=100&&!/[\x00-\x1f\x7f]/.test(value);
-const validRecordPeriod = (type,value) => {
-  const period=String(value||'');
-  if(type==='weekly')return /^\d{4}-W(?:0[1-9]|[1-4]\d|5[0-3])$/.test(period);
-  if(type==='monthly')return /^\d{4}-(?:0[1-9]|1[0-2])$/.test(period);
-  if(type==='yearly')return /^\d{4}$/.test(period);
-  return validIsoDate(period);
-};
-
 function migrateSensitiveData() {
   if (!masterKey) return;
   const records=db.prepare(`SELECT id,user_id,title,data,verification FROM records`).all();
@@ -463,7 +455,7 @@ migrateSensitiveData();
 
 const rateMap = new Map();
 const clientAddress = req => {
-  const forwarded=String(req.headers['x-forwarded-for']||'').split(',').map(value=>value.trim()).filter(Boolean);
+  const forwarded=TRUST_PROXY?String(req.headers['x-forwarded-for']||'').split(',').map(value=>value.trim()).filter(Boolean):[];
   const candidate=forwarded.at(-1)||String(req.socket.remoteAddress||'').replace(/^::ffff:/,'');
   return net.isIP(candidate)?candidate:'unknown';
 };
@@ -797,7 +789,6 @@ function applyBackup(userId, parsed, mode) {
       if(typeof profile?.displayName==='string'&&profile.displayName.trim())db.prepare(`UPDATE users SET display_name=? WHERE id=?`).run(safeText(profile.displayName,32),userId);
     }
     for (const rec of records) {
-      if (!validRecordType(rec.type)) continue;
       let recordId = rec.id;
       const natural = rec.type==='decision'?null:db.prepare(`SELECT id,updated_at FROM records WHERE user_id=? AND type=? AND period=?`).get(userId,rec.type,rec.period);
       if(natural)recordId=natural.id;
@@ -1038,7 +1029,10 @@ function pinnedHttpsRequest(validated,target,{method='GET',headers={},body=Buffe
       const selected=available[0];return callback(null,selected.address,selected.family);
     }},response=>{
       const chunks=[];let size=0;
-      response.on('data',chunk=>{size+=chunk.length;if(size>maxResponseBytes){request.destroy(new Error('外部备份服务返回内容过大'));return}chunks.push(chunk)});
+      const failResponse=error=>{rejectRequest(error);request.destroy(error)};
+      response.once('error',failResponse);
+      response.once('aborted',()=>failResponse(new Error('外部备份服务响应中断')));
+      response.on('data',chunk=>{size+=chunk.length;if(size>maxResponseBytes){failResponse(new Error('外部备份服务返回内容过大'));return}chunks.push(chunk)});
       response.on('end',()=>resolveRequest({ok:response.statusCode>=200&&response.statusCode<300,status:response.statusCode||0,body:Buffer.concat(chunks)}));
     });
     const deadline=setTimeout(()=>request.destroy(new Error('外部备份服务响应超时')),30000);
@@ -1083,21 +1077,26 @@ async function uploadWebdav(config, key, body, test = false) {
     if(validationError)throw validationError;
   }
 }
+const activeExternalBackupUsers = new Set();
 async function runExternalBackup(target, test = false) {
-  const config=normalizeBackupConfig(target.kind,decryptSecret(target.encrypted_config));const password=getBackupPassword(target.user_id);
-  if (!password) throw new Error('请先设置个人备份密码');
-  const body = test ? randomBytes(64) : createBackupBuffer(target.user_id, password);
-  const key = test ? `connection-test-${randomUUID()}.bin` : accountBackupFilename();
-  if (target.kind === 'webdav') await uploadWebdav(config, key, body, test);
-  else {
-    await s3Request(config, key, 'PUT', body);
-    if (test) {
-      let validationError=null;
-      try{const check=await s3Request(config,key,'GET');if(!check.body.equals(body))throw new Error('S3 读回校验失败')}catch(error){validationError=error}
-      try{await s3Request(config,key,'DELETE')}catch(error){if(!validationError)throw error}
-      if(validationError)throw validationError;
+  if(activeExternalBackupUsers.has(target.user_id)||activeExternalBackupUsers.size>=4)throw Object.assign(new Error('已有备份任务正在运行，请稍后再试'),{status:429,code:'backup_busy'});
+  activeExternalBackupUsers.add(target.user_id);
+  try {
+    const config=normalizeBackupConfig(target.kind,decryptSecret(target.encrypted_config));const password=getBackupPassword(target.user_id);
+    if (!password) throw new Error('请先设置个人备份密码');
+    const body = test ? randomBytes(64) : createBackupBuffer(target.user_id, password);
+    const key = test ? `connection-test-${randomUUID()}.bin` : accountBackupFilename();
+    if (target.kind === 'webdav') await uploadWebdav(config, key, body, test);
+    else {
+      await s3Request(config, key, 'PUT', body);
+      if (test) {
+        let validationError=null;
+        try{const check=await s3Request(config,key,'GET');if(!check.body.equals(body))throw new Error('S3 读回校验失败')}catch(error){validationError=error}
+        try{await s3Request(config,key,'DELETE')}catch(error){if(!validationError)throw error}
+        if(validationError)throw validationError;
+      }
     }
-  }
+  } finally { activeExternalBackupUsers.delete(target.user_id); }
 }
 
 function saveBackupOutcome(target,status,message) {
@@ -1315,34 +1314,6 @@ async function api(req, res, url) {
       setSessionCookie(res,'',0);return json(res,200,{ok:true,restored,relogin:true});
     }catch(e){return error(res,e.status||400,e.message||'无法恢复整站备份',e.code||'site_backup_restore_failed')}
   }
-  if (path === '/api/backup/upload/start' && method === 'POST') {
-    if(limited(req,`backup-upload:${user.id}`,12,3600000))return error(res,429,'备份上传任务创建过多，请稍后再试');
-    const activeUploads=readdirSync(TMP_DIR).filter(name=>name.startsWith(`${user.id}-`)&&name.endsWith('.upload')).length;
-    if(activeUploads>=3)return error(res,429,'最多同时保留 3 个备份上传任务，请完成或等待旧任务自动清理');
-    const id=randomUUID(); writeFileSync(join(TMP_DIR,`${user.id}-${id}.upload`),''); return json(res,200,{uploadId:id,chunkSize:4194304});
-  }
-  if (/^\/api\/backup\/upload\/[^/]+\/chunk$/.test(path) && method === 'POST') {
-    const id=path.split('/')[4];if(!validEntityId(id))return error(res,400,'上传任务编号不正确');
-    if(limited(req,`backup-chunk:${user.id}`,180,3600000))return error(res,429,'备份上传请求过多，请稍后再试');
-    const file=join(TMP_DIR,`${user.id}-${id}.upload`); if(!existsSync(file))return error(res,404,'上传任务已失效'); const chunk=await readBody(req,5*1024*1024);
-    if(sessionUser(req)?.id!==user.id)return error(res,401,'登录已失效，请重新登录','unauthorized');
-    if(statSync(file).size+chunk.length>MAX_BACKUP_FILE_BYTES){try{unlinkSync(file)}catch{}return error(res,413,'备份文件超过 36 MB，无法导入')}
-    appendFileSync(file,chunk); return json(res,200,{received:chunk.length});
-  }
-  if (/^\/api\/backup\/upload\/[^/]+\/preview$/.test(path) && method === 'POST') {
-    const id=path.split('/')[4];if(!validEntityId(id))return error(res,400,'上传任务编号不正确');
-    if(limited(req,`backup-preview:${user.id}`,20,3600000))return error(res,429,'备份校验次数过多，请稍后再试');
-    const file=join(TMP_DIR,`${user.id}-${id}.upload`), password=String(req.headers['x-backup-password']||getBackupPassword(user.id)||''); if(!existsSync(file))return error(res,404,'上传任务已失效','backup_upload_expired'); if(!password)return error(res,400,'请输入这份备份的密码','backup_password_required');
-    try { const parsed=parseBackupBuffer(readFileSync(file),password),preview=backupPreview(parsed,user); if(!checkUsername(preview.ownerUsername))return error(res,400,'这份备份没有可验证的所属用户名，无法恢复。请先在原账户恢复后重新导出新版备份。','backup_owner_missing'); return json(res,200,preview); } catch(e){return error(res,e.status||400,e.message,backupErrorCode(e,'backup_inspect_failed'))}
-  }
-  if (/^\/api\/backup\/upload\/[^/]+\/apply$/.test(path) && method === 'POST') {
-    const id=path.split('/')[4];if(!validEntityId(id))return error(res,400,'上传任务编号不正确');
-    if(limited(req,`backup-apply:${user.id}`,10,3600000))return error(res,429,'备份恢复次数过多，请稍后再试');
-    const file=join(TMP_DIR,`${user.id}-${id}.upload`); if(!existsSync(file))return error(res,404,'上传任务已失效','backup_upload_expired'); const body=await readJson(req); const password=String(body.password||getBackupPassword(user.id)||''); if(!password)return error(res,400,'请输入这份备份的密码','backup_password_required');
-    if(!['merge','replace'].includes(body.mode))return error(res,400,'请选择安全合并或完整恢复','backup_mode_required');
-    if(body.mode==='replace'&&body.confirmation!=='RESTORE')return error(res,400,'完整恢复需要再次确认','backup_replace_confirmation_required');
-    try { const parsed=parseBackupBuffer(readFileSync(file),password); assertBackupOwner(user,parsed,body.sourceUsername); const preview=backupPreview(parsed,user),count=applyBackup(user.id,parsed,body.mode); unlinkSync(file); return json(res,200,{ok:true,count,mode:body.mode,...preview}); } catch(e){return error(res,e.status||400,e.message,backupErrorCode(e,'backup_import_failed'))}
-  }
   if (path === '/api/backup/targets' && method === 'GET') {
     const targets=db.prepare(`SELECT id,name,kind,schedule,enabled,last_run_at,last_success_at,last_error,created_at FROM backup_targets WHERE user_id=? ORDER BY created_at DESC`).all(user.id); const runs=db.prepare(`SELECT * FROM backup_runs WHERE user_id=? ORDER BY created_at DESC LIMIT 12`).all(user.id); return json(res,200,{targets,runs});
   }
@@ -1364,8 +1335,9 @@ async function api(req, res, url) {
   if (/^\/api\/backup\/targets\/[^/]+$/.test(path) && method === 'DELETE') { const id=path.split('/')[4]; db.prepare(`DELETE FROM backup_targets WHERE id=? AND user_id=?`).run(id,user.id); return json(res,200,{ok:true}); }
   if (/^\/api\/backup\/targets\/[^/]+\/(test|run)$/.test(path) && method === 'POST') {
     const [,,, ,id,action]=path.split('/'); const target=db.prepare(`SELECT * FROM backup_targets WHERE id=? AND user_id=?`).get(id,user.id); if(!target)return error(res,404,'备份目标不存在');
+    if(limited(req,`backup-run:${user.id}`,12,3600000))return error(res,429,'外部备份操作过多，请稍后再试','backup_rate_limited');
     try { await runExternalBackup(target,action==='test'); if(!saveBackupOutcome(target,'success',action==='test'?'连接测试成功':'备份成功'))return error(res,409,'备份目标已被删除'); return json(res,200,{ok:true}); }
-    catch(e){saveBackupOutcome(target,'error',e.message);return error(res,400,e.message)}
+    catch(e){if(e.code!=='backup_busy')saveBackupOutcome(target,'error',e.message);return error(res,e.status||400,e.message,e.code||'request_error')}
   }
   if (path === '/api/admin/users' && method === 'GET') {
     if(!['admin','superadmin'].includes(user.role))return error(res,403,'没有权限'); const q=safeText(url.searchParams.get('q')||'',100); return json(res,200,{users:db.prepare(`SELECT id,username,display_name,role,status,created_at FROM users WHERE username LIKE ? OR display_name LIKE ? ORDER BY created_at DESC`).all(`%${q}%`,`%${q}%`).map(cleanUser),registrationOpen:db.prepare(`SELECT value FROM schema_meta WHERE key='public_registration'`).get().value==='true'});
@@ -1411,7 +1383,6 @@ async function api(req, res, url) {
       try{db.exec('ROLLBACK')}catch{}
       throw deleteError;
     }
-    for(const name of readdirSync(TMP_DIR))if(name.startsWith(`${id}-`)){try{unlinkSync(join(TMP_DIR,name))}catch{}}
     return json(res,200,{ok:true,deleted:{username:target.username,displayName:target.display_name}});
   }
   if (path === '/api/admin/registration' && method === 'PUT') {
@@ -1439,12 +1410,11 @@ const server = http.createServer(async (req,res) => {
 
 const cleanup = () => {
   db.prepare(`DELETE FROM sessions WHERE expires_at<?`).run(now());
-  for (const name of readdirSync(TMP_DIR)) { const file=join(TMP_DIR,name); try{if(statSync(file).isFile()&&Date.now()-statSync(file).mtimeMs>3600000)unlinkSync(file)}catch{} }
   const stamp=Date.now();for(const [key,value] of rateMap)if(value.until<stamp)rateMap.delete(key);
 };
 const scheduledBackups = async () => {
   const targets=db.prepare(`SELECT * FROM backup_targets WHERE enabled=1 AND schedule!='manual'`).all();
-  for(const t of targets){const last=t.last_run_at?Date.parse(t.last_run_at):0,interval=t.schedule==='daily'?86400000:7*86400000;if(Date.now()-last<interval)continue;try{await runExternalBackup(t,false);saveBackupOutcome(t,'success','定时备份成功')}catch(e){try{saveBackupOutcome(t,'error',e.message)}catch(saveError){console.error('定时备份状态写入失败',saveError)}}}
+  for(const t of targets){const last=t.last_run_at?Date.parse(t.last_run_at):0,interval=t.schedule==='daily'?86400000:7*86400000;if(Date.now()-last<interval)continue;try{await runExternalBackup(t,false);saveBackupOutcome(t,'success','定时备份成功')}catch(e){if(e.code==='backup_busy')continue;try{saveBackupOutcome(t,'error',e.message)}catch(saveError){console.error('定时备份状态写入失败',saveError)}}}
 };
 let scheduledBackupRunning=false;
 const runScheduledBackups=async()=>{if(scheduledBackupRunning)return;scheduledBackupRunning=true;try{await scheduledBackups()}catch(error){console.error('定时备份任务失败',error)}finally{scheduledBackupRunning=false}};

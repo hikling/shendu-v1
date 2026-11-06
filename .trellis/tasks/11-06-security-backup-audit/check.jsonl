@@ -1,0 +1,2 @@
+{"file": ".trellis/spec/backend/http-and-security.md", "reason": "Review auth, restore and input boundaries"}
+{"file": ".trellis/spec/backend/testing-and-operations.md", "reason": "Full QA and isolated environments"}

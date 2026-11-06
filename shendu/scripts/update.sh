@@ -34,9 +34,6 @@ cleanup() {
   if [ -n "$update_copy" ] && [ -f "$update_copy" ]; then
     rm -f -- "$update_copy"
   fi
-  if [ -n "${backup_temp_file:-}" ] && [ -f "$backup_temp_file" ]; then
-    rm -f -- "$backup_temp_file"
-  fi
   if [ "${update_lock_acquired:-0}" = "1" ] && [ -n "${update_lock_dir:-}" ] && [ -d "$update_lock_dir" ]; then
     rmdir -- "$update_lock_dir" 2>/dev/null || true
   fi
@@ -95,33 +92,9 @@ fi
 
 case "$backup_choice" in
   y|Y|yes|YES|Yes|1|是)
-    command -v openssl >/dev/null 2>&1 || fail "没有找到 openssl，无法生成整站备份密码。"
-    mkdir -p "$app_dir/data" "$app_dir/tmp" "$app_dir/backups"
-    backup_password_file="$app_dir/data/server-backup.password"
-    if [ ! -f "$backup_password_file" ]; then
-      openssl rand -hex 32 > "$backup_password_file"
-      echo "已生成备份密码文件：$backup_password_file"
-      echo "请把该密码文件另存到服务器之外；恢复整站快照时必须使用。"
+    if ! sh "$app_dir/scripts/site-backup.sh" "$app_dir/backups" pre-update; then
+      fail "无法创建更新前整站备份；代码和容器均未更新。"
     fi
-    chmod 600 "$backup_password_file"
-    backup_password="$(tr -d '\r\n' < "$backup_password_file")"
-    [ "${#backup_password}" -ge 15 ] || fail "$backup_password_file 中的密码少于 15 个字符。"
-    backup_stamp="$(TZ=Asia/Shanghai date +%Y%m%d-%H%M%S)"
-    backup_name="shendu-full-site-pre-update-$backup_stamp.shendu-db"
-    backup_container_file="/app/tmp/$backup_name"
-    backup_temp_file="$app_dir/tmp/$backup_name"
-    backup_output_file="$app_dir/backups/$backup_name"
-    if ! docker compose exec -T -u root shendu node scripts/admin-cli.mjs snapshot "$backup_container_file" --password-file /app/data/server-backup.password; then
-      echo "运行中的应用容器不可用，正在使用临时容器创建整站快照……" >&2
-      if ! docker compose run --rm --no-deps shendu node scripts/admin-cli.mjs snapshot "$backup_container_file" --password-file /app/data/server-backup.password; then
-        fail "无法创建更新前整站备份；代码和容器均未更新。"
-      fi
-    fi
-    [ -s "$backup_temp_file" ] || fail "整站备份文件没有生成；代码和容器均未更新。"
-    install -m 600 "$backup_temp_file" "$backup_output_file"
-    rm -f -- "$backup_temp_file"
-    backup_temp_file=""
-    echo "整站备份：$backup_output_file"
     ;;
   n|N|no|NO|No|0|否|'')
     echo "已按选择跳过整站备份，继续更新。"

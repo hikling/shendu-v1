@@ -84,6 +84,8 @@ sh /opt/shendu-v1/shendu/scripts/update.sh /opt/shendu-v1
 
 [数据目录、密钥与恢复说明](docs/deployment.md#数据与备份) · [旧 Shendu / ZIP 部署迁移与回退](UPGRADING.md)
 
+[安全、备份与部署检查记录](docs/security-audit.md)
+
 ## 开发与检查
 
 在 `shendu/` 中执行：

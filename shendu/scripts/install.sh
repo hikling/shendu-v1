@@ -144,7 +144,7 @@ if [ ! -f .env ]; then
   sed -e "s/^SHENDU_DOMAIN=.*/SHENDU_DOMAIN=$domain/" -e "s/replace_with_64_hex_characters/$key/" .env.example > "$temp_env"
   chmod 600 "$temp_env"
   # Atomic publication without overwriting a concurrently created configuration.
-  ln "$temp_env" .env || fail '.env 已被其他进程创建；请核对原配置后重试。'
+  ln -T -- "$temp_env" .env || fail '.env 已被其他进程创建；请核对原配置后重试。'
   rm -f -- "$temp_env"
   temp_env=''
   echo '已生成域名配置与随机主密钥（权限 600）。'

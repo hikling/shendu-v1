@@ -16,7 +16,7 @@ const $=(selector,root=document)=>root.querySelector(selector),$$=(selector,root
 const app=$('#app'),rail=$('#rail-root'),notifications=$('#toast-root');
 ui.initializeToasts(notifications);
 const owner=name=>{
-  const start=source.indexOf(`function ${name}(`),end=source.indexOf('\nfunction ',start+1);
+  const start=source.indexOf(`function ${name}(`),next=/\n(?:async )?function /.exec(source.slice(start+1)),end=next?start+1+next.index:-1;
   assert.ok(start>=0&&end>start,`locate actual ${name} owner`);
   return source.slice(start,end);
 };
@@ -85,7 +85,7 @@ test('backup target deletion waits for explicit confirmation and keeps cancellat
   ui.renderMarkup(app,'<button id="delete-test-target" data-target-delete="only-this-target">删除</button>');
   const requests=[];let fail=false,refreshed=0;
   const request=async(path,options)=>{requests.push({path,...options});if(fail)throw new Error('连接暂时失败');return{}};
-  const bind=new Function('$','$$','openModal','closeModal','request','toast','renderBackup','bindSiteBackup',`${owner('bindBackup')}\nreturn bindBackup;`)($,$$,controls.openModal,controls.closeModal,request,()=>{},()=>{refreshed++},()=>{});
+  const bind=new Function('$','$$','state','openModal','closeModal','request','toast','renderBackup','bindSiteBackup',`${owner('dialogWriteTask')}\n${owner('bindBackup')}\nreturn bindBackup;`)($,$$,state,controls.openModal,controls.closeModal,request,()=>{},()=>{refreshed++},()=>{});
   bind({});const trigger=$('#delete-test-target');trigger.focus();trigger.click();await settle();
   assert.equal(requests.length,0);assert.ok($('.modal.legacy-dialog'));assert.match($('.backup-notice').textContent,/远端的备份文件不会被删除/);
   $('.modal-actions [data-close]').click();await settle();assert.equal(requests.length,0);assert.equal(document.activeElement,trigger);
@@ -100,7 +100,7 @@ test('pending target deletion cannot dismiss or later replace a newer dialog',as
   ui.renderMarkup(app,'<button id="pending-delete-target" data-target-delete="pending-target">删除</button>');
   let finish,refreshed=0,requests=0;
   const request=()=>{requests++;return new Promise(resolve=>{finish=resolve})};
-  const bind=new Function('$','$$','openModal','closeModal','request','toast','renderBackup','bindSiteBackup',`${owner('bindBackup')}\nreturn bindBackup;`)($,$$,controls.openModal,controls.closeModal,request,()=>{},()=>{refreshed++},()=>{});
+  const bind=new Function('$','$$','state','openModal','closeModal','request','toast','renderBackup','bindSiteBackup',`${owner('dialogWriteTask')}\n${owner('bindBackup')}\nreturn bindBackup;`)($,$$,state,controls.openModal,controls.closeModal,request,()=>{},()=>{refreshed++},()=>{});
   bind({});$('#pending-delete-target').click();await settle();
   const confirm=$('#delete-target-confirm');confirm.click();confirm.click();
   assert.equal(requests,1);assert.equal(confirm.disabled,true);
