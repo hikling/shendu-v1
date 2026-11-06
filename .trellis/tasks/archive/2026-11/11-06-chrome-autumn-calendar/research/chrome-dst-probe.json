@@ -1,0 +1,4467 @@
+{
+  "browser": "157.0.8103.38",
+  "baseUrl": "http://127.0.0.1:3192",
+  "results": [
+    {
+      "timezoneId": "America/New_York",
+      "resolved": "America/New_York",
+      "november": [
+        {
+          "day": 1,
+          "date": "Sat Nov 01 2025 00:00:00 GMT-0400 (北美东部夏令时间)",
+          "offset": 240
+        },
+        {
+          "day": 2,
+          "date": "Sun Nov 02 2025 00:00:00 GMT-0400 (北美东部夏令时间)",
+          "offset": 240
+        },
+        {
+          "day": 3,
+          "date": "Mon Nov 03 2025 00:00:00 GMT-0500 (北美东部标准时间)",
+          "offset": 300
+        }
+      ],
+      "snapshots": [
+        {
+          "step": "initial",
+          "month": "2026-11",
+          "dates": 30,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 0,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": null,
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "back-0",
+          "month": "2026-10",
+          "dates": 31,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "上个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "back-1",
+          "month": "2026-09",
+          "dates": 30,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "上个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "back-2",
+          "month": "2026-08",
+          "dates": 31,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 1,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "上个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "back-3",
+          "month": "2026-07",
+          "dates": 31,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "上个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "back-4",
+          "month": "2026-06",
+          "dates": 30,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "上个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "back-5",
+          "month": "2026-05",
+          "dates": 31,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 1,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "上个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "back-6",
+          "month": "2026-04",
+          "dates": 30,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "上个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "back-7",
+          "month": "2026-03",
+          "dates": 31,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 1,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "上个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "back-8",
+          "month": "2026-02",
+          "dates": 28,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "上个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "back-9",
+          "month": "2026-01",
+          "dates": 31,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "上个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "back-10",
+          "month": "2025-12",
+          "dates": 31,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "上个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "back-11",
+          "month": "2025-11",
+          "dates": 30,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 1,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "上个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "back-12",
+          "month": "2025-10",
+          "dates": 31,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "上个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "back-13",
+          "month": "2025-09",
+          "dates": 30,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "上个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "back-14",
+          "month": "2025-08",
+          "dates": 31,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 1,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "上个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "back-15",
+          "month": "2025-07",
+          "dates": 31,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "上个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "back-16",
+          "month": "2025-06",
+          "dates": 30,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 1,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "上个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "back-17",
+          "month": "2025-05",
+          "dates": 31,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "上个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "back-18",
+          "month": "2025-04",
+          "dates": 30,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "上个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "back-19",
+          "month": "2025-03",
+          "dates": 31,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 1,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "上个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "back-20",
+          "month": "2025-02",
+          "dates": 28,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "上个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "back-21",
+          "month": "2025-01",
+          "dates": 31,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "上个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "back-22",
+          "month": "2024-12",
+          "dates": 31,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 1,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "上个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "back-23",
+          "month": "2024-11",
+          "dates": 30,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "上个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "back-24",
+          "month": "2024-10",
+          "dates": 31,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "上个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "back-25",
+          "month": "2024-09",
+          "dates": 30,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 1,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "上个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "back-26",
+          "month": "2024-08",
+          "dates": 31,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "上个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "back-27",
+          "month": "2024-07",
+          "dates": 31,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "上个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "back-28",
+          "month": "2024-06",
+          "dates": 30,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 1,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "上个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "back-29",
+          "month": "2024-05",
+          "dates": 31,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "上个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "back-30",
+          "month": "2024-04",
+          "dates": 30,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "上个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "back-31",
+          "month": "2024-03",
+          "dates": 31,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 1,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "上个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "back-32",
+          "month": "2024-02",
+          "dates": 29,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "上个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "back-33",
+          "month": "2024-01",
+          "dates": 31,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "上个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "back-34",
+          "month": "2023-12",
+          "dates": 31,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 1,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "上个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "back-35",
+          "month": "2023-11",
+          "dates": 30,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "上个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "back-36",
+          "month": "2023-10",
+          "dates": 31,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 1,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "上个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "back-37",
+          "month": "2023-09",
+          "dates": 30,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "上个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "forward-0",
+          "month": "2023-10",
+          "dates": 31,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "下个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "forward-1",
+          "month": "2023-11",
+          "dates": 30,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 1,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "下个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "forward-2",
+          "month": "2023-12",
+          "dates": 31,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "下个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "forward-3",
+          "month": "2024-01",
+          "dates": 31,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 1,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "下个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "forward-4",
+          "month": "2024-02",
+          "dates": 29,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "下个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "forward-5",
+          "month": "2024-03",
+          "dates": 31,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "下个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "forward-6",
+          "month": "2024-04",
+          "dates": 30,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 1,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "下个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "forward-7",
+          "month": "2024-05",
+          "dates": 31,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "下个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "forward-8",
+          "month": "2024-06",
+          "dates": 30,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "下个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "forward-9",
+          "month": "2024-07",
+          "dates": 31,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 1,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "下个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "forward-10",
+          "month": "2024-08",
+          "dates": 31,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "下个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "forward-11",
+          "month": "2024-09",
+          "dates": 30,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "下个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "forward-12",
+          "month": "2024-10",
+          "dates": 31,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 1,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "下个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "forward-13",
+          "month": "2024-11",
+          "dates": 30,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "下个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "forward-14",
+          "month": "2024-12",
+          "dates": 31,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "下个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "forward-15",
+          "month": "2025-01",
+          "dates": 31,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 1,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "下个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "forward-16",
+          "month": "2025-02",
+          "dates": 28,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "下个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "forward-17",
+          "month": "2025-03",
+          "dates": 31,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "下个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "forward-18",
+          "month": "2025-04",
+          "dates": 30,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 1,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "下个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "forward-19",
+          "month": "2025-05",
+          "dates": 31,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "下个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "forward-20",
+          "month": "2025-06",
+          "dates": 30,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "下个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "forward-21",
+          "month": "2025-07",
+          "dates": 31,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 1,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "下个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "forward-22",
+          "month": "2025-08",
+          "dates": 31,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "下个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "forward-23",
+          "month": "2025-09",
+          "dates": 30,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 1,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "下个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "forward-24",
+          "month": "2025-10",
+          "dates": 31,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "下个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "forward-25",
+          "month": "2025-11",
+          "dates": 30,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "下个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "forward-26",
+          "month": "2025-12",
+          "dates": 31,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 1,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "下个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "forward-27",
+          "month": "2026-01",
+          "dates": 31,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "下个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "forward-28",
+          "month": "2026-02",
+          "dates": 28,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "下个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "forward-29",
+          "month": "2026-03",
+          "dates": 31,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "下个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "forward-30",
+          "month": "2026-04",
+          "dates": 30,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 1,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "下个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "forward-31",
+          "month": "2026-05",
+          "dates": 31,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "下个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "forward-32",
+          "month": "2026-06",
+          "dates": 30,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 1,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "下个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "forward-33",
+          "month": "2026-07",
+          "dates": 31,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "下个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "forward-34",
+          "month": "2026-08",
+          "dates": 31,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "下个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "forward-35",
+          "month": "2026-09",
+          "dates": 30,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 1,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "下个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "forward-36",
+          "month": "2026-10",
+          "dates": 31,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "下个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "forward-37",
+          "month": "2026-11",
+          "dates": 30,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "下个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        }
+      ],
+      "errors": []
+    },
+    {
+      "timezoneId": "America/Los_Angeles",
+      "resolved": "America/Los_Angeles",
+      "november": [
+        {
+          "day": 1,
+          "date": "Sat Nov 01 2025 00:00:00 GMT-0700 (北美太平洋夏令时间)",
+          "offset": 420
+        },
+        {
+          "day": 2,
+          "date": "Sun Nov 02 2025 00:00:00 GMT-0700 (北美太平洋夏令时间)",
+          "offset": 420
+        },
+        {
+          "day": 3,
+          "date": "Mon Nov 03 2025 00:00:00 GMT-0800 (北美太平洋标准时间)",
+          "offset": 480
+        }
+      ],
+      "snapshots": [
+        {
+          "step": "initial",
+          "month": "2026-11",
+          "dates": 30,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 0,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": null,
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "back-0",
+          "month": "2026-10",
+          "dates": 31,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "上个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "back-1",
+          "month": "2026-09",
+          "dates": 30,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "上个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "back-2",
+          "month": "2026-08",
+          "dates": 31,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 1,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "上个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "back-3",
+          "month": "2026-07",
+          "dates": 31,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "上个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "back-4",
+          "month": "2026-06",
+          "dates": 30,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "上个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "back-5",
+          "month": "2026-05",
+          "dates": 31,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 1,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "上个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "back-6",
+          "month": "2026-04",
+          "dates": 30,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "上个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "back-7",
+          "month": "2026-03",
+          "dates": 31,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 1,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "上个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "back-8",
+          "month": "2026-02",
+          "dates": 28,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "上个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "back-9",
+          "month": "2026-01",
+          "dates": 31,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "上个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "back-10",
+          "month": "2025-12",
+          "dates": 31,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "上个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "back-11",
+          "month": "2025-11",
+          "dates": 30,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 1,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "上个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "back-12",
+          "month": "2025-10",
+          "dates": 31,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "上个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "back-13",
+          "month": "2025-09",
+          "dates": 30,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "上个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "back-14",
+          "month": "2025-08",
+          "dates": 31,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 1,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "上个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "back-15",
+          "month": "2025-07",
+          "dates": 31,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "上个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "back-16",
+          "month": "2025-06",
+          "dates": 30,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 1,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "上个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "back-17",
+          "month": "2025-05",
+          "dates": 31,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "上个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "back-18",
+          "month": "2025-04",
+          "dates": 30,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "上个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "back-19",
+          "month": "2025-03",
+          "dates": 31,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 1,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "上个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "back-20",
+          "month": "2025-02",
+          "dates": 28,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "上个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "back-21",
+          "month": "2025-01",
+          "dates": 31,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "上个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "back-22",
+          "month": "2024-12",
+          "dates": 31,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 1,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "上个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "back-23",
+          "month": "2024-11",
+          "dates": 30,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "上个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "back-24",
+          "month": "2024-10",
+          "dates": 31,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "上个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "back-25",
+          "month": "2024-09",
+          "dates": 30,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 1,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "上个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "back-26",
+          "month": "2024-08",
+          "dates": 31,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "上个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "back-27",
+          "month": "2024-07",
+          "dates": 31,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "上个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "back-28",
+          "month": "2024-06",
+          "dates": 30,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 1,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "上个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "back-29",
+          "month": "2024-05",
+          "dates": 31,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "上个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "back-30",
+          "month": "2024-04",
+          "dates": 30,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "上个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "back-31",
+          "month": "2024-03",
+          "dates": 31,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 1,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "上个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "back-32",
+          "month": "2024-02",
+          "dates": 29,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "上个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "back-33",
+          "month": "2024-01",
+          "dates": 31,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "上个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "back-34",
+          "month": "2023-12",
+          "dates": 31,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 1,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "上个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "back-35",
+          "month": "2023-11",
+          "dates": 30,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "上个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "back-36",
+          "month": "2023-10",
+          "dates": 31,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 1,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "上个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "back-37",
+          "month": "2023-09",
+          "dates": 30,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "上个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "forward-0",
+          "month": "2023-10",
+          "dates": 31,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "下个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "forward-1",
+          "month": "2023-11",
+          "dates": 30,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 1,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "下个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "forward-2",
+          "month": "2023-12",
+          "dates": 31,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "下个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "forward-3",
+          "month": "2024-01",
+          "dates": 31,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 1,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "下个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "forward-4",
+          "month": "2024-02",
+          "dates": 29,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "下个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "forward-5",
+          "month": "2024-03",
+          "dates": 31,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "下个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "forward-6",
+          "month": "2024-04",
+          "dates": 30,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 1,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "下个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "forward-7",
+          "month": "2024-05",
+          "dates": 31,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "下个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "forward-8",
+          "month": "2024-06",
+          "dates": 30,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "下个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "forward-9",
+          "month": "2024-07",
+          "dates": 31,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 1,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "下个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "forward-10",
+          "month": "2024-08",
+          "dates": 31,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "下个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "forward-11",
+          "month": "2024-09",
+          "dates": 30,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "下个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "forward-12",
+          "month": "2024-10",
+          "dates": 31,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 1,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "下个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "forward-13",
+          "month": "2024-11",
+          "dates": 30,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "下个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "forward-14",
+          "month": "2024-12",
+          "dates": 31,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "下个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "forward-15",
+          "month": "2025-01",
+          "dates": 31,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 1,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "下个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "forward-16",
+          "month": "2025-02",
+          "dates": 28,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "下个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "forward-17",
+          "month": "2025-03",
+          "dates": 31,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "下个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "forward-18",
+          "month": "2025-04",
+          "dates": 30,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 1,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "下个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "forward-19",
+          "month": "2025-05",
+          "dates": 31,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "下个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "forward-20",
+          "month": "2025-06",
+          "dates": 30,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "下个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "forward-21",
+          "month": "2025-07",
+          "dates": 31,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 1,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "下个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "forward-22",
+          "month": "2025-08",
+          "dates": 31,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "下个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "forward-23",
+          "month": "2025-09",
+          "dates": 30,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 1,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "下个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "forward-24",
+          "month": "2025-10",
+          "dates": 31,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "下个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "forward-25",
+          "month": "2025-11",
+          "dates": 30,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "下个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "forward-26",
+          "month": "2025-12",
+          "dates": 31,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 1,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "下个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "forward-27",
+          "month": "2026-01",
+          "dates": 31,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "下个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "forward-28",
+          "month": "2026-02",
+          "dates": 28,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "下个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "forward-29",
+          "month": "2026-03",
+          "dates": 31,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "下个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "forward-30",
+          "month": "2026-04",
+          "dates": 30,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 1,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "下个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "forward-31",
+          "month": "2026-05",
+          "dates": 31,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "下个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "forward-32",
+          "month": "2026-06",
+          "dates": 30,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 1,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "下个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "forward-33",
+          "month": "2026-07",
+          "dates": 31,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "下个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "forward-34",
+          "month": "2026-08",
+          "dates": 31,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "下个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "forward-35",
+          "month": "2026-09",
+          "dates": 30,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 1,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "下个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "forward-36",
+          "month": "2026-10",
+          "dates": 31,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "下个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "forward-37",
+          "month": "2026-11",
+          "dates": 30,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "下个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        }
+      ],
+      "errors": []
+    },
+    {
+      "timezoneId": "Europe/London",
+      "resolved": "Europe/London",
+      "november": [
+        {
+          "day": 1,
+          "date": "Sat Nov 01 2025 00:00:00 GMT+0000 (格林尼治标准时间)",
+          "offset": 0
+        },
+        {
+          "day": 2,
+          "date": "Sun Nov 02 2025 00:00:00 GMT+0000 (格林尼治标准时间)",
+          "offset": 0
+        },
+        {
+          "day": 3,
+          "date": "Mon Nov 03 2025 00:00:00 GMT+0000 (格林尼治标准时间)",
+          "offset": 0
+        }
+      ],
+      "snapshots": [
+        {
+          "step": "initial",
+          "month": "2026-11",
+          "dates": 30,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 0,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": null,
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "back-0",
+          "month": "2026-10",
+          "dates": 31,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "上个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "back-1",
+          "month": "2026-09",
+          "dates": 30,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "上个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "back-2",
+          "month": "2026-08",
+          "dates": 31,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 1,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "上个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "back-3",
+          "month": "2026-07",
+          "dates": 31,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "上个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "back-4",
+          "month": "2026-06",
+          "dates": 30,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "上个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "back-5",
+          "month": "2026-05",
+          "dates": 31,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 1,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "上个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "back-6",
+          "month": "2026-04",
+          "dates": 30,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "上个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "back-7",
+          "month": "2026-03",
+          "dates": 31,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 1,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "上个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "back-8",
+          "month": "2026-02",
+          "dates": 28,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "上个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "back-9",
+          "month": "2026-01",
+          "dates": 31,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "上个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "back-10",
+          "month": "2025-12",
+          "dates": 31,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "上个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "back-11",
+          "month": "2025-11",
+          "dates": 30,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 1,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "上个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "back-12",
+          "month": "2025-10",
+          "dates": 31,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "上个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "back-13",
+          "month": "2025-09",
+          "dates": 30,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "上个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "back-14",
+          "month": "2025-08",
+          "dates": 31,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 1,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "上个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "back-15",
+          "month": "2025-07",
+          "dates": 31,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "上个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "back-16",
+          "month": "2025-06",
+          "dates": 30,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 1,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "上个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "back-17",
+          "month": "2025-05",
+          "dates": 31,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "上个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "back-18",
+          "month": "2025-04",
+          "dates": 30,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "上个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "back-19",
+          "month": "2025-03",
+          "dates": 31,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 1,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "上个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "back-20",
+          "month": "2025-02",
+          "dates": 28,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "上个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "back-21",
+          "month": "2025-01",
+          "dates": 31,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "上个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "back-22",
+          "month": "2024-12",
+          "dates": 31,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 1,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "上个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "back-23",
+          "month": "2024-11",
+          "dates": 30,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "上个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "back-24",
+          "month": "2024-10",
+          "dates": 31,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "上个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "back-25",
+          "month": "2024-09",
+          "dates": 30,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 1,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "上个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "back-26",
+          "month": "2024-08",
+          "dates": 31,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "上个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "back-27",
+          "month": "2024-07",
+          "dates": 31,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "上个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "back-28",
+          "month": "2024-06",
+          "dates": 30,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 1,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "上个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "back-29",
+          "month": "2024-05",
+          "dates": 31,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "上个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "back-30",
+          "month": "2024-04",
+          "dates": 30,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "上个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "back-31",
+          "month": "2024-03",
+          "dates": 31,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 1,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "上个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "back-32",
+          "month": "2024-02",
+          "dates": 29,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "上个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "back-33",
+          "month": "2024-01",
+          "dates": 31,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "上个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "back-34",
+          "month": "2023-12",
+          "dates": 31,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 1,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "上个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "back-35",
+          "month": "2023-11",
+          "dates": 30,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "上个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "back-36",
+          "month": "2023-10",
+          "dates": 31,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 1,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "上个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "back-37",
+          "month": "2023-09",
+          "dates": 30,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "上个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "forward-0",
+          "month": "2023-10",
+          "dates": 31,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "下个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "forward-1",
+          "month": "2023-11",
+          "dates": 30,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 1,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "下个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "forward-2",
+          "month": "2023-12",
+          "dates": 31,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "下个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "forward-3",
+          "month": "2024-01",
+          "dates": 31,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 1,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "下个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "forward-4",
+          "month": "2024-02",
+          "dates": 29,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "下个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "forward-5",
+          "month": "2024-03",
+          "dates": 31,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "下个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "forward-6",
+          "month": "2024-04",
+          "dates": 30,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 1,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "下个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "forward-7",
+          "month": "2024-05",
+          "dates": 31,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "下个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "forward-8",
+          "month": "2024-06",
+          "dates": 30,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "下个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "forward-9",
+          "month": "2024-07",
+          "dates": 31,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 1,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "下个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "forward-10",
+          "month": "2024-08",
+          "dates": 31,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "下个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "forward-11",
+          "month": "2024-09",
+          "dates": 30,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "下个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "forward-12",
+          "month": "2024-10",
+          "dates": 31,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 1,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "下个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "forward-13",
+          "month": "2024-11",
+          "dates": 30,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "下个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "forward-14",
+          "month": "2024-12",
+          "dates": 31,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "下个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "forward-15",
+          "month": "2025-01",
+          "dates": 31,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 1,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "下个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "forward-16",
+          "month": "2025-02",
+          "dates": 28,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "下个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "forward-17",
+          "month": "2025-03",
+          "dates": 31,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "下个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "forward-18",
+          "month": "2025-04",
+          "dates": 30,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 1,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "下个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "forward-19",
+          "month": "2025-05",
+          "dates": 31,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "下个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "forward-20",
+          "month": "2025-06",
+          "dates": 30,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "下个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "forward-21",
+          "month": "2025-07",
+          "dates": 31,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 1,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "下个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "forward-22",
+          "month": "2025-08",
+          "dates": 31,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "下个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "forward-23",
+          "month": "2025-09",
+          "dates": 30,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 1,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "下个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "forward-24",
+          "month": "2025-10",
+          "dates": 31,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "下个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "forward-25",
+          "month": "2025-11",
+          "dates": 30,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "下个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "forward-26",
+          "month": "2025-12",
+          "dates": 31,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 1,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "下个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "forward-27",
+          "month": "2026-01",
+          "dates": 31,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "下个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "forward-28",
+          "month": "2026-02",
+          "dates": 28,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "下个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "forward-29",
+          "month": "2026-03",
+          "dates": 31,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "下个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "forward-30",
+          "month": "2026-04",
+          "dates": 30,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 1,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "下个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "forward-31",
+          "month": "2026-05",
+          "dates": 31,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "下个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "forward-32",
+          "month": "2026-06",
+          "dates": 30,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 1,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "下个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "forward-33",
+          "month": "2026-07",
+          "dates": 31,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "下个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "forward-34",
+          "month": "2026-08",
+          "dates": 31,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "下个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "forward-35",
+          "month": "2026-09",
+          "dates": 30,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 1,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "下个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "forward-36",
+          "month": "2026-10",
+          "dates": 31,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "下个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        },
+        {
+          "step": "forward-37",
+          "month": "2026-11",
+          "dates": 30,
+          "issues": [],
+          "retainedOldCells": 0,
+          "retainedOldWeekRows": 2,
+          "rootRetained": true,
+          "navRetained": true,
+          "focus": "下个月",
+          "rows": [
+            58,
+            58,
+            58,
+            58,
+            58,
+            58
+          ]
+        }
+      ],
+      "errors": []
+    }
+  ]
+}

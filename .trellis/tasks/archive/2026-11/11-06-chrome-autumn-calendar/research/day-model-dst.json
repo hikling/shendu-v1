@@ -1,0 +1,120 @@
+{
+  "node": "v24.19.0",
+  "results": [
+    {
+      "zone": "Asia/Shanghai",
+      "resolved": "Asia/Shanghai",
+      "checked": 204,
+      "failures": [],
+      "fallback2025": [
+        {
+          "day": 1,
+          "date": "Sat Nov 01 2025 00:00:00 GMT+0800 (中国标准时间)",
+          "offset": -480
+        },
+        {
+          "day": 2,
+          "date": "Sun Nov 02 2025 00:00:00 GMT+0800 (中国标准时间)",
+          "offset": -480
+        },
+        {
+          "day": 3,
+          "date": "Mon Nov 03 2025 00:00:00 GMT+0800 (中国标准时间)",
+          "offset": -480
+        }
+      ]
+    },
+    {
+      "zone": "America/New_York",
+      "resolved": "America/New_York",
+      "checked": 204,
+      "failures": [],
+      "fallback2025": [
+        {
+          "day": 1,
+          "date": "Sat Nov 01 2025 00:00:00 GMT-0400 (北美东部夏令时间)",
+          "offset": 240
+        },
+        {
+          "day": 2,
+          "date": "Sun Nov 02 2025 00:00:00 GMT-0400 (北美东部夏令时间)",
+          "offset": 240
+        },
+        {
+          "day": 3,
+          "date": "Mon Nov 03 2025 00:00:00 GMT-0500 (北美东部标准时间)",
+          "offset": 300
+        }
+      ]
+    },
+    {
+      "zone": "America/Los_Angeles",
+      "resolved": "America/Los_Angeles",
+      "checked": 204,
+      "failures": [],
+      "fallback2025": [
+        {
+          "day": 1,
+          "date": "Sat Nov 01 2025 00:00:00 GMT-0700 (北美太平洋夏令时间)",
+          "offset": 420
+        },
+        {
+          "day": 2,
+          "date": "Sun Nov 02 2025 00:00:00 GMT-0700 (北美太平洋夏令时间)",
+          "offset": 420
+        },
+        {
+          "day": 3,
+          "date": "Mon Nov 03 2025 00:00:00 GMT-0800 (北美太平洋标准时间)",
+          "offset": 480
+        }
+      ]
+    },
+    {
+      "zone": "Europe/London",
+      "resolved": "Europe/London",
+      "checked": 204,
+      "failures": [],
+      "fallback2025": [
+        {
+          "day": 1,
+          "date": "Sat Nov 01 2025 00:00:00 GMT+0000 (格林尼治标准时间)",
+          "offset": 0
+        },
+        {
+          "day": 2,
+          "date": "Sun Nov 02 2025 00:00:00 GMT+0000 (格林尼治标准时间)",
+          "offset": 0
+        },
+        {
+          "day": 3,
+          "date": "Mon Nov 03 2025 00:00:00 GMT+0000 (格林尼治标准时间)",
+          "offset": 0
+        }
+      ]
+    },
+    {
+      "zone": "America/Havana",
+      "resolved": "America/Havana",
+      "checked": 204,
+      "failures": [],
+      "fallback2025": [
+        {
+          "day": 1,
+          "date": "Sat Nov 01 2025 00:00:00 GMT-0400 (古巴夏令时间)",
+          "offset": 240
+        },
+        {
+          "day": 2,
+          "date": "Sun Nov 02 2025 00:00:00 GMT-0400 (古巴夏令时间)",
+          "offset": 240
+        },
+        {
+          "day": 3,
+          "date": "Mon Nov 03 2025 00:00:00 GMT-0500 (古巴标准时间)",
+          "offset": 300
+        }
+      ]
+    }
+  ]
+}
