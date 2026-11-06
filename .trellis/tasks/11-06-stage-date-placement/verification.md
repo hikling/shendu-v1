@@ -9,4 +9,6 @@
 - 公开网站下载资源stagegrid1在本地隔离环境确认隐式占位失败，SHA256在docs/stage-placement-qa/frozen-production.json。未进入或修改真实账户，直接线上渲染连接超时。
 - 用户截图两次绘制的确切触发条件仍未复现；注入错列的证据不作为此根因的证明。修复与验收边界见research/break-loop.md。
 
-main提交与Linux/Docker CI待同步后记录。
+功能提交4c745f1f8b5384ec401f026246b6189bb353ce6b已推送main，准确SHA的GitHub Actions42152530590成功：https://github.com/hikling/shendu-v1/actions/runs/42152530590 。包含Linux检查/151项测试、Docker镜像及启动/资源烟测。
+
+隔离3192/3193服务已停止，无残留监听。线上公开HTML再次读取仍为stagegrid1；本次未执行服务器部署，需按README更新到stagegrid2，不能把推送main当作已上线。

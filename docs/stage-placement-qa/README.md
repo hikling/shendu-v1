@@ -36,3 +36,7 @@ node docs/stage-placement-qa/check.cjs http://127.0.0.1:3192
 [桌面日历](fixed-1120.png) · [手机日历](fixed-390.png) · [移除空白格后的正确位置](fixed-collapsed-blank-cells.png) · [保留的整体布局](fixed-layout.png)
 
 旧版对照：[正常](frozen-production-normal.png) · [注入隐藏空白格后错位](frozen-production-hidden-cells.png)。这两张是下载公开资源后的本地渲染，并非线上账户截图。
+
+功能提交 `4c745f1f8b5384ec401f026246b6189bb353ce6b` 已推送main，对应 [GitHub Actions42152530590](https://github.com/hikling/shendu-v1/actions/runs/42152530590) 成功，包含Linux检查、151项测试、Docker构建及启动/静态资源烟测。隔离3192/3193服务已停止。
+
+提交后再次读取网站公开HTML，仍加载`stagegrid1`。本次没有服务器部署凭据，也未执行线上部署；需按仓库README的更新流程重建应用后才能加载`stagegrid2`。刷新页面不能代替部署。

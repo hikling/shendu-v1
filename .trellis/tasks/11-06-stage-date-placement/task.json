@@ -15,12 +15,12 @@
   "branch": "main",
   "base_branch": "main",
   "worktree_path": null,
-  "commit": null,
+  "commit": "4c745f1f8b5384ec401f026246b6189bb353ce6b",
   "pr_url": null,
   "subtasks": [],
   "children": [],
   "parent": null,
   "relatedFiles": [],
-  "notes": "",
+  "notes": "Chrome/Edge实际日期列与周行检查通过；准确功能SHA的Actions42152530590成功。线上公开HTML仍为stagegrid1，未部署服务器，不能将本地验收当作真实线上账户绘制验收。",
   "meta": {}
 }
