@@ -1089,3 +1089,38 @@ Changed only stage/calendar layout and required caches: explicit seven-column ro
 ### Status
 
 [OK] **Completed**
+
+
+## Session 48: 阶段日历显式星期列与渲染验收
+<!-- trellis-session: v=2 fp=4a143d02356ae669 -->
+
+**Date**: 2026-11-06
+**Task**: 阶段日历显式星期列与渲染验收
+**Branch**: `main`
+
+### Summary
+
+仅阶段日历改用稳定div ARIA槽和显式civil星期列，保留现有版式、业务与共享验证日历。补实际x/y几何回归与故障注入，151项测试及准确功能SHA的Linux/Docker CI成功。
+
+### Main Changes
+
+- Stage grid明确列数/列索引、固定空周高度；更新阶段规范和break-loop记录，归档验收截图及公开资源SHA。
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `4c745f1` | Fix stage calendar date placement with explicit weekday columns |
+| `bc85618` | Record calendar placement acceptance and successful Linux CI |
+
+### Testing
+
+- [OK] Chrome48组日期位置/空数据/焦点/返回回归与80–150%真实页面缩放通过；Edge独立复核通过；本地build/check/151tests/smoke通过。
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- 线上cokee.cc.cd公开HTML仍为stagegrid1，按README更新部署到stagegrid2；未确认用户截图双重绘制的具体触发条件，不把本地通过当作线上账户验收。
