@@ -1191,3 +1191,27 @@ Reused civil date adapter in six verification flows, preserved canonical dates/m
 ### Status
 
 [OK] **Completed**
+
+
+## Session 52: Simplify Debian installation
+<!-- trellis-session: v=2 fp=92c155dcd25c01ba -->
+
+**Date**: 2026-11-06
+**Task**: Simplify Debian installation
+**Branch**: `main`
+
+### Summary
+
+Unified bootstrap, domain configuration, dependency reuse, build/start and UI smoke into one Debian install command. Preserved existing configuration, keys and data; removed README showcase photo and synchronized deployment docs. Independent review and exact-SHA Ubuntu CI passed, including isolated installer scenarios, all 155 app tests and real Docker health/static-resource checks. No application/UI content changed.
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `9dc039f` | Simplify Debian setup into one install command |
+| `62ef693` | Distinguish Git updates from Docker pulls in install tests |
+| `78a83b6` | Cover direct Git commands in installer guard assertion |
+
+### Status
+
+[OK] **Completed**
