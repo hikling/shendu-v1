@@ -22,4 +22,4 @@
 
 [最终几何](final-geometry.json) · [空与长行动](variant-geometry.json) · [300字阶段说明](long-stage-geometry.json) · [基线几何](baseline-geometry.json)
 
-main精确SHA与CI将在同步后记录；Trellis归档和日志单独提交。
+功能提交 `068a70c77200b5e1c62e1691ed43df4240634e3a` 已同步 main，对应 [GitHub Actions 42144408961](https://github.com/hikling/shendu-v1/actions/runs/42144408961) 已成功，包含 Linux 构建、检查、测试和 Docker/资源烟测。隔离3192/3193服务已停止；Trellis归档和日志单独提交。
