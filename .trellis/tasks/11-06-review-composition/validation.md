@@ -8,4 +8,10 @@ Entered sleep7.5, traversed next/back without losing it, saved/reloaded it; ente
 
 README and deployment recovery instructions checked against the current bootstrap, installer and updater: existing checkout is not fetched by bootstrap; explicit fast-forward before retry is necessary. `&&` stops before invoking an old installer if pull fails. Preserve configuration/data/master key/backups/Caddy volumes; running sites use the latest downloaded updater. No screenshots added to README and no deployment-time guarantee.
 
-Remote CI, immutable image publication and anonymous download deployment smoke: pending source push.
+## Remote gate
+
+Work commit `bcfb628af9d4cb28077ede78e5a2ea5f05b18838` fast-forwarded and pushed to origin/main. [CI42244851556](https://github.com/hikling/shendu-v1/actions/runs/42244851556): all five jobs succeeded: native amd64 and arm64 verify, immutable public publication, and both fresh-runner anonymous download-smoke jobs. The jobs cover Linux installer scenarios, existing application tests, Docker/Compose configuration, public image download/checksum/load/reuse, real Compose startup and health/UI/encrypted snapshot smoke.
+
+Application source tree `b33e536d6f961419ddae6168df2a5ae06c3dd7ae` has a [public non-draft release](https://github.com/hikling/shendu-v1/releases/tag/deploy-b33e536d6f961419ddae6168df2a5ae06c3dd7ae). Anonymous API confirmed both architecture archives and their SHA-256 files: amd64 archive103,986,304bytes, arm64 archive102,800,861bytes. Subsequent changes are Trellis/spec/journal only and retain this application tree. Local `npm run smoke:ui -- http://127.0.0.1:3196` also passed health/HTML/app/local shadcn assets. Isolated QA servers stopped after verification.
+
+The production server is not changed by a Git push; users adopt the published image through the documented installer/updater. Download duration still depends on their server connection. No live server credentials or user data were accessed.

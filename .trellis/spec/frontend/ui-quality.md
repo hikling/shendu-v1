@@ -75,9 +75,12 @@ Action cards use one `.action-reading` surface: the original plan spans the row,
 
 Action-page artwork is deliberately large: the hero illustration may extend past the old divider toward the first green content frame, while pending/verified totals belong at that content area's right edge. Each record's illustration spans the title and paired-date area to the reading frame's upper edge; do not restrict it to a150px title thumbnail. Keep expected/actual dates close together with larger readable values, and compact metadata spacing without truncating original text. These are `.actions-page` rules only; the shared `verificationTimes()` helper, verification dialog, overview/history art and record allocator keep their contracts. At narrow widths reduce/reflow art and totals before they overlap real text or controls. Art stays aria-hidden and pointer-inert.
 
+## Six-review content alignment
+
+See [Review composition](./review-composition.md) for the grid/content/art alignment and responsive validation contract.
+
 ## History archive and personal spaces
 
-Six-review composition: `.daily-art-flow` uses a shared grid row for the active copy and its single inert artwork. `.daily-editor-content` groups heading, error, mounted panes and hint; `.daily-editor` keeps DOM ancestry/hidden semantics through `display:contents`, and its footer occupies a separate bottom row. Center the artwork against this group, never a fixed top offset or the entire viewport/footer. Preserve alternating sides and the common reading boundary. Intro copy/art move together through lower whitespace; phones show content first, centered smaller art next, footer last. Do not duplicate illustration trees, move React-owned controls, measure positions in JavaScript, or remount inputs when switching prompts. Check short action fields, tall text/calendar/locked afterwords, long quotes and 320/390/820/1100/1440/1920px widths; decorations must remain inert and within the viewport.
 
 See [Archive and workspace UI](./archive-and-workspace-ui.md) for history cards, illustrated settings/backup/admin forms, authentication and generic Dialog surfaces.
 

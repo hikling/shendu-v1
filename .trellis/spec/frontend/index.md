@@ -8,7 +8,7 @@ Read the user-confirmed product direction in [`PRODUCT.md`](../../../PRODUCT.md)
 
 1. Read [Architecture](./architecture.md) for rendering and event binding.
 2. Read [State and data](./state-and-data.md) before changing forms, navigation, or save behavior.
-3. Read [UI quality](./ui-quality.md) before changing layout, category colors, or dialogs.
+3. Read [UI quality](./ui-quality.md) before changing layout, category colors, or dialogs; for six-review positioning also read [Review composition](./review-composition.md).
 4. Trace any changed record payload or completion rule through `shendu/server.mjs`.
 5. For weekly, monthly, quarterly, yearly, or decision pages, read [Extended review flows](./extended-review-flow.md) before changing prompt order or validation.
 6. For history, workspace, authentication and confirmation surfaces, read [Archive and workspace UI](./archive-and-workspace-ui.md).
