@@ -1232,10 +1232,11 @@ body.reduce-motion #daily-intro-text.is-typing .daily-glyph:not(.is-visible){opa
 .action-verify-button{display:inline-flex;align-items:center;justify-content:center;gap:12px;min-height:44px;max-width:100%;padding:10px 15px;border:1px solid var(--action-tone);border-radius:99px;background:var(--action-tone);color:white;font-size:.69rem;font-weight:650;line-height:1.6;transition:filter .2s,box-shadow .2s;overflow-wrap:anywhere}
 .action-verify-button:hover:not(:disabled){filter:brightness(.9);box-shadow:0 5px 13px color-mix(in srgb,var(--action-tone) 15%,transparent)}
 .action-verify-button:disabled{padding:9px 11px;border-color:#c8d1c0;background:#edf1e6;color:#586751;font-size:.6rem;cursor:not-allowed;opacity:1;filter:none;box-shadow:none}
-.actions-empty{grid-column:1/-1;display:grid;grid-template-columns:180px minmax(0,1fr);align-items:center;gap:30px;padding:22px 40px 27px;border:1px dashed #bdcdb9;border-radius:22px;background:#f4f7ed}
+.actions-empty{grid-column:1/-1;display:grid;grid-template-columns:260px minmax(0,1fr);align-items:center;gap:30px;padding:22px 40px 27px;border:1px dashed #bdcdb9;border-radius:22px;background:#f4f7ed}
 .actions-empty>img{display:block;width:100%;height:auto;pointer-events:none}
-.actions-empty h3{margin:0 0 12px;color:#35533b;font:850 1.3rem/1.6 "SimSun","宋体","Noto Serif SC",serif;overflow-wrap:anywhere}
-.actions-empty>div>p:last-child{margin:0;color:#5b6d57;font-size:.75rem;line-height:1.9;overflow-wrap:anywhere}
+.actions-empty .actions-section-kicker{font-size:.68rem}
+.actions-empty h3{margin:0 0 12px;color:#35533b;font:900 1.65rem/1.5 "SimSun","宋体","Noto Serif SC",serif;overflow-wrap:anywhere}
+.actions-empty>div>p:last-child{margin:0;color:#5b6d57;font-size:.88rem;line-height:1.9;overflow-wrap:anywhere}
 .actions-page :is(button,summary):focus-visible{outline:3px solid #527761;outline-offset:3px}
 .action-archive-card :is(button,summary):focus-visible{outline-color:var(--action-tone)}
 /* The existing modal owns focus, Escape and the original verification payload. */
@@ -1290,8 +1291,9 @@ body.reduce-motion #daily-intro-text.is-typing .daily-glyph:not(.is-visible){opa
   .action-archive-copy h3{font-size:1.3rem}
   .action-record-period{font-size:.65rem}
   .actions-empty{grid-template-columns:minmax(0,1fr);gap:13px;padding:20px 24px 30px;text-align:center}
-  .actions-empty>img{width:145px;margin:auto}
-  .actions-empty h3{font-size:1.2rem}
+  .actions-empty>img{width:190px;max-width:100%;margin:auto}
+  .actions-empty h3{font-size:1.4rem}
+  .actions-empty>div>p:last-child{font-size:.82rem}
   .modal.verification-dialog{padding:21px 18px;border-radius:21px}
   .verification-dialog-head{gap:8px}
   .verification-dialog-art{flex-basis:77px;width:77px}

@@ -1,0 +1,203 @@
+# 部署与维护
+
+本页说明慎独的服务器配置、更新、备份和故障处理。全新 Debian 安装可先按 [README 的三步部署](../README.md#debian-1213-服务器部署)操作；从旧 `Shendu` 仓库或 ZIP 目录迁移，请先读[迁移与回退](../UPGRADING.md)。
+
+## 部署前准备
+
+推荐 Debian 12/13、Docker Engine、Compose v2 和仓库自带的 Caddy。安装脚本使用 [Docker 官方 Debian 软件源](https://docs.docker.com/engine/install/debian/)。
+
+- 准备指向服务器公网 IP 的域名；如设置了 AAAA 记录，也需保证对应 IPv6 能访问服务器。
+- 在主机和云厂商防火墙开放 TCP 80、443；HTTP/3 另需 UDP 443。
+- 确认没有其他服务占用 80、443，安装与更新命令在 root shell 中执行；普通账户先运行 `su -`。
+- 下文默认仓库位于 `/opt/shendu-v1`，应用目录为 `/opt/shendu-v1/shendu`。自定义路径时同步调整命令。
+
+## 环境配置
+
+首次执行 `sh scripts/install.sh` 会从 `.env.example` 创建权限为 `600` 的 `.env`，随机生成主密钥，并创建 `data/`、`tmp/` 和 `backups/`。已有 `.env` 不会被覆盖。
+
+| 变量 | 自带 Compose 的设置 | 作用 |
+| --- | --- | --- |
+| `SHENDU_DOMAIN` | 你的实际域名 | 只写域名，例如 `review.example.com`；Caddy 用它申请 HTTPS 证书 |
+| `SHENDU_PORT` | `3000` | 应用的容器内端口；自带 Caddy 上游与健康检查均使用 3000，保持此值 |
+| `SHENDU_MASTER_KEY` | 安装脚本生成的 64 位十六进制值 | 服务器内部数据与备份凭据的加密密钥 |
+| `SHENDU_MASTER_KEY_PATH` | `/app/data/backup-master.key` | 容器内持久化的原主密钥路径 |
+| `SHENDU_SECURE_COOKIE` | `true` | 自带 Caddy 提供 HTTPS 时保持开启；仅本机 HTTP 调试使用 `false` |
+| `SHENDU_DATA_DIR` | `/app/data` | 容器内数据库目录，挂载到宿主机 `./data` |
+| `SHENDU_TMP_DIR` | `/app/tmp` | 容器内临时文件目录，挂载到宿主机 `./tmp` |
+
+域名设置后，可在应用目录检查配置：
+
+```sh
+cd /opt/shendu-v1/shendu
+chmod 600 .env
+docker compose config >/dev/null
+docker compose up -d --build
+docker compose ps
+```
+
+`docker compose config` 不加重定向会输出展开后的环境配置，可能包含密钥；不要把完整输出粘贴到公开问题中。
+
+### HTTPS 与服务结构
+
+[compose.yaml](../shendu/compose.yaml)包含应用 `shendu` 和反向代理 `caddy`；应用不直接映射宿主机端口，Caddy 通过内部网络访问 `shendu:3000`。
+
+[Caddyfile](../shendu/Caddyfile)会为符合条件的公网域名[自动申请 HTTPS 证书](https://caddyserver.com/docs/automatic-https)。证书和配置保存在 Docker 的 `caddy_data`、`caddy_config` 命名卷中。DNS 未指向服务器或端口被阻断时，证书无法正常签发。
+
+[Dockerfile](../shendu/Dockerfile)在独立构建阶段执行 `npm ci` 和 `npm run build`。运行镜像使用 Node.js 24，包含服务端、静态资源和编译产物；宿主机无需安装 Node.js。入口脚本为挂载目录校正权限后，以普通 `node` 用户运行应用。
+
+## 首次启动与检查
+
+在应用目录执行：
+
+```sh
+docker compose ps
+shendu_domain=$(sed -n 's/^SHENDU_DOMAIN=//p' .env)
+curl -fsS "https://$shendu_domain/healthz"
+```
+
+健康检查应返回含 `"ok":true` 的 JSON。打开域名，注册第一个账户：它会成为超级管理员，并自动关闭公开注册。之后由管理员创建成员，或由超级管理员决定是否重新开放注册。
+
+应用默认按北京时间处理复盘日期。插画、装饰字体与组件资源由本站提供，中文字体使用本机字体回退；运行时不需要图像 API 密钥、Python 或图像生成服务。
+
+## 更新与检查
+
+在 root shell 执行：
+
+```sh
+sh /opt/shendu-v1/shendu/scripts/update.sh /opt/shendu-v1
+```
+
+更新脚本要求：
+
+- 目录是本仓库的 `main` 分支 Git 克隆；ZIP 解压目录不适用。
+- 受版本控制的文件没有本地内容修改，已有 `.env` 存在。
+- Docker Engine 和 Compose v2 可用。
+
+脚本首先校验配置，再询问是否创建更新前整站加密快照。**建议输入 `y`；直接回车或非交互运行默认跳过备份。** 已选择备份却生成失败时，更新会停止。
+
+随后脚本快进更新 `origin/main`、拉取 Caddy、构建新应用镜像，并启动应用等待健康检查。构建期间旧应用继续运行；应用通过检查后再启动完整服务。核对：
+
+```sh
+cd /opt/shendu-v1/shendu
+docker compose ps
+docker compose logs --tail=100 shendu
+shendu_domain=$(sed -n 's/^SHENDU_DOMAIN=//p' .env)
+curl -fsS "https://$shendu_domain/healthz"
+```
+
+保留 `.env`、完整 `data/`、`data/backup-master.key` 和 Caddy 卷。不要为“刷新版本”删除数据库或主密钥。GitHub 的 `main` 或 CI 已更新，不代表现有服务器容器自动更新；需要完成拉取和镜像重建。
+
+## 数据与备份
+
+以下路径均相对于 `shendu/`：
+
+| 路径 | 用途 |
+| --- | --- |
+| `data/shendu.db` | SQLite 数据库；运行时可能同时存在 `-wal`、`-shm` 文件 |
+| `data/backup-master.key` | 原服务器内部主密钥；与数据库配套保管 |
+| `data/server-backup.password` | 创建服务器整站快照时使用的恢复密码文件 |
+| `backups/*.shendu-db` | 服务器整站加密快照 |
+| `tmp/` | 导入与备份过程中的临时文件 |
+| `.env` | 域名、密钥与容器环境配置 |
+
+`data/` 和 `tmp/` 是宿主机挂载目录，重建容器不会删除它们。这些运行资料、`.env` 和备份文件不会作为项目代码提交到 Git。
+
+### 三种导出方式
+
+| 格式 | 从哪里生成 | 使用场景 |
+| --- | --- | --- |
+| `.shendu` | 应用内「数据备份」 | 个人资料的加密导出与恢复 |
+| `.shendu-site` | 超级管理员的整站备份功能 | 通过网页备份与恢复整个站点 |
+| `.shendu-db` | 服务器备份脚本 | 数据库和原主密钥的加密快照 |
+
+应用还支持最多 8 个 S3 / WebDAV 目标，可手动、每天或每周执行外部备份。外部服务收到加密备份包，不接收明文复盘正文。
+
+### 服务器整站快照
+
+在已部署的应用目录运行：
+
+```sh
+cd /opt/shendu-v1/shendu
+sh scripts/site-backup.sh
+```
+
+快照默认写到 `backups/`；首次需要时生成 `data/server-backup.password`，权限为 `600`。备份包和恢复密码应分别另存到服务器之外。脚本会优先使用运行中的容器，失败时尝试临时容器；输出文件只有生成成功后才会保存。
+
+服务器快照恢复由 `scripts/admin-cli.mjs restore` 执行，需使用对应密码文件；应先停应用并在隔离环境演练，确保配置、数据库和主密钥作为一组恢复。个人与网页整站恢复使用应用内各自入口，不要仅凭文件扩展名互换工具。
+
+从旧 `Shendu` 或 ZIP 部署切换时，请按 [UPGRADING.md](../UPGRADING.md) 保留旧站完整副本。旧版个人加密备份保持兼容；旧版整站包不作为跨仓库直接恢复的兼容承诺。
+
+## 加密与账户归属
+
+复盘正文、设置和外部备份凭据使用服务器内部主密钥加密后落盘。**数据库与原主密钥需配套保存，丢失原密钥会导致原数据无法解密。** 普通管理员可管理账户状态，应用不向其提供其他成员的复盘正文；服务器管理员持有运行时解密能力，仍需保护主机、`.env`、数据库与密钥。
+
+个人备份整包使用 PBKDF2-HMAC-SHA-256（600,000 次）与 AES-256-GCM 加密。备份密码与登录密码、服务器主密钥用途不同。
+
+新版个人备份在密文中记录所属用户名。跨账户恢复时，需要再次输入原用户名和该文件的备份密码；旧版加密包会尽量读取原 profile 进行归属校验。代码仓库公开不代表运行中的账户、资料或密钥公开。
+
+## 本地 Node.js 运行
+
+需要 Git 和 Node.js 22.13+，推荐 Node.js 24。先按 [README](../README.md#本地运行)安装依赖并启动，默认访问 `http://localhost:3000`。
+
+Node 启动读取进程环境变量，不会自动加载 Compose 的 `.env`。未设置时，数据库与临时目录分别默认为当前工作目录的 `./data`、`./tmp`，内部密钥路径默认为数据目录中的 `backup-master.key`；首次启动自动创建。HTTP 本地运行默认不使用 Secure Cookie。
+
+临时更改端口示例：
+
+```sh
+# Linux / macOS，在 shendu/ 中
+SHENDU_PORT=3100 npm start
+```
+
+```powershell
+# Windows PowerShell，在 shendu/ 中
+$env:SHENDU_PORT='3100'
+npm start
+```
+
+本地开发与测试使用独立目录，避免指向生产数据库。`npm test` 使用隔离的临时数据环境；修改 `ui/` 后重新运行 `npm run build` 并刷新页面。服务启动后，在同一应用目录可检查静态资源：
+
+```sh
+npm run smoke:ui -- http://127.0.0.1:3000
+```
+
+## 故障处理
+
+### HTTPS 无法访问
+
+检查域名的 A / AAAA 记录、防火墙和 80/443 端口占用，然后查看 Caddy 日志：
+
+```sh
+cd /opt/shendu-v1/shendu
+docker compose logs --tail=200 caddy
+```
+
+确认 `.env` 的 `SHENDU_DOMAIN` 仅含域名，`SHENDU_PORT` 为 `3000`。
+
+### 容器退出或健康检查失败
+
+```sh
+cd /opt/shendu-v1/shendu
+docker compose ps
+docker compose logs --tail=200 shendu
+```
+
+按日志检查构建依赖、数据目录权限与原主密钥是否匹配。`/healthz` 为 503 且提示 `data_key_unavailable` 时，应恢复原密钥与对应配置；不要随机生成新密钥替换旧站密钥。
+
+### 更新后仍是旧界面
+
+先确认已执行更新脚本并完成镜像重建，再用 Windows `Ctrl+F5` 强制刷新。手机可清除本站缓存后重开。仅执行 `git pull` 不会更新正在运行的镜像。
+
+### 服务器存在本地代码修改
+
+更新脚本会列出修改并停止。在仓库目录先用 `git status --short`、`git diff` 核对；保存或迁移自己需要的改动后再继续。不要直接覆盖未知改动，也不要删除 `.env` 或运行数据来让 Git 变干净。脚本会忽略单纯的可执行权限位变化。
+
+### ZIP 旧部署迁移
+
+ZIP 目录没有 Git 历史，不能直接运行更新脚本。先保留原目录、数据库、主密钥和配置，再按[迁移指南](../UPGRADING.md)克隆新目录并迁移；新旧部署不要同时占用相同容器名与域名端口。
+
+## 构建与维护资料
+
+- [Linux CI](../.github/workflows/verify.yml)：安装锁定依赖、构建组件、检查脚本和测试、验证 Compose、构建镜像，再启动容器检查健康与实际 JS/CSS。
+- [组件接入说明](shadcn-adoption.md)：本地维护的 shadcn/ui、React 与 Radix UI 组件及原生业务边界。
+- [产品方向](../PRODUCT.md)、[设计约定](../DESIGN.md)、[交互契约](../UX-CONTRACT.md)和 `.trellis/`：产品与开发规范。
+- [第三方声明](../THIRD-PARTY-NOTICES.md)及[插画来源](../art/record-library/README.md)：组件和素材来源。
