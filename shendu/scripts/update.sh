@@ -80,27 +80,47 @@ docker compose config >/dev/null
 
 echo "[2/7] 选择是否创建更新前整站备份……"
 backup_choice="${SHENDU_BACKUP_BEFORE_UPDATE:-}"
+backup_interactive=0
 if [ -z "$backup_choice" ]; then
   if [ -t 0 ]; then
-    printf "是否先备份全站数据？输入 y 确认备份，输入 n 或直接回车跳过 [y/N]："
-    IFS= read -r backup_choice || backup_choice=""
+    backup_interactive=1
   else
     backup_choice="no"
     echo "当前为非交互运行，未收到备份确认，已跳过整站备份。"
   fi
 fi
 
+while :; do
+  if [ "$backup_interactive" = 1 ]; then
+    printf "是否先备份全站数据？输入 y 确认备份，输入 n 或直接回车跳过 [y/N]："
+    if ! IFS= read -r backup_choice; then
+      fail "未能读取备份选择，已停止更新。请重新运行，或设置 SHENDU_BACKUP_BEFORE_UPDATE=y 确认备份。"
+    fi
+  fi
+  # Terminal paste/CRLF may leave invisible whitespace. Normalize this choice
+  # only; snapshot password bytes must never pass through this filter.
+  backup_choice="$(printf '%s' "$backup_choice" | LC_ALL=C sed 's/^[[:space:]]*//; s/[[:space:]]*$//')"
+  case "$backup_choice" in
+    [Yy]|[Yy][Ee][Ss]|1|是) backup_choice=yes; break ;;
+    [Nn]|[Nn][Oo]|0|否|'') backup_choice=no; break ;;
+    *)
+      if [ "$backup_interactive" = 1 ]; then
+        echo "备份选项无效，请只输入 y 或 n，然后按回车。" >&2
+      else
+        fail "SHENDU_BACKUP_BEFORE_UPDATE 无效。请设置为 y 确认备份，或 n 跳过。"
+      fi
+      ;;
+  esac
+done
+
 case "$backup_choice" in
-  y|Y|yes|YES|Yes|1|是)
+  yes)
     if ! sh "$app_dir/scripts/site-backup.sh" "$app_dir/backups" pre-update; then
       fail "无法创建更新前整站备份；代码和容器均未更新。"
     fi
     ;;
-  n|N|no|NO|No|0|否|'')
+  no)
     echo "已按选择跳过整站备份，继续更新。"
-    ;;
-  *)
-    fail "备份选项无效。请输入 y 确认备份，或输入 n 跳过。"
     ;;
 esac
 

@@ -1,0 +1,5 @@
+# Boundary and contract
+
+update.sh owns the current failure: IFS= read retains spaces/CR, then an exact case rejects them. Introduce one trim/case normalization point in a small choice-reading loop. Prompt only when no explicit environment choice is supplied and stdin is a TTY; reuse the same case guard for interactive and env paths. Valid yes/no branches break before the existing snapshot case. Invalid TTY input warns and rereads; invalid configured input and read EOF fail before Git fetch, release selection or Compose up. Keep backup password files and existing snapshot helper untouched.
+
+Root owns update.sh/docs/spec/task; test worker owns only isolated test files and test harness setup, no runtime changes. Reviewer checks boundary after implementation. Preserve POSIX sh portability; no eval/source/stty or external terminal dependency in production. Linux CI PTY regression must run the real script using Python standard-library pty/termios with mocked Docker/Git and synthetic files. No actual host installer or production data used. Rollback source commit, no migration.

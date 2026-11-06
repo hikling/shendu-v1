@@ -12,6 +12,7 @@ real_cat="$(command -v cat)"
 real_ln="$(command -v ln)"
 real_install="$(command -v install)"
 setsid_path="$(command -v setsid)"
+python_path="$(command -v python3)" || { echo 'These Linux terminal tests require Python 3.' >&2; exit 1; }
 export real_cat real_ln real_install
 tools_dir="$suite_dir/tools"
 mkdir -p "$tools_dir" "$suite_dir/templates"
@@ -190,6 +191,7 @@ new_case() {
   : > "$MOCK_LOG"
   unset MOCK_UID MOCK_OS MOCK_OS_VERSION MOCK_APT_FAIL MOCK_COMPOSE_BAD MOCK_DAEMON_STOPPED MOCK_CONFIG_FAIL MOCK_BUILD_FAIL MOCK_PULL_FAIL MOCK_HEALTH_FAIL MOCK_SMOKE_FAIL MOCK_OPENSSL_FAIL MOCK_DOWNLOAD_FAIL MOCK_CLONE_FAIL MOCK_ORIGIN MOCK_BRANCH MOCK_DIRTY MOCK_PASSWORD_RACE MOCK_SNAPSHOT_FAIL MOCK_SNAPSHOT_EXEC_FAIL MOCK_INSTALL_PARTIAL_FAIL SHENDU_SNAPSHOT_PASSWORD SHENDU_SNAPSHOT_PASSWORD_FILE
   unset MOCK_IMAGE_CACHED MOCK_IMAGE_LOAD_FAIL MOCK_CHECKSUM_BAD MOCK_IMAGE_BYTES_BAD MOCK_IMAGE_META_BAD MOCK_PLATFORM SHENDU_BUILD_FROM_SOURCE SHENDU_UPDATE_GIT_ONLY
+  unset SHENDU_BACKUP_BEFORE_UPDATE
   # Redirect only system package-source paths in the copied scripts; OS detection
   # is supplied by the fake cat command. All actual installer logic stays intact.
   sed "s|/etc/apt/|$MOCK_CASE/etc/apt/|g" "$repo_dir/install.sh" > "$MOCK_CASE/install.sh"
@@ -218,6 +220,19 @@ run_snapshot() {
 }
 run_update() {
   SHENDU_UPDATE_REEXEC=1 SHENDU_BACKUP_BEFORE_UPDATE=y SHENDU_UPDATE_GIT_ONLY=1 PATH="$MOCK_BIN:$tools_dir" /bin/sh "$app_dir/scripts/update.sh" "$MOCK_FIXTURE" > "$output" 2>&1 < /dev/null
+}
+run_update_choice() {
+  SHENDU_UPDATE_REEXEC=1 SHENDU_BACKUP_BEFORE_UPDATE="$1" SHENDU_UPDATE_GIT_ONLY=1 PATH="$MOCK_BIN:$tools_dir" /bin/sh "$app_dir/scripts/update.sh" "$MOCK_FIXTURE" > "$output" 2>&1 < /dev/null
+}
+run_terminal_update() {
+  printf '%s' "$1" > "$MOCK_CASE/terminal-input.json"
+  if SHENDU_UPDATE_REEXEC=0 SHENDU_BACKUP_BEFORE_UPDATE='' SHENDU_UPDATE_GIT_ONLY=1 PATH="$MOCK_BIN:$tools_dir" "$python_path" "$test_dir/update-terminal.py" "$output" "$MOCK_CASE/terminal-input.json" "$app_dir/scripts/update.sh" "$MOCK_FIXTURE"; then
+    return 0
+  else
+    terminal_status=$?
+    [ "$terminal_status" -ne 125 ] || fail 'terminal test driver failed instead of testing updater behavior'
+    return "$terminal_status"
+  fi
 }
 run_image() {
   PATH="$MOCK_BIN:$tools_dir" /bin/sh "$app_dir/scripts/prepare-image.sh" > "$output" 2>&1 < /dev/null
@@ -554,6 +569,118 @@ assert_not_logged 'fetch --prune'
 assert_not_logged 'compose build'
 [ -z "$(find "$app_dir/tmp" -type f -print -quit)" ] || fail 'failed update left snapshot password temporary files'
 pass 'required pre-update snapshot failure stops before Git or container changes'
+
+# Real TTY input is distinct from the explicit environment path above: read must
+# retain surrounding bytes until the updater normalizes only the choice token.
+for terminal_input in '["y\n"]' '[" Y \n"]' '["\t y\t\r\n"]' '["yEs\n"]'; do
+  new_case
+  mkdir -p "$MOCK_FIXTURE/.git" "$app_dir/data"
+  existing_env
+  printf 'original key\n' > "$app_dir/data/backup-master.key"
+  run_terminal_update "$terminal_input" || fail 'terminal yes was rejected'
+  assert_logged 'snapshot /app/tmp/'
+  assert_logged 'fetch --prune origin main'
+  snapshot_line="$(grep -n 'snapshot /app/tmp/' "$MOCK_LOG" | head -n 1 | cut -d: -f1)"
+  fetch_line="$(grep -n 'fetch --prune origin main' "$MOCK_LOG" | head -n 1 | cut -d: -f1)"
+  [ "$snapshot_line" -lt "$fetch_line" ] || fail 'Git fetched before the confirmed snapshot'
+  cmp "$app_dir/.env" "$MOCK_CASE/env-before" || fail 'terminal choice changed config'
+  [ ! -d "$app_dir/tmp/.update.lock" ] || fail 'successful terminal update left its lock'
+  pass "terminal explicit yes accepts its case and surrounding whitespace: $terminal_input"
+done
+
+for terminal_input in '["n\n"]' '[" No \t\r\n"]' '["\n"]' '["\t \r\n"]'; do
+  new_case
+  mkdir -p "$MOCK_FIXTURE/.git" "$app_dir/data"
+  existing_env
+  printf 'original key\n' > "$app_dir/data/backup-master.key"
+  run_terminal_update "$terminal_input" || fail 'terminal skip was rejected'
+  assert_not_logged 'snapshot /app/tmp/'
+  assert_not_logged 'openssl'
+  assert_logged 'fetch --prune origin main'
+  pass "terminal no or deliberate empty input skips only the optional snapshot: $terminal_input"
+done
+
+new_case
+mkdir -p "$MOCK_FIXTURE/.git" "$app_dir/data"
+existing_env
+printf 'original key\n' > "$app_dir/data/backup-master.key"
+run_terminal_update '["maybe\n"," y \n"]' || fail 'invalid terminal input did not allow a corrected confirmation'
+[ "$(grep -o '\[y/N\]' "$output" | wc -l)" -eq 2 ] || fail 'invalid choice did not prompt exactly once more'
+assert_logged 'snapshot /app/tmp/'
+assert_logged 'fetch --prune origin main'
+pass 'invalid terminal input asks again before accepting explicit yes'
+
+for terminal_input in '[null]' '["maybe\n",null]'; do
+  new_case
+  mkdir -p "$MOCK_FIXTURE/.git" "$app_dir/data"
+  existing_env
+  printf 'original key\n' > "$app_dir/data/backup-master.key"
+  if run_terminal_update "$terminal_input"; then fail 'terminal EOF continued the update'; fi
+  assert_output '未能读取备份选择'
+  assert_not_logged 'snapshot /app/tmp/'
+  assert_not_logged 'fetch --prune'
+  assert_not_logged 'compose up'
+  cmp "$app_dir/.env" "$MOCK_CASE/env-before" || fail 'terminal EOF changed config'
+  [ ! -d "$app_dir/tmp/.update.lock" ] || fail 'terminal EOF left its lock'
+  pass 'terminal EOF aborts before snapshot, Git fetch or container changes'
+done
+
+new_case
+mkdir -p "$MOCK_FIXTURE/.git" "$app_dir/data"
+existing_env
+printf 'original key\n' > "$app_dir/data/backup-master.key"
+MOCK_SNAPSHOT_FAIL=1; export MOCK_SNAPSHOT_FAIL
+if run_terminal_update '[" y \r\n"]'; then fail 'terminal update continued after its confirmed snapshot failed'; fi
+assert_logged 'snapshot /app/tmp/'
+assert_not_logged 'fetch --prune'
+assert_not_logged 'compose up'
+[ ! -d "$app_dir/tmp/.update.lock" ] || fail 'failed terminal backup left its update lock'
+pass 'normalized terminal yes still aborts when the required snapshot fails'
+
+for backup_choice in ' y ' 'YeS' '1'; do
+  new_case
+  mkdir -p "$MOCK_FIXTURE/.git" "$app_dir/data"
+  existing_env
+  printf 'original key\n' > "$app_dir/data/backup-master.key"
+  run_update_choice "$backup_choice" || fail 'explicit environment yes was rejected'
+  assert_logged 'snapshot /app/tmp/'
+  assert_logged 'fetch --prune origin main'
+  pass 'explicit environment confirmation uses the same yes normalization'
+done
+
+for backup_choice in 'maybe' 'y n' 'yes please'; do
+  new_case
+  mkdir -p "$MOCK_FIXTURE/.git" "$app_dir/data"
+  existing_env
+  printf 'original key\n' > "$app_dir/data/backup-master.key"
+  if run_update_choice "$backup_choice"; then fail 'ambiguous environment choice continued the update'; fi
+  assert_output 'SHENDU_BACKUP_BEFORE_UPDATE 无效'
+  assert_not_logged 'snapshot /app/tmp/'
+  assert_not_logged 'fetch --prune'
+  assert_not_logged 'compose up'
+  [ ! -d "$app_dir/tmp/.update.lock" ] || fail 'invalid environment choice left its lock'
+  pass 'invalid configured confirmation fails before Git or container changes'
+done
+
+new_case
+mkdir -p "$MOCK_FIXTURE/.git" "$app_dir/data"
+existing_env
+printf 'original key\n' > "$app_dir/data/backup-master.key"
+MOCK_SNAPSHOT_FAIL=1; export MOCK_SNAPSHOT_FAIL
+if run_update_choice ' y '; then fail 'normalized environment yes ignored snapshot failure'; fi
+assert_logged 'snapshot /app/tmp/'
+assert_not_logged 'fetch --prune'
+assert_not_logged 'compose up'
+pass 'normalized environment yes still requires a successful snapshot before fetching'
+
+new_case
+mkdir -p "$MOCK_FIXTURE/.git" "$app_dir/data"
+existing_env
+printf 'original key\n' > "$app_dir/data/backup-master.key"
+SHENDU_UPDATE_REEXEC=1 SHENDU_BACKUP_BEFORE_UPDATE='' SHENDU_UPDATE_GIT_ONLY=1 PATH="$MOCK_BIN:$tools_dir" /bin/sh "$app_dir/scripts/update.sh" "$MOCK_FIXTURE" > "$output" 2>&1 < /dev/null || fail 'ordinary noninteractive update failed'
+assert_not_logged 'snapshot /app/tmp/'
+assert_logged 'fetch --prune origin main'
+pass 'ordinary noninteractive execution retains its documented default snapshot skip'
 
 new_case
 existing_env

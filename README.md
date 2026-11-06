@@ -82,11 +82,13 @@ npm start
 
 ```sh
 shendu_updater=$(mktemp)
-curl -fsSL https://raw.githubusercontent.com/hikling/shendu-v1/main/shendu/scripts/update.sh -o "$shendu_updater" && sh "$shendu_updater" /opt/shendu-v1
+curl -fsSL https://raw.githubusercontent.com/hikling/shendu-v1/main/shendu/scripts/update.sh -o "$shendu_updater" && SHENDU_BACKUP_BEFORE_UPDATE=y sh "$shendu_updater" /opt/shendu-v1
 rm -f "$shendu_updater"
 ```
 
-使用最新更新器可避免旧脚本继续本机编译。脚本会询问是否先创建整站加密快照，建议输入 `y`；然后拉取 `origin/main`、准备对应版本的预构建镜像并检查健康与前端资源。它要求部署目录是无本地代码改动的 `main` 分支 Git 克隆，保留现有 `.env`、密钥、数据和备份。完整过程见[更新与检查](docs/deployment.md#更新与检查)。
+这条命令使用最新更新器，并通过 `SHENDU_BACKUP_BEFORE_UPDATE=y` 明确选择先创建整站加密快照，省去终端输入确认；备份失败会停止更新。然后拉取 `origin/main`、准备对应版本的预构建镜像并检查健康与前端资源。它要求部署目录是无本地代码改动的 `main` 分支 Git 克隆，保留现有 `.env`、密钥、数据和备份。使用最新更新器也可避免旧脚本继续本机编译。
+
+如果此前输入 `y` 却提示“备份选项无效”，可直接重跑上面的命令：该错误发生在拉取代码、替换容器之前。新版会忽略选择前后的空格或回车符，终端输入有误时会重新询问。完整过程见[更新与检查](docs/deployment.md#更新与检查)。
 
 ## 数据与备份
 

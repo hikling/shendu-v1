@@ -123,7 +123,7 @@ curl -fsS "https://$shendu_domain/healthz"
 
 ```sh
 shendu_updater=$(mktemp)
-curl -fsSL https://raw.githubusercontent.com/hikling/shendu-v1/main/shendu/scripts/update.sh -o "$shendu_updater" && sh "$shendu_updater" /opt/shendu-v1
+curl -fsSL https://raw.githubusercontent.com/hikling/shendu-v1/main/shendu/scripts/update.sh -o "$shendu_updater" && SHENDU_BACKUP_BEFORE_UPDATE=y sh "$shendu_updater" /opt/shendu-v1
 rm -f "$shendu_updater"
 ```
 
@@ -133,7 +133,11 @@ rm -f "$shendu_updater"
 - 受版本控制的文件没有本地内容修改，已有 `.env` 存在。
 - Docker Engine 和 Compose v2 可用。
 
-脚本首先校验配置，再询问是否创建更新前整站加密快照。**建议输入 `y`；直接回车或非交互运行默认跳过备份。** 已选择备份却生成失败时，更新会停止。
+上面的命令通过 `SHENDU_BACKUP_BEFORE_UPDATE=y` 明确确认：先校验配置，再创建更新前整站加密快照；无需再次输入 `y`。备份失败时更新会停止，不拉取代码或替换容器。确实需要跳过备份时，可将该值改为 `n`。
+
+不设置该变量、直接运行本地更新器时，终端会询问；直接回车默认跳过，没有终端的非交互调用也默认跳过。`y` / `yes` 与 `n` / `no` 不区分大小写，忽略选择前后的空格、制表符和回车符。错误的终端选择会重新询问；输入流断开或显式环境变量无效时停止更新。此处理仅适用于是否备份的选项，不改变任何备份密码字节。
+
+旧版出现“输入 y 仍提示备份选项无效”时，可能是终端粘贴带入了不可见空白。该错误发生在代码拉取前，原容器仍保持运行；重新执行上面的最新更新器命令，可通过显式变量确认备份并重试。
 
 下载最新更新器可让仍在使用旧版脚本的服务器直接采用快速部署。旧更新器会把自己复制后执行，单纯在其运行中拉取新代码不能改变已经运行的旧流程。
 
