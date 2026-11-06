@@ -1066,3 +1066,26 @@ Separated calendar day button and cell styles; moved legend to the upper right a
 ### Status
 
 [OK] **Completed**
+
+
+## Session 47: Stage calendar seven-column layout and aligned workspace
+<!-- trellis-session: v=2 fp=d9f17104af4ff450 -->
+
+**Date**: 2026-11-06
+**Task**: Stage calendar seven-column layout and aligned workspace
+**Branch**: `main`
+
+### Summary
+
+Changed only stage/calendar layout and required caches: explicit seven-column rows, aligned title/legend, separate year, larger summary, equal desktop calendar/context heights. Fixed valid300-character stage focus overflow from independent review. Build/check/150 tests, Chrome responsive/zoom/date/focus/source-return QA, local UI smoke and exact work SHA Linux CI42144408961 passed. User-specific old duplicate painting not locally reproduced; evidence boundary documented. QA fixtures stopped.
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `068a70c` | Rebuild stage calendar grid and align the calendar workspace |
+| `8a4c42c` | Record stage calendar acceptance and successful Linux CI |
+
+### Status
+
+[OK] **Completed**
