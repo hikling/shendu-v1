@@ -1,0 +1,2708 @@
+{
+  "results": [
+    {
+      "browser": "chrome",
+      "version": "157.0.8103.38",
+      "mode": "normal",
+      "checks": [
+        {
+          "label": "chrome-normal-2025-09",
+          "month": "2025-09",
+          "dates": 30,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "chrome-normal-2025-10",
+          "month": "2025-10",
+          "dates": 31,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "chrome-normal-2025-11",
+          "month": "2025-11",
+          "dates": 30,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "chrome-normal-2025-12",
+          "month": "2025-12",
+          "dates": 31,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "chrome-normal-2026-01",
+          "month": "2026-01",
+          "dates": 31,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "chrome-normal-2026-02",
+          "month": "2026-02",
+          "dates": 28,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "chrome-normal-2026-03",
+          "month": "2026-03",
+          "dates": 31,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "chrome-normal-2026-04",
+          "month": "2026-04",
+          "dates": 30,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "chrome-normal-2026-05",
+          "month": "2026-05",
+          "dates": 31,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "chrome-normal-2026-06",
+          "month": "2026-06",
+          "dates": 30,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "chrome-normal-2026-07",
+          "month": "2026-07",
+          "dates": 31,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "chrome-normal-2026-08",
+          "month": "2026-08",
+          "dates": 31,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "chrome-normal-2026-09",
+          "month": "2026-09",
+          "dates": 30,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "chrome-normal-2026-10",
+          "month": "2026-10",
+          "dates": 31,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "chrome-normal-2026-11",
+          "month": "2026-11",
+          "dates": 30,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "chrome-normal-2026-12",
+          "month": "2026-12",
+          "dates": 31,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "chrome-normal-2027-01",
+          "month": "2027-01",
+          "dates": 31,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "chrome-normal-2027-02",
+          "month": "2027-02",
+          "dates": 28,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "chrome-normal-2027-03",
+          "month": "2027-03",
+          "dates": 31,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "chrome-normal-2027-04",
+          "month": "2027-04",
+          "dates": 30,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "chrome-normal-2027-05",
+          "month": "2027-05",
+          "dates": 31,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "chrome-normal-2027-06",
+          "month": "2027-06",
+          "dates": 30,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "chrome-normal-2027-07",
+          "month": "2027-07",
+          "dates": 31,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "chrome-normal-2027-08",
+          "month": "2027-08",
+          "dates": 31,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "chrome-normal-2027-09",
+          "month": "2027-09",
+          "dates": 30,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "chrome-normal-2027-10",
+          "month": "2027-10",
+          "dates": 31,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "chrome-normal-2027-11",
+          "month": "2027-11",
+          "dates": 30,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "chrome-normal-2027-12",
+          "month": "2027-12",
+          "dates": 31,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "chrome-normal-2028-01",
+          "month": "2028-01",
+          "dates": 31,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "chrome-normal-2028-02",
+          "month": "2028-02",
+          "dates": 29,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "daily-minimum",
+          "month": "2026-11",
+          "dates": 30,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "weekly-minimum",
+          "month": "2026-11",
+          "dates": 30,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "monthly-minimum",
+          "month": "2026-12",
+          "dates": 31,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "quarterly-minimum",
+          "month": "2027-02",
+          "dates": 28,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "yearly-minimum",
+          "month": "2027-07",
+          "dates": 31,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "decision-minimum",
+          "month": "2027-02",
+          "dates": 28,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "locked-leap-day",
+          "month": "2024-02",
+          "dates": 29,
+          "rows": 6,
+          "width": 352,
+          "value": "2024-02-29"
+        },
+        {
+          "label": "narrow-820",
+          "month": "2026-11",
+          "dates": 30,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "narrow-390",
+          "month": "2026-11",
+          "dates": 30,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "narrow-320",
+          "month": "2026-11",
+          "dates": 30,
+          "rows": 6,
+          "width": 288,
+          "value": ""
+        },
+        {
+          "label": "reduced-motion",
+          "month": "2026-11",
+          "dates": 30,
+          "rows": 6,
+          "width": 288,
+          "value": "2026-11-07"
+        }
+      ],
+      "errors": [],
+      "passed": true
+    },
+    {
+      "browser": "chrome",
+      "version": "157.0.8103.38",
+      "mode": "offset-only",
+      "checks": [
+        {
+          "label": "chrome-offset-only-2025-09",
+          "month": "2025-09",
+          "dates": 30,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "chrome-offset-only-2025-10",
+          "month": "2025-10",
+          "dates": 31,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "chrome-offset-only-2025-11",
+          "month": "2025-11",
+          "dates": 30,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "chrome-offset-only-2025-12",
+          "month": "2025-12",
+          "dates": 31,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "chrome-offset-only-2026-01",
+          "month": "2026-01",
+          "dates": 31,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "chrome-offset-only-2026-02",
+          "month": "2026-02",
+          "dates": 28,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "chrome-offset-only-2026-03",
+          "month": "2026-03",
+          "dates": 31,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "chrome-offset-only-2026-04",
+          "month": "2026-04",
+          "dates": 30,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "chrome-offset-only-2026-05",
+          "month": "2026-05",
+          "dates": 31,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "chrome-offset-only-2026-06",
+          "month": "2026-06",
+          "dates": 30,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "chrome-offset-only-2026-07",
+          "month": "2026-07",
+          "dates": 31,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "chrome-offset-only-2026-08",
+          "month": "2026-08",
+          "dates": 31,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "chrome-offset-only-2026-09",
+          "month": "2026-09",
+          "dates": 30,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "chrome-offset-only-2026-10",
+          "month": "2026-10",
+          "dates": 31,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "chrome-offset-only-2026-11",
+          "month": "2026-11",
+          "dates": 30,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "chrome-offset-only-2026-12",
+          "month": "2026-12",
+          "dates": 31,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "chrome-offset-only-2027-01",
+          "month": "2027-01",
+          "dates": 31,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "chrome-offset-only-2027-02",
+          "month": "2027-02",
+          "dates": 28,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "chrome-offset-only-2027-03",
+          "month": "2027-03",
+          "dates": 31,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "chrome-offset-only-2027-04",
+          "month": "2027-04",
+          "dates": 30,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "chrome-offset-only-2027-05",
+          "month": "2027-05",
+          "dates": 31,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "chrome-offset-only-2027-06",
+          "month": "2027-06",
+          "dates": 30,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "chrome-offset-only-2027-07",
+          "month": "2027-07",
+          "dates": 31,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "chrome-offset-only-2027-08",
+          "month": "2027-08",
+          "dates": 31,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "chrome-offset-only-2027-09",
+          "month": "2027-09",
+          "dates": 30,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "chrome-offset-only-2027-10",
+          "month": "2027-10",
+          "dates": 31,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "chrome-offset-only-2027-11",
+          "month": "2027-11",
+          "dates": 30,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "chrome-offset-only-2027-12",
+          "month": "2027-12",
+          "dates": 31,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "chrome-offset-only-2028-01",
+          "month": "2028-01",
+          "dates": 31,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "chrome-offset-only-2028-02",
+          "month": "2028-02",
+          "dates": 29,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "daily-minimum",
+          "month": "2026-11",
+          "dates": 30,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "weekly-minimum",
+          "month": "2026-11",
+          "dates": 30,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "monthly-minimum",
+          "month": "2026-12",
+          "dates": 31,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "quarterly-minimum",
+          "month": "2027-02",
+          "dates": 28,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "yearly-minimum",
+          "month": "2027-07",
+          "dates": 31,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "decision-minimum",
+          "month": "2027-02",
+          "dates": 28,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "locked-leap-day",
+          "month": "2024-02",
+          "dates": 29,
+          "rows": 6,
+          "width": 352,
+          "value": "2024-02-29"
+        },
+        {
+          "label": "narrow-820",
+          "month": "2026-11",
+          "dates": 30,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "narrow-390",
+          "month": "2026-11",
+          "dates": 30,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "narrow-320",
+          "month": "2026-11",
+          "dates": 30,
+          "rows": 6,
+          "width": 288,
+          "value": ""
+        },
+        {
+          "label": "reduced-motion",
+          "month": "2026-11",
+          "dates": 30,
+          "rows": 6,
+          "width": 288,
+          "value": "2026-11-07"
+        }
+      ],
+      "errors": [],
+      "passed": true
+    },
+    {
+      "browser": "chrome",
+      "version": "157.0.8103.38",
+      "mode": "local-getters",
+      "checks": [
+        {
+          "label": "chrome-local-getters-2025-09",
+          "month": "2025-09",
+          "dates": 30,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "chrome-local-getters-2025-10",
+          "month": "2025-10",
+          "dates": 31,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "chrome-local-getters-2025-11",
+          "month": "2025-11",
+          "dates": 30,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "chrome-local-getters-2025-12",
+          "month": "2025-12",
+          "dates": 31,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "chrome-local-getters-2026-01",
+          "month": "2026-01",
+          "dates": 31,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "chrome-local-getters-2026-02",
+          "month": "2026-02",
+          "dates": 28,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "chrome-local-getters-2026-03",
+          "month": "2026-03",
+          "dates": 31,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "chrome-local-getters-2026-04",
+          "month": "2026-04",
+          "dates": 30,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "chrome-local-getters-2026-05",
+          "month": "2026-05",
+          "dates": 31,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "chrome-local-getters-2026-06",
+          "month": "2026-06",
+          "dates": 30,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "chrome-local-getters-2026-07",
+          "month": "2026-07",
+          "dates": 31,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "chrome-local-getters-2026-08",
+          "month": "2026-08",
+          "dates": 31,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "chrome-local-getters-2026-09",
+          "month": "2026-09",
+          "dates": 30,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "chrome-local-getters-2026-10",
+          "month": "2026-10",
+          "dates": 31,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "chrome-local-getters-2026-11",
+          "month": "2026-11",
+          "dates": 30,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "chrome-local-getters-2026-12",
+          "month": "2026-12",
+          "dates": 31,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "chrome-local-getters-2027-01",
+          "month": "2027-01",
+          "dates": 31,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "chrome-local-getters-2027-02",
+          "month": "2027-02",
+          "dates": 28,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "chrome-local-getters-2027-03",
+          "month": "2027-03",
+          "dates": 31,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "chrome-local-getters-2027-04",
+          "month": "2027-04",
+          "dates": 30,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "chrome-local-getters-2027-05",
+          "month": "2027-05",
+          "dates": 31,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "chrome-local-getters-2027-06",
+          "month": "2027-06",
+          "dates": 30,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "chrome-local-getters-2027-07",
+          "month": "2027-07",
+          "dates": 31,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "chrome-local-getters-2027-08",
+          "month": "2027-08",
+          "dates": 31,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "chrome-local-getters-2027-09",
+          "month": "2027-09",
+          "dates": 30,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "chrome-local-getters-2027-10",
+          "month": "2027-10",
+          "dates": 31,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "chrome-local-getters-2027-11",
+          "month": "2027-11",
+          "dates": 30,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "chrome-local-getters-2027-12",
+          "month": "2027-12",
+          "dates": 31,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "chrome-local-getters-2028-01",
+          "month": "2028-01",
+          "dates": 31,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "chrome-local-getters-2028-02",
+          "month": "2028-02",
+          "dates": 29,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "daily-minimum",
+          "month": "2026-11",
+          "dates": 30,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "weekly-minimum",
+          "month": "2026-11",
+          "dates": 30,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "monthly-minimum",
+          "month": "2026-12",
+          "dates": 31,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "quarterly-minimum",
+          "month": "2027-02",
+          "dates": 28,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "yearly-minimum",
+          "month": "2027-07",
+          "dates": 31,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "decision-minimum",
+          "month": "2027-02",
+          "dates": 28,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "locked-leap-day",
+          "month": "2024-02",
+          "dates": 29,
+          "rows": 6,
+          "width": 352,
+          "value": "2024-02-29"
+        },
+        {
+          "label": "narrow-820",
+          "month": "2026-11",
+          "dates": 30,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "narrow-390",
+          "month": "2026-11",
+          "dates": 30,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "narrow-320",
+          "month": "2026-11",
+          "dates": 30,
+          "rows": 6,
+          "width": 288,
+          "value": ""
+        },
+        {
+          "label": "reduced-motion",
+          "month": "2026-11",
+          "dates": 30,
+          "rows": 6,
+          "width": 288,
+          "value": "2026-11-07"
+        }
+      ],
+      "errors": [],
+      "passed": true
+    },
+    {
+      "browser": "chrome",
+      "version": "157.0.8103.38",
+      "mode": "partial-setters",
+      "checks": [
+        {
+          "label": "chrome-partial-setters-2025-09",
+          "month": "2025-09",
+          "dates": 30,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "chrome-partial-setters-2025-10",
+          "month": "2025-10",
+          "dates": 31,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "chrome-partial-setters-2025-11",
+          "month": "2025-11",
+          "dates": 30,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "chrome-partial-setters-2025-12",
+          "month": "2025-12",
+          "dates": 31,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "chrome-partial-setters-2026-01",
+          "month": "2026-01",
+          "dates": 31,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "chrome-partial-setters-2026-02",
+          "month": "2026-02",
+          "dates": 28,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "chrome-partial-setters-2026-03",
+          "month": "2026-03",
+          "dates": 31,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "chrome-partial-setters-2026-04",
+          "month": "2026-04",
+          "dates": 30,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "chrome-partial-setters-2026-05",
+          "month": "2026-05",
+          "dates": 31,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "chrome-partial-setters-2026-06",
+          "month": "2026-06",
+          "dates": 30,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "chrome-partial-setters-2026-07",
+          "month": "2026-07",
+          "dates": 31,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "chrome-partial-setters-2026-08",
+          "month": "2026-08",
+          "dates": 31,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "chrome-partial-setters-2026-09",
+          "month": "2026-09",
+          "dates": 30,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "chrome-partial-setters-2026-10",
+          "month": "2026-10",
+          "dates": 31,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "chrome-partial-setters-2026-11",
+          "month": "2026-11",
+          "dates": 30,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "chrome-partial-setters-2026-12",
+          "month": "2026-12",
+          "dates": 31,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "chrome-partial-setters-2027-01",
+          "month": "2027-01",
+          "dates": 31,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "chrome-partial-setters-2027-02",
+          "month": "2027-02",
+          "dates": 28,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "chrome-partial-setters-2027-03",
+          "month": "2027-03",
+          "dates": 31,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "chrome-partial-setters-2027-04",
+          "month": "2027-04",
+          "dates": 30,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "chrome-partial-setters-2027-05",
+          "month": "2027-05",
+          "dates": 31,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "chrome-partial-setters-2027-06",
+          "month": "2027-06",
+          "dates": 30,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "chrome-partial-setters-2027-07",
+          "month": "2027-07",
+          "dates": 31,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "chrome-partial-setters-2027-08",
+          "month": "2027-08",
+          "dates": 31,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "chrome-partial-setters-2027-09",
+          "month": "2027-09",
+          "dates": 30,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "chrome-partial-setters-2027-10",
+          "month": "2027-10",
+          "dates": 31,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "chrome-partial-setters-2027-11",
+          "month": "2027-11",
+          "dates": 30,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "chrome-partial-setters-2027-12",
+          "month": "2027-12",
+          "dates": 31,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "chrome-partial-setters-2028-01",
+          "month": "2028-01",
+          "dates": 31,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "chrome-partial-setters-2028-02",
+          "month": "2028-02",
+          "dates": 29,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "daily-minimum",
+          "month": "2026-11",
+          "dates": 30,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "weekly-minimum",
+          "month": "2026-11",
+          "dates": 30,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "monthly-minimum",
+          "month": "2026-12",
+          "dates": 31,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "quarterly-minimum",
+          "month": "2027-02",
+          "dates": 28,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "yearly-minimum",
+          "month": "2027-07",
+          "dates": 31,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "decision-minimum",
+          "month": "2027-02",
+          "dates": 28,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "locked-leap-day",
+          "month": "2024-02",
+          "dates": 29,
+          "rows": 6,
+          "width": 352,
+          "value": "2024-02-29"
+        },
+        {
+          "label": "narrow-820",
+          "month": "2026-11",
+          "dates": 30,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "narrow-390",
+          "month": "2026-11",
+          "dates": 30,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "narrow-320",
+          "month": "2026-11",
+          "dates": 30,
+          "rows": 6,
+          "width": 288,
+          "value": ""
+        },
+        {
+          "label": "reduced-motion",
+          "month": "2026-11",
+          "dates": 30,
+          "rows": 6,
+          "width": 288,
+          "value": "2026-11-07"
+        },
+        {
+          "stage": {
+            "width": 1920,
+            "overflow": false,
+            "spread": {
+              "x": 284,
+              "y": 408,
+              "w": 1352,
+              "h": 618,
+              "right": 1636,
+              "bottom": 1026
+            },
+            "paper": {
+              "x": 284,
+              "y": 408,
+              "w": 620,
+              "h": 618,
+              "right": 904,
+              "bottom": 1026
+            },
+            "calendar": {
+              "x": 324,
+              "y": 432,
+              "w": 540,
+              "h": 570,
+              "right": 864,
+              "bottom": 1002
+            },
+            "context": {
+              "x": 928,
+              "y": 408,
+              "w": 708,
+              "h": 618,
+              "right": 1636,
+              "bottom": 1026
+            },
+            "grid": {
+              "x": 324,
+              "y": 583,
+              "w": 540,
+              "h": 379,
+              "right": 864,
+              "bottom": 962
+            },
+            "title": {
+              "x": 324,
+              "y": 458.0625,
+              "w": 311.75,
+              "h": 33.9375,
+              "right": 635.75,
+              "bottom": 492
+            },
+            "legend": {
+              "x": 649.75,
+              "y": 467.59375,
+              "w": 214.25,
+              "h": 14.875,
+              "right": 864,
+              "bottom": 482.46875
+            }
+          }
+        },
+        {
+          "stage": {
+            "width": 1660,
+            "overflow": false,
+            "spread": {
+              "x": 154,
+              "y": 408,
+              "w": 1352,
+              "h": 618,
+              "right": 1506,
+              "bottom": 1026
+            },
+            "paper": {
+              "x": 154,
+              "y": 408,
+              "w": 620,
+              "h": 618,
+              "right": 774,
+              "bottom": 1026
+            },
+            "calendar": {
+              "x": 194,
+              "y": 432,
+              "w": 540,
+              "h": 570,
+              "right": 734,
+              "bottom": 1002
+            },
+            "context": {
+              "x": 798,
+              "y": 408,
+              "w": 708,
+              "h": 618,
+              "right": 1506,
+              "bottom": 1026
+            },
+            "grid": {
+              "x": 194,
+              "y": 583,
+              "w": 540,
+              "h": 379,
+              "right": 734,
+              "bottom": 962
+            },
+            "title": {
+              "x": 194,
+              "y": 458.0625,
+              "w": 311.75,
+              "h": 33.9375,
+              "right": 505.75,
+              "bottom": 492
+            },
+            "legend": {
+              "x": 519.75,
+              "y": 467.59375,
+              "w": 214.25,
+              "h": 14.875,
+              "right": 734,
+              "bottom": 482.46875
+            }
+          }
+        },
+        {
+          "stage": {
+            "width": 1440,
+            "overflow": false,
+            "spread": {
+              "x": 57.59375,
+              "y": 408,
+              "w": 1324.8125,
+              "h": 618,
+              "right": 1382.40625,
+              "bottom": 1026
+            },
+            "paper": {
+              "x": 57.59375,
+              "y": 408,
+              "w": 620,
+              "h": 618,
+              "right": 677.59375,
+              "bottom": 1026
+            },
+            "calendar": {
+              "x": 97.59375,
+              "y": 432,
+              "w": 540,
+              "h": 570,
+              "right": 637.59375,
+              "bottom": 1002
+            },
+            "context": {
+              "x": 701.59375,
+              "y": 408,
+              "w": 680.8125,
+              "h": 618,
+              "right": 1382.40625,
+              "bottom": 1026
+            },
+            "grid": {
+              "x": 97.59375,
+              "y": 583,
+              "w": 540,
+              "h": 379,
+              "right": 637.59375,
+              "bottom": 962
+            },
+            "title": {
+              "x": 97.59375,
+              "y": 458.0625,
+              "w": 311.75,
+              "h": 33.9375,
+              "right": 409.34375,
+              "bottom": 492
+            },
+            "legend": {
+              "x": 423.34375,
+              "y": 467.59375,
+              "w": 214.25,
+              "h": 14.875,
+              "right": 637.59375,
+              "bottom": 482.46875
+            }
+          }
+        },
+        {
+          "stage": {
+            "width": 1280,
+            "overflow": false,
+            "spread": {
+              "x": 51.1875,
+              "y": 408,
+              "w": 1177.625,
+              "h": 618,
+              "right": 1228.8125,
+              "bottom": 1026
+            },
+            "paper": {
+              "x": 51.1875,
+              "y": 408,
+              "w": 612.359375,
+              "h": 618,
+              "right": 663.546875,
+              "bottom": 1026
+            },
+            "calendar": {
+              "x": 87.359375,
+              "y": 432,
+              "w": 540,
+              "h": 570,
+              "right": 627.359375,
+              "bottom": 1002
+            },
+            "context": {
+              "x": 687.546875,
+              "y": 408,
+              "w": 541.265625,
+              "h": 618,
+              "right": 1228.8125,
+              "bottom": 1026
+            },
+            "grid": {
+              "x": 87.359375,
+              "y": 583,
+              "w": 540,
+              "h": 379,
+              "right": 627.359375,
+              "bottom": 962
+            },
+            "title": {
+              "x": 87.359375,
+              "y": 458.0625,
+              "w": 311.75,
+              "h": 33.9375,
+              "right": 399.109375,
+              "bottom": 492
+            },
+            "legend": {
+              "x": 413.109375,
+              "y": 467.59375,
+              "w": 214.25,
+              "h": 14.875,
+              "right": 627.359375,
+              "bottom": 482.46875
+            }
+          }
+        },
+        {
+          "stage": {
+            "width": 1100,
+            "overflow": false,
+            "spread": {
+              "x": 44,
+              "y": 408,
+              "w": 1012,
+              "h": 618,
+              "right": 1056,
+              "bottom": 1026
+            },
+            "paper": {
+              "x": 44,
+              "y": 408,
+              "w": 526.234375,
+              "h": 618,
+              "right": 570.234375,
+              "bottom": 1026
+            },
+            "calendar": {
+              "x": 70,
+              "y": 432,
+              "w": 474.234375,
+              "h": 570,
+              "right": 544.234375,
+              "bottom": 1002
+            },
+            "context": {
+              "x": 594.234375,
+              "y": 408,
+              "w": 461.765625,
+              "h": 618,
+              "right": 1056,
+              "bottom": 1026
+            },
+            "grid": {
+              "x": 70,
+              "y": 583,
+              "w": 474.234375,
+              "h": 379,
+              "right": 544.234375,
+              "bottom": 962
+            },
+            "title": {
+              "x": 70,
+              "y": 458.0625,
+              "w": 245.984375,
+              "h": 33.9375,
+              "right": 315.984375,
+              "bottom": 492
+            },
+            "legend": {
+              "x": 329.984375,
+              "y": 467.59375,
+              "w": 214.25,
+              "h": 14.875,
+              "right": 544.234375,
+              "bottom": 482.46875
+            }
+          }
+        },
+        {
+          "stage": {
+            "width": 1050,
+            "overflow": false,
+            "spread": {
+              "x": 42,
+              "y": 408,
+              "w": 966,
+              "h": 654.109375,
+              "right": 1008,
+              "bottom": 1062.109375
+            },
+            "paper": {
+              "x": 42,
+              "y": 408,
+              "w": 520.875,
+              "h": 654.109375,
+              "right": 562.875,
+              "bottom": 1062.109375
+            },
+            "calendar": {
+              "x": 68,
+              "y": 432,
+              "w": 468.875,
+              "h": 569.0625,
+              "right": 536.875,
+              "bottom": 1001.0625
+            },
+            "context": {
+              "x": 580.875,
+              "y": 408,
+              "w": 427.125,
+              "h": 654.109375,
+              "right": 1008,
+              "bottom": 1062.109375
+            },
+            "grid": {
+              "x": 68,
+              "y": 582.0625,
+              "w": 468.875,
+              "h": 379,
+              "right": 536.875,
+              "bottom": 961.0625
+            },
+            "title": {
+              "x": 68,
+              "y": 457.125,
+              "w": 263.96875,
+              "h": 33.9375,
+              "right": 331.96875,
+              "bottom": 491.0625
+            },
+            "legend": {
+              "x": 341.96875,
+              "y": 467.15625,
+              "w": 194.90625,
+              "h": 13.859375,
+              "right": 536.875,
+              "bottom": 481.015625
+            }
+          }
+        },
+        {
+          "stage": {
+            "width": 960,
+            "overflow": false,
+            "spread": {
+              "x": 38.390625,
+              "y": 404,
+              "w": 883.21875,
+              "h": 642.890625,
+              "right": 921.609375,
+              "bottom": 1046.890625
+            },
+            "paper": {
+              "x": 38.390625,
+              "y": 404,
+              "w": 475.390625,
+              "h": 642.890625,
+              "right": 513.78125,
+              "bottom": 1046.890625
+            },
+            "calendar": {
+              "x": 59.390625,
+              "y": 425,
+              "w": 433.390625,
+              "h": 569.0625,
+              "right": 492.78125,
+              "bottom": 994.0625
+            },
+            "context": {
+              "x": 531.78125,
+              "y": 404,
+              "w": 389.828125,
+              "h": 642.890625,
+              "right": 921.609375,
+              "bottom": 1046.890625
+            },
+            "grid": {
+              "x": 59.390625,
+              "y": 575.0625,
+              "w": 433.390625,
+              "h": 379,
+              "right": 492.78125,
+              "bottom": 954.0625
+            },
+            "title": {
+              "x": 59.390625,
+              "y": 450.125,
+              "w": 228.484375,
+              "h": 33.9375,
+              "right": 287.875,
+              "bottom": 484.0625
+            },
+            "legend": {
+              "x": 297.875,
+              "y": 460.15625,
+              "w": 194.90625,
+              "h": 13.859375,
+              "right": 492.78125,
+              "bottom": 474.015625
+            }
+          }
+        },
+        {
+          "stage": {
+            "width": 821,
+            "overflow": false,
+            "spread": {
+              "x": 32.828125,
+              "y": 404,
+              "w": 755.34375,
+              "h": 642.890625,
+              "right": 788.171875,
+              "bottom": 1046.890625
+            },
+            "paper": {
+              "x": 32.828125,
+              "y": 404,
+              "w": 405.125,
+              "h": 642.890625,
+              "right": 437.953125,
+              "bottom": 1046.890625
+            },
+            "calendar": {
+              "x": 53.828125,
+              "y": 425,
+              "w": 363.125,
+              "h": 569.0625,
+              "right": 416.953125,
+              "bottom": 994.0625
+            },
+            "context": {
+              "x": 455.953125,
+              "y": 404,
+              "w": 332.21875,
+              "h": 642.890625,
+              "right": 788.171875,
+              "bottom": 1046.890625
+            },
+            "grid": {
+              "x": 53.828125,
+              "y": 575.0625,
+              "w": 363.125,
+              "h": 379,
+              "right": 416.953125,
+              "bottom": 954.0625
+            },
+            "title": {
+              "x": 53.828125,
+              "y": 450.125,
+              "w": 158.21875,
+              "h": 33.9375,
+              "right": 212.046875,
+              "bottom": 484.0625
+            },
+            "legend": {
+              "x": 222.046875,
+              "y": 460.15625,
+              "w": 194.90625,
+              "h": 13.859375,
+              "right": 416.953125,
+              "bottom": 474.015625
+            }
+          }
+        },
+        {
+          "stage": {
+            "width": 820,
+            "overflow": false,
+            "spread": {
+              "x": 20,
+              "y": 366,
+              "w": 780,
+              "h": 964.3125,
+              "right": 800,
+              "bottom": 1330.3125
+            },
+            "paper": {
+              "x": 20,
+              "y": 366,
+              "w": 780,
+              "h": 611.0625,
+              "right": 800,
+              "bottom": 977.0625
+            },
+            "calendar": {
+              "x": 140,
+              "y": 387,
+              "w": 540,
+              "h": 569.0625,
+              "right": 680,
+              "bottom": 956.0625
+            },
+            "context": {
+              "x": 20,
+              "y": 997.0625,
+              "w": 780,
+              "h": 333.25,
+              "right": 800,
+              "bottom": 1330.3125
+            },
+            "grid": {
+              "x": 140,
+              "y": 537.0625,
+              "w": 540,
+              "h": 379,
+              "right": 680,
+              "bottom": 916.0625
+            },
+            "title": {
+              "x": 140,
+              "y": 412.125,
+              "w": 335.09375,
+              "h": 33.9375,
+              "right": 475.09375,
+              "bottom": 446.0625
+            },
+            "legend": {
+              "x": 485.09375,
+              "y": 422.15625,
+              "w": 194.90625,
+              "h": 13.859375,
+              "right": 680,
+              "bottom": 436.015625
+            }
+          }
+        },
+        {
+          "stage": {
+            "width": 390,
+            "overflow": false,
+            "spread": {
+              "x": 16,
+              "y": 337,
+              "w": 358,
+              "h": 1220.421875,
+              "right": 374,
+              "bottom": 1557.421875
+            },
+            "paper": {
+              "x": 16,
+              "y": 337,
+              "w": 358,
+              "h": 613.515625,
+              "right": 374,
+              "bottom": 950.515625
+            },
+            "calendar": {
+              "x": 33,
+              "y": 356,
+              "w": 324,
+              "h": 575.515625,
+              "right": 357,
+              "bottom": 931.515625
+            },
+            "context": {
+              "x": 16,
+              "y": 970.515625,
+              "w": 358,
+              "h": 586.90625,
+              "right": 374,
+              "bottom": 1557.421875
+            },
+            "grid": {
+              "x": 33,
+              "y": 536.515625,
+              "w": 324,
+              "h": 355,
+              "right": 357,
+              "bottom": 891.515625
+            },
+            "title": {
+              "x": 38,
+              "y": 381.125,
+              "w": 314,
+              "h": 30.53125,
+              "right": 352,
+              "bottom": 411.65625
+            },
+            "legend": {
+              "x": 38,
+              "y": 419.65625,
+              "w": 314,
+              "h": 13.859375,
+              "right": 352,
+              "bottom": 433.515625
+            }
+          }
+        },
+        {
+          "stage": {
+            "width": 320,
+            "overflow": false,
+            "spread": {
+              "x": 16,
+              "y": 340.609375,
+              "w": 288,
+              "h": 1201.65625,
+              "right": 304,
+              "bottom": 1542.265625
+            },
+            "paper": {
+              "x": 16,
+              "y": 340.609375,
+              "w": 288,
+              "h": 594.75,
+              "right": 304,
+              "bottom": 935.359375
+            },
+            "calendar": {
+              "x": 33,
+              "y": 359.609375,
+              "w": 254,
+              "h": 556.75,
+              "right": 287,
+              "bottom": 916.359375
+            },
+            "context": {
+              "x": 16,
+              "y": 955.359375,
+              "w": 288,
+              "h": 586.90625,
+              "right": 304,
+              "bottom": 1542.265625
+            },
+            "grid": {
+              "x": 33,
+              "y": 539.359375,
+              "w": 254,
+              "h": 337,
+              "right": 287,
+              "bottom": 876.359375
+            },
+            "title": {
+              "x": 38,
+              "y": 384.734375,
+              "w": 244,
+              "h": 30.53125,
+              "right": 282,
+              "bottom": 415.265625
+            },
+            "legend": {
+              "x": 38,
+              "y": 423.265625,
+              "w": 244,
+              "h": 13.09375,
+              "right": 282,
+              "bottom": 436.359375
+            }
+          }
+        }
+      ],
+      "errors": [],
+      "passed": true
+    },
+    {
+      "browser": "edge",
+      "version": "156.0.4314.58",
+      "mode": "normal",
+      "checks": [
+        {
+          "label": "edge-normal-2025-09",
+          "month": "2025-09",
+          "dates": 30,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "edge-normal-2025-10",
+          "month": "2025-10",
+          "dates": 31,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "edge-normal-2025-11",
+          "month": "2025-11",
+          "dates": 30,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "edge-normal-2025-12",
+          "month": "2025-12",
+          "dates": 31,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "edge-normal-2026-01",
+          "month": "2026-01",
+          "dates": 31,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "edge-normal-2026-02",
+          "month": "2026-02",
+          "dates": 28,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "edge-normal-2026-03",
+          "month": "2026-03",
+          "dates": 31,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "edge-normal-2026-04",
+          "month": "2026-04",
+          "dates": 30,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "edge-normal-2026-05",
+          "month": "2026-05",
+          "dates": 31,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "edge-normal-2026-06",
+          "month": "2026-06",
+          "dates": 30,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "edge-normal-2026-07",
+          "month": "2026-07",
+          "dates": 31,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "edge-normal-2026-08",
+          "month": "2026-08",
+          "dates": 31,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "edge-normal-2026-09",
+          "month": "2026-09",
+          "dates": 30,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "edge-normal-2026-10",
+          "month": "2026-10",
+          "dates": 31,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "edge-normal-2026-11",
+          "month": "2026-11",
+          "dates": 30,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "edge-normal-2026-12",
+          "month": "2026-12",
+          "dates": 31,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "edge-normal-2027-01",
+          "month": "2027-01",
+          "dates": 31,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "edge-normal-2027-02",
+          "month": "2027-02",
+          "dates": 28,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "edge-normal-2027-03",
+          "month": "2027-03",
+          "dates": 31,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "edge-normal-2027-04",
+          "month": "2027-04",
+          "dates": 30,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "edge-normal-2027-05",
+          "month": "2027-05",
+          "dates": 31,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "edge-normal-2027-06",
+          "month": "2027-06",
+          "dates": 30,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "edge-normal-2027-07",
+          "month": "2027-07",
+          "dates": 31,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "edge-normal-2027-08",
+          "month": "2027-08",
+          "dates": 31,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "edge-normal-2027-09",
+          "month": "2027-09",
+          "dates": 30,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "edge-normal-2027-10",
+          "month": "2027-10",
+          "dates": 31,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "edge-normal-2027-11",
+          "month": "2027-11",
+          "dates": 30,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "edge-normal-2027-12",
+          "month": "2027-12",
+          "dates": 31,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "edge-normal-2028-01",
+          "month": "2028-01",
+          "dates": 31,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "edge-normal-2028-02",
+          "month": "2028-02",
+          "dates": 29,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "daily-minimum",
+          "month": "2026-11",
+          "dates": 30,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "weekly-minimum",
+          "month": "2026-11",
+          "dates": 30,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "monthly-minimum",
+          "month": "2026-12",
+          "dates": 31,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "quarterly-minimum",
+          "month": "2027-02",
+          "dates": 28,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "yearly-minimum",
+          "month": "2027-07",
+          "dates": 31,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "decision-minimum",
+          "month": "2027-02",
+          "dates": 28,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "locked-leap-day",
+          "month": "2024-02",
+          "dates": 29,
+          "rows": 6,
+          "width": 352,
+          "value": "2024-02-29"
+        },
+        {
+          "label": "narrow-820",
+          "month": "2026-11",
+          "dates": 30,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "narrow-390",
+          "month": "2026-11",
+          "dates": 30,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "narrow-320",
+          "month": "2026-11",
+          "dates": 30,
+          "rows": 6,
+          "width": 288,
+          "value": ""
+        },
+        {
+          "label": "reduced-motion",
+          "month": "2026-11",
+          "dates": 30,
+          "rows": 6,
+          "width": 288,
+          "value": "2026-11-07"
+        }
+      ],
+      "errors": [],
+      "passed": true
+    },
+    {
+      "browser": "edge",
+      "version": "156.0.4314.58",
+      "mode": "partial-setters",
+      "checks": [
+        {
+          "label": "edge-partial-setters-2025-09",
+          "month": "2025-09",
+          "dates": 30,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "edge-partial-setters-2025-10",
+          "month": "2025-10",
+          "dates": 31,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "edge-partial-setters-2025-11",
+          "month": "2025-11",
+          "dates": 30,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "edge-partial-setters-2025-12",
+          "month": "2025-12",
+          "dates": 31,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "edge-partial-setters-2026-01",
+          "month": "2026-01",
+          "dates": 31,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "edge-partial-setters-2026-02",
+          "month": "2026-02",
+          "dates": 28,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "edge-partial-setters-2026-03",
+          "month": "2026-03",
+          "dates": 31,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "edge-partial-setters-2026-04",
+          "month": "2026-04",
+          "dates": 30,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "edge-partial-setters-2026-05",
+          "month": "2026-05",
+          "dates": 31,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "edge-partial-setters-2026-06",
+          "month": "2026-06",
+          "dates": 30,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "edge-partial-setters-2026-07",
+          "month": "2026-07",
+          "dates": 31,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "edge-partial-setters-2026-08",
+          "month": "2026-08",
+          "dates": 31,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "edge-partial-setters-2026-09",
+          "month": "2026-09",
+          "dates": 30,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "edge-partial-setters-2026-10",
+          "month": "2026-10",
+          "dates": 31,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "edge-partial-setters-2026-11",
+          "month": "2026-11",
+          "dates": 30,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "edge-partial-setters-2026-12",
+          "month": "2026-12",
+          "dates": 31,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "edge-partial-setters-2027-01",
+          "month": "2027-01",
+          "dates": 31,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "edge-partial-setters-2027-02",
+          "month": "2027-02",
+          "dates": 28,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "edge-partial-setters-2027-03",
+          "month": "2027-03",
+          "dates": 31,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "edge-partial-setters-2027-04",
+          "month": "2027-04",
+          "dates": 30,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "edge-partial-setters-2027-05",
+          "month": "2027-05",
+          "dates": 31,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "edge-partial-setters-2027-06",
+          "month": "2027-06",
+          "dates": 30,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "edge-partial-setters-2027-07",
+          "month": "2027-07",
+          "dates": 31,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "edge-partial-setters-2027-08",
+          "month": "2027-08",
+          "dates": 31,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "edge-partial-setters-2027-09",
+          "month": "2027-09",
+          "dates": 30,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "edge-partial-setters-2027-10",
+          "month": "2027-10",
+          "dates": 31,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "edge-partial-setters-2027-11",
+          "month": "2027-11",
+          "dates": 30,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "edge-partial-setters-2027-12",
+          "month": "2027-12",
+          "dates": 31,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "edge-partial-setters-2028-01",
+          "month": "2028-01",
+          "dates": 31,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "edge-partial-setters-2028-02",
+          "month": "2028-02",
+          "dates": 29,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "daily-minimum",
+          "month": "2026-11",
+          "dates": 30,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "weekly-minimum",
+          "month": "2026-11",
+          "dates": 30,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "monthly-minimum",
+          "month": "2026-12",
+          "dates": 31,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "quarterly-minimum",
+          "month": "2027-02",
+          "dates": 28,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "yearly-minimum",
+          "month": "2027-07",
+          "dates": 31,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "decision-minimum",
+          "month": "2027-02",
+          "dates": 28,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "locked-leap-day",
+          "month": "2024-02",
+          "dates": 29,
+          "rows": 6,
+          "width": 352,
+          "value": "2024-02-29"
+        },
+        {
+          "label": "narrow-820",
+          "month": "2026-11",
+          "dates": 30,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "narrow-390",
+          "month": "2026-11",
+          "dates": 30,
+          "rows": 6,
+          "width": 352,
+          "value": ""
+        },
+        {
+          "label": "narrow-320",
+          "month": "2026-11",
+          "dates": 30,
+          "rows": 6,
+          "width": 288,
+          "value": ""
+        },
+        {
+          "label": "reduced-motion",
+          "month": "2026-11",
+          "dates": 30,
+          "rows": 6,
+          "width": 288,
+          "value": "2026-11-07"
+        }
+      ],
+      "errors": [],
+      "passed": true
+    }
+  ]
+}

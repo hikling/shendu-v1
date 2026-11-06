@@ -36,6 +36,7 @@
 .sd-verification-calendar .rdp-day button{background:var(--daily-white,#fffdf8);color:var(--daily-ink,var(--ink));border-color:var(--line)}
 .sd-verification-calendar .rdp-day button[data-selected-single="true"]{background:var(--daily-accent);color:white;border-color:var(--daily-accent)}
 .sd-verification-calendar .rdp-caption_label{color:var(--daily-ink,var(--ink))}
+.sd-verification-calendar .rdp-nav{z-index:1}
 .sd-verification-calendar .daily-calendar-foot button{height:auto;min-height:30px;padding:4px 9px;white-space:nowrap;font-size:.65rem}
 .sd-surface [data-sonner-toast].sd-toast{font-family:inherit;background:var(--sheet);color:var(--ink);border-color:var(--line);border-radius:15px;font-size:.78rem}
 [data-sonner-toaster]{z-index:150!important}

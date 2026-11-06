@@ -1,0 +1,4 @@
+{"file":".trellis/spec/frontend/index.md","reason":"Frontend preflight and verification"}
+{"file":".trellis/spec/frontend/component-islands.md","reason":"Real Calendar, date adapter and focus ownership"}
+{"file":".trellis/spec/frontend/archive-and-workspace-ui.md","reason":"Stage geometry and responsive alignment"}
+{"file":".trellis/spec/frontend/state-and-data.md","reason":"Verification minimum and native field event semantics"}

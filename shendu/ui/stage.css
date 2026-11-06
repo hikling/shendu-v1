@@ -2,7 +2,7 @@
 .workspace-page.workspace-calendar{--stage-ink:#283f38;--stage-muted:#68736b;--stage-rule:#e3ded1;--stage-red:#9c4936;--workspace-tone:#345f4c;--workspace-soft:#edf3e9}
 .workspace-calendar .workspace-hero{min-height:185px;grid-template-columns:minmax(0,1fr) 210px;margin-bottom:13px;padding-bottom:12px}
 .workspace-calendar .workspace-hero-art{max-width:210px;margin:-15px 0 -25px}
-.calendar-workspace-grid{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);gap:24px;align-items:stretch;margin-top:23px}
+.calendar-workspace-grid{display:grid;grid-template-columns:minmax(0,min(52%,620px)) minmax(0,1fr);gap:24px;align-items:stretch;margin-top:23px}
 .calendar-context{display:grid;grid-template-rows:minmax(min-content,.93fr) minmax(min-content,1.07fr);gap:20px;min-width:0;min-height:0;align-self:stretch}
 .workspace-calendar .calendar-paper{padding:24px 30px 20px}
 .workspace-calendar .calendar-paper-heading{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:8px 14px;margin-bottom:18px}
@@ -16,7 +16,7 @@
 .workspace-calendar .stage-pending-header h2{font-size:1.05rem}
 .workspace-calendar .stage-current-progress{margin-top:auto}
 .workspace-calendar .stage-panel-current>h2{margin:20px 0 11px;font-size:1.75rem}
-.stage-calendar.sd-calendar{--stage-day-row:58px;width:100%;max-width:600px;margin:0 auto}
+.stage-calendar.sd-calendar{--stage-day-row:58px;width:100%;max-width:540px;margin:0 auto}
 .stage-calendar.sd-calendar [data-slot="calendar"]{width:100%;max-width:100%;min-width:0;background:transparent;--cell-size:40px}
 .stage-calendar.sd-calendar .rdp-months,.stage-calendar.sd-calendar .rdp-month{display:block;width:100%;min-width:0;max-width:100%}
 .stage-calendar .stage-calendar-body{position:relative}

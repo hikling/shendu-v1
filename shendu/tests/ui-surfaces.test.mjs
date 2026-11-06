@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {JSDOM} from 'jsdom';
 import {installCalendarTimezoneSpoof} from './helpers/calendar-timezone.cjs';
+import {verificationMinimum} from '../public/verification-policy.js';
 
 const dom=new JSDOM('<!doctype html><body><button id="origin">打开</button><div id="surface"></div><div id="calendar"></div></body>',{url:'http://localhost'});
 const win=dom.window;
@@ -175,6 +176,84 @@ test('stage calendar survives inconsistent timezone getters and setters through 
       assert.equal(months.length,29);assert.equal(selections.length,1,'browsing never selects');
       calendar.querySelector('.stage-return-month').click();await settle();
       assert.equal(months.at(-1),'2025-11');assert.equal(calendar.querySelector('[data-calendar-date="2025-11-02"]').dataset.calendarRecord,record.id);
+    }finally{ui.disposeUi(calendar);calendar.replaceChildren();restore()}
+  }}finally{if(originalZone===undefined)delete process.env.TZ;else process.env.TZ=originalZone}
+});
+
+test('verification calendar retains civil dates under inconsistent timezone APIs',async()=>{
+  const originalZone=process.env.TZ;process.env.TZ='Asia/Shanghai';
+  try{for(const mode of ['partial-setters','local-getters','offset-only']){
+    const restore=installCalendarTimezoneSpoof({mode,targetZone:'America/New_York'}),months=[],selections=[];
+    try{
+      ui.showVerificationCalendar(calendar,{value:'',month:'2025-09',minimum:'2025-09-10',today:'2025-09-10',locked:false,onMonthChange:value=>months.push(value),onSelect:value=>selections.push(value)});
+      await settle();
+      const root=calendar.querySelector('[data-slot="calendar"]'),next=calendar.querySelector('[aria-label="下个月"]'),previous=calendar.querySelector('[aria-label="上个月"]');
+      assert.equal(calendar.querySelector('.rdp-month_grid').tagName,'TABLE','verification retains its ordinary DayPicker table');
+      for(let index=0;index<30;index++){
+        const y=2025+Math.floor((8+index)/12),m=(8+index)%12+1,month=`${y}-${String(m).padStart(2,'0')}`;
+        const total=new Date(Date.UTC(y,m,0)).getUTCDate(),first=(new Date(Date.UTC(y,m-1,1)).getUTCDay()+6)%7;
+        const rows=[...calendar.querySelectorAll('.rdp-week')],buttons=[...calendar.querySelectorAll('[data-verify-day]')];
+        assert.deepEqual([...calendar.querySelectorAll('.rdp-weekday')].map(day=>day.textContent),[...'一二三四五六日'],`${mode} ${month}: civil weekday labels`);
+        assert.equal(rows.length,6,`${mode} ${month}: exactly six weeks`);
+        assert.ok(rows.every(row=>row.children.length===7),`${mode} ${month}: exactly seven dates per week`);
+        assert.equal(buttons.length,total,`${mode} ${month}: one button per real day`);
+        assert.equal(calendar.querySelectorAll('[data-outside="true"] button').length,0,'outside cells stay empty');
+        buttons.forEach((button,day)=>{
+          const value=`${month}-${String(day+1).padStart(2,'0')}`;
+          assert.equal(button.dataset.verifyDay,value);assert.equal(button.dataset.day,value,'day identity ignores spoofed Intl defaults');
+          assert.equal(button.textContent,String(day+1));
+          assert.equal([...button.parentElement.parentElement.children].indexOf(button.parentElement),(first+day)%7,`${value}: actual weekday cell`);
+          assert.equal(rows.indexOf(button.closest('.rdp-week')),Math.floor((first+day)/7),`${value}: actual week`);
+        });
+        if(month==='2025-09'){
+          assert.equal(buttons[8].disabled,true);buttons[8].click();await settle();assert.deepEqual(selections,[]);
+          assert.equal(calendar.querySelector('[data-selected-single="true"]'),null,'empty value stays empty until selection');
+        }
+        if(month==='2025-11'){
+          const button=calendar.querySelector('[data-verify-day="2025-11-02"]');button.click();await settle();
+          assert.deepEqual(selections,['2025-11-02']);assert.equal(button.dataset.selectedSingle,'true');
+          assert.match(button.getAttribute('aria-label'),/星期日，已选择/);
+        }
+        next.focus();next.click();await settle();
+        assert.equal(document.activeElement,next);assert.equal(calendar.querySelector('[data-slot="calendar"]'),root);
+        assert.equal(calendar.querySelector('[aria-label="上个月"]'),previous);
+        assert.ok(buttons.every(button=>!button.isConnected),'old month dates are removed');
+      }
+      assert.equal(months.length,30);assert.deepEqual(selections,['2025-11-02'],'month browsing never selects');
+      calendar.querySelector('[data-verify-today]').click();await settle();
+      assert.equal(months.at(-1),'2025-09');assert.deepEqual(selections,['2025-11-02','2025-09-10']);
+      assert.equal(calendar.querySelector('[data-verify-day="2025-09-10"]').dataset.selectedSingle,'true');
+    }finally{ui.disposeUi(calendar);calendar.replaceChildren();restore()}
+  }}finally{if(originalZone===undefined)delete process.env.TZ;else process.env.TZ=originalZone}
+});
+
+test('verification civil dates preserve six category minima, busy guards and locked leap-day history',async()=>{
+  const originalZone=process.env.TZ;process.env.TZ='Asia/Shanghai';
+  try{for(const mode of ['partial-setters','local-getters']){
+    const restore=installCalendarTimezoneSpoof({mode,targetZone:'America/New_York'});
+    try{
+      for(const type of ['daily','weekly','monthly','quarterly','yearly','decision']){
+        const today='2026-11-06',minimum=verificationMinimum(type,today),selections=[],months=[];let available=false;
+        ui.showVerificationCalendar(calendar,{value:'',month:minimum.slice(0,7),minimum,today,locked:false,canSelect:()=>available,onMonthChange:value=>months.push(value),onSelect:value=>selections.push(value)});
+        await settle();
+        assert.equal(calendar.querySelector('[data-selected-single="true"]'),null,`${type}: empty value is not selected`);
+        const days=[...calendar.querySelectorAll('[data-verify-day]')],earliest=calendar.querySelector(`[data-verify-day="${minimum}"]`);
+        assert.ok(earliest);assert.equal(earliest.disabled,false);
+        assert.ok(days.every(day=>day.disabled===(day.dataset.verifyDay<minimum)),`${type}: exact minimum boundary`);
+        assert.deepEqual(days.filter(day=>day.closest('[data-today="true"]')).map(day=>day.dataset.verifyDay),today.slice(0,7)===minimum.slice(0,7)?[today]:[],`${type}: business today is distinct from minimum`);
+        earliest.click();calendar.querySelector('[data-verify-today]').click();await settle();assert.deepEqual(selections,[],`${type}: busy owner refuses selection`);
+        available=true;calendar.querySelector('[data-verify-today]').click();await settle();assert.deepEqual(selections,[minimum],`${type}: minimum jump retains canonical value`);
+        assert.equal(calendar.querySelector(`[data-verify-day="${minimum}"]`).dataset.selectedSingle,'true');
+        ui.disposeUi(calendar);calendar.replaceChildren();
+      }
+      ui.showVerificationCalendar(calendar,{value:'2024-02-29',month:'2024-02',minimum:'2026-11-06',today:'2026-11-06',locked:true,onMonthChange:()=>assert.fail('locked history cannot browse'),onSelect:()=>assert.fail('locked history cannot change date')});
+      await settle();
+      const days=[...calendar.querySelectorAll('[data-verify-day]')];assert.equal(days.length,29);
+      assert.ok(days.every(day=>day.disabled));
+      assert.equal(calendar.querySelector('[data-verify-day="2024-02-29"]').dataset.selectedSingle,'true','past locked leap-day selection remains visible');
+      assert.equal(calendar.querySelector('[data-verify-today]').disabled,true);
+      for(const button of calendar.querySelectorAll('[aria-label="上个月"],[aria-label="下个月"],[data-verify-day]'))button.click();
+      await settle();assert.equal(calendar.querySelector('[role="grid"]').getAttribute('aria-label'),'2024年2月');
     }finally{ui.disposeUi(calendar);calendar.replaceChildren();restore()}
   }}finally{if(originalZone===undefined)delete process.env.TZ;else process.env.TZ=originalZone}
 });

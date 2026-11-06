@@ -1,8 +1,8 @@
-// DayPicker/date-fns preserve Date subclasses when cloning. Keep stage dates
+// DayPicker/date-fns preserve Date subclasses when cloning. Keep calendar dates
 // as civil fields throughout that calculation, including when an extension
 // overrides the browser's local getters, setters or timezone offset.
 // These UTC fields are internal storage, not a conversion of a saved instant.
-class StageDate extends Date {
+class CalendarDate extends Date {
   constructor(...args){
     super(args.length===0?Date.now():args.length===1?args[0]:0);
     if(args.length>1){
@@ -28,13 +28,13 @@ class StageDate extends Date {
   setMilliseconds(...args){return this.setUTCMilliseconds(...args)}
 }
 
-export function stageDate(value){
+export function calendarDate(value){
   const [year,month,day]=String(value||'').split('-').map(Number);
-  return year&&month&&day?new StageDate(year,month-1,day,12):undefined;
+  return year&&month&&day?new CalendarDate(year,month-1,day,12):undefined;
 }
 
 // DateLib otherwise creates native local Dates for weekday headings and focus.
 // The caller memoizes this object by its business "today", not displayed month.
-export function stageDateLibrary(today){
-  return {newDate:(year,month,day)=>new StageDate(year,month,day),today:()=>stageDate(today)};
+export function calendarDateLibrary(today){
+  return {newDate:(year,month,day)=>new CalendarDate(year,month,day),today:()=>calendarDate(today)};
 }

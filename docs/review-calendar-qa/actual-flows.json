@@ -1,0 +1,154 @@
+{
+  "browser": "Chrome",
+  "results": [
+    {
+      "mode": "normal",
+      "width": 1280,
+      "checks": [
+        {
+          "type": "daily",
+          "period": "2026-11-03",
+          "status": "verified",
+          "originalValue": "2026-11-04",
+          "hiddenValue": "2026-11-04",
+          "days": 30,
+          "weeks": 6,
+          "pickerWidth": 322,
+          "promptsVisited": 8
+        },
+        {
+          "type": "weekly",
+          "period": "2026-W44",
+          "status": "verified",
+          "originalValue": "2026-11-11",
+          "hiddenValue": "2026-11-11",
+          "days": 30,
+          "weeks": 6,
+          "pickerWidth": 322,
+          "promptsVisited": 8
+        },
+        {
+          "type": "monthly",
+          "period": "2026-10",
+          "status": "completed",
+          "originalValue": "2026-12-04",
+          "hiddenValue": "2026-12-04",
+          "days": 31,
+          "weeks": 6,
+          "pickerWidth": 322,
+          "promptsVisited": 8
+        },
+        {
+          "type": "quarterly",
+          "period": "2026-10-01",
+          "status": "verified",
+          "originalValue": "2027-02-02",
+          "hiddenValue": "2027-02-02",
+          "days": 28,
+          "weeks": 6,
+          "pickerWidth": 322,
+          "promptsVisited": 8
+        },
+        {
+          "type": "yearly",
+          "period": "2025",
+          "status": "verified",
+          "originalValue": "2027-07-12",
+          "hiddenValue": "2027-07-12",
+          "days": 31,
+          "weeks": 6,
+          "pickerWidth": 322,
+          "promptsVisited": 9
+        },
+        {
+          "type": "decision",
+          "period": "2026-10-31",
+          "status": "completed",
+          "originalValue": "2027-02-04",
+          "hiddenValue": "2027-02-04",
+          "days": 28,
+          "weeks": 6,
+          "pickerWidth": 322,
+          "promptsVisited": 11
+        }
+      ],
+      "errors": [],
+      "passed": true
+    },
+    {
+      "mode": "partial-setters",
+      "width": 390,
+      "checks": [
+        {
+          "type": "daily",
+          "period": "2026-11-03",
+          "status": "verified",
+          "originalValue": "2026-11-04",
+          "hiddenValue": "2026-11-04",
+          "days": 30,
+          "weeks": 6,
+          "pickerWidth": 326,
+          "promptsVisited": 8
+        },
+        {
+          "type": "weekly",
+          "period": "2026-W44",
+          "status": "verified",
+          "originalValue": "2026-11-11",
+          "hiddenValue": "2026-11-11",
+          "days": 30,
+          "weeks": 6,
+          "pickerWidth": 326,
+          "promptsVisited": 8
+        },
+        {
+          "type": "monthly",
+          "period": "2026-10",
+          "status": "completed",
+          "originalValue": "2026-12-04",
+          "hiddenValue": "2026-12-04",
+          "days": 31,
+          "weeks": 6,
+          "pickerWidth": 326,
+          "promptsVisited": 8
+        },
+        {
+          "type": "quarterly",
+          "period": "2026-10-01",
+          "status": "verified",
+          "originalValue": "2027-02-02",
+          "hiddenValue": "2027-02-02",
+          "days": 28,
+          "weeks": 6,
+          "pickerWidth": 326,
+          "promptsVisited": 8
+        },
+        {
+          "type": "yearly",
+          "period": "2025",
+          "status": "verified",
+          "originalValue": "2027-07-12",
+          "hiddenValue": "2027-07-12",
+          "days": 31,
+          "weeks": 6,
+          "pickerWidth": 326,
+          "promptsVisited": 9
+        },
+        {
+          "type": "decision",
+          "period": "2026-10-31",
+          "status": "completed",
+          "originalValue": "2027-02-04",
+          "hiddenValue": "2027-02-04",
+          "days": 28,
+          "weeks": 6,
+          "pickerWidth": 326,
+          "promptsVisited": 11
+        }
+      ],
+      "errors": [],
+      "passed": true
+    }
+  ],
+  "passed": true
+}
