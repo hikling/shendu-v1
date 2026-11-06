@@ -162,6 +162,7 @@ jobs:
           IMAGE: shendu-deploy:${{ needs.verify.outputs.tree }}-${{ matrix.arch }}
         run: |
           # No token or registry login is supplied to this real deployment path.
+          set -euo pipefail
           umask 077
           cp .env.example .env
           sed -i "s/replace_with_64_hex_characters/$(openssl rand -hex 32)/" .env
@@ -172,7 +173,7 @@ jobs:
           test "$selected" = "$IMAGE"
           sudo docker compose up -d --no-deps --wait --wait-timeout 90 shendu
           sudo docker compose exec -T shendu node scripts/smoke-ui.mjs http://127.0.0.1:3000
-          snapshot=$(sudo sh scripts/site-backup.sh)
+          snapshot=$(sudo sh scripts/site-backup.sh | tail -n 1)
           sudo test -s "$snapshot"
           echo 'Public download, local reuse, real Compose health/UI and encrypted snapshot passed.'
       - name: Clean up downloaded image container
