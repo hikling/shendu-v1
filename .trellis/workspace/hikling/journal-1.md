@@ -1169,3 +1169,25 @@ Reorganized README with verified deploy guide; enlarged scoped workspace art and
 ### Status
 
 [OK] **Completed**
+
+
+## Session 51: Shared review calendar dates and compact stage layout
+<!-- trellis-session: v=2 fp=e5e910c0109f2910 -->
+
+**Date**: 2026-11-06
+**Task**: Shared review calendar dates and compact stage layout
+**Branch**: `main`
+
+### Summary
+
+Reused civil date adapter in six verification flows, preserved canonical dates/minima/locked history and focus; fixed month button pointer layer; compacted stage card to620px and calendar to540px. 155 tests, 257 Chrome/Edge geometry checks and12 actual history review flows passed, including hostile timezone modes. Work commit synced to main and exact-SHA Linux Docker CI passed. Updated calendar contracts and retrospective, archived task; fixture closed.
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `7965242` | Fix shared review calendar dates and compact stage layout |
+
+### Status
+
+[OK] **Completed**
