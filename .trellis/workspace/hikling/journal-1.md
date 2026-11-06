@@ -1124,3 +1124,26 @@ Changed only stage/calendar layout and required caches: explicit seven-column ro
 ### Next Steps
 
 - 线上cokee.cc.cd公开HTML仍为stagegrid1，按README更新部署到stagegrid2；未确认用户截图双重绘制的具体触发条件，不把本地通过当作线上账户验收。
+
+
+## Session 49: Chrome autumn civil calendar fix
+<!-- trellis-session: v=2 fp=0ae066d801903fe7 -->
+
+**Date**: 2026-11-06
+**Task**: Chrome autumn civil calendar fix
+**Branch**: `main`
+
+### Summary
+
+Fixed stage-only date arithmetic under inconsistent timezone APIs. npm test153/153, Chrome/Edge792 states, prior geometry48, independent model5508 and exact-SHA Linux CI42175958741 passed. Main code pushed; production HTML stillstagegrid2 and needs new deployment. Exact My Fingerprint source remains unverified. QA fixture3192/3193 stopped. Task archived; direct-main archive auto-commit pathspec failure repaired with scoped archive commit.
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `d583e78` | Fix stage calendar civil dates under timezone extensions |
+| `2ff3d73` | Record autumn calendar acceptance and successful Linux CI |
+
+### Status
+
+[OK] **Completed**
