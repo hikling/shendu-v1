@@ -13,7 +13,18 @@
 
 ## Linux and container gate
 
-Pending exact-work-commit GitHub Actions result. Required before task closure: all 33 isolated install/update/snapshot scenarios, shell syntax, Node build/check/all tests, resolved Compose secret/proxy assertions, real image build, running container health and actual local HTML/JS/CSS smoke. No real host package installation is part of these mocked installer scenarios.
+Work commit: `1c1a2869d2dfbe5d0a29ba7997547573de2e2bd6`.
+
+[Verify build run 42197939382](https://github.com/hikling/shendu-v1/actions/runs/42197939382), Ubuntu 24.04 / Node 24: all steps **success**.
+
+- **46** isolated installation/update/snapshot scenarios passed (the shell source has 33 standalone `new_case` lines plus loop-expanded cases; the runtime total is authoritative).
+- All deployment shell syntax passed.
+- Locked dependency installation, genuine UI build, production syntax gate and **179/179** tests passed.
+- Resolved Compose configuration passed, including proxy secret isolation and explicit forwarding trust on the private application upstream.
+- Real Docker image built successfully; running container returned healthy. Log confirmed `Health, HTML, app module and local shadcn JS/CSS passed.` The initial poll during startup was retried normally before success.
+- Installer scenarios use isolated PATH mocks; no real host package installation or live deployment mutation was performed. Actual image build/start is a separate true-container check.
+
+The independent integration report also records a final **17/17** verification/backup/overlay increment review. No confirmed unresolved defect was identified. No UI CSS, artwork or product-content edits were included.
 
 ## Scope
 
