@@ -157,23 +157,24 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Download publicly, verify, load and reuse the deployment image
+        working-directory: shendu
         env:
           IMAGE: shendu-deploy:${{ needs.verify.outputs.tree }}-${{ matrix.arch }}
         run: |
           # No token or registry login is supplied to this real deployment path.
-          sh shendu/scripts/prepare-image.sh
-          sh shendu/scripts/prepare-image.sh | tee /tmp/shendu-image-reuse.log
+          umask 077
+          cp .env.example .env
+          sed -i "s/replace_with_64_hex_characters/$(openssl rand -hex 32)/" .env
+          sudo sh scripts/prepare-image.sh
+          sudo sh scripts/prepare-image.sh | tee /tmp/shendu-image-reuse.log
           grep -F '复用本机已验证镜像' /tmp/shendu-image-reuse.log
-          docker run -d --name shendu-download-ci -p 127.0.0.1:43127:3000 "$IMAGE"
-          for attempt in $(seq 1 30); do
-            if curl -fsS http://127.0.0.1:43127/healthz; then
-              docker exec shendu-download-ci node scripts/smoke-ui.mjs http://127.0.0.1:3000
-              exit $?
-            fi
-            sleep 1
-          done
-          docker logs shendu-download-ci
-          exit 1
+          selected=$(sudo docker compose config --format json | node --input-type=module -e 'import {readFileSync} from "node:fs";console.log(JSON.parse(readFileSync(0,"utf8")).services.shendu.image)')
+          test "$selected" = "$IMAGE"
+          sudo docker compose up -d --no-deps --wait --wait-timeout 90 shendu
+          sudo docker compose exec -T shendu node scripts/smoke-ui.mjs http://127.0.0.1:3000
+          snapshot=$(sudo sh scripts/site-backup.sh)
+          sudo test -s "$snapshot"
+          echo 'Public download, local reuse, real Compose health/UI and encrypted snapshot passed.'
       - name: Clean up downloaded image container
         if: always()
-        run: docker rm -f shendu-download-ci || true
+        run: docker rm -f shendu || true
