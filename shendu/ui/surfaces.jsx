@@ -75,7 +75,7 @@ export function showVerificationCalendar(container,options){mountComponent(conta
 
 function StageCaptionLabel({children,className,...props}){
   const match=/^(\d{4}) 年 (\d{1,2}) 月$/.exec(String(children));
-  return <span {...props} className={`${className||''} stage-month-caption`}>{match?<><span className="stage-month-number" aria-hidden>{match[2].padStart(2,'0')}<small>月</small></span><span className="stage-month-year" aria-hidden>{match[1]} 年</span><span className="sr-only">{children}</span></>:children}</span>;
+  return <span {...props} className={`${className||''} stage-month-caption`}>{match?<><span className="stage-month-number" aria-hidden>{match[2].padStart(2,'0')}<small>月</small></span><span className="sr-only">{children}</span></>:children}</span>;
 }
 function StageCalendar({month,today,records,statusLabels,onMonthChange,onSelect}){
   const [visible,setVisible]=React.useState(monthDate(month));
@@ -87,8 +87,8 @@ function StageCalendar({month,today,records,statusLabels,onMonthChange,onSelect}
   },[records,statusLabels,today,almanac]);
   const finished=records.filter(record=>record.period.startsWith(displayed)&&record.status!=='draft').length;
   return <div className="sd-surface sd-calendar stage-calendar">
-    <div className="stage-calendar-toolbar"><div className="stage-calendar-legend" aria-label="日历状态说明"><span><i className="stage-legend-today" aria-hidden/>今天</span><span><i className="stage-legend-draft" aria-hidden>—</i>草稿</span><span><i className="stage-legend-completed" aria-hidden>●</i>已完成</span><span><i className="stage-legend-verified" aria-hidden>✓</i>已验证</span></div></div>
-    <Calendar mode="single" month={visible} onMonthChange={date=>{setVisible(date);onMonthChange(calendarValue(date).slice(0,7))}} onSelect={date=>{if(date)onSelect(calendarValue(date),byDate.get(calendarValue(date)))}} today={calendarDate(today)} locale={zhCN} weekStartsOn={1} fixedWeeks showOutsideDays={false} disabled={date=>calendarValue(date)!==today&&!byDate.has(calendarValue(date))} components={{DayButton:Day,CaptionLabel:StageCaptionLabel}} labels={calendarLabels} formatters={{formatCaption:date=>`${date.getFullYear()} 年 ${date.getMonth()+1} 月`,formatWeekdayName:date=>'一二三四五六日'[(date.getDay()+6)%7]}}/>
+    <header className="calendar-paper-heading"><p className="workspace-kicker">一日一页 · 慢慢积累</p><p className="calendar-paper-note">有记录的日子，随时翻开。</p><h2 id="calendar-paper-title">每日足迹</h2><div className="stage-calendar-legend" aria-label="日历状态说明"><span><i className="stage-legend-today" aria-hidden/>今天</span><span><i className="stage-legend-draft" aria-hidden>—</i>草稿</span><span><i className="stage-legend-completed" aria-hidden>●</i>已完成</span><span><i className="stage-legend-verified" aria-hidden>✓</i>已验证</span></div></header>
+    <div className="stage-calendar-body"><p className="stage-calendar-year" aria-label={`${visible.getFullYear()}年`}><span>{visible.getFullYear()}</span><small>年</small></p><Calendar mode="single" month={visible} onMonthChange={date=>{setVisible(date);onMonthChange(calendarValue(date).slice(0,7))}} onSelect={date=>{if(date)onSelect(calendarValue(date),byDate.get(calendarValue(date)))}} today={calendarDate(today)} locale={zhCN} weekStartsOn={1} fixedWeeks showOutsideDays={false} disabled={date=>calendarValue(date)!==today&&!byDate.has(calendarValue(date))} components={{DayButton:Day,CaptionLabel:StageCaptionLabel}} labels={calendarLabels} formatters={{formatCaption:date=>`${date.getFullYear()} 年 ${date.getMonth()+1} 月`,formatWeekdayName:date=>'一二三四五六日'[(date.getDay()+6)%7]}}/></div>
     <div className="stage-calendar-foot"><p>本月已完成 <strong>{finished}</strong> 天复盘</p><Button type="button" variant="ghost" className="stage-return-month" disabled={displayed===today.slice(0,7)} onClick={()=>{const date=monthDate(today.slice(0,7));setVisible(date);onMonthChange(today.slice(0,7))}}>回到本月 <span aria-hidden>↗</span></Button></div>
   </div>;
 }

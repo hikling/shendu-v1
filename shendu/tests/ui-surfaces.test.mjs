@@ -57,9 +57,12 @@ test('stage Calendar preserves original record identity and only today or record
   assert.equal(calendar.querySelectorAll('td.rdp-day').length,42);
   assert.equal(calendar.querySelectorAll('button.rdp-day_button').length,30);
   const stageRoot=calendar.querySelector('.stage-calendar'),legend=stageRoot.querySelector('.stage-calendar-legend'),picker=stageRoot.querySelector('[data-slot="calendar"]');
-  assert.equal(stageRoot.firstElementChild.querySelector('.stage-calendar-legend'),legend,'status legend precedes the month picker in its top toolbar');
+  assert.equal(stageRoot.firstElementChild.querySelector('.stage-calendar-legend'),legend,'status legend shares the calendar heading rather than a detached lower toolbar');
+  assert.equal(stageRoot.firstElementChild.querySelector('#calendar-paper-title').textContent,'每日足迹');
   assert.ok(legend.compareDocumentPosition(picker)&Node.DOCUMENT_POSITION_FOLLOWING);
-  assert.equal(calendar.querySelector('.stage-month-number').textContent,'11月');assert.equal(calendar.querySelector('.stage-month-year').textContent,'2026 年');
+  assert.equal(calendar.querySelector('.stage-month-number').textContent,'11月');assert.equal(calendar.querySelector('.stage-calendar-year').textContent,'2026年');
+  assert.equal(calendar.querySelector('.stage-month-caption .stage-calendar-year'),null,'year is independent of the centered month caption');
+  assert.equal(calendar.querySelector('.stage-month-caption .sr-only').textContent,'2026 年 11 月','caption retains the full date for assistive technology');
   assert.ok(calendar.querySelector('[data-calendar-date="2026-11-01"]').classList.contains('stage-day-draft'));assert.ok(calendar.querySelector('[data-calendar-date="2026-11-05"]').classList.contains('stage-day-completed'));
   assert.equal(calendar.querySelector('[data-calendar-date="2026-11-03"]').disabled,true);
   calendar.querySelector('[data-calendar-date="2026-11-03"]').click();assert.equal(selected.length,0);
@@ -81,6 +84,7 @@ test('empty stage months keep one date button per civil day across six-week and 
     assert.ok(buttons.every(button=>button.dataset.calendarDate.startsWith(month)&&button.classList.contains('rdp-day_button')&&!button.classList.contains('rdp-day')));
     assert.ok(cells.filter(cell=>cell.dataset.hidden==='true').every(cell=>cell.textContent===''&&!cell.querySelector('button')),'all outside-month cells are structurally empty');
     assert.equal(buttons.filter(button=>button.querySelector('.stage-day-number').textContent==='1').length,1,'day one exists only once even without an opaque record background');
+    assert.equal(calendar.querySelector('.stage-calendar-year').textContent,`${month.slice(0,4)}年`,'separate year follows year-boundary navigation');
   };
   await settle();inspect('2026-11',30);
   const next=calendar.querySelector('[aria-label="下个月"]');next.focus();

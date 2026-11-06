@@ -2,39 +2,44 @@
 .workspace-page.workspace-calendar{--stage-ink:#283f38;--stage-muted:#68736b;--stage-rule:#e3ded1;--stage-red:#9c4936;--workspace-tone:#345f4c;--workspace-soft:#edf3e9}
 .workspace-calendar .workspace-hero{min-height:185px;grid-template-columns:minmax(0,1fr) 210px;margin-bottom:13px;padding-bottom:12px}
 .workspace-calendar .workspace-hero-art{max-width:210px;margin:-15px 0 -25px}
-.calendar-workspace-grid{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);gap:24px;align-items:start;margin-top:23px}
-.calendar-context{display:grid;gap:20px;min-width:0}
+.calendar-workspace-grid{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);gap:24px;align-items:stretch;margin-top:23px}
+.calendar-context{display:grid;grid-template-rows:minmax(min-content,.93fr) minmax(min-content,1.07fr);gap:20px;min-width:0;min-height:0;align-self:stretch}
 .workspace-calendar .calendar-paper{padding:24px 30px 20px}
-.calendar-paper-heading{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:12px}
-.calendar-paper-heading .workspace-kicker{font-size:.56rem;margin-bottom:5px}
-.calendar-paper-heading>p{margin:0;color:#68736b;font:500 .61rem/1.7 "Microsoft YaHei",sans-serif}
+.workspace-calendar .calendar-paper-heading{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:8px 14px;margin-bottom:18px}
+.workspace-calendar .calendar-paper-heading .workspace-kicker{grid-column:1;grid-row:1;font-size:.56rem;margin:0}
+.workspace-calendar .calendar-paper-heading .calendar-paper-note{grid-column:2;grid-row:1;margin:0;color:#68736b;font:500 .59rem/1.7 "Microsoft YaHei",sans-serif;text-align:right}
+.workspace-calendar .calendar-paper-heading>h2{grid-column:1;grid-row:2;margin:0}
+.workspace-calendar .calendar-paper-heading .stage-calendar-legend{grid-column:2;grid-row:2;align-self:center}
 .stage-panel{min-width:0}
-.workspace-calendar .stage-panel-current{padding:24px 26px}
-.workspace-calendar .stage-panel-pending{padding:22px 26px 14px}
+.workspace-calendar .stage-panel-current{display:flex;flex-direction:column;padding:24px 26px;min-height:0}
+.workspace-calendar .stage-panel-pending{display:flex;flex-direction:column;padding:22px 26px 14px;min-height:0}
 .workspace-calendar .stage-pending-header h2{font-size:1.05rem}
-.workspace-calendar .stage-current-progress{margin-top:22px}
+.workspace-calendar .stage-current-progress{margin-top:auto}
 .workspace-calendar .stage-panel-current>h2{margin:20px 0 11px;font-size:1.75rem}
 .stage-calendar.sd-calendar{width:100%;max-width:600px;margin:0 auto}
 .stage-calendar.sd-calendar [data-slot="calendar"]{width:100%;max-width:100%;min-width:0;background:transparent;--cell-size:40px}
 .stage-calendar.sd-calendar .rdp-months,.stage-calendar.sd-calendar .rdp-month{display:block;width:100%;min-width:0;max-width:100%}
-.stage-calendar.sd-calendar .rdp-month_caption{justify-content:center;height:65px;margin:0 0 5px;padding:0 44px}
+.stage-calendar .stage-calendar-body{position:relative}
+.stage-calendar .stage-calendar-year{position:absolute;z-index:1;left:0;top:22px;display:flex;align-items:baseline;gap:6px;margin:0;color:#657268;font:500 1.05rem/1 Georgia,"Times New Roman",serif;font-variant-numeric:tabular-nums;letter-spacing:.03em}
+.stage-calendar .stage-calendar-year small{font:500 .58rem/1 "Microsoft YaHei",sans-serif}
+.stage-calendar.sd-calendar .rdp-month_caption{justify-content:center;height:65px;margin:0 0 8px;padding:0 44px}
 .stage-calendar .stage-month-caption{display:inline-flex;align-items:baseline;gap:13px;line-height:1;color:var(--stage-ink,#283f38)}
 .stage-calendar .stage-month-number{font:500 2.5rem/1 Georgia,"Times New Roman",serif;letter-spacing:-.055em;font-variant-numeric:tabular-nums}
 .stage-calendar .stage-month-number>small{padding-left:8px;font:750 .82rem/1 "SimSun","宋体",serif;letter-spacing:0}
-.stage-calendar .stage-month-year{font:500 .67rem/1.3 "Microsoft YaHei",sans-serif;letter-spacing:.05em;color:#657268}
-.stage-calendar.sd-calendar .rdp-nav{inset:8px auto auto 50%;width:100%;max-width:280px;height:42px;gap:8px;z-index:1;transform:translateX(-50%)}
+.stage-calendar.sd-calendar .rdp-nav{inset:10px auto auto 50%;width:100%;max-width:232px;height:42px;gap:8px;z-index:1;transform:translateX(-50%)}
 .stage-calendar.sd-calendar .rdp-button_previous,.stage-calendar.sd-calendar .rdp-button_next{height:40px;min-width:40px;width:40px;border:0;border-radius:0;background:transparent;box-shadow:none;color:#354e42}
 .stage-calendar.sd-calendar .rdp-nav button:is(:hover,:focus-visible){background:transparent;color:#9c4936;transform:none;box-shadow:none}
 .stage-calendar.sd-calendar .rdp-nav button:focus-visible{outline:2px solid #354e42;outline-offset:-3px}
-.stage-calendar.sd-calendar .rdp-month_grid{display:table;width:100%;max-width:100%;table-layout:fixed;border-spacing:0;border-collapse:collapse}
-.stage-calendar.sd-calendar .rdp-month_grid thead{display:table-header-group}
-.stage-calendar.sd-calendar .rdp-month_grid tbody{display:table-row-group}
-.stage-calendar.sd-calendar .rdp-weekdays,.stage-calendar.sd-calendar .rdp-week{display:table-row;width:auto;margin:0}
-.stage-calendar.sd-calendar .rdp-weekday,.stage-calendar.sd-calendar td.rdp-day{display:table-cell;width:calc(100% / 7);min-width:0;max-width:none;text-align:center;vertical-align:middle}
-.stage-calendar.sd-calendar .rdp-weekday{height:31px;padding:0 0 9px;border-bottom:1px solid #dfe5d8;font:550 .67rem/1.4 "Microsoft YaHei",sans-serif;color:#596e60}
+.stage-calendar.sd-calendar .rdp-month_grid{display:block;width:100%;max-width:100%;table-layout:auto;border-spacing:0;border-collapse:separate}
+.stage-calendar.sd-calendar .rdp-month_grid thead,.stage-calendar.sd-calendar .rdp-month_grid tbody{display:block;width:100%}
+/* Keep DayPicker's semantic table/rows, but give every row seven explicit tracks.
+   Hidden outside days reserve their track without collapsed-table painting. */
+.stage-calendar.sd-calendar .rdp-weekdays,.stage-calendar.sd-calendar .rdp-week{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));width:100%;margin:0}
+.stage-calendar.sd-calendar .rdp-weekday,.stage-calendar.sd-calendar td.rdp-day{display:block;width:auto;min-width:0;max-width:none;text-align:center;vertical-align:middle;box-sizing:border-box}
+.stage-calendar.sd-calendar .rdp-weekday{height:31px;padding:0 0 9px;border-bottom:1px solid #dfe5d8;border-radius:0;font:550 .67rem/1.4 "Microsoft YaHei",sans-serif;color:#596e60}
 .stage-calendar.sd-calendar .rdp-weekday:nth-last-child(-n+2){color:#95624d}
 .stage-calendar.sd-calendar td.rdp-day{height:58px;padding:3px 0;aspect-ratio:auto;border-bottom:1px solid #ebece2;border-radius:0;background:transparent}
-.stage-calendar.sd-calendar td.rdp-day[data-outside="true"],.stage-calendar.sd-calendar td.rdp-day[data-hidden="true"]{visibility:hidden;border-bottom-color:transparent}
+.stage-calendar.sd-calendar td.rdp-day[data-outside="true"],.stage-calendar.sd-calendar td.rdp-day[data-hidden="true"]{visibility:hidden;pointer-events:none;border-bottom-color:transparent}
 .stage-calendar.sd-calendar td.rdp-day .stage-day{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;width:calc(100% - 6px);max-width:66px;min-width:0;height:51px;min-height:51px;margin:0 auto;padding:5px 1px 4px;border:1px solid transparent;border-radius:11px;background:transparent;box-shadow:none;color:#344d40;opacity:1;font:500 .94rem/1 "Microsoft YaHei",sans-serif;font-variant-numeric:tabular-nums;transition:outline-color .15s,color .15s;aspect-ratio:auto}
 .stage-calendar.sd-calendar .rdp-disabled{opacity:1}
 .stage-calendar.sd-calendar td.rdp-day .stage-day:disabled{opacity:1;color:#687267;background:transparent;cursor:default}
@@ -58,7 +63,6 @@
 .stage-calendar .stage-return-month:disabled{opacity:.45;cursor:default}
 .stage-calendar .stage-return-month:not(:disabled):hover{background:transparent;color:#9c4936;text-decoration:underline;text-underline-offset:4px}
 .stage-calendar .stage-return-month:focus-visible{outline:2px solid #354e42;outline-offset:2px}
-.stage-calendar-toolbar{display:flex;justify-content:flex-end;min-height:25px;margin:0 0 6px}
 .stage-calendar-legend{display:flex;align-items:center;justify-content:flex-end;flex-wrap:wrap;gap:12px;margin:0;color:#68736b;font:500 .59rem/1.4 "Microsoft YaHei",sans-serif}
 .stage-calendar-legend>span{display:inline-flex;align-items:center;gap:5px;white-space:nowrap}
 .stage-calendar-legend i{display:inline-grid;place-items:center;width:13px;height:13px;border-radius:50%;font:700 6px/1 "Microsoft YaHei",sans-serif;font-style:normal}
@@ -66,13 +70,13 @@
 .stage-calendar-legend .stage-legend-draft{border:1px solid #e7d6b1;background:#f6ebd5;color:#805c25}
 .stage-calendar-legend .stage-legend-completed{border:1px solid #c5d8c8;background:#e3eee4;color:#28513c}
 .stage-calendar-legend .stage-legend-verified{background:#2e5745;color:#fff}
-.workspace-calendar .stage-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0;margin:0;padding:12px 0 0;border-top:1px solid var(--stage-rule)}
-.workspace-calendar .stage-summary-item{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:5px;min-width:0;min-height:54px;height:auto;padding:0 20px;border:0;border-left:1px solid var(--stage-rule);border-radius:0;background:transparent;box-shadow:none;text-align:left;color:var(--stage-ink)}
+.workspace-calendar .stage-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0;margin:0;padding:16px 0 0;border-top:1px solid var(--stage-rule)}
+.workspace-calendar .stage-summary-item{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:9px;min-width:0;min-height:80px;height:auto;padding:0 24px;border:0;border-left:1px solid var(--stage-rule);border-radius:0;background:transparent;box-shadow:none;text-align:left;color:var(--stage-ink)}
 .workspace-calendar .stage-summary-first{border-left:0;padding-left:2px}
-.workspace-calendar .stage-summary-label{display:flex;align-items:center;gap:6px;color:#68736b;font:500 .61rem/1.45 "Microsoft YaHei",sans-serif}
+.workspace-calendar .stage-summary-label{display:flex;align-items:center;gap:8px;color:#526356;font:600 .76rem/1.45 "Microsoft YaHei",sans-serif}
 .workspace-calendar .stage-summary-label>span{font-size:.58rem;color:#8b7960}
-.workspace-calendar .stage-summary-item strong{color:#354f42;font:500 1.35rem/1 Georgia,"Times New Roman",serif;font-variant-numeric:tabular-nums;white-space:nowrap}
-.workspace-calendar .stage-summary-item strong small{color:#68736b;font:400 .56rem/1.3 "Microsoft YaHei",sans-serif}
+.workspace-calendar .stage-summary-item strong{color:#354f42;font:500 2rem/1 Georgia,"Times New Roman",serif;font-variant-numeric:tabular-nums;white-space:nowrap}
+.workspace-calendar .stage-summary-item strong small{color:#68736b;font:400 .65rem/1.3 "Microsoft YaHei",sans-serif}
 .workspace-calendar .stage-summary-item:hover{background:transparent;box-shadow:none;transform:none}
 .workspace-calendar .stage-summary-item:hover .stage-summary-label{color:#9c4936;text-decoration:underline;text-underline-offset:4px}
 .workspace-calendar .stage-summary-item:focus-visible{outline:2px solid #354e42;outline-offset:-2px}
@@ -82,30 +86,89 @@
 .stage-current-day{color:#72766c;font:500 .62rem/1.5 "Microsoft YaHei",sans-serif;font-variant-numeric:tabular-nums}
 .stage-current-day strong{color:#9c4936;font-size:.9rem}
 .stage-panel-current>h2{margin:24px 0 12px;color:#344f40;font:850 1.8rem/1.35 "SimSun","宋体",serif;letter-spacing:.04em}
-.stage-current-focus{margin:0;max-width:30em;color:#526356;font:500 .9rem/1.8 "SimSun","宋体",serif;overflow-wrap:anywhere}
-.stage-current-progress[data-slot="progress"]{height:4px;margin-top:30px;padding:0;border-radius:0;background:#e4e7dc;box-shadow:none}
+.stage-current-focus{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden;flex-shrink:0;margin:0 0 22px;max-width:30em;color:#526356;font:500 .9rem/1.8 "SimSun","宋体",serif;overflow-wrap:anywhere}
+.stage-current-progress[data-slot="progress"]{flex-shrink:0;height:4px;margin-top:30px;padding:0;border-radius:0;background:#e4e7dc;box-shadow:none}
 .stage-current-progress[data-slot="progress"]>[data-slot="progress-indicator"]{border-radius:0;background:#5b7f66}
-.stage-current-bottom{margin-top:17px;font:400 .61rem/1.5 "Microsoft YaHei",sans-serif;color:#6e756a}
+.stage-current-bottom{flex-shrink:0;margin-top:17px;font:400 .61rem/1.5 "Microsoft YaHei",sans-serif;color:#6e756a}
 .workspace-calendar .stage-text-action{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:36px;height:auto;padding:0;border:0;border-radius:0;background:transparent;box-shadow:none;font:600 .65rem/1.5 "Microsoft YaHei",sans-serif;color:#6f5940;white-space:normal}
 .workspace-calendar .stage-text-action:hover{background:transparent;color:#9c4936;text-decoration:underline;text-underline-offset:5px;transform:none}
 .workspace-calendar .stage-text-action:focus-visible{outline:2px solid #354e42;outline-offset:3px}
 .stage-panel-pending{padding-top:16px}
 .stage-pending-header{padding-bottom:12px;border-bottom:1px solid var(--stage-rule);font:500 .62rem/1.4 "Microsoft YaHei",sans-serif;color:#72766c}
-.workspace-calendar .stage-pending-item{position:relative;display:block;width:100%;height:auto;margin:0;padding:18px 30px 18px 0;border:0;border-bottom:1px solid var(--stage-rule);border-radius:0;background:transparent;box-shadow:none;color:#354f42;text-align:left;white-space:normal}
+.workspace-calendar .stage-pending-item{position:relative;display:block;width:100%;height:auto;margin:0;padding:14px 24px 14px 0;border:0;border-bottom:1px solid var(--stage-rule);border-radius:0;background:transparent;box-shadow:none;color:#354f42;text-align:left;white-space:normal}
 .stage-pending-meta{display:flex;justify-content:space-between;gap:12px;color:#72766c;font:500 .61rem/1.5 "Microsoft YaHei",sans-serif}
-.stage-pending-copy{display:block;margin-top:9px;font:600 .88rem/1.6 "SimSun","宋体",serif;overflow-wrap:anywhere}
+.stage-pending-copy{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;margin-top:8px;font:600 .88rem/1.6 "SimSun","宋体",serif;overflow-wrap:anywhere}
 .stage-pending-open{position:absolute;right:2px;top:50%;font-size:.9rem;color:#8c775c;transform:translateY(-50%)}
 .workspace-calendar .stage-pending-item:hover{background:transparent;box-shadow:none;transform:none}
 .workspace-calendar .stage-pending-item:hover .stage-pending-copy{color:#9c4936;text-decoration:underline;text-underline-offset:5px}
 .workspace-calendar .stage-pending-item:focus-visible{outline:2px solid #354e42;outline-offset:-2px}
-.workspace-calendar .stage-view-actions{display:flex;width:fit-content;margin:12px 0 0 auto}
-.stage-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:120px;padding:20px;text-align:center}
+.workspace-calendar .stage-view-actions{display:flex;flex-shrink:0;width:fit-content;margin:auto 0 0 auto;padding-top:12px}
+.stage-empty{display:flex;flex:1;flex-direction:column;align-items:center;justify-content:center;min-height:120px;padding:20px;text-align:center}
 .stage-empty h3{margin:0;color:#526356;font:750 1.15rem/1.5 "SimSun","宋体",serif}
 .stage-empty p{margin:10px 0 0;color:#72766c;font:400 .7rem/1.7 "Microsoft YaHei",sans-serif}
 
-@media(max-width:1050px){.calendar-workspace-grid{grid-template-columns:minmax(0,1fr) minmax(0,.82fr);gap:18px}.workspace-calendar .calendar-paper{padding:22px 20px}.workspace-calendar .stage-panel-current,.workspace-calendar .stage-panel-pending{padding-inline:20px}.stage-current-bottom{align-items:flex-start;flex-direction:column;gap:8px}.calendar-paper-heading{align-items:flex-start;flex-direction:column;gap:8px}}
-@media(max-width:820px){.workspace-calendar .workspace-hero{grid-template-columns:minmax(0,1fr) 155px;min-height:165px}.workspace-calendar .workspace-hero-art{max-width:155px}.calendar-workspace-grid{grid-template-columns:minmax(0,1fr);gap:20px}.calendar-context{grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.workspace-calendar .stage-summary-item{padding-inline:15px}.workspace-calendar .stage-summary-label{font-size:.57rem}.workspace-calendar .stage-summary-item strong{font-size:1.3rem}.stage-current-focus{font-size:.82rem}}
-@media(max-width:540px){.workspace-calendar .workspace-hero{grid-template-columns:minmax(0,1fr) 100px;min-height:145px}.workspace-calendar .workspace-hero-art{max-width:105px;margin:0 -3px 0}.calendar-workspace-grid{margin-top:18px}.calendar-context{grid-template-columns:minmax(0,1fr)}.workspace-calendar .calendar-paper{padding:20px 13px 15px}.calendar-paper-heading{padding-inline:5px}.stage-calendar.sd-calendar .rdp-month_caption{height:57px}.stage-calendar .stage-month-number{font-size:2.3rem}.stage-calendar.sd-calendar td.rdp-day{height:54px;padding-block:2px}.stage-calendar.sd-calendar td.rdp-day .stage-day{width:calc(100% - 4px);min-width:0;height:48px;min-height:48px;gap:4px;border-radius:9px}.stage-calendar .stage-day-number{font-size:.86rem}.stage-calendar .stage-day-lunar{font-size:.53rem}.stage-calendar .stage-day-mark{right:3px;top:3px;font-size:6px}.workspace-calendar .stage-summary-item{padding-inline:10px;min-height:58px}.workspace-calendar .stage-summary-label{font-size:.51rem;line-height:1.6}.workspace-calendar .stage-summary-label>span{display:none}.workspace-calendar .stage-summary-item strong{font-size:1.15rem}.workspace-calendar .stage-summary-item strong small{font-size:.5rem}.stage-calendar-legend{gap:10px;font-size:.55rem}.stage-calendar .stage-calendar-foot>p,.stage-calendar .stage-return-month{font-size:.55rem}.workspace-calendar .stage-panel-current>h2{font-size:1.5rem}.workspace-calendar .stage-pending-copy{font-size:.83rem}}
-@media(max-width:350px){.stage-calendar.sd-calendar td.rdp-day .stage-day{width:calc(100% - 2px);min-width:0;height:46px;min-height:46px;gap:4px;border-radius:8px}.stage-calendar.sd-calendar td.rdp-day{height:51px}.stage-calendar .stage-day-number{font-size:.8rem}.stage-calendar .stage-day-lunar{font-size:.5rem}.stage-calendar .stage-day-mark{right:2px;top:2px;font-size:5px}.stage-calendar .stage-month-number{font-size:2rem}.stage-calendar .stage-month-caption{gap:8px}.stage-calendar .stage-month-year{font-size:.6rem}.workspace-calendar .stage-summary-item{padding-inline:7px}.stage-calendar-legend{gap:8px;font-size:.52rem}}
+@media(max-width:1050px){
+  .calendar-workspace-grid{grid-template-columns:minmax(0,1fr) minmax(0,.82fr);gap:18px}
+  .workspace-calendar .calendar-paper{padding:22px 20px}
+  .workspace-calendar .stage-panel-current,.workspace-calendar .stage-panel-pending{padding-inline:20px}
+  .stage-current-bottom{align-items:flex-start;flex-direction:column;gap:8px}
+  .workspace-calendar .calendar-paper-heading{gap:8px 10px}
+  .stage-calendar-legend{gap:8px;font-size:.55rem}
+  .workspace-calendar .calendar-paper-heading .calendar-paper-note{font-size:.55rem}
+}
+@media(max-width:820px){
+  .workspace-calendar .workspace-hero{grid-template-columns:minmax(0,1fr) 155px;min-height:165px}
+  .workspace-calendar .workspace-hero-art{max-width:155px}
+  .calendar-workspace-grid{grid-template-columns:minmax(0,1fr);gap:20px}
+  .calendar-context{grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:auto;gap:16px}
+  .workspace-calendar .stage-summary-item{padding-inline:18px}
+  .workspace-calendar .stage-summary-label{font-size:.71rem}
+  .workspace-calendar .stage-summary-item strong{font-size:1.9rem}
+  .stage-current-focus{font-size:.82rem}
+}
+@media(max-width:540px){
+  .workspace-calendar .workspace-hero{grid-template-columns:minmax(0,1fr) 100px;min-height:145px}
+  .workspace-calendar .workspace-hero-art{max-width:105px;margin:0 -3px 0}
+  .calendar-workspace-grid{margin-top:18px}
+  .calendar-context{grid-template-columns:minmax(0,1fr)}
+  .workspace-calendar .calendar-paper{padding:20px 13px 15px}
+  .workspace-calendar .calendar-paper-heading{padding-inline:5px;gap:8px 0;margin-bottom:14px}
+  .workspace-calendar .calendar-paper-heading .workspace-kicker{grid-column:1/-1}
+  .workspace-calendar .calendar-paper-heading>h2{grid-column:1/-1}
+  .workspace-calendar .calendar-paper-heading .calendar-paper-note{display:none}
+  .workspace-calendar .calendar-paper-heading .stage-calendar-legend{grid-column:1/-1;grid-row:3;justify-content:flex-start}
+  .stage-calendar .stage-calendar-body{padding-top:24px}
+  .stage-calendar .stage-calendar-year{top:0;font-size:.94rem}
+  .stage-calendar.sd-calendar .rdp-month_caption{height:57px}
+  .stage-calendar.sd-calendar .rdp-nav{max-width:210px;top:8px}
+  .stage-calendar .stage-month-number{font-size:2.3rem}
+  .stage-calendar.sd-calendar td.rdp-day{height:54px;padding-block:2px}
+  .stage-calendar.sd-calendar td.rdp-day .stage-day{width:calc(100% - 4px);min-width:0;height:48px;min-height:48px;gap:4px;border-radius:9px}
+  .stage-calendar .stage-day-number{font-size:.86rem}
+  .stage-calendar .stage-day-lunar{font-size:.53rem}
+  .stage-calendar .stage-day-mark{right:3px;top:3px;font-size:6px}
+  .workspace-calendar .stage-summary-item{padding-inline:10px;min-height:76px;gap:8px}
+  .workspace-calendar .stage-summary-label{font-size:.64rem;line-height:1.6}
+  .workspace-calendar .stage-summary-label>span{display:none}
+  .workspace-calendar .stage-summary-item strong{font-size:1.65rem}
+  .workspace-calendar .stage-summary-item strong small{font-size:.57rem}
+  .stage-calendar-legend{gap:12px;font-size:.55rem}
+  .stage-calendar .stage-calendar-foot>p,.stage-calendar .stage-return-month{font-size:.55rem}
+  .workspace-calendar .stage-panel-current>h2{font-size:1.5rem}
+  .workspace-calendar .stage-pending-copy{font-size:.83rem}
+  .stage-current-focus{margin-bottom:20px}
+}
+@media(max-width:350px){
+  .stage-calendar.sd-calendar td.rdp-day .stage-day{width:calc(100% - 2px);min-width:0;height:46px;min-height:46px;gap:4px;border-radius:8px}
+  .stage-calendar.sd-calendar td.rdp-day{height:51px}
+  .stage-calendar .stage-day-number{font-size:.8rem}
+  .stage-calendar .stage-day-lunar{font-size:.5rem}
+  .stage-calendar .stage-day-mark{right:2px;top:2px;font-size:5px}
+  .stage-calendar .stage-month-number{font-size:2rem}
+  .workspace-calendar .stage-summary-item{padding-inline:7px}
+  .workspace-calendar .stage-summary-label{font-size:.59rem}
+  .workspace-calendar .stage-summary-item strong{font-size:1.5rem}
+  .stage-calendar-legend{gap:9px;font-size:.52rem}
+}
 @media(prefers-reduced-motion:reduce){.workspace-calendar *{transition:none!important;animation:none!important}}
 body.reduce-motion .workspace-calendar *{transition:none!important;animation:none!important}
