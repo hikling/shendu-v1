@@ -13,6 +13,8 @@ No source issue required a reviewer fix. Only this review record was written by 
 
 The stale stage-only spec has been replaced with the shared `calendar-date.js` contract, all Date boundaries and exact canonical fields. The workspace guide records the620/540px desktop measure. `research/root-cause.md` captures the missing verification coverage and why DOM-only testing missed pointer obstruction. Main-session production build passed155 tests; Chrome/Edge acceptance passed257 checks with no console/page errors, including real pointer navigation, multi-year civil geometry and narrow stage alignment. See `docs/review-calendar-qa/` for before/after evidence. Main synchronization and CI are checked during closure.
 
+The12 actual six-category history-to-review/date/exit flows also pass at normal1280px and hostile390px, preserving the original hidden field and locked record. Work commit`796524235851908bcd2077dcb0ebe243c92d09dd` is on remote main; [its Linux CI](https://github.com/hikling/shendu-v1/actions/runs/42186955876) completed successfully. The synthetic fixture was stopped and both ports closed.
+
 ## Scope and behavior review
 
 - Both surface entry points now consume the same existing civil Date implementation. The helper rename changes its names and documentation without changing the former StageDate arithmetic; stage records, lunar annotations and private semantic grid slots remain intact.
