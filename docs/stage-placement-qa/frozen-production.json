@@ -1,0 +1,42 @@
+{
+  "source": "Public assets downloaded from https://cokee.cc.cd/ via curl proxy; rendered offline with isolated synthetic API data and unchanged local ancillary assets. This is not the live authenticated account render.",
+  "version": "1.0.0-stagegrid1",
+  "chrome": "156.0.8078.80",
+  "assets": [
+    {
+      "path": "/",
+      "sha256": "947aeadf77e3ae2b5eb02d3db2eea839ab42787871352c4c9f4cfa558036b0a6",
+      "bytes": 1278
+    },
+    {
+      "path": "/app.js",
+      "sha256": "2a5fbeef3f85daa7d6bfbcb730ddcf457d32d1ca5965b730efe504b6b1e73058",
+      "bytes": 166426
+    },
+    {
+      "path": "/ui/shadcn.js",
+      "sha256": "cc228e8a929eada16445d25dcb90610059325676b1a16fd75f3baef4ba4a61bd",
+      "bytes": 1077703
+    },
+    {
+      "path": "/ui/shadcn.css",
+      "sha256": "0c628ab7dc1e145aef497c90dd65cbbd31350573c77c31cbcddd0ae29db0997f",
+      "bytes": 69154
+    }
+  ],
+  "normal": {
+    "column": 7,
+    "dates": 30,
+    "unique": 30,
+    "dayOneNodes": 1,
+    "nativeTable": 1
+  },
+  "injected": {
+    "column": 1,
+    "dates": 30,
+    "unique": 30,
+    "dayOneNodes": 1,
+    "nativeTable": 1
+  },
+  "errors": []
+}

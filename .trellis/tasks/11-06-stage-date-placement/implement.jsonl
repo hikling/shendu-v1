@@ -1,0 +1,2 @@
+{"file": ".trellis/spec/frontend/component-islands.md", "reason": "阶段私有网格覆写，稳定焦点与原Calendar边界"}
+{"file": ".trellis/spec/frontend/architecture.md", "reason": "阶段日期和缓存所有权"}

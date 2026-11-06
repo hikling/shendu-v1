@@ -16,7 +16,7 @@
 .workspace-calendar .stage-pending-header h2{font-size:1.05rem}
 .workspace-calendar .stage-current-progress{margin-top:auto}
 .workspace-calendar .stage-panel-current>h2{margin:20px 0 11px;font-size:1.75rem}
-.stage-calendar.sd-calendar{width:100%;max-width:600px;margin:0 auto}
+.stage-calendar.sd-calendar{--stage-day-row:58px;width:100%;max-width:600px;margin:0 auto}
 .stage-calendar.sd-calendar [data-slot="calendar"]{width:100%;max-width:100%;min-width:0;background:transparent;--cell-size:40px}
 .stage-calendar.sd-calendar .rdp-months,.stage-calendar.sd-calendar .rdp-month{display:block;width:100%;min-width:0;max-width:100%}
 .stage-calendar .stage-calendar-body{position:relative}
@@ -31,31 +31,32 @@
 .stage-calendar.sd-calendar .rdp-nav button:is(:hover,:focus-visible){background:transparent;color:#9c4936;transform:none;box-shadow:none}
 .stage-calendar.sd-calendar .rdp-nav button:focus-visible{outline:2px solid #354e42;outline-offset:-3px}
 .stage-calendar.sd-calendar .rdp-month_grid{display:block;width:100%;max-width:100%;table-layout:auto;border-spacing:0;border-collapse:separate}
-.stage-calendar.sd-calendar .rdp-month_grid thead,.stage-calendar.sd-calendar .rdp-month_grid tbody{display:block;width:100%}
-/* Keep DayPicker's semantic table/rows, but give every row seven explicit tracks.
-   Hidden outside days reserve their track without collapsed-table painting. */
+.stage-calendar.sd-calendar .rdp-month_grid .stage-weekday-group,.stage-calendar.sd-calendar .rdp-month_grid .rdp-weeks{display:block;width:100%}
+/* Stage-only semantic div grid/rows use seven explicit civil weekday tracks.
+   Each week keeps its height even when all outside-month cells are hidden. */
 .stage-calendar.sd-calendar .rdp-weekdays,.stage-calendar.sd-calendar .rdp-week{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));width:100%;margin:0}
-.stage-calendar.sd-calendar .rdp-weekday,.stage-calendar.sd-calendar td.rdp-day{display:block;width:auto;min-width:0;max-width:none;text-align:center;vertical-align:middle;box-sizing:border-box}
+.stage-calendar.sd-calendar .rdp-week{min-height:var(--stage-day-row);grid-auto-rows:var(--stage-day-row)}
+.stage-calendar.sd-calendar .rdp-weekday,.stage-calendar.sd-calendar .stage-calendar-cell{display:block;width:auto;min-width:0;max-width:none;text-align:center;vertical-align:middle;box-sizing:border-box}
 .stage-calendar.sd-calendar .rdp-weekday{height:31px;padding:0 0 9px;border-bottom:1px solid #dfe5d8;border-radius:0;font:550 .67rem/1.4 "Microsoft YaHei",sans-serif;color:#596e60}
 .stage-calendar.sd-calendar .rdp-weekday:nth-last-child(-n+2){color:#95624d}
-.stage-calendar.sd-calendar td.rdp-day{height:58px;padding:3px 0;aspect-ratio:auto;border-bottom:1px solid #ebece2;border-radius:0;background:transparent}
-.stage-calendar.sd-calendar td.rdp-day[data-outside="true"],.stage-calendar.sd-calendar td.rdp-day[data-hidden="true"]{visibility:hidden;pointer-events:none;border-bottom-color:transparent}
-.stage-calendar.sd-calendar td.rdp-day .stage-day{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;width:calc(100% - 6px);max-width:66px;min-width:0;height:51px;min-height:51px;margin:0 auto;padding:5px 1px 4px;border:1px solid transparent;border-radius:11px;background:transparent;box-shadow:none;color:#344d40;opacity:1;font:500 .94rem/1 "Microsoft YaHei",sans-serif;font-variant-numeric:tabular-nums;transition:outline-color .15s,color .15s;aspect-ratio:auto}
+.stage-calendar.sd-calendar .stage-calendar-cell{height:58px;padding:3px 0;aspect-ratio:auto;border-bottom:1px solid #ebece2;border-radius:0;background:transparent}
+.stage-calendar.sd-calendar .stage-calendar-cell[data-outside="true"],.stage-calendar.sd-calendar .stage-calendar-cell[data-hidden="true"]{visibility:hidden;pointer-events:none;border-bottom-color:transparent}
+.stage-calendar.sd-calendar .stage-calendar-cell .stage-day{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;width:calc(100% - 6px);max-width:66px;min-width:0;height:51px;min-height:51px;margin:0 auto;padding:5px 1px 4px;border:1px solid transparent;border-radius:11px;background:transparent;box-shadow:none;color:#344d40;opacity:1;font:500 .94rem/1 "Microsoft YaHei",sans-serif;font-variant-numeric:tabular-nums;transition:outline-color .15s,color .15s;aspect-ratio:auto}
 .stage-calendar.sd-calendar .rdp-disabled{opacity:1}
-.stage-calendar.sd-calendar td.rdp-day .stage-day:disabled{opacity:1;color:#687267;background:transparent;cursor:default}
+.stage-calendar.sd-calendar .stage-calendar-cell .stage-day:disabled{opacity:1;color:#687267;background:transparent;cursor:default}
 .stage-calendar .stage-day-number{font:500 1rem/1.1 "Microsoft YaHei",sans-serif;opacity:1!important}
 .stage-calendar .stage-day-lunar{max-width:100%;font:400 .56rem/1.25 "Microsoft YaHei",sans-serif;white-space:nowrap;color:#6b7567;opacity:1!important;letter-spacing:.015em}
 .stage-calendar .stage-day-term .stage-day-lunar{color:#936032;font-weight:650}
 .stage-calendar .stage-day-mark{position:absolute;right:5px;top:5px;display:block;width:7px;height:7px;font:800 7px/7px "Microsoft YaHei",sans-serif;text-align:center;opacity:1!important}
-.stage-calendar.sd-calendar td.rdp-day .stage-day-draft{background:#f6ebd5;color:#805c25;border-color:#e7d6b1}
-.stage-calendar.sd-calendar td.rdp-day .stage-day-completed{background:#e3eee4;color:#28513c;border-color:#c5d8c8}
-.stage-calendar.sd-calendar td.rdp-day .stage-day-verified{background:#2e5745;color:#fff;border-color:#2e5745}
+.stage-calendar.sd-calendar .stage-calendar-cell .stage-day-draft{background:#f6ebd5;color:#805c25;border-color:#e7d6b1}
+.stage-calendar.sd-calendar .stage-calendar-cell .stage-day-completed{background:#e3eee4;color:#28513c;border-color:#c5d8c8}
+.stage-calendar.sd-calendar .stage-calendar-cell .stage-day-verified{background:#2e5745;color:#fff;border-color:#2e5745}
 .stage-calendar .stage-day-verified .stage-day-lunar{color:#f1f4e9}
 .stage-calendar .stage-day-draft .stage-day-lunar{color:#77592d}
 .stage-calendar .stage-day-completed .stage-day-lunar{color:#42624d}
-.stage-calendar.sd-calendar td.rdp-day .stage-day-today{outline:1.5px solid #ad513c;outline-offset:0;font-weight:750}
-.stage-calendar.sd-calendar td.rdp-day .stage-day:not(:disabled):hover{outline:1px solid #6b7f6c;outline-offset:0;transform:none;box-shadow:none}
-.stage-calendar.sd-calendar td.rdp-day .stage-day:focus-visible{outline:2px solid #1c4432;outline-offset:1px}
+.stage-calendar.sd-calendar .stage-calendar-cell .stage-day-today{outline:1.5px solid #ad513c;outline-offset:0;font-weight:750}
+.stage-calendar.sd-calendar .stage-calendar-cell .stage-day:not(:disabled):hover{outline:1px solid #6b7f6c;outline-offset:0;transform:none;box-shadow:none}
+.stage-calendar.sd-calendar .stage-calendar-cell .stage-day:focus-visible{outline:2px solid #1c4432;outline-offset:1px}
 .stage-calendar .stage-calendar-foot{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:10px;min-height:30px}
 .stage-calendar .stage-calendar-foot>p{margin:0;color:#68736b;font:500 .62rem/1.5 "Microsoft YaHei",sans-serif}
 .stage-calendar .stage-calendar-foot strong{margin:0 3px;color:#354f42;font-weight:800}
@@ -127,6 +128,7 @@
   .stage-current-focus{font-size:.82rem}
 }
 @media(max-width:540px){
+  .stage-calendar.sd-calendar{--stage-day-row:54px}
   .workspace-calendar .workspace-hero{grid-template-columns:minmax(0,1fr) 100px;min-height:145px}
   .workspace-calendar .workspace-hero-art{max-width:105px;margin:0 -3px 0}
   .calendar-workspace-grid{margin-top:18px}
@@ -142,8 +144,8 @@
   .stage-calendar.sd-calendar .rdp-month_caption{height:57px}
   .stage-calendar.sd-calendar .rdp-nav{max-width:210px;top:8px}
   .stage-calendar .stage-month-number{font-size:2.3rem}
-  .stage-calendar.sd-calendar td.rdp-day{height:54px;padding-block:2px}
-  .stage-calendar.sd-calendar td.rdp-day .stage-day{width:calc(100% - 4px);min-width:0;height:48px;min-height:48px;gap:4px;border-radius:9px}
+  .stage-calendar.sd-calendar .stage-calendar-cell{height:54px;padding-block:2px}
+  .stage-calendar.sd-calendar .stage-calendar-cell .stage-day{width:calc(100% - 4px);min-width:0;height:48px;min-height:48px;gap:4px;border-radius:9px}
   .stage-calendar .stage-day-number{font-size:.86rem}
   .stage-calendar .stage-day-lunar{font-size:.53rem}
   .stage-calendar .stage-day-mark{right:3px;top:3px;font-size:6px}
@@ -159,8 +161,9 @@
   .stage-current-focus{margin-bottom:20px}
 }
 @media(max-width:350px){
-  .stage-calendar.sd-calendar td.rdp-day .stage-day{width:calc(100% - 2px);min-width:0;height:46px;min-height:46px;gap:4px;border-radius:8px}
-  .stage-calendar.sd-calendar td.rdp-day{height:51px}
+  .stage-calendar.sd-calendar{--stage-day-row:51px}
+  .stage-calendar.sd-calendar .stage-calendar-cell .stage-day{width:calc(100% - 2px);min-width:0;height:46px;min-height:46px;gap:4px;border-radius:8px}
+  .stage-calendar.sd-calendar .stage-calendar-cell{height:51px}
   .stage-calendar .stage-day-number{font-size:.8rem}
   .stage-calendar .stage-day-lunar{font-size:.5rem}
   .stage-calendar .stage-day-mark{right:2px;top:2px;font-size:5px}

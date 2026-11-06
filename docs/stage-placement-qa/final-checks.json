@@ -1,0 +1,391 @@
+{
+  "chrome": "156.0.8078.80",
+  "checks": [
+    {
+      "label": "normal-1280",
+      "month": "2026-11",
+      "dates": 30,
+      "rows": 6,
+      "firstColumn": 7,
+      "noOverflow": true
+    },
+    {
+      "label": "normal-1120",
+      "month": "2026-11",
+      "dates": 30,
+      "rows": 6,
+      "firstColumn": 7,
+      "noOverflow": true
+    },
+    {
+      "label": "normal-1100",
+      "month": "2026-11",
+      "dates": 30,
+      "rows": 6,
+      "firstColumn": 7,
+      "noOverflow": true
+    },
+    {
+      "label": "normal-960",
+      "month": "2026-11",
+      "dates": 30,
+      "rows": 6,
+      "firstColumn": 7,
+      "noOverflow": true
+    },
+    {
+      "label": "normal-821",
+      "month": "2026-11",
+      "dates": 30,
+      "rows": 6,
+      "firstColumn": 7,
+      "noOverflow": true
+    },
+    {
+      "label": "normal-820",
+      "month": "2026-11",
+      "dates": 30,
+      "rows": 6,
+      "firstColumn": 7,
+      "noOverflow": true
+    },
+    {
+      "label": "normal-390",
+      "month": "2026-11",
+      "dates": 30,
+      "rows": 6,
+      "firstColumn": 7,
+      "noOverflow": true
+    },
+    {
+      "label": "normal-320",
+      "month": "2026-11",
+      "dates": 30,
+      "rows": 6,
+      "firstColumn": 7,
+      "noOverflow": true
+    },
+    {
+      "label": "collapsed-blank-cells",
+      "month": "2026-11",
+      "dates": 30,
+      "rows": 6,
+      "firstColumn": 7,
+      "noOverflow": true
+    },
+    {
+      "label": "month-0",
+      "month": "2026-01",
+      "dates": 31,
+      "rows": 6,
+      "firstColumn": 4,
+      "noOverflow": true
+    },
+    {
+      "label": "month-1",
+      "month": "2026-02",
+      "dates": 28,
+      "rows": 6,
+      "firstColumn": 7,
+      "noOverflow": true
+    },
+    {
+      "label": "month-2",
+      "month": "2026-03",
+      "dates": 31,
+      "rows": 6,
+      "firstColumn": 7,
+      "noOverflow": true
+    },
+    {
+      "label": "month-3",
+      "month": "2026-04",
+      "dates": 30,
+      "rows": 6,
+      "firstColumn": 3,
+      "noOverflow": true
+    },
+    {
+      "label": "month-4",
+      "month": "2026-05",
+      "dates": 31,
+      "rows": 6,
+      "firstColumn": 5,
+      "noOverflow": true
+    },
+    {
+      "label": "month-5",
+      "month": "2026-06",
+      "dates": 30,
+      "rows": 6,
+      "firstColumn": 1,
+      "noOverflow": true
+    },
+    {
+      "label": "month-6",
+      "month": "2026-07",
+      "dates": 31,
+      "rows": 6,
+      "firstColumn": 3,
+      "noOverflow": true
+    },
+    {
+      "label": "month-7",
+      "month": "2026-08",
+      "dates": 31,
+      "rows": 6,
+      "firstColumn": 6,
+      "noOverflow": true
+    },
+    {
+      "label": "month-8",
+      "month": "2026-09",
+      "dates": 30,
+      "rows": 6,
+      "firstColumn": 2,
+      "noOverflow": true
+    },
+    {
+      "label": "month-9",
+      "month": "2026-10",
+      "dates": 31,
+      "rows": 6,
+      "firstColumn": 4,
+      "noOverflow": true
+    },
+    {
+      "label": "month-10",
+      "month": "2026-11",
+      "dates": 30,
+      "rows": 6,
+      "firstColumn": 7,
+      "noOverflow": true
+    },
+    {
+      "label": "month-11",
+      "month": "2026-12",
+      "dates": 31,
+      "rows": 6,
+      "firstColumn": 2,
+      "noOverflow": true
+    },
+    {
+      "label": "month-12",
+      "month": "2027-01",
+      "dates": 31,
+      "rows": 6,
+      "firstColumn": 5,
+      "noOverflow": true
+    },
+    {
+      "label": "month-13",
+      "month": "2027-02",
+      "dates": 28,
+      "rows": 6,
+      "firstColumn": 1,
+      "noOverflow": true
+    },
+    {
+      "label": "month-14",
+      "month": "2027-03",
+      "dates": 31,
+      "rows": 6,
+      "firstColumn": 1,
+      "noOverflow": true
+    },
+    {
+      "label": "month-15",
+      "month": "2027-04",
+      "dates": 30,
+      "rows": 6,
+      "firstColumn": 4,
+      "noOverflow": true
+    },
+    {
+      "label": "month-16",
+      "month": "2027-05",
+      "dates": 31,
+      "rows": 6,
+      "firstColumn": 6,
+      "noOverflow": true
+    },
+    {
+      "label": "month-17",
+      "month": "2027-06",
+      "dates": 30,
+      "rows": 6,
+      "firstColumn": 2,
+      "noOverflow": true
+    },
+    {
+      "label": "month-18",
+      "month": "2027-07",
+      "dates": 31,
+      "rows": 6,
+      "firstColumn": 4,
+      "noOverflow": true
+    },
+    {
+      "label": "month-19",
+      "month": "2027-08",
+      "dates": 31,
+      "rows": 6,
+      "firstColumn": 7,
+      "noOverflow": true
+    },
+    {
+      "label": "month-20",
+      "month": "2027-09",
+      "dates": 30,
+      "rows": 6,
+      "firstColumn": 3,
+      "noOverflow": true
+    },
+    {
+      "label": "month-21",
+      "month": "2027-10",
+      "dates": 31,
+      "rows": 6,
+      "firstColumn": 5,
+      "noOverflow": true
+    },
+    {
+      "label": "month-22",
+      "month": "2027-11",
+      "dates": 30,
+      "rows": 6,
+      "firstColumn": 1,
+      "noOverflow": true
+    },
+    {
+      "label": "month-23",
+      "month": "2027-12",
+      "dates": 31,
+      "rows": 6,
+      "firstColumn": 3,
+      "noOverflow": true
+    },
+    {
+      "label": "month-24",
+      "month": "2028-01",
+      "dates": 31,
+      "rows": 6,
+      "firstColumn": 6,
+      "noOverflow": true
+    },
+    {
+      "label": "month-25",
+      "month": "2028-02",
+      "dates": 29,
+      "rows": 6,
+      "firstColumn": 2,
+      "noOverflow": true
+    },
+    {
+      "label": "month-26",
+      "month": "2028-03",
+      "dates": 31,
+      "rows": 6,
+      "firstColumn": 3,
+      "noOverflow": true
+    },
+    {
+      "label": "return-to-current",
+      "month": "2026-11",
+      "dates": 30,
+      "rows": 6,
+      "firstColumn": 7,
+      "noOverflow": true
+    },
+    {
+      "label": "zoom-0.8",
+      "month": "2026-11",
+      "dates": 30,
+      "rows": 6,
+      "firstColumn": 7,
+      "noOverflow": true
+    },
+    {
+      "label": "zoom-1",
+      "month": "2026-11",
+      "dates": 30,
+      "rows": 6,
+      "firstColumn": 7,
+      "noOverflow": true
+    },
+    {
+      "label": "zoom-1.1",
+      "month": "2026-11",
+      "dates": 30,
+      "rows": 6,
+      "firstColumn": 7,
+      "noOverflow": true
+    },
+    {
+      "label": "zoom-1.25",
+      "month": "2026-11",
+      "dates": 30,
+      "rows": 6,
+      "firstColumn": 7,
+      "noOverflow": true
+    },
+    {
+      "label": "zoom-1.5",
+      "month": "2026-11",
+      "dates": 30,
+      "rows": 6,
+      "firstColumn": 7,
+      "noOverflow": true
+    },
+    {
+      "label": "record-return",
+      "month": "2026-11",
+      "dates": 30,
+      "rows": 6,
+      "firstColumn": 7,
+      "noOverflow": true
+    },
+    {
+      "label": "reduced-motion",
+      "month": "2026-11",
+      "dates": 30,
+      "rows": 6,
+      "firstColumn": 7,
+      "noOverflow": true
+    },
+    {
+      "label": "empty-1120",
+      "month": "2026-11",
+      "dates": 30,
+      "rows": 6,
+      "firstColumn": 7,
+      "noOverflow": true
+    },
+    {
+      "label": "empty-390",
+      "month": "2026-11",
+      "dates": 30,
+      "rows": 6,
+      "firstColumn": 7,
+      "noOverflow": true
+    },
+    {
+      "label": "empty-320",
+      "month": "2026-11",
+      "dates": 30,
+      "rows": 6,
+      "firstColumn": 7,
+      "noOverflow": true
+    },
+    {
+      "label": "empty-collapsed-blank-cells",
+      "month": "2026-11",
+      "dates": 30,
+      "rows": 6,
+      "firstColumn": 7,
+      "noOverflow": true
+    }
+  ],
+  "errors": [],
+  "aria": "- paragraph: 一日一页 · 慢慢积累\n- paragraph: 有记录的日子，随时翻开。\n- heading \"每日足迹\" [level=2]\n- text: 今天 草稿 已完成 已验证\n- paragraph: 2026 年\n- navigation \"Navigation bar\":\n  - button \"上个月\"\n  - button \"下个月\"\n- status: 2026 年 11 月\n- grid \"2026年11月\":\n  - rowgroup:\n    - row \"星期一 星期二 星期三 星期四 星期五 星期六 星期日\":\n      - columnheader \"星期一\": 一\n      - columnheader \"星期二\": 二\n      - columnheader \"星期三\": 三\n      - columnheader \"星期四\": 四\n      - columnheader \"星期五\": 五\n      - columnheader \"星期六\": 六\n      - columnheader \"星期日\": 日\n  - rowgroup:\n    - row \"2026年11月1日 星期日，无记录，农历丙午年九月廿三\":\n      - gridcell \"2026年11月1日 星期日，无记录，农历丙午年九月廿三\":\n        - button \"2026年11月1日 星期日，无记录，农历丙午年九月廿三\" [disabled]\n    - row \"2026年11月2日 星期一，无记录，农历丙午年九月廿四 2026年11月3日 星期二，无记录，农历丙午年九月廿五 2026年11月4日 星期三，无记录，农历丙午年九月廿六 2026年11月5日 星期四，无记录，农历丙午年九月廿七 2026年11月6日 星期五，今天，无记录，农历丙午年九月廿八 2026年11月7日 星期六，无记录，农历丙午年九月廿九，立冬 2026年11月8日 星期日，无记录，农历丙午年九月三十\":\n      - gridcell \"2026年11月2日 星期一，无记录，农历丙午年九月廿四\":\n        - button \"2026年11月2日 星期一，无记录，农历丙午年九月廿四\" [disabled]\n      - gridcell \"2026年11月3日 星期二，无记录，农历丙午年九月廿五\":\n        - button \"2026年11月3日 星期二，无记录，农历丙午年九月廿五\" [disabled]\n      - gridcell \"2026年11月4日 星期三，无记录，农历丙午年九月廿六\":\n        - button \"2026年11月4日 星期三，无记录，农历丙午年九月廿六\" [disabled]\n      - gridcell \"2026年11月5日 星期四，无记录，农历丙午年九月廿七\":\n        - button \"2026年11月5日 星期四，无记录，农历丙午年九月廿七\" [disabled]\n      - gridcell \"2026年11月6日 星期五，今天，无记录，农历丙午年九月廿八\":\n        - button \"2026年11月6日 星期五，今天，无记录，农历丙午年九月廿八\"\n      - gridcell \"2026年11月7日 星期六，无记录，农历丙午年九月廿九，立冬\":\n        - button \"2026年11月7日 星期六，无记录，农历丙午年九月廿九，立冬\" [disabled]\n      - gridcell \"2026年11月8日 星期日，无记录，农历丙午年九月三十\":\n        - button \"2026年11月8日 星期日，无记录，农历丙午年九月三十\" [disabled]\n    - row \"2026年11月9日 星期一，无记录，农历丙午年十月初一 2026年11月10日 星期二，无记录，农历丙午年十月初二 2026年11月11日 星期三，无记录，农历丙午年十月初三 2026年11月12日 星期四，无记录，农历丙午年十月初四 2026年11月13日 星期五，无记录，农历丙午年十月初五 2026年11月14日 星期六，无记录，农历丙午年十月初六 2026年11月15日 星期日，无记录，农历丙午年十月初七\":\n      - gridcell \"2026年11月9日 星期一，无记录，农历丙午年十月初一\":\n        - button \"2026年11月9日 星期一，无记录，农历丙午年十月初一\" [disabled]\n      - gridcell \"2026年11月10日 星期二，无记录，农历丙午年十月初二\":\n        - button \"2026年11月10日 星期二，无记录，农历丙午年十月初二\" [disabled]\n      - gridcell \"2026年11月11日 星期三，无记录，农历丙午年十月初三\":\n        - button \"2026年11月11日 星期三，无记录，农历丙午年十月初三\" [disabled]\n      - gridcell \"2026年11月12日 星期四，无记录，农历丙午年十月初四\":\n        - button \"2026年11月12日 星期四，无记录，农历丙午年十月初四\" [disabled]\n      - gridcell \"2026年11月13日 星期五，无记录，农历丙午年十月初五\":\n        - button \"2026年11月13日 星期五，无记录，农历丙午年十月初五\" [disabled]\n      - gridcell \"2026年11月14日 星期六，无记录，农历丙午年十月初六\":\n        - button \"2026年11月14日 星期六，无记录，农历丙午年十月初六\" [disabled]\n      - gridcell \"2026年11月15日 星期日，无记录，农历丙午年十月初七\":\n        - button \"2026年11月15日 星期日，无记录，农历丙午年十月初七\" [disabled]\n    - row \"2026年11月16日 星期一，无记录，农历丙午年十月初八 2026年11月17日 星期二，无记录，农历丙午年十月初九 2026年11月18日 星期三，无记录，农历丙午年十月初十 2026年11月19日 星期四，无记录，农历丙午年十月十一 2026年11月20日 星期五，无记录，农历丙午年十月十二 2026年11月21日 星期六，无记录，农历丙午年十月十三 2026年11月22日 星期日，无记录，农历丙午年十月十四，小雪\":\n      - gridcell \"2026年11月16日 星期一，无记录，农历丙午年十月初八\":\n        - button \"2026年11月16日 星期一，无记录，农历丙午年十月初八\" [disabled]\n      - gridcell \"2026年11月17日 星期二，无记录，农历丙午年十月初九\":\n        - button \"2026年11月17日 星期二，无记录，农历丙午年十月初九\" [disabled]\n      - gridcell \"2026年11月18日 星期三，无记录，农历丙午年十月初十\":\n        - button \"2026年11月18日 星期三，无记录，农历丙午年十月初十\" [disabled]\n      - gridcell \"2026年11月19日 星期四，无记录，农历丙午年十月十一\":\n        - button \"2026年11月19日 星期四，无记录，农历丙午年十月十一\" [disabled]\n      - gridcell \"2026年11月20日 星期五，无记录，农历丙午年十月十二\":\n        - button \"2026年11月20日 星期五，无记录，农历丙午年十月十二\" [disabled]\n      - gridcell \"2026年11月21日 星期六，无记录，农历丙午年十月十三\":\n        - button \"2026年11月21日 星期六，无记录，农历丙午年十月十三\" [disabled]\n      - gridcell \"2026年11月22日 星期日，无记录，农历丙午年十月十四，小雪\":\n        - button \"2026年11月22日 星期日，无记录，农历丙午年十月十四，小雪\" [disabled]\n    - row \"2026年11月23日 星期一，无记录，农历丙午年十月十五 2026年11月24日 星期二，无记录，农历丙午年十月十六 2026年11月25日 星期三，无记录，农历丙午年十月十七 2026年11月26日 星期四，无记录，农历丙午年十月十八 2026年11月27日 星期五，无记录，农历丙午年十月十九 2026年11月28日 星期六，无记录，农历丙午年十月二十 2026年11月29日 星期日，无记录，农历丙午年十月廿一\":\n      - gridcell \"2026年11月23日 星期一，无记录，农历丙午年十月十五\":\n        - button \"2026年11月23日 星期一，无记录，农历丙午年十月十五\" [disabled]\n      - gridcell \"2026年11月24日 星期二，无记录，农历丙午年十月十六\":\n        - button \"2026年11月24日 星期二，无记录，农历丙午年十月十六\" [disabled]\n      - gridcell \"2026年11月25日 星期三，无记录，农历丙午年十月十七\":\n        - button \"2026年11月25日 星期三，无记录，农历丙午年十月十七\" [disabled]\n      - gridcell \"2026年11月26日 星期四，无记录，农历丙午年十月十八\":\n        - button \"2026年11月26日 星期四，无记录，农历丙午年十月十八\" [disabled]\n      - gridcell \"2026年11月27日 星期五，无记录，农历丙午年十月十九\":\n        - button \"2026年11月27日 星期五，无记录，农历丙午年十月十九\" [disabled]\n      - gridcell \"2026年11月28日 星期六，无记录，农历丙午年十月二十\":\n        - button \"2026年11月28日 星期六，无记录，农历丙午年十月二十\" [disabled]\n      - gridcell \"2026年11月29日 星期日，无记录，农历丙午年十月廿一\":\n        - button \"2026年11月29日 星期日，无记录，农历丙午年十月廿一\" [disabled]\n    - row \"2026年11月30日 星期一，无记录，农历丙午年十月廿二\":\n      - gridcell \"2026年11月30日 星期一，无记录，农历丙午年十月廿二\":\n        - button \"2026年11月30日 星期一，无记录，农历丙午年十月廿二\" [disabled]\n- paragraph:\n  - text: 本月已完成\n  - strong: \"0\"\n  - text: 天复盘\n- button \"回到本月\" [disabled]"
+}

@@ -1,0 +1,1692 @@
+{
+  "bundleSha": "cc228e8a929eada16445d25dcb90610059325676b1a16fd75f3baef4ba4a61bd",
+  "cssSha": "6512780154e587c679c563adb2e07866f54c1caead04985534d482ea1aab94f1",
+  "results": [
+    {
+      "engine": "chrome",
+      "version": "156.0.8078.80",
+      "variant": "normal",
+      "injected": false,
+      "rule": "",
+      "width": 1120,
+      "overflow": false,
+      "tableTag": "TABLE",
+      "first": {
+        "date": "2026-11-01",
+        "expected": 7,
+        "actual": 7,
+        "box": {
+          "x": 526.828125,
+          "y": 617,
+          "width": 66,
+          "height": 51,
+          "cx": 559.828125
+        },
+        "spanRects": [
+          {
+            "x": 554.546875,
+            "y": 624.296875,
+            "width": 10.5625
+          }
+        ]
+      },
+      "misplaced": [],
+      "dateNodes": 30,
+      "unique": 30,
+      "oneNodes": 1,
+      "heads": [
+        {
+          "x": 70.796875,
+          "y": 583,
+          "width": 75.234375,
+          "height": 31,
+          "cx": 108.4140625
+        },
+        {
+          "x": 146.03125,
+          "y": 583,
+          "width": 75.234375,
+          "height": 31,
+          "cx": 183.6484375
+        },
+        {
+          "x": 221.265625,
+          "y": 583,
+          "width": 75.234375,
+          "height": 31,
+          "cx": 258.8828125
+        },
+        {
+          "x": 296.5,
+          "y": 583,
+          "width": 75.25,
+          "height": 31,
+          "cx": 334.125
+        },
+        {
+          "x": 371.75,
+          "y": 583,
+          "width": 75.234375,
+          "height": 31,
+          "cx": 409.3671875
+        },
+        {
+          "x": 446.984375,
+          "y": 583,
+          "width": 75.234375,
+          "height": 31,
+          "cx": 484.6015625
+        },
+        {
+          "x": 522.21875,
+          "y": 583,
+          "width": 75.234375,
+          "height": 31,
+          "cx": 559.8359375
+        }
+      ]
+    },
+    {
+      "engine": "chrome",
+      "version": "156.0.8078.80",
+      "variant": "normal",
+      "injected": false,
+      "rule": "",
+      "width": 821,
+      "overflow": false,
+      "tableTag": "TABLE",
+      "first": {
+        "date": "2026-11-01",
+        "expected": 7,
+        "actual": 7,
+        "box": {
+          "x": 368.078125,
+          "y": 583.0625,
+          "width": 45.875,
+          "height": 51,
+          "cx": 391.015625
+        },
+        "spanRects": [
+          {
+            "x": 385.734375,
+            "y": 590.359375,
+            "width": 10.5625
+          }
+        ]
+      },
+      "misplaced": [],
+      "dateNodes": 30,
+      "unique": 30,
+      "oneNodes": 1,
+      "heads": [
+        {
+          "x": 53.828125,
+          "y": 549.0625,
+          "width": 51.875,
+          "height": 31,
+          "cx": 79.765625
+        },
+        {
+          "x": 105.703125,
+          "y": 549.0625,
+          "width": 51.875,
+          "height": 31,
+          "cx": 131.640625
+        },
+        {
+          "x": 157.578125,
+          "y": 549.0625,
+          "width": 51.875,
+          "height": 31,
+          "cx": 183.515625
+        },
+        {
+          "x": 209.453125,
+          "y": 549.0625,
+          "width": 51.875,
+          "height": 31,
+          "cx": 235.390625
+        },
+        {
+          "x": 261.328125,
+          "y": 549.0625,
+          "width": 51.875,
+          "height": 31,
+          "cx": 287.265625
+        },
+        {
+          "x": 313.203125,
+          "y": 549.0625,
+          "width": 51.875,
+          "height": 31,
+          "cx": 339.140625
+        },
+        {
+          "x": 365.078125,
+          "y": 549.0625,
+          "width": 51.875,
+          "height": 31,
+          "cx": 391.015625
+        }
+      ]
+    },
+    {
+      "engine": "chrome",
+      "version": "156.0.8078.80",
+      "variant": "normal",
+      "injected": false,
+      "rule": "",
+      "width": 390,
+      "overflow": false,
+      "tableTag": "TABLE",
+      "first": {
+        "date": "2026-11-01",
+        "expected": 7,
+        "actual": 7,
+        "box": {
+          "x": 312.703125,
+          "y": 544.15625,
+          "width": 42.28125,
+          "height": 48,
+          "cx": 333.84375
+        },
+        "spanRects": [
+          {
+            "x": 329.296875,
+            "y": 552.171875,
+            "width": 9.078125
+          }
+        ]
+      },
+      "misplaced": [],
+      "dateNodes": 30,
+      "unique": 30,
+      "oneNodes": 1,
+      "heads": [
+        {
+          "x": 33,
+          "y": 511.15625,
+          "width": 46.28125,
+          "height": 31,
+          "cx": 56.140625
+        },
+        {
+          "x": 79.28125,
+          "y": 511.15625,
+          "width": 46.28125,
+          "height": 31,
+          "cx": 102.421875
+        },
+        {
+          "x": 125.5625,
+          "y": 511.15625,
+          "width": 46.28125,
+          "height": 31,
+          "cx": 148.703125
+        },
+        {
+          "x": 171.84375,
+          "y": 511.15625,
+          "width": 46.296875,
+          "height": 31,
+          "cx": 194.9921875
+        },
+        {
+          "x": 218.140625,
+          "y": 511.15625,
+          "width": 46.28125,
+          "height": 31,
+          "cx": 241.28125
+        },
+        {
+          "x": 264.421875,
+          "y": 511.15625,
+          "width": 46.28125,
+          "height": 31,
+          "cx": 287.5625
+        },
+        {
+          "x": 310.703125,
+          "y": 511.15625,
+          "width": 46.28125,
+          "height": 31,
+          "cx": 333.84375
+        }
+      ]
+    },
+    {
+      "engine": "chrome",
+      "version": "156.0.8078.80",
+      "variant": "normal",
+      "injected": false,
+      "rule": "",
+      "width": 320,
+      "overflow": false,
+      "tableTag": "TABLE",
+      "first": {
+        "date": "2026-11-01",
+        "expected": 7,
+        "actual": 7,
+        "box": {
+          "x": 251.703125,
+          "y": 546.359375,
+          "width": 34.28125,
+          "height": 46,
+          "cx": 268.84375
+        },
+        "spanRects": [
+          {
+            "x": 264.609375,
+            "y": 554.3125,
+            "width": 8.453125
+          }
+        ]
+      },
+      "misplaced": [],
+      "dateNodes": 30,
+      "unique": 30,
+      "oneNodes": 1,
+      "heads": [
+        {
+          "x": 33,
+          "y": 513.359375,
+          "width": 36.28125,
+          "height": 31,
+          "cx": 51.140625
+        },
+        {
+          "x": 69.28125,
+          "y": 513.359375,
+          "width": 36.28125,
+          "height": 31,
+          "cx": 87.421875
+        },
+        {
+          "x": 105.5625,
+          "y": 513.359375,
+          "width": 36.28125,
+          "height": 31,
+          "cx": 123.703125
+        },
+        {
+          "x": 141.84375,
+          "y": 513.359375,
+          "width": 36.296875,
+          "height": 31,
+          "cx": 159.9921875
+        },
+        {
+          "x": 178.140625,
+          "y": 513.359375,
+          "width": 36.28125,
+          "height": 31,
+          "cx": 196.28125
+        },
+        {
+          "x": 214.421875,
+          "y": 513.359375,
+          "width": 36.28125,
+          "height": 31,
+          "cx": 232.5625
+        },
+        {
+          "x": 250.703125,
+          "y": 513.359375,
+          "width": 36.28125,
+          "height": 31,
+          "cx": 268.84375
+        }
+      ]
+    },
+    {
+      "engine": "chrome",
+      "version": "156.0.8078.80",
+      "variant": "hiddenCollapse",
+      "injected": true,
+      "rule": ".stage-calendar .rdp-day[data-hidden=\"true\"]{visibility:collapse!important}",
+      "width": 1120,
+      "overflow": false,
+      "tableTag": "TABLE",
+      "first": {
+        "date": "2026-11-01",
+        "expected": 7,
+        "actual": 7,
+        "box": {
+          "x": 526.828125,
+          "y": 617,
+          "width": 66,
+          "height": 51,
+          "cx": 559.828125
+        },
+        "spanRects": [
+          {
+            "x": 554.546875,
+            "y": 624.296875,
+            "width": 10.5625
+          }
+        ]
+      },
+      "misplaced": [],
+      "dateNodes": 30,
+      "unique": 30,
+      "oneNodes": 1,
+      "heads": [
+        {
+          "x": 70.796875,
+          "y": 583,
+          "width": 75.234375,
+          "height": 31,
+          "cx": 108.4140625
+        },
+        {
+          "x": 146.03125,
+          "y": 583,
+          "width": 75.234375,
+          "height": 31,
+          "cx": 183.6484375
+        },
+        {
+          "x": 221.265625,
+          "y": 583,
+          "width": 75.234375,
+          "height": 31,
+          "cx": 258.8828125
+        },
+        {
+          "x": 296.5,
+          "y": 583,
+          "width": 75.25,
+          "height": 31,
+          "cx": 334.125
+        },
+        {
+          "x": 371.75,
+          "y": 583,
+          "width": 75.234375,
+          "height": 31,
+          "cx": 409.3671875
+        },
+        {
+          "x": 446.984375,
+          "y": 583,
+          "width": 75.234375,
+          "height": 31,
+          "cx": 484.6015625
+        },
+        {
+          "x": 522.21875,
+          "y": 583,
+          "width": 75.234375,
+          "height": 31,
+          "cx": 559.8359375
+        }
+      ]
+    },
+    {
+      "engine": "chrome",
+      "version": "156.0.8078.80",
+      "variant": "nativeRows",
+      "injected": true,
+      "rule": ".stage-calendar .rdp-week,.stage-calendar .rdp-weekdays{display:table-row!important}",
+      "width": 1120,
+      "overflow": false,
+      "tableTag": "TABLE",
+      "first": {
+        "date": "2026-11-01",
+        "expected": 7,
+        "actual": 1,
+        "box": {
+          "x": 73.796875,
+          "y": 1151,
+          "width": 19.125,
+          "height": 51,
+          "cx": 83.359375
+        },
+        "spanRects": [
+          {
+            "x": 78.078125,
+            "y": 1158.296875,
+            "width": 10.5625
+          }
+        ]
+      },
+      "misplaced": [
+        {
+          "date": "2026-11-01",
+          "expected": 7,
+          "actual": 1
+        },
+        {
+          "date": "2026-11-03",
+          "expected": 2,
+          "actual": 1
+        },
+        {
+          "date": "2026-11-04",
+          "expected": 3,
+          "actual": 1
+        },
+        {
+          "date": "2026-11-05",
+          "expected": 4,
+          "actual": 1
+        },
+        {
+          "date": "2026-11-06",
+          "expected": 5,
+          "actual": 1
+        },
+        {
+          "date": "2026-11-07",
+          "expected": 6,
+          "actual": 1
+        },
+        {
+          "date": "2026-11-08",
+          "expected": 7,
+          "actual": 1
+        },
+        {
+          "date": "2026-11-10",
+          "expected": 2,
+          "actual": 1
+        },
+        {
+          "date": "2026-11-11",
+          "expected": 3,
+          "actual": 1
+        },
+        {
+          "date": "2026-11-12",
+          "expected": 4,
+          "actual": 1
+        },
+        {
+          "date": "2026-11-13",
+          "expected": 5,
+          "actual": 1
+        },
+        {
+          "date": "2026-11-14",
+          "expected": 6,
+          "actual": 1
+        },
+        {
+          "date": "2026-11-15",
+          "expected": 7,
+          "actual": 1
+        },
+        {
+          "date": "2026-11-17",
+          "expected": 2,
+          "actual": 1
+        },
+        {
+          "date": "2026-11-18",
+          "expected": 3,
+          "actual": 1
+        },
+        {
+          "date": "2026-11-19",
+          "expected": 4,
+          "actual": 1
+        },
+        {
+          "date": "2026-11-20",
+          "expected": 5,
+          "actual": 1
+        },
+        {
+          "date": "2026-11-21",
+          "expected": 6,
+          "actual": 1
+        },
+        {
+          "date": "2026-11-22",
+          "expected": 7,
+          "actual": 1
+        },
+        {
+          "date": "2026-11-24",
+          "expected": 2,
+          "actual": 1
+        },
+        {
+          "date": "2026-11-25",
+          "expected": 3,
+          "actual": 1
+        },
+        {
+          "date": "2026-11-26",
+          "expected": 4,
+          "actual": 1
+        },
+        {
+          "date": "2026-11-27",
+          "expected": 5,
+          "actual": 1
+        },
+        {
+          "date": "2026-11-28",
+          "expected": 6,
+          "actual": 1
+        },
+        {
+          "date": "2026-11-29",
+          "expected": 7,
+          "actual": 1
+        }
+      ],
+      "dateNodes": 30,
+      "unique": 30,
+      "oneNodes": 1,
+      "heads": [
+        {
+          "x": 70.796875,
+          "y": 583,
+          "width": 12.0625,
+          "height": 31,
+          "cx": 76.828125
+        },
+        {
+          "x": 70.796875,
+          "y": 614,
+          "width": 12.0625,
+          "height": 31,
+          "cx": 76.828125
+        },
+        {
+          "x": 70.796875,
+          "y": 645,
+          "width": 12.0625,
+          "height": 31,
+          "cx": 76.828125
+        },
+        {
+          "x": 70.796875,
+          "y": 676,
+          "width": 12.0625,
+          "height": 31,
+          "cx": 76.828125
+        },
+        {
+          "x": 70.796875,
+          "y": 707,
+          "width": 12.0625,
+          "height": 31,
+          "cx": 76.828125
+        },
+        {
+          "x": 70.796875,
+          "y": 738,
+          "width": 12.0625,
+          "height": 31,
+          "cx": 76.828125
+        },
+        {
+          "x": 70.796875,
+          "y": 769,
+          "width": 12.0625,
+          "height": 31,
+          "cx": 76.828125
+        }
+      ]
+    },
+    {
+      "engine": "chrome",
+      "version": "156.0.8078.80",
+      "variant": "nativeCells",
+      "injected": true,
+      "rule": ".stage-calendar .rdp-day,.stage-calendar .rdp-weekday{display:table-cell!important}",
+      "width": 1120,
+      "overflow": false,
+      "tableTag": "TABLE",
+      "first": {
+        "date": "2026-11-01",
+        "expected": 7,
+        "actual": 7,
+        "box": {
+          "x": 526.828125,
+          "y": 617,
+          "width": 66,
+          "height": 51,
+          "cx": 559.828125
+        },
+        "spanRects": [
+          {
+            "x": 554.546875,
+            "y": 624.296875,
+            "width": 10.5625
+          }
+        ]
+      },
+      "misplaced": [],
+      "dateNodes": 30,
+      "unique": 30,
+      "oneNodes": 1,
+      "heads": [
+        {
+          "x": 70.796875,
+          "y": 583,
+          "width": 75.234375,
+          "height": 31,
+          "cx": 108.4140625
+        },
+        {
+          "x": 146.03125,
+          "y": 583,
+          "width": 75.234375,
+          "height": 31,
+          "cx": 183.6484375
+        },
+        {
+          "x": 221.265625,
+          "y": 583,
+          "width": 75.234375,
+          "height": 31,
+          "cx": 258.8828125
+        },
+        {
+          "x": 296.5,
+          "y": 583,
+          "width": 75.25,
+          "height": 31,
+          "cx": 334.125
+        },
+        {
+          "x": 371.75,
+          "y": 583,
+          "width": 75.234375,
+          "height": 31,
+          "cx": 409.3671875
+        },
+        {
+          "x": 446.984375,
+          "y": 583,
+          "width": 75.234375,
+          "height": 31,
+          "cx": 484.6015625
+        },
+        {
+          "x": 522.21875,
+          "y": 583,
+          "width": 75.234375,
+          "height": 31,
+          "cx": 559.8359375
+        }
+      ]
+    },
+    {
+      "engine": "chrome",
+      "version": "156.0.8078.80",
+      "variant": "nativeSections",
+      "injected": true,
+      "rule": ".stage-calendar .rdp-month_grid thead{display:table-header-group!important}.stage-calendar .rdp-month_grid tbody{display:table-row-group!important}",
+      "width": 1120,
+      "overflow": false,
+      "tableTag": "TABLE",
+      "first": {
+        "date": "2026-11-01",
+        "expected": 7,
+        "actual": 7,
+        "box": {
+          "x": 224.546875,
+          "y": 617,
+          "width": 19.125,
+          "height": 51,
+          "cx": 234.109375
+        },
+        "spanRects": [
+          {
+            "x": 228.828125,
+            "y": 624.296875,
+            "width": 10.5625
+          }
+        ]
+      },
+      "misplaced": [],
+      "dateNodes": 30,
+      "unique": 30,
+      "oneNodes": 1,
+      "heads": [
+        {
+          "x": 70.796875,
+          "y": 583,
+          "width": 25.125,
+          "height": 31,
+          "cx": 83.359375
+        },
+        {
+          "x": 95.921875,
+          "y": 583,
+          "width": 25.125,
+          "height": 31,
+          "cx": 108.484375
+        },
+        {
+          "x": 121.046875,
+          "y": 583,
+          "width": 25.125,
+          "height": 31,
+          "cx": 133.609375
+        },
+        {
+          "x": 146.171875,
+          "y": 583,
+          "width": 25.125,
+          "height": 31,
+          "cx": 158.734375
+        },
+        {
+          "x": 171.296875,
+          "y": 583,
+          "width": 25.125,
+          "height": 31,
+          "cx": 183.859375
+        },
+        {
+          "x": 196.421875,
+          "y": 583,
+          "width": 25.125,
+          "height": 31,
+          "cx": 208.984375
+        },
+        {
+          "x": 221.546875,
+          "y": 583,
+          "width": 25.125,
+          "height": 31,
+          "cx": 234.109375
+        }
+      ]
+    },
+    {
+      "engine": "edge",
+      "version": "156.0.4314.58",
+      "variant": "normal",
+      "injected": false,
+      "rule": "",
+      "width": 1120,
+      "overflow": false,
+      "tableTag": "TABLE",
+      "first": {
+        "date": "2026-11-01",
+        "expected": 7,
+        "actual": 7,
+        "box": {
+          "x": 526.828125,
+          "y": 617,
+          "width": 66,
+          "height": 51,
+          "cx": 559.828125
+        },
+        "spanRects": [
+          {
+            "x": 554.546875,
+            "y": 624.296875,
+            "width": 10.5625
+          }
+        ]
+      },
+      "misplaced": [],
+      "dateNodes": 30,
+      "unique": 30,
+      "oneNodes": 1,
+      "heads": [
+        {
+          "x": 70.796875,
+          "y": 583,
+          "width": 75.234375,
+          "height": 31,
+          "cx": 108.4140625
+        },
+        {
+          "x": 146.03125,
+          "y": 583,
+          "width": 75.234375,
+          "height": 31,
+          "cx": 183.6484375
+        },
+        {
+          "x": 221.265625,
+          "y": 583,
+          "width": 75.234375,
+          "height": 31,
+          "cx": 258.8828125
+        },
+        {
+          "x": 296.5,
+          "y": 583,
+          "width": 75.25,
+          "height": 31,
+          "cx": 334.125
+        },
+        {
+          "x": 371.75,
+          "y": 583,
+          "width": 75.234375,
+          "height": 31,
+          "cx": 409.3671875
+        },
+        {
+          "x": 446.984375,
+          "y": 583,
+          "width": 75.234375,
+          "height": 31,
+          "cx": 484.6015625
+        },
+        {
+          "x": 522.21875,
+          "y": 583,
+          "width": 75.234375,
+          "height": 31,
+          "cx": 559.8359375
+        }
+      ]
+    },
+    {
+      "engine": "edge",
+      "version": "156.0.4314.58",
+      "variant": "normal",
+      "injected": false,
+      "rule": "",
+      "width": 821,
+      "overflow": false,
+      "tableTag": "TABLE",
+      "first": {
+        "date": "2026-11-01",
+        "expected": 7,
+        "actual": 7,
+        "box": {
+          "x": 368.078125,
+          "y": 583.0625,
+          "width": 45.875,
+          "height": 51,
+          "cx": 391.015625
+        },
+        "spanRects": [
+          {
+            "x": 385.734375,
+            "y": 590.359375,
+            "width": 10.5625
+          }
+        ]
+      },
+      "misplaced": [],
+      "dateNodes": 30,
+      "unique": 30,
+      "oneNodes": 1,
+      "heads": [
+        {
+          "x": 53.828125,
+          "y": 549.0625,
+          "width": 51.875,
+          "height": 31,
+          "cx": 79.765625
+        },
+        {
+          "x": 105.703125,
+          "y": 549.0625,
+          "width": 51.875,
+          "height": 31,
+          "cx": 131.640625
+        },
+        {
+          "x": 157.578125,
+          "y": 549.0625,
+          "width": 51.875,
+          "height": 31,
+          "cx": 183.515625
+        },
+        {
+          "x": 209.453125,
+          "y": 549.0625,
+          "width": 51.875,
+          "height": 31,
+          "cx": 235.390625
+        },
+        {
+          "x": 261.328125,
+          "y": 549.0625,
+          "width": 51.875,
+          "height": 31,
+          "cx": 287.265625
+        },
+        {
+          "x": 313.203125,
+          "y": 549.0625,
+          "width": 51.875,
+          "height": 31,
+          "cx": 339.140625
+        },
+        {
+          "x": 365.078125,
+          "y": 549.0625,
+          "width": 51.875,
+          "height": 31,
+          "cx": 391.015625
+        }
+      ]
+    },
+    {
+      "engine": "edge",
+      "version": "156.0.4314.58",
+      "variant": "normal",
+      "injected": false,
+      "rule": "",
+      "width": 390,
+      "overflow": false,
+      "tableTag": "TABLE",
+      "first": {
+        "date": "2026-11-01",
+        "expected": 7,
+        "actual": 7,
+        "box": {
+          "x": 312.703125,
+          "y": 544.15625,
+          "width": 42.28125,
+          "height": 48,
+          "cx": 333.84375
+        },
+        "spanRects": [
+          {
+            "x": 329.296875,
+            "y": 552.171875,
+            "width": 9.078125
+          }
+        ]
+      },
+      "misplaced": [],
+      "dateNodes": 30,
+      "unique": 30,
+      "oneNodes": 1,
+      "heads": [
+        {
+          "x": 33,
+          "y": 511.15625,
+          "width": 46.28125,
+          "height": 31,
+          "cx": 56.140625
+        },
+        {
+          "x": 79.28125,
+          "y": 511.15625,
+          "width": 46.28125,
+          "height": 31,
+          "cx": 102.421875
+        },
+        {
+          "x": 125.5625,
+          "y": 511.15625,
+          "width": 46.28125,
+          "height": 31,
+          "cx": 148.703125
+        },
+        {
+          "x": 171.84375,
+          "y": 511.15625,
+          "width": 46.296875,
+          "height": 31,
+          "cx": 194.9921875
+        },
+        {
+          "x": 218.140625,
+          "y": 511.15625,
+          "width": 46.28125,
+          "height": 31,
+          "cx": 241.28125
+        },
+        {
+          "x": 264.421875,
+          "y": 511.15625,
+          "width": 46.28125,
+          "height": 31,
+          "cx": 287.5625
+        },
+        {
+          "x": 310.703125,
+          "y": 511.15625,
+          "width": 46.28125,
+          "height": 31,
+          "cx": 333.84375
+        }
+      ]
+    },
+    {
+      "engine": "edge",
+      "version": "156.0.4314.58",
+      "variant": "normal",
+      "injected": false,
+      "rule": "",
+      "width": 320,
+      "overflow": false,
+      "tableTag": "TABLE",
+      "first": {
+        "date": "2026-11-01",
+        "expected": 7,
+        "actual": 7,
+        "box": {
+          "x": 251.703125,
+          "y": 546.359375,
+          "width": 34.28125,
+          "height": 46,
+          "cx": 268.84375
+        },
+        "spanRects": [
+          {
+            "x": 264.609375,
+            "y": 554.3125,
+            "width": 8.453125
+          }
+        ]
+      },
+      "misplaced": [],
+      "dateNodes": 30,
+      "unique": 30,
+      "oneNodes": 1,
+      "heads": [
+        {
+          "x": 33,
+          "y": 513.359375,
+          "width": 36.28125,
+          "height": 31,
+          "cx": 51.140625
+        },
+        {
+          "x": 69.28125,
+          "y": 513.359375,
+          "width": 36.28125,
+          "height": 31,
+          "cx": 87.421875
+        },
+        {
+          "x": 105.5625,
+          "y": 513.359375,
+          "width": 36.28125,
+          "height": 31,
+          "cx": 123.703125
+        },
+        {
+          "x": 141.84375,
+          "y": 513.359375,
+          "width": 36.296875,
+          "height": 31,
+          "cx": 159.9921875
+        },
+        {
+          "x": 178.140625,
+          "y": 513.359375,
+          "width": 36.28125,
+          "height": 31,
+          "cx": 196.28125
+        },
+        {
+          "x": 214.421875,
+          "y": 513.359375,
+          "width": 36.28125,
+          "height": 31,
+          "cx": 232.5625
+        },
+        {
+          "x": 250.703125,
+          "y": 513.359375,
+          "width": 36.28125,
+          "height": 31,
+          "cx": 268.84375
+        }
+      ]
+    },
+    {
+      "engine": "edge",
+      "version": "156.0.4314.58",
+      "variant": "hiddenNone",
+      "injected": true,
+      "rule": ".stage-calendar .rdp-day[data-hidden=\"true\"]{display:none!important}",
+      "width": 1120,
+      "overflow": false,
+      "tableTag": "TABLE",
+      "first": {
+        "date": "2026-11-01",
+        "expected": 7,
+        "actual": 1,
+        "box": {
+          "x": 75.40625,
+          "y": 617,
+          "width": 66,
+          "height": 51,
+          "cx": 108.40625
+        },
+        "spanRects": [
+          {
+            "x": 103.125,
+            "y": 624.296875,
+            "width": 10.5625
+          }
+        ]
+      },
+      "misplaced": [
+        {
+          "date": "2026-11-01",
+          "expected": 7,
+          "actual": 1
+        }
+      ],
+      "dateNodes": 30,
+      "unique": 30,
+      "oneNodes": 1,
+      "heads": [
+        {
+          "x": 70.796875,
+          "y": 583,
+          "width": 75.234375,
+          "height": 31,
+          "cx": 108.4140625
+        },
+        {
+          "x": 146.03125,
+          "y": 583,
+          "width": 75.234375,
+          "height": 31,
+          "cx": 183.6484375
+        },
+        {
+          "x": 221.265625,
+          "y": 583,
+          "width": 75.234375,
+          "height": 31,
+          "cx": 258.8828125
+        },
+        {
+          "x": 296.5,
+          "y": 583,
+          "width": 75.25,
+          "height": 31,
+          "cx": 334.125
+        },
+        {
+          "x": 371.75,
+          "y": 583,
+          "width": 75.234375,
+          "height": 31,
+          "cx": 409.3671875
+        },
+        {
+          "x": 446.984375,
+          "y": 583,
+          "width": 75.234375,
+          "height": 31,
+          "cx": 484.6015625
+        },
+        {
+          "x": 522.21875,
+          "y": 583,
+          "width": 75.234375,
+          "height": 31,
+          "cx": 559.8359375
+        }
+      ]
+    },
+    {
+      "engine": "edge",
+      "version": "156.0.4314.58",
+      "variant": "hiddenCollapse",
+      "injected": true,
+      "rule": ".stage-calendar .rdp-day[data-hidden=\"true\"]{visibility:collapse!important}",
+      "width": 1120,
+      "overflow": false,
+      "tableTag": "TABLE",
+      "first": {
+        "date": "2026-11-01",
+        "expected": 7,
+        "actual": 7,
+        "box": {
+          "x": 526.828125,
+          "y": 617,
+          "width": 66,
+          "height": 51,
+          "cx": 559.828125
+        },
+        "spanRects": [
+          {
+            "x": 554.546875,
+            "y": 624.296875,
+            "width": 10.5625
+          }
+        ]
+      },
+      "misplaced": [],
+      "dateNodes": 30,
+      "unique": 30,
+      "oneNodes": 1,
+      "heads": [
+        {
+          "x": 70.796875,
+          "y": 583,
+          "width": 75.234375,
+          "height": 31,
+          "cx": 108.4140625
+        },
+        {
+          "x": 146.03125,
+          "y": 583,
+          "width": 75.234375,
+          "height": 31,
+          "cx": 183.6484375
+        },
+        {
+          "x": 221.265625,
+          "y": 583,
+          "width": 75.234375,
+          "height": 31,
+          "cx": 258.8828125
+        },
+        {
+          "x": 296.5,
+          "y": 583,
+          "width": 75.25,
+          "height": 31,
+          "cx": 334.125
+        },
+        {
+          "x": 371.75,
+          "y": 583,
+          "width": 75.234375,
+          "height": 31,
+          "cx": 409.3671875
+        },
+        {
+          "x": 446.984375,
+          "y": 583,
+          "width": 75.234375,
+          "height": 31,
+          "cx": 484.6015625
+        },
+        {
+          "x": 522.21875,
+          "y": 583,
+          "width": 75.234375,
+          "height": 31,
+          "cx": 559.8359375
+        }
+      ]
+    },
+    {
+      "engine": "edge",
+      "version": "156.0.4314.58",
+      "variant": "nativeRows",
+      "injected": true,
+      "rule": ".stage-calendar .rdp-week,.stage-calendar .rdp-weekdays{display:table-row!important}",
+      "width": 1120,
+      "overflow": false,
+      "tableTag": "TABLE",
+      "first": {
+        "date": "2026-11-01",
+        "expected": 7,
+        "actual": 1,
+        "box": {
+          "x": 73.796875,
+          "y": 1151,
+          "width": 19.125,
+          "height": 51,
+          "cx": 83.359375
+        },
+        "spanRects": [
+          {
+            "x": 78.078125,
+            "y": 1158.296875,
+            "width": 10.5625
+          }
+        ]
+      },
+      "misplaced": [
+        {
+          "date": "2026-11-01",
+          "expected": 7,
+          "actual": 1
+        },
+        {
+          "date": "2026-11-03",
+          "expected": 2,
+          "actual": 1
+        },
+        {
+          "date": "2026-11-04",
+          "expected": 3,
+          "actual": 1
+        },
+        {
+          "date": "2026-11-05",
+          "expected": 4,
+          "actual": 1
+        },
+        {
+          "date": "2026-11-06",
+          "expected": 5,
+          "actual": 1
+        },
+        {
+          "date": "2026-11-07",
+          "expected": 6,
+          "actual": 1
+        },
+        {
+          "date": "2026-11-08",
+          "expected": 7,
+          "actual": 1
+        },
+        {
+          "date": "2026-11-10",
+          "expected": 2,
+          "actual": 1
+        },
+        {
+          "date": "2026-11-11",
+          "expected": 3,
+          "actual": 1
+        },
+        {
+          "date": "2026-11-12",
+          "expected": 4,
+          "actual": 1
+        },
+        {
+          "date": "2026-11-13",
+          "expected": 5,
+          "actual": 1
+        },
+        {
+          "date": "2026-11-14",
+          "expected": 6,
+          "actual": 1
+        },
+        {
+          "date": "2026-11-15",
+          "expected": 7,
+          "actual": 1
+        },
+        {
+          "date": "2026-11-17",
+          "expected": 2,
+          "actual": 1
+        },
+        {
+          "date": "2026-11-18",
+          "expected": 3,
+          "actual": 1
+        },
+        {
+          "date": "2026-11-19",
+          "expected": 4,
+          "actual": 1
+        },
+        {
+          "date": "2026-11-20",
+          "expected": 5,
+          "actual": 1
+        },
+        {
+          "date": "2026-11-21",
+          "expected": 6,
+          "actual": 1
+        },
+        {
+          "date": "2026-11-22",
+          "expected": 7,
+          "actual": 1
+        },
+        {
+          "date": "2026-11-24",
+          "expected": 2,
+          "actual": 1
+        },
+        {
+          "date": "2026-11-25",
+          "expected": 3,
+          "actual": 1
+        },
+        {
+          "date": "2026-11-26",
+          "expected": 4,
+          "actual": 1
+        },
+        {
+          "date": "2026-11-27",
+          "expected": 5,
+          "actual": 1
+        },
+        {
+          "date": "2026-11-28",
+          "expected": 6,
+          "actual": 1
+        },
+        {
+          "date": "2026-11-29",
+          "expected": 7,
+          "actual": 1
+        }
+      ],
+      "dateNodes": 30,
+      "unique": 30,
+      "oneNodes": 1,
+      "heads": [
+        {
+          "x": 70.796875,
+          "y": 583,
+          "width": 12.0625,
+          "height": 31,
+          "cx": 76.828125
+        },
+        {
+          "x": 70.796875,
+          "y": 614,
+          "width": 12.0625,
+          "height": 31,
+          "cx": 76.828125
+        },
+        {
+          "x": 70.796875,
+          "y": 645,
+          "width": 12.0625,
+          "height": 31,
+          "cx": 76.828125
+        },
+        {
+          "x": 70.796875,
+          "y": 676,
+          "width": 12.0625,
+          "height": 31,
+          "cx": 76.828125
+        },
+        {
+          "x": 70.796875,
+          "y": 707,
+          "width": 12.0625,
+          "height": 31,
+          "cx": 76.828125
+        },
+        {
+          "x": 70.796875,
+          "y": 738,
+          "width": 12.0625,
+          "height": 31,
+          "cx": 76.828125
+        },
+        {
+          "x": 70.796875,
+          "y": 769,
+          "width": 12.0625,
+          "height": 31,
+          "cx": 76.828125
+        }
+      ]
+    },
+    {
+      "engine": "edge",
+      "version": "156.0.4314.58",
+      "variant": "nativeCells",
+      "injected": true,
+      "rule": ".stage-calendar .rdp-day,.stage-calendar .rdp-weekday{display:table-cell!important}",
+      "width": 1120,
+      "overflow": false,
+      "tableTag": "TABLE",
+      "first": {
+        "date": "2026-11-01",
+        "expected": 7,
+        "actual": 7,
+        "box": {
+          "x": 526.828125,
+          "y": 617,
+          "width": 66,
+          "height": 51,
+          "cx": 559.828125
+        },
+        "spanRects": [
+          {
+            "x": 554.546875,
+            "y": 624.296875,
+            "width": 10.5625
+          }
+        ]
+      },
+      "misplaced": [],
+      "dateNodes": 30,
+      "unique": 30,
+      "oneNodes": 1,
+      "heads": [
+        {
+          "x": 70.796875,
+          "y": 583,
+          "width": 75.234375,
+          "height": 31,
+          "cx": 108.4140625
+        },
+        {
+          "x": 146.03125,
+          "y": 583,
+          "width": 75.234375,
+          "height": 31,
+          "cx": 183.6484375
+        },
+        {
+          "x": 221.265625,
+          "y": 583,
+          "width": 75.234375,
+          "height": 31,
+          "cx": 258.8828125
+        },
+        {
+          "x": 296.5,
+          "y": 583,
+          "width": 75.25,
+          "height": 31,
+          "cx": 334.125
+        },
+        {
+          "x": 371.75,
+          "y": 583,
+          "width": 75.234375,
+          "height": 31,
+          "cx": 409.3671875
+        },
+        {
+          "x": 446.984375,
+          "y": 583,
+          "width": 75.234375,
+          "height": 31,
+          "cx": 484.6015625
+        },
+        {
+          "x": 522.21875,
+          "y": 583,
+          "width": 75.234375,
+          "height": 31,
+          "cx": 559.8359375
+        }
+      ]
+    },
+    {
+      "engine": "edge",
+      "version": "156.0.4314.58",
+      "variant": "nativeSections",
+      "injected": true,
+      "rule": ".stage-calendar .rdp-month_grid thead{display:table-header-group!important}.stage-calendar .rdp-month_grid tbody{display:table-row-group!important}",
+      "width": 1120,
+      "overflow": false,
+      "tableTag": "TABLE",
+      "first": {
+        "date": "2026-11-01",
+        "expected": 7,
+        "actual": 7,
+        "box": {
+          "x": 224.546875,
+          "y": 617,
+          "width": 19.125,
+          "height": 51,
+          "cx": 234.109375
+        },
+        "spanRects": [
+          {
+            "x": 228.828125,
+            "y": 624.296875,
+            "width": 10.5625
+          }
+        ]
+      },
+      "misplaced": [],
+      "dateNodes": 30,
+      "unique": 30,
+      "oneNodes": 1,
+      "heads": [
+        {
+          "x": 70.796875,
+          "y": 583,
+          "width": 25.125,
+          "height": 31,
+          "cx": 83.359375
+        },
+        {
+          "x": 95.921875,
+          "y": 583,
+          "width": 25.125,
+          "height": 31,
+          "cx": 108.484375
+        },
+        {
+          "x": 121.046875,
+          "y": 583,
+          "width": 25.125,
+          "height": 31,
+          "cx": 133.609375
+        },
+        {
+          "x": 146.171875,
+          "y": 583,
+          "width": 25.125,
+          "height": 31,
+          "cx": 158.734375
+        },
+        {
+          "x": 171.296875,
+          "y": 583,
+          "width": 25.125,
+          "height": 31,
+          "cx": 183.859375
+        },
+        {
+          "x": 196.421875,
+          "y": 583,
+          "width": 25.125,
+          "height": 31,
+          "cx": 208.984375
+        },
+        {
+          "x": 221.546875,
+          "y": 583,
+          "width": 25.125,
+          "height": 31,
+          "cx": 234.109375
+        }
+      ]
+    }
+  ]
+}

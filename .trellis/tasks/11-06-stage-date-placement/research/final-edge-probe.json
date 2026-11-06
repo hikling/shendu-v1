@@ -1,0 +1,135 @@
+{
+  "edge": "156.0.4314.58",
+  "results": [
+    {
+      "collapsed": false,
+      "width": 1120,
+      "tableTags": 0,
+      "bad": [],
+      "dates": 30,
+      "rows": [
+        58,
+        58,
+        58,
+        58,
+        58,
+        58
+      ],
+      "one": 1
+    },
+    {
+      "collapsed": false,
+      "width": 821,
+      "tableTags": 0,
+      "bad": [],
+      "dates": 30,
+      "rows": [
+        58,
+        58,
+        58,
+        58,
+        58,
+        58
+      ],
+      "one": 1
+    },
+    {
+      "collapsed": false,
+      "width": 390,
+      "tableTags": 0,
+      "bad": [],
+      "dates": 30,
+      "rows": [
+        54,
+        54,
+        54,
+        54,
+        54,
+        54
+      ],
+      "one": 1
+    },
+    {
+      "collapsed": false,
+      "width": 320,
+      "tableTags": 0,
+      "bad": [],
+      "dates": 30,
+      "rows": [
+        51,
+        51,
+        51,
+        51,
+        51,
+        51
+      ],
+      "one": 1
+    },
+    {
+      "collapsed": true,
+      "width": 1120,
+      "tableTags": 0,
+      "bad": [],
+      "dates": 30,
+      "rows": [
+        58,
+        58,
+        58,
+        58,
+        58,
+        58
+      ],
+      "one": 1
+    },
+    {
+      "collapsed": true,
+      "width": 821,
+      "tableTags": 0,
+      "bad": [],
+      "dates": 30,
+      "rows": [
+        58,
+        58,
+        58,
+        58,
+        58,
+        58
+      ],
+      "one": 1
+    },
+    {
+      "collapsed": true,
+      "width": 390,
+      "tableTags": 0,
+      "bad": [],
+      "dates": 30,
+      "rows": [
+        54,
+        54,
+        54,
+        54,
+        54,
+        54
+      ],
+      "one": 1
+    },
+    {
+      "collapsed": true,
+      "width": 320,
+      "tableTags": 0,
+      "bad": [],
+      "dates": 30,
+      "rows": [
+        51,
+        51,
+        51,
+        51,
+        51,
+        51
+      ],
+      "one": 1
+    }
+  ],
+  "focusRetained": true,
+  "crossYear": true
+}

@@ -53,8 +53,10 @@ test('stage Calendar preserves original record identity and only today or record
   assert.equal(calendar.querySelector('[data-calendar-date="2026-11-22"]').dataset.solarTerm,'小雪');
   assert.match(calendar.querySelector('[data-calendar-date="2026-11-07"]').getAttribute('aria-label'),/农历丙午年九月廿九，立冬/);
   assert.equal(calendar.querySelectorAll('[data-outside="true"] button').length,0,'outside-month cells stay empty, not stray dates');
-  assert.equal(calendar.querySelectorAll('button.rdp-day').length,0,'the table-cell class must remain exclusive to td elements');
-  assert.equal(calendar.querySelectorAll('td.rdp-day').length,42);
+  assert.equal(calendar.querySelectorAll('.rdp-day').length,0,'stage cells do not inherit the shared native-table class');
+  assert.equal(calendar.querySelectorAll('.stage-calendar-cell[role="gridcell"]').length,42);
+  assert.equal(calendar.querySelectorAll('table,thead,tbody,tr,td,th').length,0,'stage uses explicit semantic div slots throughout');
+  assert.equal(calendar.querySelectorAll('[role="columnheader"]').length,7);
   assert.equal(calendar.querySelectorAll('button.rdp-day_button').length,30);
   const stageRoot=calendar.querySelector('.stage-calendar'),legend=stageRoot.querySelector('.stage-calendar-legend'),picker=stageRoot.querySelector('[data-slot="calendar"]');
   assert.equal(stageRoot.firstElementChild.querySelector('.stage-calendar-legend'),legend,'status legend shares the calendar heading rather than a detached lower toolbar');
@@ -78,7 +80,7 @@ test('empty stage months keep one date button per civil day across six-week and 
   const months=[],selections=[];
   ui.showStageCalendar(calendar,{month:'2026-11',today:'2026-11-05',records:[],statusLabels:{verified:'已验证',completed:'已完成',draft:'草稿'},onMonthChange:value=>months.push(value),onSelect:value=>selections.push(value)});
   const inspect=(month,total)=>{
-    const rows=[...calendar.querySelectorAll('tbody .rdp-week')],cells=rows.flatMap(row=>[...row.children]),buttons=[...calendar.querySelectorAll('[data-calendar-date]')];
+    const rows=[...calendar.querySelectorAll('.rdp-weeks .rdp-week')],cells=rows.flatMap(row=>[...row.children]),buttons=[...calendar.querySelectorAll('[data-calendar-date]')];
     assert.equal(rows.length,6);assert.ok(rows.every(row=>row.children.length===7));
     assert.equal(cells.length,42);assert.equal(buttons.length,total);assert.equal(new Set(buttons.map(button=>button.dataset.calendarDate)).size,total);
     assert.ok(buttons.every(button=>button.dataset.calendarDate.startsWith(month)&&button.classList.contains('rdp-day_button')&&!button.classList.contains('rdp-day')));
@@ -93,6 +95,28 @@ test('empty stage months keep one date button per civil day across six-week and 
   calendar.querySelector('[aria-label="上个月"]').click();await settle();inspect('2026-12',31);
   calendar.querySelector('.stage-return-month').click();await settle();inspect('2026-11',30);
   assert.deepEqual(months,['2026-12','2027-01','2026-12','2026-11']);assert.deepEqual(selections,[]);
+});
+
+test('stage cells explicitly retain their civil weekday column for all month starts and leap-year transitions',async()=>{
+  const cases=[['2026-06',30,1],['2026-09',30,2],['2026-04',30,3],['2026-01',31,4],['2026-05',31,5],['2026-08',31,6],['2026-11',30,7],['2026-12',31,2],['2027-01',31,5],['2027-02',28,1],['2028-02',29,2]];
+  for(const [month,total,firstColumn] of cases){
+    ui.showStageCalendar(calendar,{month,today:'2026-11-05',records:[],statusLabels:{verified:'已验证',completed:'已完成',draft:'草稿'},onMonthChange:()=>{},onSelect:()=>assert.fail('layout does not select dates')});
+    await settle();
+    const grid=calendar.querySelector('[role="grid"]'),groups=[...grid.children],rows=[...grid.querySelectorAll('.rdp-week')],cells=rows.flatMap(row=>[...row.children]),buttons=[...grid.querySelectorAll('[data-calendar-date]')];
+    assert.equal(grid.tagName,'DIV');assert.equal(grid.getAttribute('aria-colcount'),'7');assert.equal(grid.getAttribute('aria-label'),`${month.slice(0,4)}年${Number(month.slice(5))}月`);
+    assert.equal(groups.length,2);assert.ok(groups.every(group=>group.getAttribute('role')==='rowgroup'));
+    assert.equal(grid.querySelectorAll('[role="columnheader"]').length,7);assert.equal(rows.length,6);assert.equal(cells.length,42);assert.equal(buttons.length,total);
+    assert.ok(rows.every(row=>row.getAttribute('role')==='row'&&row.children.length===7));
+    assert.ok(cells.every(cell=>cell.tagName==='DIV'&&cell.getAttribute('role')==='gridcell'&&cell.classList.contains('stage-calendar-cell')));
+    assert.equal(grid.querySelectorAll('table,thead,tbody,tr,td,th,[scope],[modifiers],[week]').length,0,'private slot props never leak invalid table/business attributes');
+    buttons.forEach((button,index)=>{
+      assert.equal(button.dataset.calendarDate,`${month}-${String(index+1).padStart(2,'0')}`);
+      assert.equal(button.parentElement.style.gridColumnStart,String((firstColumn+index-1)%7+1),`${button.dataset.calendarDate} occupies its actual weekday independently of empty cells`);
+      assert.equal(button.parentElement.getAttribute('aria-colindex'),String((firstColumn+index-1)%7+1),`${button.dataset.calendarDate} exposes its real weekday column even with leading hidden cells`);
+    });
+    assert.ok(cells.filter(cell=>cell.dataset.hidden==='true').every(cell=>cell.textContent===''&&!cell.querySelector('button')),'outside-month cells reserve semantics without content');
+    ui.disposeUi(calendar);calendar.replaceChildren();
+  }
 });
 
 test('controlled calendar month browsing preserves navigation nodes and keyboard focus',async()=>{

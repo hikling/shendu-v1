@@ -73,6 +73,17 @@ function DateCalendar({value,month,minimum,locked,today,onSelect,onMonthChange,c
 }
 export function showVerificationCalendar(container,options){mountComponent(container,<DateCalendar key={`${options.value}|${options.month}|${options.locked}`} {...options}/>)}
 
+// Stage-only slots keep DayPicker's state and keyboard ownership without native
+// table layout. Civil weekday placement does not depend on blank outside cells.
+function StageMonthGrid(props){return <div {...props} role="grid" aria-colcount={7}/>}
+function StageWeekdays(props){return <div className="stage-weekday-group" role="rowgroup"><div {...props} role="row"/></div>}
+function StageWeekday({scope,...props}){return <div {...props} role="columnheader"/>}
+function StageWeeks(props){return <div {...props} role="rowgroup"/>}
+function StageWeek({week,...props}){return <div {...props} role="row"/>}
+function StageDay({day,modifiers,scope,style,...props}){
+  const column=(day.date.getDay()+6)%7+1;
+  return <div {...props} role="gridcell" aria-colindex={column} style={{...style,gridColumnStart:column}}/>;
+}
 function StageCaptionLabel({children,className,...props}){
   const match=/^(\d{4}) 年 (\d{1,2}) 月$/.exec(String(children));
   return <span {...props} className={`${className||''} stage-month-caption`}>{match?<><span className="stage-month-number" aria-hidden>{match[2].padStart(2,'0')}<small>月</small></span><span className="sr-only">{children}</span></>:children}</span>;
@@ -81,14 +92,14 @@ function StageCalendar({month,today,records,statusLabels,onMonthChange,onSelect}
   const [visible,setVisible]=React.useState(monthDate(month));
   const displayed=calendarValue(visible).slice(0,7),almanac=React.useMemo(()=>lunarMonthLabels(displayed),[displayed]);
   const byDate=new Map();for(const record of records)if(!byDate.has(record.period))byDate.set(record.period,record);
-  const Day=React.useCallback(function StageDay(props){
+  const Day=React.useCallback(function StageDayButton(props){
     const value=calendarValue(props.day.date),record=byDate.get(value),status=record?.status||'',mark={verified:'✓',completed:'●',draft:'—'}[status]||'',lunar=almanac.get(value);
     return <CalendarDayButton {...props} className={`stage-day ${status?'stage-day-'+status:''} ${value===today?'stage-day-today':''} ${lunar?.solarTerm?'stage-day-term':''}`} data-calendar-date={value} data-calendar-record={record?.id} data-solar-term={lunar?.solarTerm||undefined} aria-label={`${props.day.date.getFullYear()}年${props.day.date.getMonth()+1}月${props.day.date.getDate()}日 星期${'日一二三四五六'[props.day.date.getDay()]}，${value===today?'今天，':''}${record?statusLabels[status]:'无记录'}${lunar?`，${lunar.fullLabel}`:''}`}><span className="stage-day-number" aria-hidden>{props.day.date.getDate()}</span><span className="stage-day-lunar" aria-hidden>{lunar?.label}</span>{mark&&<span className="stage-day-mark" aria-hidden>{mark}</span>}</CalendarDayButton>;
   },[records,statusLabels,today,almanac]);
   const finished=records.filter(record=>record.period.startsWith(displayed)&&record.status!=='draft').length;
   return <div className="sd-surface sd-calendar stage-calendar">
     <header className="calendar-paper-heading"><p className="workspace-kicker">一日一页 · 慢慢积累</p><p className="calendar-paper-note">有记录的日子，随时翻开。</p><h2 id="calendar-paper-title">每日足迹</h2><div className="stage-calendar-legend" aria-label="日历状态说明"><span><i className="stage-legend-today" aria-hidden/>今天</span><span><i className="stage-legend-draft" aria-hidden>—</i>草稿</span><span><i className="stage-legend-completed" aria-hidden>●</i>已完成</span><span><i className="stage-legend-verified" aria-hidden>✓</i>已验证</span></div></header>
-    <div className="stage-calendar-body"><p className="stage-calendar-year" aria-label={`${visible.getFullYear()}年`}><span>{visible.getFullYear()}</span><small>年</small></p><Calendar mode="single" month={visible} onMonthChange={date=>{setVisible(date);onMonthChange(calendarValue(date).slice(0,7))}} onSelect={date=>{if(date)onSelect(calendarValue(date),byDate.get(calendarValue(date)))}} today={calendarDate(today)} locale={zhCN} weekStartsOn={1} fixedWeeks showOutsideDays={false} disabled={date=>calendarValue(date)!==today&&!byDate.has(calendarValue(date))} components={{DayButton:Day,CaptionLabel:StageCaptionLabel}} labels={calendarLabels} formatters={{formatCaption:date=>`${date.getFullYear()} 年 ${date.getMonth()+1} 月`,formatWeekdayName:date=>'一二三四五六日'[(date.getDay()+6)%7]}}/></div>
+    <div className="stage-calendar-body"><p className="stage-calendar-year" aria-label={`${visible.getFullYear()}年`}><span>{visible.getFullYear()}</span><small>年</small></p><Calendar mode="single" month={visible} onMonthChange={date=>{setVisible(date);onMonthChange(calendarValue(date).slice(0,7))}} onSelect={date=>{if(date)onSelect(calendarValue(date),byDate.get(calendarValue(date)))}} today={calendarDate(today)} locale={zhCN} weekStartsOn={1} fixedWeeks showOutsideDays={false} disabled={date=>calendarValue(date)!==today&&!byDate.has(calendarValue(date))} classNames={{day:'stage-calendar-cell group/day'}} components={{MonthGrid:StageMonthGrid,Weekdays:StageWeekdays,Weekday:StageWeekday,Weeks:StageWeeks,Week:StageWeek,Day:StageDay,DayButton:Day,CaptionLabel:StageCaptionLabel}} labels={calendarLabels} formatters={{formatCaption:date=>`${date.getFullYear()} 年 ${date.getMonth()+1} 月`,formatWeekdayName:date=>'一二三四五六日'[(date.getDay()+6)%7]}}/></div>
     <div className="stage-calendar-foot"><p>本月已完成 <strong>{finished}</strong> 天复盘</p><Button type="button" variant="ghost" className="stage-return-month" disabled={displayed===today.slice(0,7)} onClick={()=>{const date=monthDate(today.slice(0,7));setVisible(date);onMonthChange(today.slice(0,7))}}>回到本月 <span aria-hidden>↗</span></Button></div>
   </div>;
 }

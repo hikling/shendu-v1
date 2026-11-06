@@ -1,0 +1,55 @@
+{
+  "method": "Fresh isolated Chrome profile partition.default_zoom_level; viewport:null, window-size1120x1100. No real browser profile used.",
+  "results": [
+    {
+      "zoom": 0.8,
+      "innerWidth": 1380,
+      "devicePixelRatio": 0.800000011920929,
+      "oneCount": 1,
+      "sundayError": 0.009765625,
+      "overflow": false,
+      "calendarWidth": 600,
+      "cssZoom": "1"
+    },
+    {
+      "zoom": 1,
+      "innerWidth": 1104,
+      "devicePixelRatio": 1,
+      "oneCount": 1,
+      "sundayError": 0,
+      "overflow": false,
+      "calendarWidth": 518.21875,
+      "cssZoom": "1"
+    },
+    {
+      "zoom": 1.1,
+      "innerWidth": 1004,
+      "devicePixelRatio": 1.100000023841858,
+      "oneCount": 1,
+      "sundayError": 0.0071010589599609375,
+      "overflow": false,
+      "calendarWidth": 445.6249694824219,
+      "cssZoom": "1"
+    },
+    {
+      "zoom": 1.25,
+      "innerWidth": 883,
+      "devicePixelRatio": 1.25,
+      "oneCount": 1,
+      "sundayError": 0,
+      "overflow": false,
+      "calendarWidth": 394.9624938964844,
+      "cssZoom": "1"
+    },
+    {
+      "zoom": 1.5,
+      "innerWidth": 736,
+      "devicePixelRatio": 1.5,
+      "oneCount": 1,
+      "sundayError": 0.000019073486328125,
+      "overflow": false,
+      "calendarWidth": 600,
+      "cssZoom": "1"
+    }
+  ]
+}
