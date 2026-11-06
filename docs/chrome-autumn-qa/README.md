@@ -38,4 +38,9 @@ $env:EDGE_EXECUTABLE_PATH='C:/Program Files (x86)/Microsoft/Edge/Application/mse
 node docs/chrome-autumn-qa/check.cjs http://127.0.0.1:3192
 ```
 
-UI 缓存修订为 `1.0.0-stagecivil1`。main 同步、Linux CI 和线上资源版本属于不同检查，以下在推送后补充准确结果。
+## Main 与运行版本
+
+- 修复提交：`d583e789f32da4d1fc27d4fa088c0b739ad9bb3a`，已推送 `origin/main`。
+- [该准确 SHA 的 Linux CI](https://github.com/hikling/shendu-v1/actions/runs/42175958741) 已完成且 success，含脚本／153测试、Docker构建与容器启动／静态资源 smoke。
+- UI 缓存修订为 `1.0.0-stagecivil1`。推送后读取 `https://cokee.cc.cd/` 的公开 HTML，仍为 `stagegrid2`；该线上实例尚需部署新的构建。本任务没有操作生产服务器或用户浏览器，不将 main／CI 成功等同于线上已升级。
+- 验收结束已关闭隔离夹具；3192、3193均返回 ECONNREFUSED。
