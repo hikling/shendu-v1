@@ -6,4 +6,8 @@ Only updater confirmation, isolated test files and docs/spec/task artifacts chan
 
 An independent read-only review found no blocking POSIX/choice/reexec/cleanup/backup-order/doc issues. Test worker added20 scenarios to the existing59: real canonical Linux PTY y/n/Enter, spaces/tab/CR, mixed case, invalid-then-valid, EOF, snapshot failure; explicit env yes/invalid/failure and ordinary noninteractive default. Driver timeout/errors fail the harness. No production data is involved. Local POSIX shell syntax, Python AST, npm run check, task context and diff whitespace checks passed. Windows host lacks Linux PTY execution; native Linux CI remains required before completion.
 
-Native CI, published source-specific archives and anonymous deployment smoke: pending push.
+## Remote verification
+
+Work commit `6f4983cd9ce5ba227e00c2fd7fa3d81d590e65ce` fast-forwarded/pushed to main. [CI42247481948](https://github.com/hikling/shendu-v1/actions/runs/42247481948) succeeded in all five jobs: native amd64/arm64 verify, publication, and both anonymous download-smoke jobs. Both native runners passed the full79-scenario isolated shell suite, including actual PTY self-copy/reexec/read behavior, and179 application tests. Docker/Compose health/UI and encrypted snapshot smoke passed on downloaded public images.
+
+Application tree `9eeb45427c0ab012bc1bcd6cc546cde82eb22de9` has a public non-draft [release](https://github.com/hikling/shendu-v1/releases/tag/deploy-9eeb45427c0ab012bc1bcd6cc546cde82eb22de9). Anonymous metadata confirms amd64 archive103,985,680bytes and arm64 archive102,801,968bytes, plus both SHA-256 files. Task/journal-only closure retains that source tree. Production server was not accessed or changed; the user must rerun the documented latest updater to adopt the fix. No guarantee about the screenshot's unobservable exact character or deployment network duration.
