@@ -1285,3 +1285,25 @@ Moved six opening quotes higher; centered one inert illustration against active 
 ### Status
 
 [OK] **Completed**
+
+
+## Session 56: Fix updater terminal backup confirmation
+<!-- trellis-session: v=2 fp=cd31eb7b63a44eb2 -->
+
+**Date**: 2026-11-06
+**Task**: Fix updater terminal backup confirmation
+**Branch**: `main`
+
+### Summary
+
+Fixed exact-match rejection of terminal choice whitespace/CR; invalid interactive input reprompts and EOF/invalid env abort before fetch. Snapshot ordering, failure abort, secrets/password bytes and existing noninteractive defaults preserved. README now supplies explicit backup=y with latest updater. Added20 scenarios including real Linux PTY/self-reexec for total79; both native CI,179 app tests, public image and anonymous Compose health/UI/encrypted snapshot smoke passed in run42247481948. New application tree9eeb45427c0ab012bc1bcd6cc546cde82eb22de9 is publicly available for both architectures. Screenshot exact hidden bytes remain unknown; production server untouched.
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `6f4983c` | fix: tolerate updater confirmation whitespace and retry terminal input |
+
+### Status
+
+[OK] **Completed**
