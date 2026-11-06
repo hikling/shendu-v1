@@ -1215,3 +1215,26 @@ Unified bootstrap, domain configuration, dependency reuse, build/start and UI sm
 ### Status
 
 [OK] **Completed**
+
+
+## Session 53: Security, backup and one-command deployment audit
+<!-- trellis-session: v=2 fp=7f5ed9c6973c85d0 -->
+
+**Date**: 2026-11-06
+**Task**: Security, backup and one-command deployment audit
+**Branch**: `main`
+
+### Summary
+
+Reviewed all production source groups with backup, deploy, frontend and independent integration reviewers. Fixed forwarded-IP rate bypass, remote response errors/concurrency, protected CLI outputs, snapshot password/publication hazards, stale/duplicate auth/backup/verification UI operations; removed verified dead code and preserved UI/legacy backup formats. Local and exact-work-SHA Ubuntu CI passed 179 tests, 46 isolated installer/update/snapshot scenarios, resolved Compose, real image and health/static smoke. Audit report and specifications updated; main synchronization authorized.
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `1c1a286` | Harden backups, deployment and asynchronous write boundaries |
+| `acd37f3` | Record successful Linux security and backup audit verification |
+
+### Status
+
+[OK] **Completed**
