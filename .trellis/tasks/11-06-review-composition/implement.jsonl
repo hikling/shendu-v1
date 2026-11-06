@@ -1,0 +1,2 @@
+{"file": ".trellis/spec/frontend/ui-quality.md", "reason": "Preserve review layout and category identity"}
+{"file": ".trellis/spec/frontend/component-islands.md", "reason": "Native wrapper without mounted input ownership changes"}

@@ -49,7 +49,19 @@ curl -fsSL https://raw.githubusercontent.com/hikling/shendu-v1/main/install.sh -
 
 完成后打开显示的 HTTPS 地址。第一个注册账户会成为超级管理员，随后自动关闭公开注册。
 
-安装中断可重跑同一命令，已有配置、密钥和数据不会被覆盖。**已运行的站点升级使用下面的更新命令**；旧 `Shendu` 或 ZIP 部署先看[迁移指南](UPGRADING.md)。自定义目录、配置与排错见[完整部署指南](docs/deployment.md)。
+**首次安装**用上面的命令；**旧版安装卡在构建或需要重新搭建**用下面的重试步骤；**已经运行的站点**用[更新命令](#更新现有-shendu-v1-部署)。旧 `Shendu` 或 ZIP 部署先看[迁移指南](UPGRADING.md)。自定义目录与排错见[完整部署指南](docs/deployment.md)。
+
+## 旧版安装卡住或中断后重试
+
+适用于本仓库无本地代码修改的 `main` 分支克隆。如果终端还停在 `npm ci`、Vite 或 Docker `build`，先按 **Ctrl+C** 停止旧流程，再执行以下命令（自定义安装目录请替换路径）：
+
+```sh
+cd /opt/shendu-v1 && git -c core.fileMode=false pull --ff-only && sh shendu/scripts/install.sh
+```
+
+这会先更新安装脚本，再采用预构建镜像。仅重新下载一键安装入口不会更新已经存在的代码目录，可能仍运行旧构建脚本。当前版本安装中断后，也可用这条命令重试；已有配置、密钥、数据和备份会保留。不要删除 `.env`、`data/` 或 Docker 卷来重新搭建。若 Git 提示本地代码修改或分支冲突，先保留并处理修改，不要强制重置。
+
+正常情况下终端应进入预构建镜像的下载、校验、加载和健康检查，不应再出现本机 `npm ci` / Vite 编译。首次 Docker 安装和镜像下载仍受网络影响；提示镜像尚未发布时，等待 [Actions](https://github.com/hikling/shendu-v1/actions/workflows/verify.yml) 成功后重试。
 
 ## 本地运行
 
