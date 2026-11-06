@@ -1262,3 +1262,26 @@ Diagnosed server-local npm288s/Vite159s and image download work from screenshot.
 ### Status
 
 [OK] **Completed**
+
+
+## Session 55: Six-review composition and fast reinstall documentation
+<!-- trellis-session: v=2 fp=6a99ec9e9ea32a95 -->
+
+**Date**: 2026-11-06
+**Task**: Six-review composition and fast reinstall documentation
+**Branch**: `main`
+
+### Summary
+
+Moved six opening quotes higher; centered one inert illustration against active content while retaining alternating sides and fixed reading boundaries. Rendered 37 geometry samples across desktop/phone; input retention, save/reload and locked controls checked. Build/check/179 tests and health/static smoke passed. README now distinguishes fresh install, old interrupted-build fast-forward retry and running-site updater. Both native CI and anonymous public image Compose/snapshot smoke passed in run 42244851556; source tree b33e536d6f961419ddae6168df2a5ae06c3dd7ae has public amd64/arm64 archives. No production data accessed.
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `bcfb628` | fix: align review artwork with active content and clarify install recovery |
+| `7e5f12c` | docs: record review alignment contract and verified deployment assets |
+
+### Status
+
+[OK] **Completed**
