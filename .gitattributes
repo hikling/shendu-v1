@@ -1,2 +1,5 @@
 # Encrypted backup fixtures are byte-for-byte inputs to authentication tests.
 shendu/tests/fixtures/personal/*.shendu -text
+
+# Deployment scripts must also run from Windows checkouts without CRLF errors.
+*.sh text eol=lf

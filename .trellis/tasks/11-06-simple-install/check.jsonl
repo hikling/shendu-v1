@@ -1,0 +1,2 @@
+{"file": ".trellis/spec/backend/testing-and-operations.md", "reason": "Verify install and Docker frontend smoke"}
+{"file": ".trellis/spec/backend/runtime-and-data.md", "reason": "Reject regeneration of old data keys"}

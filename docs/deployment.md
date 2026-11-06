@@ -1,6 +1,6 @@
 # 部署与维护
 
-本页说明慎独的服务器配置、更新、备份和故障处理。全新 Debian 安装可先按 [README 的三步部署](../README.md#debian-1213-服务器部署)操作；从旧 `Shendu` 仓库或 ZIP 目录迁移，请先读[迁移与回退](../UPGRADING.md)。
+本页说明慎独的服务器配置、更新、备份和故障处理。全新 Debian 安装可先按 [README 的一条命令部署](../README.md#debian-1213-服务器部署)操作；从旧 `Shendu` 仓库或 ZIP 目录迁移，请先读[迁移与回退](../UPGRADING.md)。
 
 ## 部署前准备
 
@@ -11,9 +11,37 @@
 - 确认没有其他服务占用 80、443，安装与更新命令在 root shell 中执行；普通账户先运行 `su -`。
 - 下文默认仓库位于 `/opt/shendu-v1`，应用目录为 `/opt/shendu-v1/shendu`。自定义路径时同步调整命令。
 
+## 自动安装
+
+在 root shell 执行：
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/hikling/shendu-v1/main/install.sh -o shendu-install.sh && sh shendu-install.sh
+```
+
+只需按提示填写域名。脚本依次下载仓库、补齐依赖、生成 `.env`、构建镜像、等待容器健康、检查实际 JS/CSS，再显示访问地址。下载失败时不会执行脚本。若服务器缺少 `curl`，先运行 `apt-get update && apt-get install -y curl`。
+
+也可直接提供域名与安装路径，省去提问：
+
+```sh
+sh shendu-install.sh review.example.com /srv/shendu-v1
+```
+
+省略路径时默认 `/opt/shendu-v1`。已经手动克隆了本仓库，也可以直接运行应用目录中的安装器：
+
+```sh
+sh /opt/shendu-v1/shendu/scripts/install.sh review.example.com
+```
+
+安装器会复用可用的 Docker Engine 和 Compose v2；没有 Docker 时使用官方 Debian 软件源安装。已存在但不完整的 Docker 安装会给出修复提示，不会擅自卸载现有软件。启动前会验证配置，构建失败不会主动停止正在运行的旧容器。
+
+安装中断后可重跑原命令：已有 `.env` 保持原样，原密钥、数据、备份和 Caddy 卷保留；若目录中有数据却缺少 `.env`，会停止并要求恢复配置。域名参数与已有配置冲突时也会停止。不要通过删除配置或数据“重新安装”。
+
+安装入口不会拉取已有目录的新版本。正常升级使用[更新命令](#更新与检查)；已有目录必须是本仓库无本地代码改动的 `main` 分支克隆，ZIP 目录或其他同名文件夹不会被覆盖。
+
 ## 环境配置
 
-首次执行 `sh scripts/install.sh` 会从 `.env.example` 创建权限为 `600` 的 `.env`，随机生成主密钥，并创建 `data/`、`tmp/` 和 `backups/`。已有 `.env` 不会被覆盖。
+安装脚本首次从 `.env.example` 创建权限为 `600` 的 `.env`，写入所填域名与随机主密钥，并创建 `data/`、`tmp/` 和 `backups/`。通常无需手动编辑。已有 `.env` 不会被覆盖。
 
 | 变量 | 自带 Compose 的设置 | 作用 |
 | --- | --- | --- |
@@ -25,7 +53,7 @@
 | `SHENDU_DATA_DIR` | `/app/data` | 容器内数据库目录，挂载到宿主机 `./data` |
 | `SHENDU_TMP_DIR` | `/app/tmp` | 容器内临时文件目录，挂载到宿主机 `./tmp` |
 
-域名设置后，可在应用目录检查配置：
+自动安装已完成配置校验和启动。只有手动维护配置后，才需要在应用目录重新检查并启动：
 
 ```sh
 cd /opt/shendu-v1/shendu
@@ -47,9 +75,10 @@ docker compose ps
 
 ## 首次启动与检查
 
-在应用目录执行：
+安装器会检查容器内应用健康与前端资源；公网 HTTPS 还取决于 DNS、防火墙和 Caddy 证书申请。需要核对外网访问时执行：
 
 ```sh
+cd /opt/shendu-v1/shendu
 docker compose ps
 shendu_domain=$(sed -n 's/^SHENDU_DOMAIN=//p' .env)
 curl -fsS "https://$shendu_domain/healthz"

@@ -1,0 +1,2 @@
+{"file": ".trellis/spec/backend/testing-and-operations.md", "reason": "Build, runtime, secrets and installation contracts"}
+{"file": ".trellis/spec/backend/runtime-and-data.md", "reason": "Preserve existing encrypted data and original keys"}

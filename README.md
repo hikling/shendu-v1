@@ -12,8 +12,6 @@
 
 </div>
 
-![慎独概览与六类复盘入口](docs/workspace-readme-qa/overview-desktop.png)
-
 ## 从记录，到行动，再到验证
 
 六种时间尺度，共同组成一份持续积累的个人成长记录。
@@ -37,42 +35,19 @@
 
 ## Debian 12/13 服务器部署
 
-推荐使用仓库自带的 **Docker Compose + Caddy**。准备指向服务器的域名，开放 TCP 80、443；如需 HTTP/3，再开放 UDP 443。以下在 **root shell** 执行，已有站点先看[更新说明](#更新现有-shendu-v1-部署)或[迁移指南](UPGRADING.md)。
-
-**1. 下载项目并安装 Docker**
+**一条命令，填写域名后自动部署。** 准备 Debian 12/13 服务器，将域名指向服务器，开放 TCP 80、443；HTTP/3 可另开 UDP 443。登录服务器后进入 **root shell**（普通账户先执行 `su -`），运行：
 
 ```sh
-apt-get update && apt-get install -y git
-git clone https://github.com/hikling/shendu-v1.git /opt/shendu-v1
-cd /opt/shendu-v1/shendu
-sh scripts/install.sh
+curl -fsSL https://raw.githubusercontent.com/hikling/shendu-v1/main/install.sh -o shendu-install.sh && sh shendu-install.sh
 ```
 
-安装脚本会从 Docker 官方 Debian 源安装 Engine 和 Compose，并首次生成 `.env` 与随机加密主密钥；已有 `.env` 不会被覆盖。
+按提示输入域名，例如 `review.example.com`，不带 `https://`。脚本自动下载到 `/opt/shendu-v1`、安装缺少的依赖、生成密钥、构建并启动 **Docker Compose + Caddy**，最后检查应用与前端资源并显示访问地址。已有 Docker 和配置会被沿用，宿主机无需安装 Node.js，也无需手动修改 `.env`。
 
-**2. 设置域名并启动**
+如果提示找不到 `curl`，先执行一次 `apt-get update && apt-get install -y curl`，再运行上面的命令。首次构建需要等待；HTTPS 证书由 Caddy 自动申请，取决于域名解析和端口连通。
 
-把第一行改成你的实际域名，不带 `https://`：
+完成后打开显示的 HTTPS 地址。第一个注册账户会成为超级管理员，随后自动关闭公开注册。
 
-```sh
-shendu_domain=review.example.com
-sed -i "s/^SHENDU_DOMAIN=.*/SHENDU_DOMAIN=$shendu_domain/" .env
-chmod 600 .env
-systemctl enable --now docker
-docker compose config >/dev/null
-docker compose up -d --build
-```
-
-**3. 检查并打开网站**
-
-```sh
-docker compose ps
-curl -fsS "https://$shendu_domain/healthz"
-```
-
-返回含 `"ok":true` 的 JSON 后，打开你的 HTTPS 域名。第一个注册账户会成为超级管理员，随后自动关闭公开注册。Docker 会自动构建前端，服务器宿主机无需安装 Node.js。
-
-遇到问题，查看[完整部署、配置与故障处理](docs/deployment.md)。
+安装中断可重跑同一命令，已有配置、密钥和数据不会被覆盖。**已运行的站点升级使用下面的更新命令**；旧 `Shendu` 或 ZIP 部署先看[迁移指南](UPGRADING.md)。自定义目录、配置与排错见[完整部署指南](docs/deployment.md)。
 
 ## 本地运行
 

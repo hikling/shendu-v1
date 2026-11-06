@@ -13,6 +13,12 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
+      - name: Verify isolated installation scenarios
+        run: |
+          sh -n install.sh
+          sh -n shendu/scripts/install.sh
+          sh -n shendu/tests/install-script.test.sh
+          sh shendu/tests/install-script.test.sh
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
