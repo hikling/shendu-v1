@@ -8,7 +8,7 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 49
+- **Total Sessions**: 50
 - **Last Active**: 2026-11-06
 <!-- @@@/auto:current-status -->
 
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~1149 | Active |
+| `journal-1.md` | ~1171 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -29,6 +29,7 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 50 | 2026-11-06 | README and workspace illustration polish | `df85d2c` | `main` |
 | 49 | 2026-11-06 | Chrome autumn civil calendar fix | `d583e78`, `2ff3d73` | `main` |
 | 48 | 2026-11-06 | 阶段日历显式星期列与渲染验收 | `4c745f1`, `bc85618` | `main` |
 | 47 | 2026-11-06 | Stage calendar seven-column layout and aligned workspace | `068a70c`, `8a4c42c` | `main` |

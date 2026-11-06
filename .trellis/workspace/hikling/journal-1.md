@@ -1147,3 +1147,25 @@ Fixed stage-only date arithmetic under inconsistent timezone APIs. npm test153/1
 ### Status
 
 [OK] **Completed**
+
+
+## Session 50: README and workspace illustration polish
+<!-- trellis-session: v=2 fp=bc91c3aafddf0b70 -->
+
+**Date**: 2026-11-06
+**Task**: README and workspace illustration polish
+**Branch**: `main`
+
+### Summary
+
+Reorganized README with verified deploy guide; enlarged scoped workspace art and copy; aligned account columns with long-name wrapping; permanently expanded backup ownership text. Chrome 40 states across eight widths, 153 tests, check/build/smoke, 37 links and exact-work-commit Linux Docker CI passed. Synced main and archived task; synthetic fixture stopped.
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `df85d2c` | Polish workspace artwork, account alignment and project README |
+
+### Status
+
+[OK] **Completed**
