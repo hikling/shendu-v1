@@ -1330,3 +1330,25 @@ User confirmed source/docs only. Added receiving-developer handbook, README entr
 ### Status
 
 [OK] **Completed**
+
+
+## Session 58: Compact GitHub-linked handover
+<!-- trellis-session: v=2 fp=5f05a7ce149d9be2 -->
+
+**Date**: 2026-11-07
+**Task**: Compact GitHub-linked handover
+**Branch**: `main`
+
+### Summary
+
+User corrected delivery scope to GitHub links. Replaced full-source/archive enumeration with fixed generated README, VERSION and manifest under20KiB; actual candidate1756bytes. All13 packaging regressions and independent review passed; README, online handover, ops spec and CI updated. Application tree unchanged. Synchronize final main, verify pinned public links/CI and replace only obsolete large generated delivery with final tiny bundle.
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `08affbb` | fix: make project handover a tiny GitHub link bundle |
+
+### Status
+
+[OK] **Completed**

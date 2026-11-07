@@ -8,7 +8,7 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 57
+- **Total Sessions**: 58
 - **Last Active**: 2026-11-07
 <!-- @@@/auto:current-status -->
 
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~1332 | Active |
+| `journal-1.md` | ~1354 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -29,6 +29,7 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 58 | 2026-11-07 | Compact GitHub-linked handover | `08affbb` | `main` |
 | 57 | 2026-11-07 | Source-only handover and verified archive | `fc78770`, `52f8ec4` | `main` |
 | 56 | 2026-11-06 | Fix updater terminal backup confirmation | `6f4983c` | `main` |
 | 55 | 2026-11-06 | Six-review composition and fast reinstall documentation | `bcfb628`, `7e5f12c` | `main` |
