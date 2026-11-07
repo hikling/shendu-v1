@@ -1,0 +1,5 @@
+# Source-only handover
+
+The user explicitly confirmed source and documentation only. Deliver a transfer-ready ZIP and checksum with a clear receiving-developer entry explaining local development, current architecture, deployment/update, data boundaries and known maintenance constraints. Preserve current UI, product content, runtime behavior, encryption and data. Do not include live site data, credentials, local dependencies, caches, temporary files, AI conversation journals or bulky historical QA/generated-output artifacts. Keep required source assets, lockfile, tests and compatibility fixtures.
+
+Acceptance: receiver can identify the source commit and application-tree release, verify archive checksums, extract and build/run a fresh synthetic local instance, and find accurate maintenance instructions. ZIP does not imply Git history: server installation/update remains Git-based. Existing tracked historical material stays in repository; cleanup is through archive selection and document navigation, not deleting history. Update README and sync main. Source-only excludes all production migration or sharing credentials.

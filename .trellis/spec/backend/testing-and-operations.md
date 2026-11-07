@@ -8,6 +8,14 @@ For changes to encrypted fields, restore, sessions, or account ownership, update
 
 The Docker builder runs `npm ci` and `npm run build`, then the native-server runtime copies `public/ui/` from it. Keep the UI source, Vite config, lockfile and license helper in the build context. `public/ui/` and `node_modules/` are ignored source artifacts. `npm run smoke:ui -- <base-url>` verifies health plus real HTML/JS/CSS MIME types and local component imports; do not accept a healthy backend with missing frontend resources. CI performs this against the built container.
 
+## Source-only project handover
+
+Root `scripts/package-handover.py` packages committed Git blobs, never a recursive working-directory copy. Require clean tracked source and an output directory outside the checkout. Python3.11+ is a development-tool dependency; production does not require it. `--verify <zip>` works without Git and requires the adjacent `.zip.sha256`; the embedded manifest checks exact membership, paths, modes, sizes and SHA-256 values. These checks detect corruption; use the trusted repository to establish source authenticity.
+
+Keep lockfiles, Docker/Vite inputs, all runtime assets, accepted originals under `output/imagegen/record-library/` and the five direct synthetic `.shendu` compatibility fixtures. Omit actual environment/credential files, data, backups, dependencies, rebuilt `public/ui/`, temporary outputs, platform metadata, historical QA and Trellis task/journal traces even if accidentally tracked. Reject unsupported links/submodules, path traversal/case collisions and high-confidence embedded credentials without printing their bytes. Preserve Git blob line endings; preserve mode metadata in ZIP (some extraction tools may require `sh script.sh` on Linux).
+
+Run `python -B -m unittest discover -s tests -p 'test_package_handover.py' -v` at repository root, then package/verify the actual commit. Validate a delivery by extracting outside the source, cold installing locked dependencies, building/checking/testing and running health plus UI-resource smoke against isolated synthetic data. No live data migration is implied. ZIP lacks Git metadata and supports local development; production install/update must use a Git clone. See `HANDOVER.md` for receiver instructions.
+
 ## Backup tooling safety
 
 `site-backup.sh [output-dir] [manual|pre-update]` is the shared server snapshot wrapper; `update.sh` delegates to it before fetching code when the user opts into a backup. Publish the first `data/server-backup.password` with an adjacent private temporary file and no-clobber hard link, so concurrent runs reuse the winning password. Never normalize the password file: the CLI removes exactly one final line ending, so copy original bytes to a random private per-invocation file. Clean temporary password/snapshot files on success and failure, and publish a backup output only after the CLI succeeds.

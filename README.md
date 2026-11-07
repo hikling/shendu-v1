@@ -8,7 +8,7 @@
 
 [![构建检查](https://github.com/hikling/shendu-v1/actions/workflows/verify.yml/badge.svg)](https://github.com/hikling/shendu-v1/actions/workflows/verify.yml)
 
-[快速部署](#debian-1213-服务器部署) · [本地运行](#本地运行) · [完整部署指南](docs/deployment.md) · [迁移旧站](UPGRADING.md)
+[快速部署](#debian-1213-服务器部署) · [本地运行](#本地运行) · [完整部署指南](docs/deployment.md) · [项目交接](HANDOVER.md)
 
 </div>
 
@@ -119,6 +119,14 @@ npm test
 技术栈：**Node.js · SQLite · 原生 JavaScript · React · shadcn/ui · Radix UI · Tailwind CSS · Vite**。浏览器使用本地构建资源，不加载远程组件 CDN。
 
 ## 项目文档
+
+交给新维护者时，先阅读[源码交接手册](HANDOVER.md)。使用 **Python 3.11+ 和 Git**，在已提交且受版本控制文件无未提交修改的仓库根目录生成源码包：
+
+```sh
+python scripts/package-handover.py --output-dir ../交接包
+```
+
+输出 ZIP、相邻 `.zip.sha256` 和包内逐文件清单，保留源码、测试、规范与原始插画，排除实际配置、密钥、数据、备份、依赖和旧验收截图。交接包可独立本地构建；服务器安装和更新应使用 Git 克隆。详细范围与校验命令见手册。
 
 | 使用与维护 | 设计与实现 |
 | --- | --- |

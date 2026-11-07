@@ -9,6 +9,20 @@ permissions:
   contents: read
 
 jobs:
+  handover:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Test source-only archive boundaries
+        run: python -B -m unittest discover -s tests -p 'test_package_handover.py' -v
+      - name: Package and verify committed source
+        run: |
+          python -B scripts/package-handover.py --output-dir "$RUNNER_TEMP/handover"
+          python -B scripts/package-handover.py --verify "$RUNNER_TEMP"/handover/*.zip
+
   verify:
     strategy:
       fail-fast: false
