@@ -1307,3 +1307,26 @@ Fixed exact-match rejection of terminal choice whitespace/CR; invalid interactiv
 ### Status
 
 [OK] **Completed**
+
+
+## Session 57: Source-only handover and verified archive
+<!-- trellis-session: v=2 fp=e9ded44f4122e9f3 -->
+
+**Date**: 2026-11-07
+**Task**: Source-only handover and verified archive
+**Branch**: `main`
+
+### Summary
+
+User confirmed source/docs only. Added receiving-developer handbook, README entry, deterministic Git-blob ZIP packaging with manifests/checksums and credential/data exclusions, 22 isolated packaging tests and Linux CI gate. Retained all app inputs, original artwork and five synthetic backup fixtures. Independently verified 488 archive files; extracted cold npm install, build, check,179 app tests and real health/UI resource smoke passed. Six Linux CI jobs passed on amd64/arm64. Application tree unchanged; final source ZIP generated outside repo from closure commit. No production data accessed or migrated.
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `fc78770` | feat: add verified source-only project handover package |
+| `52f8ec4` | test: record clean archive build and gate publication on handover checks |
+
+### Status
+
+[OK] **Completed**
