@@ -9,4 +9,6 @@
 - Public GitHub API confirmed the existing immutable application release contains Linux amd64/arm64 image archives and SHA-256 assets. No production server was accessed or modified.
 - Reviewers reported no remaining source-completeness, documentation or privacy findings after fixing dot-path validation and pinning all Git reads to the captured commit.
 
-Finalization: synchronize main, confirm all CI jobs (including Linux packaging/link regressions), archive/journal, generate and reverify the final exact-main ZIP and adjacent SHA-256 outside the source checkout. Bookkeeping commits are excluded from archive content apart from their source identity.
+Main synchronization passed. [GitHub Actions42347735109](https://github.com/hikling/shendu-v1/actions/runs/42347735109) completed all six jobs successfully: source handover/Python3.11 Linux regressions, native amd64/arm64 verification, immutable publication, anonymous download/load/start/reuse smoke on both architectures. No remaining skip depends on Windows link privilege in the Linux gate.
+
+Delivery procedure: archive/journal, then generate and reverify the final exact-main ZIP and adjacent SHA-256 outside the source checkout. Bookkeeping commits are excluded from archive content apart from their source identity; no application changes occur after the extracted-source acceptance.
