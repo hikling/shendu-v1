@@ -1,0 +1,5 @@
+# Scope
+
+Replace the full-source implementation in scripts/package-handover.py and its root unittest suite with GitHub-link-only generation and verification. Keep CLI --output-dir/--verify and adjacent SHA-256, but remove Git blob enumeration, source/art selection and broad source scanning. Read only captured Git commit and shendu tree identity; generate a fixed allowlist of short texts. Pin documentation URLs to the captured commit and provide main clone/latest links. Cap ZIP/file totals and forbid extra members. Deterministic no-clobber publication remains.
+
+Docs worker owns HANDOVER.md, README handover paragraph and operations spec section; preserve useful online receiving-developer details but explain archive is only a link entry. Root owns task and CI wording, independent review, Git finalization and replacing only previously generated110MB package. All shendu/ content remains unchanged. No source-archive optional mode or compatibility machinery is needed for the superseded local artifact.

@@ -16,9 +16,9 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      - name: Test source-only archive boundaries
+      - name: Test compact GitHub handover
         run: python -B -m unittest discover -s tests -p 'test_package_handover.py' -v
-      - name: Package and verify committed source
+      - name: Package and verify link-only handover
         run: |
           python -B scripts/package-handover.py --output-dir "$RUNNER_TEMP/handover"
           python -B scripts/package-handover.py --verify "$RUNNER_TEMP"/handover/*.zip

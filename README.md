@@ -120,13 +120,13 @@ npm test
 
 ## 项目文档
 
-交给新维护者时，先阅读[源码交接手册](HANDOVER.md)。使用 **Python 3.11+ 和 Git**，在已提交且受版本控制文件无未提交修改的仓库根目录生成源码包：
+交给新维护者时，直接使用 [GitHub `main`](https://github.com/hikling/shendu-v1/tree/main) 获取完整源码、插画、测试与规范，并阅读[开发与交接手册](HANDOVER.md)。需要随附入口文件时，使用 **Python 3.11+ 和 Git**，在已提交并同步到 GitHub 的干净仓库根目录生成轻量包：
 
 ```sh
 python scripts/package-handover.py --output-dir ../交接包
 ```
 
-输出 ZIP、相邻 `.zip.sha256` 和包内逐文件清单，保留源码、测试、规范与原始插画，排除实际配置、密钥、数据、备份、依赖和旧验收截图。交接包可独立本地构建；服务器安装和更新应使用 Git 克隆。详细范围与校验命令见手册。
+ZIP **小于 20 KiB**，只含 `shendu-v1-handover/` 下的简短 `README.md` 链接说明、`VERSION.json` 与 `HANDOVER-MANIFEST.json`，旁边附 `.zip.sha256`。应用代码和全部素材留在 GitHub，不重复打包；接手者克隆仓库后运行与维护。只做校验不需要 Git，详细命令见手册。现有站点的数据、密钥和备份不在本次交接范围。
 
 | 使用与维护 | 设计与实现 |
 | --- | --- |

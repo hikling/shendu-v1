@@ -1,8 +1,8 @@
-# 慎独 · 源码交接手册
+# 慎独 · 开发与交接手册
 
-本次只交接源码、设计素材与维护文档。交接包不含运行站点的账户、个人复盘、数据库、密钥或备份，不执行线上迁移，也不改变现有产品内容与界面。
+源码、设计素材、测试与维护规范统一通过 [GitHub 的 `main` 分支](https://github.com/hikling/shendu-v1/tree/main)交接。轻量交接包只提供仓库/文档入口、版本信息与校验清单，总大小小于 20 KiB，不重复装入项目文件。
 
-项目仓库：<https://github.com/hikling/shendu-v1>。交接包对应的准确提交、应用目录版本、文件清单与校验值，以随包清单为准；不要把解压目录当作最新 `main`。
+项目仓库：<https://github.com/hikling/shendu-v1>。日常维护以 GitHub `main` 为准；需要复现交接时点时，按包内 `VERSION.json` 中的提交和应用目录版本查阅。此次不交接运行站点的账户、个人复盘、数据库、密钥或备份，不执行线上迁移。
 
 ## 1. 接手后先读什么
 
@@ -12,14 +12,15 @@
 4. [组件接入](docs/shadcn-adoption.md)、[前端规范](.trellis/spec/frontend/index.md)、[后端规范](.trellis/spec/backend/index.md)：修改对应层之前阅读。
 5. [安全检查记录](docs/security-audit.md)、[CI 工作流](.github/workflows/verify.yml)：既有检查范围、限制和自动化门禁。
 
-开发由 Trellis 管理，工作流见 [.trellis/workflow.md](.trellis/workflow.md)。交接包保留工作流和项目规范。历史 `docs/*-qa/` 截图、Trellis 任务与会话日志不进入 ZIP；DESIGN、组件接入等文档中的这些历史验收引用，可在[公开仓库的 Git 历史](https://github.com/hikling/shendu-v1)查阅。
+开发由 Trellis 管理，工作流见 [.trellis/workflow.md](.trellis/workflow.md)。本手册、项目规范、素材源及历史 `docs/*-qa/` 验收材料均在 GitHub 仓库或其 Git 历史中查阅，不进入轻量包。包内文档链接会直接引导到仓库。
 
 ## 2. 第一天：在隔离环境运行
 
-需要 Node.js **22.13 或以上**，推荐与容器一致的 **Node.js 24**。下面所有 npm 命令都在仓库的 `shendu/` 目录执行：
+先从 GitHub 克隆项目，需要 Git 和 Node.js **22.13 或以上**，推荐与容器一致的 **Node.js 24**。所有 npm 命令都在克隆后的 `shendu/` 目录执行：
 
 ```sh
-cd shendu
+git clone https://github.com/hikling/shendu-v1.git
+cd shendu-v1/shendu
 npm ci
 npm run check
 npm test
@@ -31,24 +32,23 @@ npm start
 `npm run build` 单独构建前端；`npm run dev` 监视服务端文件，修改 `ui/` 后仍需重新构建。服务启动后，可在另一个终端执行：
 
 ```sh
-cd shendu
+cd shendu-v1/shendu
 npm run smoke:ui -- http://127.0.0.1:3000
 ```
 
 本地端口、数据目录和 Windows 配置示例见[本地 Node.js 运行](docs/deployment.md#本地-nodejs-运行)。不要让测试实例连接正式数据目录。
 
-## 3. 源码 ZIP 与 Git 克隆的区别
+## 3. 轻量交接包与 GitHub 版本
 
-ZIP 是可独立安装 npm 依赖、构建和本地运行的源码快照，**不含 `.git` 历史**。服务器安装器、更新器和 `prepare-image.sh` 依赖 Git 提交信息，不能直接用于 ZIP 解压目录。
+轻量 ZIP 内只有 `shendu-v1-handover/README.md`、`VERSION.json` 和 `HANDOVER-MANIFEST.json` 三个文件。它是交接入口，开发、构建和部署都从 GitHub 获取完整项目；应用代码、插画、测试、规范和 Git 历史不装进 ZIP。
 
-需要长期维护或正式部署时，另行克隆公开仓库：
+本地运行按上一节克隆 `main`。需要核对交接时点时，在仓库根目录查看当前提交：
 
 ```sh
-git clone https://github.com/hikling/shendu-v1.git
-cd shendu-v1
+git rev-parse HEAD
 ```
 
-若要复现交接版本，按交接清单中的提交切换；生产自动更新要求正常的 `main` 克隆。从旧 `Shendu` 或 ZIP 站点迁移数据时，按 [UPGRADING](UPGRADING.md) 操作，不能直接更换旧仓库的远端后拉取。
+将其与 `VERSION.json` 记录的提交比较；`main` 后续继续前进属于正常维护。需要精确复现时可使用对应提交的独立克隆，生产自动更新则要求正常的 `main` 克隆。服务器安装器、更新器和 `prepare-image.sh` 依赖 Git 信息。旧 `Shendu` 或旧 ZIP 站点的数据迁移仍按 [UPGRADING](UPGRADING.md) 操作，不能直接更换旧仓库的远端后拉取。
 
 ## 4. 代码与资源地图
 
@@ -71,7 +71,7 @@ cd shendu-v1
 | `shendu/compose.yaml`、`Dockerfile`、`Caddyfile` | 生产容器、构建与 HTTPS 反向代理 |
 | `shendu/tests/`、`scripts/`、`.github/workflows/` | 应用回归、部署场景与 CI |
 
-`node_modules/` 与构建生成的 `shendu/public/ui/` 不进交接包，使用锁定依赖重新生成。运行环境不依赖 Python；交接打包、部分开发测试和素材加工工具另有各自依赖。
+上表文件均从 GitHub 获取。`node_modules/` 与构建生成的 `shendu/public/ui/` 使用锁定依赖重新生成。运行环境不依赖 Python；交接打包、部分开发测试和素材加工工具另有各自依赖。
 
 ## 5. 继续开发时必须保留的行为
 
@@ -123,24 +123,28 @@ CLI 恢复必须先停止应用，并先在隔离环境演练。三个入口不�
 
 ## 8. 交接包内容与校验
 
-交接包从指定 Git 提交的对象生成，不含 Git 历史。ZIP 内只有一个 `shendu-v1/` 根目录，`HANDOVER-MANIFEST.json` 记录来源提交、应用目录版本及逐文件大小、SHA-256、模式；相邻的 `.zip.sha256` 核对整个 ZIP。先校验，再安装依赖。
+ZIP 内只有一个 `shendu-v1-handover/` 根目录，且只包含以下三个文件：
 
-保留应用源码、锁文件、构建/部署配置、测试和合成加密样本、项目规范、本地运行素材及来源声明。`output/imagegen/record-library/` 的 65 张已采用原始 PNG、联系图和图册，以及 `docs/extended-art-sheet.png`、`docs/extended-palette-comparison.png` 两张素材对照图也保留，后续可继续加工；这些是素材源，不是运行依赖。
+| 文件 | 用途 |
+| --- | --- |
+| `README.md` | 简短接手说明及公开 GitHub 仓库、在线手册和部署文档链接 |
+| `VERSION.json` | 本次交接对应的 Git 提交与应用目录版本信息 |
+| `HANDOVER-MANIFEST.json` | 入口文件的成员、大小和 SHA-256 校验清单 |
 
-排除实际 `.env`、数据库、密钥/密码、备份、运行目录、依赖、构建缓存、临时文件、旧 QA 截图与 AI 会话/任务日志。不要把后来本地运行生成的目录重新混入源码交接。
+整个 ZIP 必须小于 **20 KiB**，旁边附 `.zip.sha256`；程序、插画、原始 PNG、测试、规范、完整手册、历史验收材料及运行文件全部留在 GitHub 或各自受控环境，不复制进包。所有已采用插画及加工源文件继续保留在 GitHub，运行现有图片不需要 API 密钥。
 
-打包与校验需要 **Python 3.11 或以上**；只有打包需要 Git，并在干净的源码克隆根目录运行。校验无需 Git，也可使用解压出的脚本：
+打包与校验需要 **Python 3.11 或以上**；只有打包需要 Git，并在干净的源码克隆根目录运行。校验器从 GitHub 项目中获取，它的 `--verify` 操作不依赖 Git：
 
 ```sh
 python scripts/package-handover.py --output-dir ../交接包
 python scripts/package-handover.py --verify ../交接包/shendu-v1-handover-COMMIT.zip
 ```
 
-将 `COMMIT` 替换为实际文件名中的 12 位提交号；ZIP 与相邻 `.zip.sha256` 保持原名。重新打包前先提交要交接的改动，脚本读取 Git 对象且拒绝受版本控制文件的未提交修改，不会自动收录工作区编辑。
+将 `COMMIT` 替换为实际文件名中的 12 位提交号；ZIP 与相邻 `.zip.sha256` 保持原名。重新打包前先提交并同步要交接的改动到 GitHub，程序从提交元数据生成这三个小文件。校验能发现损坏和异常成员，来源可信度仍应与公开仓库核对。
 
 ## 9. 插画、组件与授权
 
-已采用图片均随源码提供，部署无需生成服务、API 密钥或生成者账户。运行 WebP 与原始 PNG、关键词、审阅哈希及加工说明相互对应，见[插画维护说明](art/record-library/README.md)。新增或重新加工素材后，重新审阅、更新清单与缓存版本。
+已采用图片均随 GitHub 仓库源码提供，部署无需生成服务、API 密钥或生成者账户。运行 WebP 与原始 PNG、关键词、审阅哈希及加工说明相互对应，见[插画维护说明](art/record-library/README.md)。新增或重新加工素材后，重新审阅、更新清单与缓存版本。
 
 插画来源与加工元数据分布于[概览](shendu/public/assets/overview/README.md)、[长卷](shendu/public/assets/reel-emotions/README.md)、[每日](shendu/public/assets/daily/README.md)、[另外五类清单](shendu/public/assets/extended/manifest.json)、[历史与行动](shendu/public/assets/records/README.md)。保留作者/来源和已有授权边界，公开仓库本身不授予额外的素材使用许可。
 
@@ -148,8 +152,8 @@ shadcn/ui 的 MIT 声明保留在[组件目录](shendu/ui/components/ui/LICENSE.
 
 ## 10. 接收验收清单
 
-- 清单中的提交、应用目录版本、ZIP 校验值和文件校验全部一致。
-- 干净目录 `npm ci`、`npm run check`、`npm test` 通过；本地启动、`/healthz` 和 `smoke:ui` 通过。
+- ZIP 小于 20 KiB，仅有约定的三个文件；校验值与清单一致，GitHub 入口和版本提交可访问。
+- 从 GitHub 克隆项目后，核对目标提交与应用目录版本；在 `shendu/` 执行 `npm ci`、`npm run check`、`npm test`，再检查启动、`/healthz` 和 `smoke:ui`。
 - 使用虚构账户核对注册/登录、六类新建/草稿/完成、历史只读、行动验证期限、日历、账户管理及个人备份导入导出。
 - 桌面与窄屏无内容遮挡或横向溢出，键盘可操作，减少动态效果有效；复盘切题不丢输入，返回历史来源正确。
 - 部署相关修改另跑 Linux 安装/更新隔离场景与真实容器检查，以对应版本的 Actions 结果为准；没有运行过的环境不要标为已验证。

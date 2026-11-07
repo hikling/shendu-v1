@@ -156,7 +156,7 @@ components:
 
 六类插画衬底各自采用折页纸、珊瑚叠纸点阵、琥珀圆盘刻度、湖蓝路径格线、紫色年轮轨道、橄榄绿对向纸形，保持低对比、静态且不接收指针；左上角阶段名称跟随概览类别深色。
 
-以下带日期的段落保留历史变更背景，可能描述已被后续设计替代的弹窗或布局；当前实现以上方现状约定与运行代码为准。文中的历史QA截图/日志不进入源码交接ZIP，可在公开仓库Git历史查阅。
+以下带日期的段落保留历史变更背景，可能描述已被后续设计替代的弹窗或布局；当前实现以上方现状约定与运行代码为准。文中的历史QA截图/日志保留在公开仓库中，轻量交接包通过GitHub链接提供查阅入口。
 
 ## 2026-11-04 archive workspace refinement
 - Header review dropdown removed on desktop and mobile; overview category entries remain available.
