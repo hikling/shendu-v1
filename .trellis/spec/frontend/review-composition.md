@@ -12,3 +12,6 @@ Wrong: absolute `top:132px` or centering against viewport/footer leaves art disc
 
 
 All six review writing textareas (including action/paired contingency/metric/decision title/diary) use styles.css --review-writing-height:200px. Keep height/min/max equal, resize:none and overflow-y:auto. Do not add per-question heights or scrollHeight sizing; verify short and long values compute to the same height at desktop and phone widths. Completion afterword belongs to the actual last prompt, even when journal or all ordinary questions are removed, and exposes guarded history/actions navigation.
+
+
+Completion afterwords must be descendants of the actual final `.daily-pane`, including daily when journal is disabled and verifyDate becomes last. Never mount an afterword directly under `.daily-editor-content`: it then bypasses the pane's desktop width/side and can cover the illustration. Extended reviews follow the same pane ownership. Keep one mounted afterword and toggle visibility on the actual last prompt.

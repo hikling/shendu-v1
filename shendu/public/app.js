@@ -373,6 +373,7 @@ function dailySceneArt(){return `<div class="daily-scene-art" aria-hidden="true"
 function dailyIntroLines(quote){return reviewIntroLines(quote)}
 function dailyReviewHtml(period,locked,data,templates){
   const panes=[dailyEvidence(data,locked),dailyReflection(data,locked,templates.review),dailyActionFields(data,locked,templates.review),dailyJournal(data,locked)];
+  const lastPrompt=dailyPrompts(data.metrics?.length||0,templates.review).at(-1);
   const saved=locked?(period!==defaultPeriod('daily')?'非当前日期，仅可查看':'这份复盘已锁定'):state.dirty?'有未保存内容':state.current.updated_at?`${beijingTime(state.current.updated_at)} 草稿已保存`:'草稿尚未保存';
   const quote=quoteFor('daily'),{lines,columns,density}=reviewIntroLayout(quote);
   return `<div class="daily-flow daily-art-flow" data-daily-scene="intro" data-daily-side="right" data-daily-current-prompt="intro">${dailySceneArt()}
@@ -382,7 +383,7 @@ function dailyReviewHtml(period,locked,data,templates){
       <p class="sr-only" id="daily-step-status" aria-live="polite"></p>
       <div class="daily-editor-content"><div class="daily-question-heading"><h2 id="daily-prompt-title" tabindex="-1"></h2><p id="daily-prompt-description"></p></div>
       <p class="daily-flow-error" id="daily-flow-error" role="alert" hidden></p>
-      ${DAILY_STEPS.map((step,index)=>`<div class="daily-pane" data-daily-pane="${step.id}" hidden>${panes[index]}</div>`).join('')}<div class="daily-afterword" data-review-afterword hidden>${reviewAfterword(locked,data,templates.action)}</div>
+      ${DAILY_STEPS.map((step,index)=>`<div class="daily-pane" data-daily-pane="${step.id}" hidden>${panes[index]}${step.id===lastPrompt.step?`<div class="daily-afterword" data-review-afterword hidden>${reviewAfterword(locked,data,templates.action)}</div>`:''}</div>`).join('')}
       <div class="daily-step-note"><span id="daily-step-hint"></span>${locked?`<span class="status-chip done">${STATUS[state.current.status]}</span>`:''}</div>
       </div><footer class="daily-flow-footer"><button type="button" class="btn btn-ghost" data-daily-back>上一步</button><p class="save-state" role="status">${saved}</p><div class="daily-flow-actions">${!locked?`<button type="button" class="btn toolbar-save" id="save-draft">保存草稿</button><button type="button" class="btn btn-red" id="complete-record" hidden>完成并锁定</button>`:`<button type="button" class="btn btn-ghost" id="daily-finish" data-nav="history" hidden>回到历史记录</button>`}<button type="button" class="btn btn-primary" data-daily-next>下一题 <span aria-hidden="true">→</span></button></div></footer>
     </section></div>`;
