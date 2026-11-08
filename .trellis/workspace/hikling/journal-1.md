@@ -1374,3 +1374,25 @@ User corrected delivery scope to GitHub links. Replaced full-source/archive enum
 ### Status
 
 [OK] **Completed**
+
+
+## Session 60: 修复复盘完成提示跨栏遮挡
+<!-- trellis-session: v=2 fp=de3a6a2d316a8580 -->
+
+**Date**: 2026-11-08
+**Task**: 修复复盘完成提示跨栏遮挡
+**Branch**: `main`
+
+### Summary
+
+每日完成提示放回实际最后一道题所属正文栏，覆盖默认日记和移除日记的完成/验证状态；缓存版本同步，既有215项与新增3项测试通过。浏览器控制仍被宿主关闭，未声称视觉实测。
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `bce830d` | fix: keep review completion inside the writing column |
+
+### Status
+
+[OK] **Completed**
