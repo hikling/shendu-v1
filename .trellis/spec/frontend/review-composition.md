@@ -6,6 +6,9 @@ Six-review composition: `.daily-art-flow` uses a shared grid row for the active 
 
 ## Verification
 
-Run `npm run check`, `npm run build` and the existing tests after a template change. Render real six-type intros and representative left/right short-input, long-text, paired, inline-calendar and locked-afterword screens. Desktop copy/art bounding-box centers should coincide; neither should intersect the footer. On phones content, art and footer must have non-overlapping rows with no horizontal overflow. Compare artwork pseudo-elements as well as image bounds. Keep a value while switching back/next, save/reload it, and verify locked controls remain disabled.
+Run `npm run check`, `npm run build` and the existing tests after a template change. Render real six-type intros and representative left/right short-input, long-text, paired, inline-calendar and locked-afterword screens. Desktop copy/art bounding-box centers should coincide; neither should intersect the footer. On phones content, art and footer must have non-overlapping rows with no horizontal overflow. Compare artwork pseudo-elements as well as image bounds. Keep a value while switching back/next, save/reload it, and verify locked textareas remain readonly and keyboard-scrollable while other mutating controls remain disabled.
 
 Wrong: absolute `top:132px` or centering against viewport/footer leaves art disconnected from short or tall content. Correct: assign both art and `.daily-editor-content` to grid row2 with `align-self:center`; footer uses its own row. Preserve `.daily-editor[hidden]` display suppression when using `display:contents`.
+
+
+All six review writing textareas (including action/paired contingency/metric/decision title/diary) use styles.css --review-writing-height:200px. Keep height/min/max equal, resize:none and overflow-y:auto. Do not add per-question heights or scrollHeight sizing; verify short and long values compute to the same height at desktop and phone widths. Completion afterword belongs to the actual last prompt, even when journal or all ordinary questions are removed, and exposes guarded history/actions navigation.

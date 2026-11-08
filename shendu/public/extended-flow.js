@@ -1,3 +1,5 @@
+import {reviewQuestions} from './review-schema.js?v=1.0.0-custom1';
+
 // The five longer reviews share one traversal contract. Field labels and
 // required flags still come from QUESTIONS and the saved review template.
 export const EXTENDED_FLOW = {
@@ -38,16 +40,27 @@ function validDate(value){
   return date.getUTCFullYear()===year&&date.getUTCMonth()===month-1&&date.getUTCDate()===day;
 }
 
-export function extendedPrompts(type,questions){
+export function extendedPrompts(type,questions,template){
   const config=EXTENDED_FLOW[type];
   if(!config)throw new Error(`Unknown review type: ${type}`);
-  const questionMap=new Map(questions.map(([key,,required])=>[key,Boolean(required)]));
-  const prompts=config.stages.flatMap((stage,stageIndex)=>stage.fields.map(id=>{
-    if(!SPECIAL_FIELDS.has(id)&&!questionMap.has(id))throw new Error(`Unknown ${type} review field: ${id}`);
-    return{id,stage:stage.id,stageIndex,phase:`${type}-${stage.id}`,required:SPECIAL_FIELDS.has(id)||questionMap.get(id)===true,kind:SPECIAL_FIELDS.has(id)?id:'answer'};
-  }));
+  const configurable=template!==undefined;
+  const normalized=configurable?reviewQuestions(type,template):questions.map(([id,label,required])=>({id,label,required:Boolean(required)}));
+  const questionMap=new Map(normalized.map(question=>[question.id,question]));
+  const originalFields=new Set(config.stages.flatMap(stage=>stage.fields));
+  const additions=normalized.filter(question=>!originalFields.has(question.id));
+  const prompts=config.stages.flatMap((stage,stageIndex)=>{
+    const fields=stageIndex===config.stages.length-1?stage.fields.flatMap(id=>id==='action'?[...additions.map(question=>question.id),id]:[id]):stage.fields;
+    return fields.flatMap(id=>{
+      const special=SPECIAL_FIELDS.has(id),question=questionMap.get(id);
+      if(!special&&!question){
+        if(!configurable)throw new Error(`Unknown ${type} review field: ${id}`);
+        return[];
+      }
+      return[{id,stage:stage.id,stageIndex,phase:`${type}-${stage.id}`,required:special||question.required,kind:special?id:'answer',...(special?{}:{label:question.label})}];
+    });
+  });
   const included=new Set(prompts.map(prompt=>prompt.id));
-  for(const key of questionMap.keys())if(!included.has(key))throw new Error(`Missing ${type} review field: ${key}`);
+  for(const key of questionMap.keys())if(!included.has(key)||(!configurable&&!originalFields.has(key)))throw new Error(`Missing ${type} review field: ${key}`);
   return prompts;
 }
 

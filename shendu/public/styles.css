@@ -1426,3 +1426,12 @@ body.reduce-motion .history-record,body.reduce-motion .history-record-art img,bo
 .app-shell:has(.main :is(.history-page,.actions-page,.workspace-page)){background:var(--workspace-canvas)}
 .sd-dialog.modal.workspace-dialog.workspace-settings{background:var(--workspace-canvas)}
 @media(max-width:820px){:root{--content-gutter:16px}}
+/* One writing height for all six review types, including paired answers and diary. */
+.daily-art-flow{--review-writing-height:200px}
+.daily-art-flow .daily-editor .daily-prompt textarea{
+  box-sizing:border-box;height:var(--review-writing-height);min-height:var(--review-writing-height);max-height:var(--review-writing-height);
+  resize:none;overflow-y:auto;field-sizing:fixed;scrollbar-gutter:stable;
+}
+.review-completion h2{margin-top:0}
+.review-completion-actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:18px}
+@media(max-width:620px){.review-completion-actions{display:grid;grid-template-columns:1fr}.review-completion-actions .btn{width:100%}}

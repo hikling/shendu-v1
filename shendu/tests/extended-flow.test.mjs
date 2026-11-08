@@ -72,3 +72,38 @@ test('stage configuration fails early if a question field is omitted or unknown'
   assert.throws(()=>extendedPrompts('weekly',questions('weekly').filter(([key])=>key!=='plan')),/Unknown weekly review field: plan/);
   assert.throws(()=>extendedPrompts('weekly',[...questions('weekly'),['newField','newField',1]]),/Missing weekly review field: newField/);
 });
+
+test('all extended types remove default questions and insert custom questions before the core action',()=>{
+  for(const type of Object.keys(questionKeys)){
+    const template={questions:[{id:'custom_lesson',label:'这次学到了什么？',required:true},{id:'custom_note',label:'再留一句',required:false}]};
+    const prompts=extendedPrompts(type,questions(type),template),ids=prompts.map(prompt=>prompt.id),last=EXTENDED_FLOW[type].stages.at(-1);
+    assert.deepEqual(ids,type==='decision'?['recordTitle','custom_lesson','custom_note','action','ifThen','verifyDate']:['custom_lesson','custom_note','action','ifThen','verifyDate'],type);
+    const custom=prompts.find(prompt=>prompt.id==='custom_lesson');
+    assert.equal(custom.stage,last.id,type);assert.equal(custom.phase,`${type}-${last.id}`,type);assert.equal(custom.kind,'answer');
+    assert.equal(custom.label,'这次学到了什么？');assert.equal(custom.required,true);
+    assert.equal(extendedPromptNeighbor(prompts,'custom_note',1),'action');
+    const data={answers:{custom_lesson:[' ','一个有用的经验']},action:'试一次',ifThen:'换一种方式',verifyDate:'2026-11-10'};
+    assert.deepEqual(extendedReviewIssues(data,'一个决定',prompts,'2026-11-10'),[],type);
+    assert.deepEqual(extendedPromptIssues({...data,answers:{}},'',custom,'2026-11-10'),[{field:'custom_lesson',reason:'required'}]);
+    assert.deepEqual(extendedPromptIssues({},'',prompts.find(prompt=>prompt.id==='custom_note'),'2026-11-10'),[]);
+  }
+});
+
+test('explicit empty extended configuration preserves only mandatory title and action fields',()=>{
+  for(const type of Object.keys(questionKeys)){
+    const prompts=extendedPrompts(type,questions(type),{questions:[]});
+    assert.deepEqual(prompts.map(prompt=>prompt.id),type==='decision'?['recordTitle','action','ifThen','verifyDate']:['action','ifThen','verifyDate']);
+    assert.deepEqual(extendedReviewIssues({action:'做一件事',ifThen:'受阻时调整',verifyDate:'2026-11-10'},'决定',prompts,'2026-11-10'),[]);
+    assert.ok(prompts.every(prompt=>prompt.required));
+  }
+});
+
+test('retained base questions keep their own stage and use configured titles and required flags',()=>{
+  const template={questions:[{id:'patterns',label:'保留的规律',required:true},{id:'plan',label:'可选的计划',required:false},{id:'custom_more',label:'补充',required:false}]};
+  const prompts=extendedPrompts('weekly',questions('weekly'),template);
+  assert.deepEqual(prompts.map(prompt=>prompt.id),['plan','patterns','custom_more','action','ifThen','verifyDate']);
+  assert.equal(prompts[0].stage,'recap');assert.equal(prompts[1].stage,'pattern');
+  assert.equal(prompts[0].label,'可选的计划');assert.equal(prompts[0].required,false);
+  assert.deepEqual(extendedPromptIssues({},'',prompts[0],'2026-11-10'),[]);
+  assert.deepEqual(extendedPromptIssues({},'',prompts[1],'2026-11-10'),[{field:'patterns',reason:'required'}]);
+});

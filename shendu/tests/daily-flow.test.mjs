@@ -88,3 +88,33 @@ test('response errors and restored legacy prompt identities resolve to the paire
   assert.equal(dailyPromptNeighbor(prompts,'ifThen',1),'verifyDate');
   assert.equal(dailyPromptNeighbor(prompts,'ifThen',-1),'action');
 });
+
+test('configured daily questions replace defaults and validate custom required answers',()=>{
+  const template={questions:[{id:'custom_gratitude',label:'今天值得感谢什么？',required:true},{id:'cause',label:'哪些条件可以再用？',required:false}]};
+  const prompts=dailyPrompts(0,template),answers=prompts.filter(prompt=>prompt.step==='reflection');
+  assert.deepEqual(answers.map(prompt=>prompt.id),['custom_gratitude','cause']);
+  assert.equal(answers[0].label,'今天值得感谢什么？');assert.equal(answers[0].required,true);
+  assert.deepEqual(dailyStepIssues(complete,'reflection',today,template),[{step:'reflection',field:'custom_gratitude',reason:'required'}],'removed today no longer participates in validation');
+  assert.deepEqual(dailyPromptIssues({answers:{custom_gratitude:[' ','一件具体的事']}},'custom_gratitude',today,template),[]);
+  assert.deepEqual(dailyPromptIssues({},'cause',today,template),[]);
+  assert.equal(dailyPromptNeighbor(prompts,'custom_gratitude',1),'cause');
+  assert.equal(dailyPromptOwner('custom_gratitude'),'custom_gratitude');
+});
+
+test('daily can remove all ordinary questions and optional fields while retaining its core action flow',()=>{
+  const template={questions:[],disabledFields:['sleep','energy','risk','journal']};
+  const prompts=dailyPrompts(0,template);
+  assert.deepEqual(prompts.map(prompt=>prompt.id),['action','ifCondition','verifyDate']);
+  assert.equal(dailyPromptNeighbor(prompts,'verifyDate',1),null);
+  assert.deepEqual(dailyStepIssues({},null,today,template).map(issue=>issue.field),['action','ifCondition','ifThen','verifyDate']);
+  assert.deepEqual(dailyStepIssues({...complete,answers:{}},null,today,template),[]);
+  assert.deepEqual(dailyPrompts(2,template).map(prompt=>prompt.id),['metric-0','metric-1','action','ifCondition','verifyDate']);
+});
+
+test('daily required flags are configurable without changing retained optional answers',()=>{
+  const template={questions:[{id:'today',label:'事实',required:false},{id:'cause',label:'原因',required:true}]};
+  const data={...complete,answers:{today:[],cause:[' '],custom_old:['保留答案']}},before=structuredClone(data);
+  assert.deepEqual(dailyStepIssues(data,null,today,template),[{step:'reflection',field:'cause',reason:'required'}]);
+  assert.deepEqual(data,before);
+  assert.deepEqual(dailyPromptIssues(data,'today',today,template),[]);
+});

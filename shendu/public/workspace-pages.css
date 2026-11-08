@@ -338,3 +338,20 @@ form:is(#backup-pass-form,#restore-password-form,#site-export-form,#site-inspect
   .sd-dialog.modal:has(form:is(#backup-pass-form,#restore-password-form,#site-export-form,#site-inspect-form,#site-restore-form,#target-form,#delete-user-form,#user-form)) .modal-head p{font-size:.67rem}
   .sd-dialog.modal:has(form:is(#backup-pass-form,#restore-password-form,#site-export-form,#site-inspect-form,#site-restore-form,#target-form,#delete-user-form,#user-form)) .modal-close{width:34px;height:34px;min-width:34px;min-height:34px}
 }
+/* Editable question lists share the existing paper settings panels. */
+.template-question-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:16px;align-items:end;padding:16px 0;border-bottom:1px solid var(--line)}
+.template-question-row .field{margin:0;min-width:0}
+.template-question-actions{display:flex;align-items:center;gap:18px;min-height:44px}
+.workspace-stage .template-required,.workspace-stage .template-optional-fields>label{display:flex;align-items:center;gap:8px;min-height:44px;color:var(--ink-2)}
+.template-question-tools{display:flex;align-items:start;flex-wrap:wrap;gap:16px;margin:18px 0 24px}
+.template-restore{max-width:100%}
+.template-restore>summary{cursor:pointer;padding:12px 0;color:var(--primary)}
+.template-restore>div{display:grid;gap:8px;padding:8px 0}
+.template-restore button{white-space:normal;text-align:left;overflow-wrap:anywhere}
+.template-optional-fields{margin:20px 0;padding:16px 0;border-block:1px solid var(--line)}
+.template-optional-fields h4,.template-panel-body>h4{margin:8px 0}
+.template-optional-fields>label{display:inline-flex!important;margin-right:24px}
+.stage-metric-row{padding:14px 0;border-bottom:1px solid var(--line)}
+.stage-metric-row>.link-button{margin:8px 0 4px}
+[data-add-metric]{margin-top:16px}
+@media(max-width:620px){.template-question-row{grid-template-columns:1fr;gap:4px}.template-question-actions{justify-content:space-between}.template-question-tools{flex-direction:column}}

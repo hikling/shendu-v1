@@ -28,7 +28,7 @@ The art wrapper exposes `data-review-type` and `data-review-phase` with one of t
 | Optional `ifCondition` empty | Continue | Allowed for all five types |
 | Required `ifThen` empty | Stay on paired screen and focus response | Return `ifThen` issue |
 | Date missing, invalid, or before the type's Beijing minimum | Stay on calendar and focus visible eligible day | Return `verifyDate` issue |
-| Completed, verified, or historical record | Bypass writing gate; controls disabled | Server state remains locked |
+| Completed, verified, or historical record | Bypass writing gate; textareas readonly, other mutating controls disabled | Server state remains locked |
 
 `showExtendedIssues()` must reveal the issue's screen before focusing its input. A hidden answer never leaves keyboard focus in an invisible panel. Server validation remains the final authority.
 
@@ -49,3 +49,6 @@ The shared `public/verification-policy.js` defines the earliest date: daily toda
 Wrong: render only the current answer and discard the previous textarea when moving forward; `collectCurrent()` then loses hidden answers and draft saving silently changes the payload.
 
 Correct: keep all prompts mounted, toggle `hidden`, call `collectCurrent()` before moving, and preserve `state.extendedPrompt` during any form redraw. Keep the two contingency fields on one mounted screen; collect both, but only require `ifThen` for these five review types.
+
+
+Use extendedPrompts(type, questions, recordTemplate) for configurable content. It retains default questions in their original stages, skips removed questions, and puts custom questions before action in the final stage. Required flags and labels come from the record template, including explicit questions:[]. Core action/ifThen/verifyDate and decision recordTitle stay mandatory. Locked textareas are readonly so long fixed-height content remains keyboard-readable.

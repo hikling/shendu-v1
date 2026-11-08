@@ -63,6 +63,7 @@ git rev-parse HEAD
 | `shendu/public/history-archive.css`、`workspace-pages.css` | 历史、行动与账户等工作区页面 |
 | `shendu/ui/stage.css`、`lunar-calendar.js` | 阶段日历布局、农历与节气 |
 | `shendu/public/daily-flow.js`、`extended-flow.js` | 每日及另外五类的逐题填写流程 |
+| `shendu/public/review-schema.js`、`review-metrics.js` | 共享问题配置与草稿指标无损同步 |
 | `shendu/public/daily-calendar.js`、`verification-policy.js` | 北京日历日期处理与最早验证日期 |
 | `shendu/public/overview-reel.js`、`record-art.js` | 概览连续长卷与历史/行动配图规则 |
 | `shendu/public/assets/`、`art/`、`output/imagegen/record-library/` | 本地发布插画、生成/加工说明与保留的原始成品 |
@@ -81,6 +82,8 @@ git rev-parse HEAD
 - 复盘开场短句入场时随机选取并保持稳定，逐题填写，手动保存草稿。完成后锁定原记录，历史记录只读，之后单独进行行动验证。
 - 切题保留全部字段挂载与值；只切换可见性。不得丢失隐藏内容、字段 ID、提交格式、未保存离开保护或只读限制。
 - “行动受阻的情况”和“准备如何应对”在同一页。每日两项都必填；其他五类应对必填、受阻情况可选，以服务端校验为准。
+- 六类文字输入统一为 200px 固定高度，超长框内滚动；已锁定 textarea 使用 readonly，保留键盘阅读和复制。完成后提供历史和行动验证双导航，移除局部填写验证入口。
+- 阶段与内容设置支持每类最多 30 个问题的增删、恢复与必填设置，阶段指标支持 0–12 项；保留行动、应对、验证日期及决策名称。当前草稿跟随配置，完成或过期记录按快照读取。删掉的草稿答案和指标内容保留，不因配置修改擦除。
 - 六类内容采用统一宽度上限，插画交错排布并与当前内容居中对齐；移动端按正文、居中插画、页脚排列，不为装饰制造溢出。
 
 验证等待由原记录完成时的北京时间日期计算：每日当天；周 **7 天**、月 **30 天**、季 **90 天**、年 **250 天**；重大决策 **3 个自然月**，月末按目标月末收敛。预期验证日期不能绕过真实等待期限。

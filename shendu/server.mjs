@@ -9,6 +9,8 @@ import { lookup } from 'node:dns/promises';
 import net from 'node:net';
 import { atomicWriteFile, validBase64 } from './scripts/backup-safety.mjs';
 import { verificationMinimum } from './public/verification-policy.js';
+import { reviewQuestions, reviewDisabledFields } from './public/review-schema.js';
+import { normalizeReviewMetricIds } from './public/review-metrics.js';
 
 process.umask(0o077);
 const PORT = Number(process.env.SHENDU_PORT || 3000);
@@ -390,7 +392,8 @@ const isPlainObject = value => Boolean(value)&&typeof value==='object'&&!Array.i
 const templateText = (value,fallback,max=240) => safeText(value,max).trim()||fallback;
 const normalizeReviewTemplate = (type,value) => {
   const defaults=REVIEW_TEMPLATE_DEFAULTS[type],source=isPlainObject(value)?value:{};
-  return Object.fromEntries(Object.entries(defaults).map(([key,fallback])=>[key,templateText(source[key],fallback,160)]));
+  const labels=Object.fromEntries(Object.entries(defaults).map(([key,fallback])=>[key,templateText(source[key],fallback,160)]));
+  return {...labels,questions:reviewQuestions(type,{...source,...labels}),disabledFields:type==='daily'?reviewDisabledFields(source):[]};
 };
 const normalizeReviewTemplates = value => Object.fromEntries(Object.keys(REVIEW_TEMPLATE_DEFAULTS).map(type=>[type,normalizeReviewTemplate(type,isPlainObject(value)?value[type]:null)]));
 const normalizeActionTemplate = value => {
@@ -398,7 +401,7 @@ const normalizeActionTemplate = value => {
   return Object.fromEntries(Object.entries(ACTION_TEMPLATE_DEFAULTS).map(([key,fallback])=>[key,templateText(source[key],fallback,240)]));
 };
 const normalizeStage = value => {
-  const defaults=defaultStage(),source=isPlainObject(value)?value:{},days=Number(source.days),sleep=Number(source.sleepTarget),energy=Number(source.energyTarget),metrics=Array.isArray(source.metrics)&&source.metrics.length===3?source.metrics:defaults.metrics;
+  const defaults=defaultStage(),source=isPlainObject(value)?value:{},days=Number(source.days),sleep=Number(source.sleepTarget),energy=Number(source.energyTarget),metrics=Array.isArray(source.metrics)?source.metrics.slice(0,12):defaults.metrics;
   return {
     name:templateText(source.name,defaults.name,50),focus:templateText(source.focus,defaults.focus,300),
     startDate:validIsoDate(String(source.startDate||''))?source.startDate:defaults.startDate,
@@ -406,7 +409,7 @@ const normalizeStage = value => {
     sleepTarget:Number.isFinite(sleep)?Math.min(24,Math.max(0,sleep)):defaults.sleepTarget,
     energyTarget:Number.isFinite(energy)?Math.min(100,Math.max(0,energy)):defaults.energyTarget,
     showQuarter:source.showQuarter===true,
-    metrics:metrics.map((metric,index)=>({name:templateText(metric?.name,defaults.metrics[index].name,80),target:templateText(metric?.target,defaults.metrics[index].target,240)})),
+    metrics:normalizeReviewMetricIds(metrics.map((metric,index)=>({id:metric?.id,name:templateText(metric?.name,defaults.metrics[index]?.name||`指标 ${index+1}`,80),target:templateText(metric?.target,defaults.metrics[index]?.target||'',240)}))),
     reviewTemplates:normalizeReviewTemplates(source.reviewTemplates),actionTemplate:normalizeActionTemplate(source.actionTemplate)
   };
 };
@@ -1227,12 +1230,13 @@ async function api(req, res, url) {
   if (/^\/api\/records\/[^/]+\/complete$/.test(path) && method === 'POST') {
     const id=path.split('/')[3], row=db.prepare(`SELECT * FROM records WHERE id=? AND user_id=?`).get(id,user.id); if(!row)return error(res,404,'记录不存在'); if(row.status!=='draft')return error(res,409,'记录已经完成');
     if(row.period!==currentPeriodFor(row.type))return error(res,400,currentPeriodMessage(row.type),'period_locked');
-    const decoded=recordOut(row),data=decoded.data,required={daily:['today'],weekly:['plan','progress','nextThree'],monthly:['goalResult','change','bottleneck','experiment'],quarterly:['hope','evidence','choices','nextGoals'],yearly:['coordinates','expectations','keepRelease','nextYear'],decision:['decision','options','facts','expectation','failure','choice','firstStep']}[row.type]||[];
+    const decoded=recordOut(row),data=decoded.data,normalizedSnapshot=normalizeTemplateSnapshot(data.templateSnapshot,row.type);
+    const stage=normalizedSnapshot?null:normalizeStage(setting(user.id,'stage',defaultStage()));
+    const snapshot=normalizedSnapshot||{version:1,review:stage.reviewTemplates[row.type],action:stage.actionTemplate};
+    const required=reviewQuestions(row.type,snapshot.review).filter(question=>question.required).map(question=>question.id);
     const earliest=verificationMinimum(row.type,todayDate());
-    const missing=required.some(k=>!(data.answers?.[k]||[]).some(v=>String(v).trim()))||!String(data.action||'').trim()||(row.type==='daily'&&!String(data.ifCondition||'').trim())||!String(data.ifThen||'').trim()||!validIsoDate(data.verifyDate)||data.verifyDate<earliest||(row.type==='decision'&&!decoded.title.trim()); if(missing)return error(res,400,`请先完成所有必填项，并确认预期验证日期不早于 ${earliest}`);
-    const normalizedSnapshot=normalizeTemplateSnapshot(data.templateSnapshot,row.type);
-    if(!normalizedSnapshot){const stage=normalizeStage(setting(user.id,'stage',defaultStage()));data.templateSnapshot={version:1,review:stage.reviewTemplates[row.type],action:stage.actionTemplate}}
-    else data.templateSnapshot=normalizedSnapshot;
+    const missing=required.some(k=>!Array.isArray(data.answers?.[k])||!data.answers[k].some(v=>typeof v==='string'&&v.trim()))||!String(data.action||'').trim()||(row.type==='daily'&&!String(data.ifCondition||'').trim())||!String(data.ifThen||'').trim()||!validIsoDate(data.verifyDate)||data.verifyDate<earliest||(row.type==='decision'&&!decoded.title.trim()); if(missing)return error(res,400,`请先完成所有必填项，并确认预期验证日期不早于 ${earliest}`);
+    data.templateSnapshot=snapshot;
     const stamp=now(),storedData=encryptData(data,dataScope('record',user.id,id,'data'));
     if(accountRecordBytes(user.id)-Buffer.byteLength(row.data)+Buffer.byteLength(storedData)>MAX_ACCOUNT_CONTENT_BYTES)return error(res,413,'账户复盘内容已达到存储上限','account_storage_limit');
     db.prepare(`UPDATE records SET data=?,status='completed',version=version+1,completed_at=?,updated_at=? WHERE id=?`).run(storedData,stamp,stamp,id); return json(res,200,{record:recordOut(db.prepare(`SELECT * FROM records WHERE id=?`).get(id))});
