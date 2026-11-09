@@ -1440,3 +1440,25 @@ Draft-only deletion with version/session/ownership guards and stale-save prevent
 ### Status
 
 [OK] **Completed**
+
+
+## Session 63: Move draft deletion to the review end page
+<!-- trellis-session: v=2 fp=ecd93ffeab63a9ca -->
+
+**Date**: 2026-11-09
+**Task**: Move draft deletion to the review end page
+**Branch**: `main`
+
+### Summary
+
+Removed archive delete controls; all six draft review footers expose delete only on actual final prompt, including historical read-only drafts and no-diary daily templates. Cancel/failure preserve unsaved text; local drafts discard without API; saved use exact ID/version. 259 tests and local UI asset smoke passed; host browser disabled, no new visual QA claimed.
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `e88d0a5` | fix: move draft deletion to the final review page |
+
+### Status
+
+[OK] **Completed**
