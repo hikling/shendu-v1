@@ -1418,3 +1418,25 @@ Chinese S3 fields; Beijing daily/weekly times; target-aware ten-day backup-only 
 ### Status
 
 [OK] **Completed**
+
+
+## Session 62: Draft deletion and quieter workspace headings
+<!-- trellis-session: v=2 fp=8311070d863b3399 -->
+
+**Date**: 2026-11-09
+**Task**: Draft deletion and quieter workspace headings
+**Branch**: `main`
+
+### Summary
+
+Draft-only deletion with version/session/ownership guards and stale-save prevention; compact stage/expanded pending; removed non-review decorative headings. 256 tests passed; actual browser1280/821/820/390/320 and320px confirmation checked using isolated fixture data.
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `e6dcb99` | fix: allow draft deletion and simplify workspace headings |
+
+### Status
+
+[OK] **Completed**

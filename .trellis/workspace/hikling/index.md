@@ -8,7 +8,7 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 61
+- **Total Sessions**: 62
 - **Last Active**: 2026-11-09
 <!-- @@@/auto:current-status -->
 
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~1420 | Active |
+| `journal-1.md` | ~1442 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -29,6 +29,7 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 62 | 2026-11-09 | Draft deletion and quieter workspace headings | `e6dcb99` | `main` |
 | 61 | 2026-11-09 | Precise backup scheduling and result history | `e0065fb` | `main` |
 | 60 | 2026-11-08 | 修复复盘完成提示跨栏遮挡 | `bce830d` | `main` |
 | 59 | 2026-11-08 | 六类复盘输入、完成导航与内容自定义 | `702f1e4` | `main` |
