@@ -3,19 +3,21 @@
 .workspace-calendar .workspace-hero{min-height:185px;grid-template-columns:minmax(0,1fr) 210px;margin-bottom:13px;padding-bottom:12px}
 .workspace-calendar .workspace-hero-art{max-width:210px;margin:-15px 0 -25px}
 .calendar-workspace-grid{display:grid;grid-template-columns:minmax(0,min(52%,620px)) minmax(0,1fr);gap:24px;align-items:stretch;margin-top:23px}
-.calendar-context{display:grid;grid-template-rows:minmax(min-content,.93fr) minmax(min-content,1.07fr);gap:20px;min-width:0;min-height:0;align-self:stretch}
+.calendar-context{display:grid;grid-template-rows:auto minmax(min-content,1fr);gap:20px;min-width:0;min-height:0;align-self:stretch}
 .workspace-calendar .calendar-paper{padding:24px 30px 20px}
 .workspace-calendar .calendar-paper-heading{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:8px 14px;margin-bottom:18px}
-.workspace-calendar .calendar-paper-heading .workspace-kicker{grid-column:1;grid-row:1;font-size:.56rem;margin:0}
-.workspace-calendar .calendar-paper-heading .calendar-paper-note{grid-column:2;grid-row:1;margin:0;color:#68736b;font:500 .59rem/1.7 "Microsoft YaHei",sans-serif;text-align:right}
-.workspace-calendar .calendar-paper-heading>h2{grid-column:1;grid-row:2;margin:0}
-.workspace-calendar .calendar-paper-heading .stage-calendar-legend{grid-column:2;grid-row:2;align-self:center}
+.workspace-calendar .calendar-paper-heading .calendar-paper-note{grid-column:1;grid-row:2;margin:0;color:#68736b;font:500 .59rem/1.7 "Microsoft YaHei",sans-serif;text-align:left}
+.workspace-calendar .calendar-paper-heading>h2{grid-column:1;grid-row:1;margin:0}
+.workspace-calendar .calendar-paper-heading .stage-calendar-legend{grid-column:2;grid-row:1 / span 2;align-self:center}
 .stage-panel{min-width:0}
-.workspace-calendar .stage-panel-current{display:flex;flex-direction:column;padding:24px 26px;min-height:0}
-.workspace-calendar .stage-panel-pending{display:flex;flex-direction:column;padding:22px 26px 14px;min-height:0}
+.workspace-calendar .stage-panel-current{display:flex;flex-direction:column;min-height:0}
+.workspace-page.workspace-calendar .stage-panel-current{padding-block:18px}
+.workspace-calendar .stage-panel-pending{display:flex;flex-direction:column;padding:22px 26px 14px;min-height:320px}
 .workspace-calendar .stage-pending-header h2{font-size:1.05rem}
-.workspace-calendar .stage-current-progress{margin-top:auto}
-.workspace-calendar .stage-panel-current>h2{margin:20px 0 11px;font-size:1.75rem}
+.workspace-calendar .stage-current-progress{margin-top:16px}
+.workspace-calendar .stage-panel-current>h2{margin:8px 0 5px;font-size:1.6rem}
+.workspace-calendar .stage-current-focus{margin-bottom:0}
+.workspace-calendar .stage-current-bottom{margin-top:8px}
 .stage-calendar.sd-calendar{--stage-day-row:58px;width:100%;max-width:540px;margin:0 auto}
 .stage-calendar.sd-calendar [data-slot="calendar"]{width:100%;max-width:100%;min-width:0;background:transparent;--cell-size:40px}
 .stage-calendar.sd-calendar .rdp-months,.stage-calendar.sd-calendar .rdp-month{display:block;width:100%;min-width:0;max-width:100%}
@@ -122,6 +124,8 @@
   .workspace-calendar .workspace-hero-art{max-width:155px}
   .calendar-workspace-grid{grid-template-columns:minmax(0,1fr);gap:20px}
   .calendar-context{grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:auto;gap:16px}
+  .workspace-calendar .stage-panel-current{align-self:start}
+  .workspace-calendar .stage-panel-pending{min-height:280px}
   .workspace-calendar .stage-summary-item{padding-inline:18px}
   .workspace-calendar .stage-summary-label{font-size:.71rem}
   .workspace-calendar .stage-summary-item strong{font-size:1.9rem}
@@ -135,10 +139,9 @@
   .calendar-context{grid-template-columns:minmax(0,1fr)}
   .workspace-calendar .calendar-paper{padding:20px 13px 15px}
   .workspace-calendar .calendar-paper-heading{padding-inline:5px;gap:8px 0;margin-bottom:14px}
-  .workspace-calendar .calendar-paper-heading .workspace-kicker{grid-column:1/-1}
   .workspace-calendar .calendar-paper-heading>h2{grid-column:1/-1}
   .workspace-calendar .calendar-paper-heading .calendar-paper-note{display:none}
-  .workspace-calendar .calendar-paper-heading .stage-calendar-legend{grid-column:1/-1;grid-row:3;justify-content:flex-start}
+  .workspace-calendar .calendar-paper-heading .stage-calendar-legend{grid-column:1/-1;grid-row:2;justify-content:flex-start}
   .stage-calendar .stage-calendar-body{padding-top:24px}
   .stage-calendar .stage-calendar-year{top:0;font-size:.94rem}
   .stage-calendar.sd-calendar .rdp-month_caption{height:57px}

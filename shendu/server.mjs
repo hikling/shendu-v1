@@ -1258,11 +1258,22 @@ async function api(req, res, url) {
   if (path.startsWith('/api/records/') && method === 'GET') {
     const id=path.split('/')[3]; const row=db.prepare(`SELECT * FROM records WHERE id=? AND user_id=?`).get(id,user.id); if(!row)return error(res,404,'记录不存在'); return json(res,200,{record:recordOut(row)});
   }
+  if (/^\/api\/records\/[^/]+$/.test(path) && method === 'DELETE') {
+    const body=await readJson(req),id=path.split('/')[3],row=db.prepare(`SELECT status,version FROM records WHERE id=? AND user_id=?`).get(id,user.id);
+    if(!row)return error(res,404,'记录不存在或已被删除','record_not_found');
+    if(row.status!=='draft')return error(res,409,'已提交的记录不能删除','locked');
+    if(!Number.isSafeInteger(body.version)||body.version<1)return error(res,400,'请提供有效的草稿版本后重试','invalid_record_version');
+    if(body.version!==row.version)return error(res,409,'这条草稿已在其他设备更新，请刷新后再删除','version_conflict');
+    const deleted=db.prepare(`DELETE FROM records WHERE id=? AND user_id=? AND status='draft' AND version=?`).run(id,user.id,body.version);
+    if(deleted.changes!==1)return error(res,409,'这条草稿状态已变化，请刷新后再试','version_conflict');
+    return json(res,200,{ok:true});
+  }
   if (path === '/api/records' && method === 'PUT') {
     const body=await readJson(req); if(!validRecordType(body.type)||!body.period)return error(res,400,'记录类型或周期不正确');
     if(String(body.period)!==currentPeriodFor(body.type))return error(res,400,currentPeriodMessage(body.type),'period_locked');
     if(body.id&&!validEntityId(body.id))return error(res,400,'记录编号不正确');
     const id=body.id||randomUUID(), existing=db.prepare(`SELECT * FROM records WHERE id=? AND user_id=?`).get(id,user.id);
+    if(body.id&&!existing)return error(res,404,'记录不存在或已被删除','record_not_found');
     if(existing&&existing.status!=='draft')return error(res,409,'已完成的记录不能修改','locked');
     if(existing&&Number(body.version)!==Number(existing.version))return error(res,409,'这条记录已在其他设备更新，请刷新后再继续','version_conflict');
     const stamp=now(), version=existing?existing.version+1:1,cleanData=isPlainObject(body.data)?body.data:{};

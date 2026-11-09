@@ -17,6 +17,12 @@
 .history-page .history-results-head{margin:24px 3px 14px}
 .history-page .history-results-head h2{font-size:.87rem}
 .history-page .history-record-grid{grid-template-columns:repeat(2,minmax(0,1fr));align-items:stretch;gap:20px}
+.history-page .history-record-entry{display:flex;flex-direction:column;min-width:0;--history-tone:#15584e;--history-soft:#edf4ed}
+.history-page .history-record-entry>.history-record{flex:1}
+.history-page .history-record-actions{display:flex;justify-content:flex-end;padding:4px 8px 0}
+.history-page .history-delete-draft{min-height:42px;height:auto;padding:8px 12px;border:0;border-radius:8px;background:transparent;color:#943f36;font:600 .72rem/1.6 "Microsoft YaHei",sans-serif;white-space:normal}
+.history-page .history-delete-draft:hover{background:#943f360c;text-decoration:underline;text-underline-offset:4px}
+.history-page .history-delete-draft:focus-visible{outline:2px solid #943f36;outline-offset:2px}
 .history-page .history-record{display:flex;flex-direction:column;align-items:stretch;justify-content:flex-start;gap:0;width:100%;height:auto;min-height:0;padding:18px 22px 14px;text-align:left;white-space:normal;border:1px solid color-mix(in srgb,var(--history-tone) 21%,#dce2d5);border-radius:20px;background:linear-gradient(115deg,#fffefa 35%,color-mix(in srgb,var(--history-soft) 72%,#fffefa));box-shadow:0 5px 15px #263d2c08;overflow:visible;transition:transform .2s,box-shadow .2s,border-color .2s}
 .history-page .history-record:before{top:21px;height:21px;width:3px}
 .history-page .history-record:hover{transform:translateY(-3px);border-color:color-mix(in srgb,var(--history-tone) 48%,#dce2d5);box-shadow:0 12px 26px #263d2c14}

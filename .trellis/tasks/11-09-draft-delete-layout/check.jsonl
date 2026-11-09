@@ -1,0 +1,2 @@
+{"file": ".trellis/spec/frontend/state-and-data.md", "reason": "Cache, dirty state and mutation ownership"}
+{"file": ".trellis/spec/backend/testing-and-operations.md", "reason": "Isolated HTTP and actual component tests"}
