@@ -1484,3 +1484,25 @@ Designed consistent archive/pending/verified section titles with semantic glyph,
 ### Status
 
 [OK] **Completed**
+
+
+## Session 65: Simplify section headings after visual feedback
+<!-- trellis-session: v=2 fp=1c8720d0b258e093 -->
+
+**Date**: 2026-11-09
+**Task**: Simplify section headings after visual feedback
+**Branch**: `main`
+
+### Summary
+
+Removed section glyphs, tinted bands, oversized counter columns and status colors. Plain Songti title with small adjacent count, description and trailing rule; settings remains streamlined. Check/build and261 tests passed; local browser disabled.
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `c8a918d` | style: simplify archive section headings |
+
+### Status
+
+[OK] **Completed**

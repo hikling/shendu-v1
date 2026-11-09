@@ -8,7 +8,7 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 64
+- **Total Sessions**: 65
 - **Last Active**: 2026-11-09
 <!-- @@@/auto:current-status -->
 
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~1486 | Active |
+| `journal-1.md` | ~1508 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -29,6 +29,7 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 65 | 2026-11-09 | Simplify section headings after visual feedback | `c8a918d` | `main` |
 | 64 | 2026-11-09 | Archive section hierarchy and settings navigation | `c43f8ee` | `main` |
 | 63 | 2026-11-09 | Move draft deletion to the review end page | `e88d0a5` | `main` |
 | 62 | 2026-11-09 | Draft deletion and quieter workspace headings | `e6dcb99` | `main` |
