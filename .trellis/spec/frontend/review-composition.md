@@ -15,3 +15,5 @@ All six review writing textareas (including action/paired contingency/metric/dec
 
 
 Completion afterwords must be descendants of the actual final `.daily-pane`, including daily when journal is disabled and verifyDate becomes last. Never mount an afterword directly under `.daily-editor-content`: it then bypasses the pane's desktop width/side and can cover the illustration. Extended reviews follow the same pane ownership. Keep one mounted afterword and toggle visibility on the actual last prompt.
+
+Draft deletion is a footer operation visible only on the actual last prompt, shared by daily and the five extended flows. Gate by current.status=draft, independently of the historical read-only editor lock. Mount it once, keep it hidden on intro/earlier prompts and let the existing prompt owners toggle it beside the final controls. Preserve the content/art/footer grid; allow action controls to wrap on phones. No delete affordance belongs on history cards or completed/verified reviews.

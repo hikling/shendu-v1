@@ -4,6 +4,10 @@ import {readFile} from 'node:fs/promises';
 import {JSDOM} from 'jsdom';
 import {RECORD_ART,recordArtAssignments} from '../public/record-art.js';
 import {overviewRecordTitle,overviewDateParts} from '../public/overview-reel.js';
+import {DAILY_STEPS,dailyPrompts,dailyPromptOwner} from '../public/daily-flow.js';
+import {EXTENDED_FLOW,extendedPrompts} from '../public/extended-flow.js';
+import {reviewQuestions} from '../public/review-schema.js';
+import {reviewIntroLayout,reviewIntroLines} from '../public/review-intros.js';
 
 const source=await readFile(new URL('../public/app.js',import.meta.url),'utf8');
 const html=await readFile(new URL('../public/index.html',import.meta.url),'utf8');
@@ -21,106 +25,110 @@ function owner(name){
   const start=match.index+(source[match.index]==='\n'?1:0),next=/\n(?:async )?function /.exec(source.slice(start+1));
   return source.slice(start,next?start+1+next.index:source.length).split('\ndocument.addEventListener')[0];
 }
-const types=source.slice(source.indexOf('const TYPES ='),source.indexOf('const TYPE_ICONS ='));
-const icons=source.match(/const TYPE_ICONS = [^\n]+/)[0];
-const statuses=source.match(/const STATUS = [^\n]+/)[0];
+const constants=source.slice(source.indexOf('const TYPES ='),source.indexOf('const TYPE_ICONS ='))+'\n'+source.match(/const TYPE_ICONS = [^\n]+/)[0]+'\n'+source.match(/const STATUS = [^\n]+/)[0]+'\n'+source.slice(source.indexOf('const QUESTIONS ='),source.indexOf('function mergeReviewTemplate('));
+const renderers=['dailyAnswerPreview','answerItemRow','answerAddButton','dailyAnswerInputs','gaugePresentation','gaugeCard','dailyEvidence','dailyReflection','dailyActionFields','dailyJournal','reviewAfterword','dailySceneArt','dailyReviewHtml','extendedSceneArt','extendedPromptCopy','extendedPromptHtml','extendedReviewHtml','verificationRead','currentDailyPrompts','dailyPromptCopy','setReviewPromptHeading','setDailyPromptHeading','showDailyPrompt','currentExtendedPrompts','setExtendedPromptHeading','showExtendedPrompt','bindReview','clearDailyIssues','openDailyAnswer'];
 function record(type='daily',status='draft',overrides={}){
-  const periods={daily:'2026-11-09',weekly:'2026-W45',monthly:'2026-11',quarterly:'2026-11-01',yearly:'2026',decision:'2026-11-09'};
-  return {id:`${type}-${status}`,type,status,period:periods[type],version:3,title:`${type} 私人草稿`,data:{answers:{note:['先写一段']},action:'下一步行动'},...overrides};
+  const periods={daily:'2026-11-09',weekly:'2026-W46',monthly:'2026-11',quarterly:'2026-11-01',yearly:'2026',decision:'2026-11-09'};
+  return {id:`${type}-${status}`,type,status,period:periods[type],version:3,title:`${type} 私人草稿`,data:{answers:{},metrics:[],action:'下一步行动',journal:'未保存的日记',verifyDate:'2027-03-01'},...overrides};
 }
-function fixture({records=[record()],requestImpl=async()=>({ok:true})}={}){
+function fixture({draft=record(),records=[draft],requestImpl=async()=>({ok:true}),review={}}={}){
   ui.dismissDialog($('#modal-root'));ui.renderMarkup($('#app'),'');
-  const state={user:{id:'owner',username:'owner'},records,historyFilter:{q:'',type:'all',year:'all',month:'all'},current:null,dirty:false,saving:false,route:'history'},calls=[],notices=[],reviews=[];
+  const state={user:{id:'owner',username:'owner',displayName:'测试'},stage:{sleepTarget:7,energyTarget:70},records,current:draft,historyFilter:{q:'',type:'all',year:'all',month:'all'},dirty:false,saving:false,route:draft.type},calls=[],notices=[],reviews=[],navigations=[];
   const request=(path,options)=>{calls.push({path,...options});return requestImpl(path,options)};
-  const shell=html=>ui.renderMarkup($('#app'),`<main>${html}</main>`);
-  const names=['recordSummary','isoWeekAnchor','historyYear','historyMonth','historyCardHtml','renderHistory','renderActions','bindRecordOpen','deleteDraftRecord','dialogWriteTask','syncOverlayBackground','openModal','closeModal','attemptNavigate','spacePageHead'];
-  const actionTemplate=()=>({pageTitle:'行动验证',pageIntro:'回看真实结果',historyButton:'查看历史',pendingTitle:'待验证',pendingIntro:'仍在等待的行动',verifiedTitle:'已验证',verifiedIntro:'已确认的结果',pendingEmptyTitle:'暂时没有待验证行动',pendingEmptyText:'完成复盘后再回来',verifiedEmptyTitle:'还没有验证结果',verifiedEmptyText:'验证后将显示在这里'});
-  const functions=new Function('$','$$','state','request','renderMarkup','prepareDialogContainer','showDialog','dismissDialog','cancelDailyTypewriter','esc','shell','recordArtAssignments','RECORD_ART','overviewRecordTitle','overviewDateParts','formatDate','today','toast','enterReview','workspaceArt','currentActionTemplate',`let modalReturnFocus=null;\n${types}\n${icons}\n${statuses}\n${names.map(owner).join('\n')}\nreturn {renderHistory,renderActions,deleteDraftRecord,historyCardHtml,openModal,closeModal,attemptNavigate,spacePageHead};`)($,$$,state,request,ui.renderMarkup,ui.prepareDialogContainer,ui.showDialog,ui.dismissDialog,()=>{},esc,shell,recordArtAssignments,RECORD_ART,overviewRecordTitle,overviewDateParts,value=>value,()=> '2026-11-09',(...args)=>notices.push(args),(...args)=>reviews.push(args),()=>'<span class="workspace-art" aria-hidden="true"></span>',actionTemplate);
-  return {state,calls,notices,reviews,...functions};
+  const shell=html=>ui.renderMarkup($('#app'),`<main class="main" id="main-content">${html}</main>`);
+  const names=[...renderers,'recordSummary','isoWeekAnchor','historyYear','historyMonth','historyCardHtml','renderHistory','renderActions','bindRecordOpen','deleteDraftRecord','dialogWriteTask','syncOverlayBackground','openModal','closeModal','spacePageHead'];
+  let templates,functions;
+  const context={$,$$,state,request,renderMarkup:ui.renderMarkup,prepareDialogContainer:ui.prepareDialogContainer,showDialog:ui.showDialog,dismissDialog:ui.dismissDialog,cancelDailyTypewriter:()=>{},startDailyTypewriter:()=>{},setDailyImmersive:()=>{},esc,shell,recordArtAssignments,RECORD_ART,overviewRecordTitle,overviewDateParts,formatDate:value=>value,today:()=> '2026-11-09',toast:(...args)=>notices.push(args),enterReview:(...args)=>reviews.push(args),workspaceArt:()=>'',currentActionTemplate:()=>templates.action,DAILY_STEPS,dailyPrompts,dailyPromptOwner,EXTENDED_FLOW,extendedPrompts,reviewQuestions,reviewIntroLayout,dailyIntroLines:reviewIntroLines,defaultPeriod:type=>record(type).period,quoteFor:()=> '回看事实，慢慢向前。',beijingTime:()=> '12:00',verificationMinimum:()=> '2026-11-09',dailyCalendarDateLabel:value=>value,templatesForRecord:()=>templates,verificationTimes:()=>'',dailyVerificationCalendar:(value,locked)=>`<input type="hidden" data-simple="verifyDate" value="${esc(value)}" ${locked?'disabled':''}><div id="daily-verification-calendar" data-verify-month-value="2026-11"></div>`,renderDailyCalendar:()=>{},bindDailyFlow:()=>functions.showDailyPrompt(null),bindExtendedFlow:()=>functions.showExtendedPrompt(null),saveCurrent:async()=>{},completeCurrent:()=>{},collectCurrent:()=>{},renderReviewFromCurrent:()=>{},focusDailyAnswer:()=>{},updateGauge:()=>{},navigate:route=>{navigations.push(route);state.route=route;functions.renderHistory()}};
+  functions=new Function(...Object.keys(context),`let modalReturnFocus=null;\n${constants}\n${names.map(owner).join('\n')}\nreturn {renderHistory,renderActions,deleteDraftRecord,historyCardHtml,openModal,closeModal,spacePageHead,dailyReviewHtml,extendedReviewHtml,showDailyPrompt,showExtendedPrompt,bindReview,review:DEFAULT_REVIEW_TEMPLATES,action:DEFAULT_ACTION_TEMPLATE};`)(...Object.values(context));
+  templates={review:{...functions.review[draft.type],...review},action:functions.action};
+  const go=id=>draft.type==='daily'?functions.showDailyPrompt(id):functions.showExtendedPrompt(id);
+  const openReview=()=>{const locked=state.current.status!=='draft'||state.current.period!==record(state.current.type).period;const content=draft.type==='daily'?functions.dailyReviewHtml(state.current.period,locked,state.current.data,templates):functions.extendedReviewHtml(draft.type,state.current.period,locked,state.current.data,templates);shell(content);functions.bindReview()};
+  const last=()=>draft.type==='daily'?dailyPrompts(0,templates.review).at(-1).id:'verifyDate';
+  return {state,calls,notices,reviews,navigations,templates,...functions,openReview,go,last};
 }
 
-test('all six draft kinds have a separate accessible delete action while submitted records only open',()=>{
+test('history lists only openable records, never a draft delete action',()=>{
   const records=Object.keys(RECORD_ART).flatMap(type=>['draft','completed','verified'].map(status=>record(type,status))),f=fixture({records});f.renderHistory();
-  assert.equal($$('.history-record-entry').length,18);assert.equal($$('[data-delete-record]').length,6);
-  assert.equal($$('button button').length,0,'open and delete controls must not be nested');
-  for(const item of records){
-    const open=$(`[data-open-record="${item.id}"]`),entry=open.closest('.history-record-entry'),remove=$('[data-delete-record]',entry);
-    assert.ok(open);assert.equal(open.type,'button');
-    if(item.status==='draft'){assert.ok(remove);assert.equal(remove.dataset.deleteRecord,item.id);assert.match(remove.getAttribute('aria-label'),/删除.*草稿/);assert.equal(open.contains(remove),false)}
-    else assert.equal(remove,null);
-  }
-  $('[data-open-record="daily-completed"]').click();assert.equal(f.reviews[0][3].id,'daily-completed');
-  f.deleteDraftRecord(records.find(item=>item.status==='verified'));assert.equal($('#delete-draft-confirm'),null);
+  assert.equal($$('[data-open-record]').length,18);assert.equal($$('[data-delete-record],#delete-draft,.history-delete-draft').length,0);assert.equal($$('button button').length,0);
+  $('[data-open-record="weekly-draft"]').click();assert.equal(f.reviews[0][3].id,'weekly-draft');
 });
 
-test('deletion confirmation escapes the draft title and cancelling leaves the archive untouched',async()=>{
-  const draft=record('daily','draft',{title:'<img src=x onerror=alert(1)> & 私人标题'}),f=fixture({records:[draft]});f.renderHistory();
-  $('[data-delete-record]').click();await settle();
-  assert.ok($('#delete-draft-confirm'));assert.equal(f.reviews.length,0,'delete does not also open the record');
-  assert.match($('.lock-summary').textContent,/<img src=x onerror=alert\(1\)> & 私人标题/);assert.equal($('#modal-root [onerror]'),null);
-  const cancel=$$('[data-close]').find(button=>button.textContent==='保留草稿');assert.ok(cancel);cancel.click();await settle();
-  assert.equal($('#delete-draft-confirm'),null);assert.equal(f.calls.length,0);assert.equal(f.state.records[0],draft);assert.ok($('[data-delete-record]'));
-});
-
-test('confirmed deletion sends one versioned request, protects pending UI and preserves active filters',async()=>{
-  let finish;const draft=record(),keep=record('daily','draft',{id:'keep-draft',title:'daily 另一份草稿'}),other=record('weekly','draft'),f=fixture({records:[draft,keep,other],requestImpl:()=>new Promise(resolve=>{finish=resolve})});
-  const filter={q:'daily',type:'daily',year:'2026',month:'11'};f.state.current=draft;f.renderHistory(filter);
-  $(`[data-delete-record="${draft.id}"]`).click();await settle();const button=$('#delete-draft-confirm');button.click();button.click();
-  assert.deepEqual(f.calls,[{path:`/api/records/${draft.id}`,method:'DELETE',body:{version:3}}]);assert.equal(f.state.saving,true);assert.equal(button.disabled,true);
-  assert.equal($('#modal-root').dataset.persistent,'1');f.closeModal();assert.equal($('#delete-draft-confirm'),button);
-  finish({ok:true});await settle();
-  assert.deepEqual(f.state.records.map(item=>item.id),['keep-draft','weekly-draft']);assert.equal(f.state.current,null);assert.equal(f.state.saving,false);assert.equal(f.state.dirty,false);
-  assert.deepEqual(f.state.historyFilter,filter);assert.equal($('#history-search').value,'daily');assert.equal($('#history-type').value,'daily');assert.equal($('#history-year').value,'2026');assert.equal($('#history-month').value,'11');
-  assert.deepEqual($$('[data-open-record]').map(node=>node.dataset.openRecord),['keep-draft']);assert.equal($('#delete-draft-confirm'),null);assert.equal(document.activeElement,$('[data-open-record]'));assert.match(f.notices.at(-1)[0],/草稿已删除/);
-});
-
-test('failed deletion retains the draft and confirmation for retry without clearing another current record',async()=>{
-  let attempt=0;const draft=record(),current=record('weekly','draft'),f=fixture({records:[draft,current],requestImpl:async()=>{if(++attempt===1)throw new Error('记录已在其他设备更新，请刷新');return {ok:true}}});
-  f.state.current=current;f.renderHistory();$(`[data-delete-record="${draft.id}"]`).click();await settle();const button=$('#delete-draft-confirm');button.click();await settle();
-  assert.equal(f.state.records[0],draft);assert.equal(f.state.current,current);assert.equal($('#delete-draft-confirm'),button);assert.equal(button.disabled,false);assert.equal(f.state.saving,false);assert.equal($('#modal-root').dataset.persistent,'0');assert.match(f.notices.at(-1)[0],/其他设备更新/);
-  button.click();await settle();assert.equal(f.calls.length,2);assert.deepEqual(f.calls[1].body,{version:3});assert.equal(f.state.current,current);assert.deepEqual(f.state.records.map(item=>item.id),[current.id]);
-});
-
-test('removing the final visible draft shows the empty state and returns focus to its heading',async()=>{
-  const f=fixture();f.renderHistory();$('[data-delete-record]').click();await settle();$('#delete-draft-confirm').click();await settle();
-  assert.equal(f.state.records.length,0);assert.ok($('.history-empty'));assert.equal($('[data-open-record]'),null);assert.equal(document.activeElement,$('#history-title'));assert.equal($('#history-title').tabIndex,-1);
-});
-
-test('unsaved edits must be retained or explicitly discarded before a deletion can be confirmed',async()=>{
-  const draft=record(),f=fixture({records:[draft]});f.state.current=draft;draft.data.action='这段还没有保存';f.state.dirty=true;f.renderHistory();
-  $('[data-delete-record]').click();await settle();assert.ok($('#discard-change'));assert.equal($('#delete-draft-confirm'),null);assert.equal(f.calls.length,0);
-  $('[data-close]').click();await settle();assert.equal(f.state.dirty,true);assert.equal(draft.data.action,'这段还没有保存');assert.equal($('#delete-draft-confirm'),null);
-  $('[data-delete-record]').click();await settle();$('#discard-change').click();await settle();assert.equal(f.state.dirty,false);assert.ok($('#delete-draft-confirm'));assert.equal(f.calls.length,0);
-  $('#delete-draft-confirm').click();await settle();assert.equal(f.state.records.length,0);
-});
-
-test('a forced replacement or account switch cannot let a late delete alter the new owner',async()=>{
-  for(const mode of ['dialog','account']){
-    let finish;const draft=record(),originalRecords=[draft],f=fixture({records:originalRecords,requestImpl:()=>new Promise(resolve=>{finish=resolve})});f.state.current=draft;f.renderHistory();$('[data-delete-record]').click();await settle();$('#delete-draft-confirm').click();
-    const replacementUser={id:'other',username:'other'},replacementRecords=[record('weekly','draft',{id:'other-record'})];
-    if(mode==='account'){f.state.user=replacementUser;f.state.records=replacementRecords}
-    f.closeModal(true);f.openModal('<div class="modal-head"><h2>另一个确认</h2></div><button id="replacement-confirm">继续</button>','',true);
-    const newerOwner={};f.state.dialogWriteOwner=newerOwner;f.state.saving=true;
-    finish({ok:true});await settle();
-    assert.ok($('#replacement-confirm'));assert.equal($('#modal-root').dataset.persistent,'1');assert.equal(f.state.dialogWriteOwner,newerOwner);assert.equal(f.state.saving,true);assert.equal(f.state.current,draft);assert.deepEqual(f.notices,[]);
-    assert.equal(f.state.records,mode==='account'?replacementRecords:originalRecords);assert.equal(f.state.records[0].id,mode==='account'?'other-record':draft.id);
-    f.closeModal(true);
+test('all six saved drafts show delete only on their actual final prompt, including historical read-only drafts',()=>{
+  for(const type of Object.keys(RECORD_ART))for(const historical of [false,true]){
+    const draft=record(type,'draft',historical?{period:type==='yearly'?'2025':type==='monthly'?'2025-11':type==='weekly'?'2025-W46':'2025-11-01'}:{}),f=fixture({draft});f.openReview();
+    const button=$('#delete-draft');assert.ok(button);assert.equal(button.hidden,true);assert.equal($('#daily-editor').hidden,true);
+    f.go('action');assert.equal(button.hidden,true);f.go(f.last());assert.equal(button.hidden,false);assert.ok(button.closest('.daily-flow-footer'));
+    if(historical){assert.equal($('#daily-editor').dataset.dailyLocked,'true');assert.equal($('#save-draft'),null);assert.equal($('[data-simple="action"]').readOnly,true);assert.equal(button.disabled,false)}
+    f.go('action');assert.equal(button.hidden,true);f.go(f.last());button.click();assert.ok($('#delete-draft-confirm'));f.closeModal(true);
   }
 });
 
-test('a changed account while the unsaved prompt is open never opens a destructive confirmation',async()=>{
-  const f=fixture();f.state.dirty=true;f.renderHistory();$('[data-delete-record]').click();await settle();assert.ok($('#discard-change'));
-  f.state.user={id:'other'};$('#discard-change').click();await settle();assert.equal($('#delete-draft-confirm'),null);assert.equal(f.calls.length,0);assert.equal(f.state.records.length,1);
-});
-
-test('history and ordinary workspace page headings start with the title, retaining meaningful descriptions',()=>{
-  const f=fixture();f.renderHistory();assert.equal($('.history-hero-copy').firstElementChild,$('#history-title'));assert.equal($('.history-kicker'),null);assert.match($('.history-hero-note').textContent,/把写下的事实/);
-  f.state.records=[];f.renderActions();assert.equal($('.history-hero-copy').firstElementChild,$('#actions-title'));assert.equal($('.history-kicker,.actions-section-kicker'),null);assert.equal($('.history-hero-note').textContent,'回看真实结果');assert.equal($('#actions-pending-title').parentElement.firstElementChild,$('#actions-pending-title'));assert.equal($('#actions-verified-title').parentElement.firstElementChild,$('#actions-verified-title'));
-  for(const route of ['backup','users','settings','calendar','stage','guide']){
-    ui.renderMarkup($('#app'),f.spacePageHead(route,{title:'实际标题',description:'有意义的功能说明'}));
-    const heading=$(`#workspace-${route}-title`);assert.equal(heading.parentElement.firstElementChild,heading);assert.equal($('.workspace-kicker'),null);assert.equal($('.workspace-description').textContent,'有意义的功能说明');
+test('daily custom templates move the deletion entry to verifyDate when the diary is removed',()=>{
+  for(const review of [{disabledFields:['journal']},{questions:[],disabledFields:['sleep','energy','risk','journal']}]){
+    const f=fixture({review});f.openReview();f.go('ifCondition');assert.equal($('#delete-draft').hidden,true);f.go('verifyDate');assert.equal($('#delete-draft').hidden,false);assert.equal($('[data-daily-next]').hidden,true);
   }
 });
 
+test('submitted and verified records have no deletion entry for all six types',()=>{
+  for(const type of Object.keys(RECORD_ART))for(const status of ['completed','verified']){
+    const f=fixture({draft:record(type,status)});f.openReview();f.go(f.last());assert.equal($('#delete-draft'),null);f.deleteDraftRecord(f.state.current);assert.equal($('#delete-draft-confirm'),null);
+  }
+});
+
+test('cancel preserves typed fields and dirty state, with one escaped destructive confirmation',async()=>{
+  const draft=record('weekly','draft',{title:'<img src=x onerror=alert(1)> & 私人标题'}),f=fixture({draft});f.openReview();f.go(f.last());f.state.dirty=true;
+  const input=$('[data-simple="action"]');input.value='刚刚输入但没有保存的内容';$('#delete-draft').focus();$('#delete-draft').click();await settle();
+  assert.match($('.lock-summary').textContent,/<img src=x onerror=alert\(1\)> & 私人标题/);assert.equal($('#modal-root [onerror]'),null);assert.equal(f.state.dirty,true);
+  assert.match($('#modal-root').textContent,/尚未保存的修改/);assert.equal($('#discard-change'),null);
+  $$('[data-close]').find(button=>button.textContent==='保留草稿').click();await settle();
+  assert.equal(f.state.current,draft);assert.equal(input.value,'刚刚输入但没有保存的内容');assert.equal(f.state.dirty,true);assert.equal(f.calls.length,0);assert.equal(document.activeElement,$('#delete-draft'));
+});
+
+test('successful saved deletion sends one exact version, blocks dismissal, clears current and navigates to history',async()=>{
+  let finish;const draft=record(),keep=record('weekly'),f=fixture({draft,records:[draft,keep],requestImpl:()=>new Promise(resolve=>{finish=resolve})});f.openReview();f.go(f.last());f.state.dirty=true;f.state.historyFilter={q:'weekly',type:'weekly',year:'all',month:'all'};
+  $('#delete-draft').click();await settle();const button=$('#delete-draft-confirm');button.click();button.click();
+  assert.deepEqual(f.calls,[{path:`/api/records/${draft.id}`,method:'DELETE',body:{version:3}}]);assert.equal(button.disabled,true);assert.equal(f.state.saving,true);assert.equal(f.state.dirty,true);f.closeModal();assert.equal($('#delete-draft-confirm'),button);
+  finish({ok:true});await settle();assert.deepEqual(f.navigations,['history']);assert.equal(f.state.route,'history');assert.equal(f.state.current,null);assert.equal(f.state.dirty,false);assert.equal(f.state.saving,false);assert.deepEqual(f.state.records,[keep]);assert.equal($('#history-search').value,'weekly');assert.equal(document.activeElement,$('[data-open-record]'));
+});
+
+test('failed deletion retains unsaved values and allows retry without changing the submitted version',async()=>{
+  let attempt=0;const f=fixture({requestImpl:async()=>{if(++attempt===1)throw new Error('其他设备已更新，请刷新');return {ok:true}}});f.openReview();f.go(f.last());f.state.dirty=true;const draft=f.state.current,input=$('[data-simple="journal"]');input.value='失败后还要保留';
+  $('#delete-draft').click();await settle();const button=$('#delete-draft-confirm');button.click();await settle();
+  assert.equal(f.state.current,draft);assert.equal(f.state.records.length,1);assert.equal(f.state.dirty,true);assert.equal(input.value,'失败后还要保留');assert.equal(button.disabled,false);assert.equal(f.state.saving,false);assert.equal(f.navigations.length,0);
+  button.click();await settle();assert.equal(f.calls.length,2);assert.deepEqual(f.calls[1].body,{version:3});assert.equal(f.state.current,null);
+});
+
+test('a never-saved draft is discarded locally after confirmation without creating or deleting server data',async()=>{
+  const draft=record('daily','draft',{id:null,version:0}),f=fixture({draft,records:[]});f.openReview();f.go(f.last());f.state.dirty=true;$('#delete-draft').click();await settle();$('#delete-draft-confirm').click();await settle();
+  assert.equal(f.calls.length,0);assert.equal(f.state.current,null);assert.equal(f.state.dirty,false);assert.deepEqual(f.navigations,['history']);assert.ok($('.history-empty'));assert.equal(document.activeElement,$('#history-title'));
+});
+
+test('first save updates the existing end-page action to use its new ID and version',async()=>{
+  const draft=record('daily','draft',{id:null,version:0}),f=fixture({draft,records:[]});f.openReview();f.go(f.last());const saved={...draft,id:'first-save',version:1};f.state.current=saved;f.state.records=[saved];
+  $('#delete-draft').click();await settle();$('#delete-draft-confirm').click();await settle();assert.deepEqual(f.calls,[{path:'/api/records/first-save',method:'DELETE',body:{version:1}}]);
+});
+
+test('stale account, record, page or dialog completion cannot clear a newer editor or release another write owner',async()=>{
+  for(const mode of ['account','record','page','dialog']){
+    let finish;const f=fixture({requestImpl:()=>new Promise(resolve=>{finish=resolve})});f.openReview();f.go(f.last());$('#delete-draft').click();await settle();$('#delete-draft-confirm').click();
+    const original=f.state.current,originalRecords=f.state.records,newer=record('weekly'),newRecords=[newer];
+    if(mode==='account'){f.state.user={id:'another'};f.state.records=newRecords}
+    if(mode==='record')f.state.current=newer;
+    if(mode==='page')ui.renderMarkup($('#app'),'<main>另一个页面</main>');
+    if(mode==='dialog'){f.closeModal(true);f.openModal('<div class="modal-head"><h2>新的确认</h2></div><button id="new-confirm">继续</button>','',true)}
+    const newerOwner={};f.state.dialogWriteOwner=newerOwner;f.state.saving=true;finish({ok:true});await settle();
+    assert.equal(f.navigations.length,0);assert.equal(f.state.current,mode==='record'?newer:original);assert.equal(f.state.records,mode==='account'?newRecords:originalRecords);assert.equal(f.state.dialogWriteOwner,newerOwner);assert.equal(f.state.saving,true);assert.deepEqual(f.notices,[]);f.closeModal(true);
+  }
+});
+
+test('a pending save or a nonfinal/intro page cannot start deleting the current draft',()=>{
+  const f=fixture();f.openReview();f.deleteDraftRecord(f.state.current);assert.equal($('#delete-draft-confirm'),null);f.go('action');f.deleteDraftRecord(f.state.current);assert.equal($('#delete-draft-confirm'),null);f.go(f.last());f.state.saving=true;$('#delete-draft').click();assert.equal($('#delete-draft-confirm'),null);assert.equal(f.calls.length,0);
+});
+
+test('ordinary workspace page headings remain title-first',()=>{
+  const f=fixture();f.renderHistory();assert.equal($('.history-hero-copy').firstElementChild,$('#history-title'));assert.equal($('.history-kicker'),null);
+  f.state.records=[];f.renderActions();assert.equal($('.history-hero-copy').firstElementChild,$('#actions-title'));assert.equal($('.history-kicker,.actions-section-kicker'),null);
+  for(const route of ['backup','users','settings','calendar','stage','guide']){ui.renderMarkup($('#app'),f.spacePageHead(route,{title:'实际标题',description:'有意义的功能说明'}));assert.equal($(`#workspace-${route}-title`).parentElement.firstElementChild,$(`#workspace-${route}-title`));assert.equal($('.workspace-kicker'),null)}
+});
 test.afterEach(()=>{ui.dismissDialog($('#modal-root'));ui.disposeUi($('#app'));$('#app').replaceChildren()});
 test.after(()=>dom.window.close());

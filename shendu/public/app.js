@@ -1,7 +1,7 @@
 import {backupScheduleLabel} from './backup-schedule.js?v=1.0.0-backups1';
 import {normalizeReviewMetricIds,reconcileReviewMetrics} from './review-metrics.js?v=1.0.0-custom1';
 import {reviewQuestions,reviewDisabledFields} from './review-schema.js?v=1.0.0-custom1';
-import {renderMarkup,disposeUi,prepareDialogContainer,initializeToasts,showDialog,dismissDialog,showMenu,showVerificationCalendar,showStageCalendar,showToast} from './ui/shadcn.js?v=1.0.0-drafts2';
+import {renderMarkup,disposeUi,prepareDialogContainer,initializeToasts,showDialog,dismissDialog,showMenu,showVerificationCalendar,showStageCalendar,showToast} from './ui/shadcn.js?v=1.0.0-draftend1';
 import {overviewRecordAppearances,overviewVerifiedRecords,overviewRecordExcerpt,overviewLoopMetrics,overviewRecordTitle,overviewDateParts} from './overview-reel.js?v=1.0.0-overview15';
 import {DAILY_STEPS,dailyStepIssues,dailyPrompts,dailyPromptIssues,dailyPromptNeighbor,dailyPromptOwner} from './daily-flow.js?v=1.0.0-custom1';
 import {dailyCalendarModel,dailyCalendarDateLabel} from './daily-calendar.js?v=1.0.0-art1';
@@ -378,7 +378,7 @@ function dailyReviewHtml(period,locked,data,templates){
       <p class="daily-flow-error" id="daily-flow-error" role="alert" hidden></p>
       ${DAILY_STEPS.map((step,index)=>`<div class="daily-pane" data-daily-pane="${step.id}" hidden>${panes[index]}${step.id===lastPrompt.step?`<div class="daily-afterword" data-review-afterword hidden>${reviewAfterword(locked,data,templates.action)}</div>`:''}</div>`).join('')}
       <div class="daily-step-note"><span id="daily-step-hint"></span>${locked?`<span class="status-chip done">${STATUS[state.current.status]}</span>`:''}</div>
-      </div><footer class="daily-flow-footer"><button type="button" class="btn btn-ghost" data-daily-back>上一步</button><p class="save-state" role="status">${saved}</p><div class="daily-flow-actions">${!locked?`<button type="button" class="btn toolbar-save" id="save-draft">保存草稿</button><button type="button" class="btn btn-red" id="complete-record" hidden>完成并锁定</button>`:`<button type="button" class="btn btn-ghost" id="daily-finish" data-nav="history" hidden>回到历史记录</button>`}<button type="button" class="btn btn-primary" data-daily-next>下一题 <span aria-hidden="true">→</span></button></div></footer>
+      </div><footer class="daily-flow-footer"><button type="button" class="btn btn-ghost" data-daily-back>上一步</button><p class="save-state" role="status">${saved}</p><div class="daily-flow-actions">${state.current.status==='draft'?'<button type="button" class="btn review-delete-draft" id="delete-draft" hidden>删除草稿</button>':''}${!locked?`<button type="button" class="btn toolbar-save" id="save-draft">保存草稿</button><button type="button" class="btn btn-red" id="complete-record" hidden>完成并锁定</button>`:`<button type="button" class="btn btn-ghost" id="daily-finish" data-nav="history" hidden>回到历史记录</button>`}<button type="button" class="btn btn-primary" data-daily-next>下一题 <span aria-hidden="true">→</span></button></div></footer>
     </section></div>`;
 }
 function extendedSceneArt(type){return `<div class="daily-scene-art" aria-hidden="true"><span class="daily-scene-corner"></span><span class="daily-scene-signet"></span><span class="daily-scene-rule"></span>${EXTENDED_FLOW[type].stages.map((stage,index)=>`<img class="daily-scene-image" data-extended-art="${type}-${stage.id}" src="/assets/extended/${type}-${stage.id}.webp?v=1.0.0-palette2" alt="" width="1254" height="1254" draggable="false" ${index?'hidden':''}>`).join('')}</div>`}
@@ -406,7 +406,7 @@ function extendedReviewHtml(type,period,locked,data,templates){
       <div class="daily-editor-content"><div class="daily-question-heading"><h2 id="daily-prompt-title" tabindex="-1"></h2><p id="daily-prompt-description"></p></div><p class="daily-flow-error" id="daily-flow-error" role="alert" hidden></p>
       ${config.stages.map(stage=>`<div class="daily-pane" data-daily-pane="${stage.id}" hidden><section class="card section-card folio-card">${prompts.filter(prompt=>prompt.stage===stage.id).map(prompt=>extendedPromptHtml(prompt,data,locked,templates.review)).join('')}</section>${stage===config.stages.at(-1)?`<div class="daily-afterword" data-extended-afterword hidden>${reviewAfterword(locked,data,templates.action)}</div>`:''}</div>`).join('')}
       <div class="daily-step-note"><span id="daily-step-hint"></span>${locked?`<span class="status-chip done">${STATUS[state.current.status]}</span>`:''}</div>
-      </div><footer class="daily-flow-footer"><button type="button" class="btn btn-ghost" data-daily-back>上一步</button><p class="save-state" role="status">${saved}</p><div class="daily-flow-actions">${!locked?`<button type="button" class="btn toolbar-save" id="save-draft">保存草稿</button><button type="button" class="btn btn-red" id="complete-record" hidden>完成并锁定</button>`:`<button type="button" class="btn btn-ghost" id="daily-finish" data-nav="history" hidden>回到历史记录</button>`}<button type="button" class="btn btn-primary" data-daily-next>下一题 <span aria-hidden="true">→</span></button></div></footer>
+      </div><footer class="daily-flow-footer"><button type="button" class="btn btn-ghost" data-daily-back>上一步</button><p class="save-state" role="status">${saved}</p><div class="daily-flow-actions">${state.current.status==='draft'?'<button type="button" class="btn review-delete-draft" id="delete-draft" hidden>删除草稿</button>':''}${!locked?`<button type="button" class="btn toolbar-save" id="save-draft">保存草稿</button><button type="button" class="btn btn-red" id="complete-record" hidden>完成并锁定</button>`:`<button type="button" class="btn btn-ghost" id="daily-finish" data-nav="history" hidden>回到历史记录</button>`}<button type="button" class="btn btn-primary" data-daily-next>下一题 <span aria-hidden="true">→</span></button></div></footer>
     </section></div>`;
 }
 function openDailyAnswer(input){const entry=input?.closest('[data-daily-answer]');if(!entry)return;$$('[data-daily-answer]',entry.closest('.item-list')).forEach(row=>row.open=row===entry)}
@@ -478,6 +478,7 @@ function showDailyPrompt(promptId,focus=false){
     $('[data-daily-next]').hidden=last;
     if($('#complete-record'))$('#complete-record').hidden=!last;
     if($('#daily-finish'))$('#daily-finish').hidden=!last;
+    if($('#delete-draft'))$('#delete-draft').hidden=!last;
     $('#daily-current-group').textContent=`${String(group+1).padStart(2,'0')} · ${DAILY_STEPS[group].label}`;
     setDailyPromptHeading(copy.title,prompt);$('#daily-prompt-description').textContent=copy.description;
     $('#daily-step-status').textContent=`${DAILY_STEPS[group].label}，${copy.title}`;
@@ -538,6 +539,7 @@ function showExtendedPrompt(promptId,focus=false){
     $('[data-daily-next]').hidden=last;
     if($('#complete-record'))$('#complete-record').hidden=!last;
     if($('#daily-finish'))$('#daily-finish').hidden=!last;
+    if($('#delete-draft'))$('#delete-draft').hidden=!last;
     $('[data-extended-afterword]')?.toggleAttribute('hidden',!last);
     $('#daily-current-group').textContent=`${String(prompt.stageIndex+1).padStart(2,'0')} · ${stage.label}`;
     setExtendedPromptHeading(copy.title,prompt);$('#daily-prompt-description').textContent=copy.description;
@@ -601,6 +603,7 @@ function bindReview(){
   $$('[data-remove-item]').forEach(b=>b.addEventListener('click',()=>{collectCurrent();const k=b.dataset.removeItem,index=Number(b.dataset.index);state.current.data.answers[k].splice(index,1);state.dirty=true;renderReviewFromCurrent();focusDailyAnswer($(`[data-answer="${k}"][data-index="${Math.max(0,index-1)}"]`))}));
   $('#save-draft')?.addEventListener('click',()=>saveCurrent().catch(()=>{}));
   $('#complete-record')?.addEventListener('click',completeCurrent);
+  $('#delete-draft')?.addEventListener('click',()=>deleteDraftRecord(state.current));
   if(state.current.type==='daily')bindDailyFlow();else bindExtendedFlow();
 }
 function renderReviewFromCurrent(){const keep=clone(state.current);renderReview(keep.type,keep.period,false,keep,{dailySection:state.dailySection,dailyPrompt:state.dailyPrompt,extendedPrompt:state.extendedPrompt,dirty:true})}
@@ -638,8 +641,7 @@ function historyMonth(record){const period=String(record?.period||'');if(record?
 function historyCardHtml(record,art=RECORD_ART[record.type][0]){
   const type=TYPES[record.type],day=overviewDateParts(record.period),date=day?`${day.calendarDate} ${day.weekday}`:formatDate(record.period),normalized=overviewRecordTitle(record,date,type.label),isPeriodTitle=normalized.title===date;
   const periodHtml=day?`<span class="history-period-date">${esc(day.calendarDate)}</span><span class="history-period-weekday">${esc(day.weekday)}</span>`:esc(date);
-  const card=`<button type="button" class="history-record type-${esc(record.type)}" data-open-record="${esc(record.id)}"><span class="history-record-top"><span class="history-category"><span aria-hidden="true">${TYPE_ICONS[record.type]}</span>${esc(type.label)}</span><span class="history-status ${esc(record.status)}"><i aria-hidden="true"></i>${esc(STATUS[record.status])}</span></span><span class="history-record-body"><span class="history-record-copy">${normalized.showDate?`<span class="history-record-period">${periodHtml}</span>`:''}<strong class="history-record-title${isPeriodTitle?' is-period-title':''}">${isPeriodTitle?periodHtml:esc(normalized.title)}</strong><span class="history-record-excerpt">${esc(recordSummary(record))}</span></span><span class="history-record-art" aria-hidden="true"><img src="${esc(art.src)}" alt="" width="1254" height="1254" loading="lazy" draggable="false"></span></span><span class="history-record-foot"><span class="history-record-intent">${esc(type.position)}</span><span class="history-record-open">翻开复盘 <span class="history-record-arrow" aria-hidden="true">↗</span></span></span></button>`;
-  return `<article class="history-record-entry type-${esc(record.type)}">${card}${record.status==='draft'?`<div class="history-record-actions"><button type="button" class="history-delete-draft" data-delete-record="${esc(record.id)}" aria-label="删除${esc(type.label)}草稿：${esc(normalized.title)}">删除草稿</button></div>`:''}</article>`;
+  return `<button type="button" class="history-record type-${esc(record.type)}" data-open-record="${esc(record.id)}"><span class="history-record-top"><span class="history-category"><span aria-hidden="true">${TYPE_ICONS[record.type]}</span>${esc(type.label)}</span><span class="history-status ${esc(record.status)}"><i aria-hidden="true"></i>${esc(STATUS[record.status])}</span></span><span class="history-record-body"><span class="history-record-copy">${normalized.showDate?`<span class="history-record-period">${periodHtml}</span>`:''}<strong class="history-record-title${isPeriodTitle?' is-period-title':''}">${isPeriodTitle?periodHtml:esc(normalized.title)}</strong><span class="history-record-excerpt">${esc(recordSummary(record))}</span></span><span class="history-record-art" aria-hidden="true"><img src="${esc(art.src)}" alt="" width="1254" height="1254" loading="lazy" draggable="false"></span></span><span class="history-record-foot"><span class="history-record-intent">${esc(type.position)}</span><span class="history-record-open">翻开复盘 <span class="history-record-arrow" aria-hidden="true">↗</span></span></span></button>`;
 }
 function renderHistory(filter=state.historyFilter,focusSearch=false){
   const artwork=recordArtAssignments(state.records);
@@ -662,32 +664,24 @@ function renderHistory(filter=state.historyFilter,focusSearch=false){
   if(focusSearch){const input=$('#history-search');input.focus();input.setSelectionRange(input.value.length,input.value.length)}
   bindRecordOpen()
 }
-function bindRecordOpen(){
-  $$('[data-open-record]').forEach(button=>button.addEventListener('click',()=>{const record=state.records.find(item=>item.id===button.dataset.openRecord);if(record)enterReview(record.type,record.period,false,record)}));
-  $$('[data-delete-record]').forEach(button=>button.addEventListener('click',()=>deleteDraftRecord(state.records.find(item=>item.id===button.dataset.deleteRecord))));
-}
+function bindRecordOpen(){$$('[data-open-record]').forEach(button=>button.addEventListener('click',()=>{const record=state.records.find(item=>item.id===button.dataset.openRecord);if(record)enterReview(record.type,record.period,false,record)}))}
 function deleteDraftRecord(record){
-  if(state.saving||!record||record.status!=='draft')return;
-  const account=state.user;
-  attemptNavigate(()=>{
-    if(state.user!==account)return;
-    const draft=state.records.find(item=>item.id===record.id);
-    if(!draft||draft.status!=='draft')return;
-    const {id,version}=draft;
-    openModal(`<div class="modal-head"><div><h2>删除这份草稿？</h2><p>删除后无法恢复。已提交的复盘不能删除。</p></div><button class="modal-close" type="button" data-close>×</button></div><div class="lock-summary">${esc(TYPES[draft.type].label)} · ${esc(formatDate(draft.period))}${draft.title?`<br>${esc(draft.title)}`:''}</div><div class="modal-actions"><button class="btn btn-ghost" type="button" data-close>保留草稿</button><button class="btn btn-red" type="button" id="delete-draft-confirm">确认删除草稿</button></div>`);
-    $('#delete-draft-confirm').addEventListener('click',async event=>{
-      const button=event.currentTarget;if(button.disabled)return;
-      const task=dialogWriteTask(button);if(!task.begin())return;
-      try{
-        await request(`/api/records/${id}`,{method:'DELETE',body:{version}});
-        if(!task.current())return;
-        state.records=state.records.filter(item=>item.id!==id);
-        if(state.current?.id===id){state.current=null;state.dirty=false}
-        task.finish();closeModal();toast('草稿已删除');renderHistory();
-        const focus=$('[data-open-record]')||$('#history-title');
-        if(focus){if(focus.tagName!=='BUTTON')focus.tabIndex=-1;focus.focus()}
-      }catch(error){if(task.current())toast(error.message,'error')}finally{task.finish()}
-    });
+  if(state.saving||!record||record.status!=='draft'||state.current!==record)return;
+  const editor=$('#daily-editor');if(!editor||editor.hidden||$('#delete-draft')?.hidden)return;
+  const account=state.user,{id,version}=record,current=()=>state.user===account&&state.current===record&&editor.isConnected;
+  openModal(`<div class="modal-head"><div><h2>删除这份草稿？</h2><p>删除后无法恢复，尚未保存的修改也会一并丢弃。已提交的复盘不能删除。</p></div><button class="modal-close" type="button" data-close>×</button></div><div class="lock-summary">${esc(TYPES[record.type].label)} · ${esc(formatDate(record.period))}${record.title?`<br>${esc(record.title)}`:''}</div><div class="modal-actions"><button class="btn btn-ghost" type="button" data-close>保留草稿</button><button class="btn btn-red" type="button" id="delete-draft-confirm">确认删除草稿</button></div>`);
+  $('#delete-draft-confirm').addEventListener('click',async event=>{
+    const button=event.currentTarget;if(button.disabled||!current())return;
+    const task=dialogWriteTask(button);if(!task.begin())return;
+    try{
+      if(id)await request(`/api/records/${id}`,{method:'DELETE',body:{version}});
+      if(!task.current()||!current())return;
+      if(id)state.records=state.records.filter(item=>item.id!==id);
+      state.current=null;state.dirty=false;
+      task.finish();closeModal();toast('草稿已删除');navigate('history');
+      const focus=$('[data-open-record]')||$('#history-title');
+      if(focus){if(focus.tagName!=='BUTTON')focus.tabIndex=-1;focus.focus()}
+    }catch(error){if(task.current()&&current())toast(error.message,'error')}finally{task.finish()}
   });
 }
 

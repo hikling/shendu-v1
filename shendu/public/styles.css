@@ -913,11 +913,13 @@ body.reduce-motion .overview-record-card[aria-hidden="true"]{display:none}
 .daily-step-note .status-chip{border-color:var(--line);background:var(--daily-white);color:var(--daily-ink)}
 .daily-flow-footer{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:24px;width:100%;margin-top:auto;padding-top:23px;border-top:1px solid #a8b9d2;font-family:"Noto Sans SC","Microsoft YaHei",sans-serif}
 .daily-flow-footer .save-state{margin:0;color:var(--muted);font-size:.63rem;line-height:1.7}
-.daily-flow-actions{display:flex;align-items:center;justify-content:flex-end;gap:23px}
+.daily-flow-actions{display:flex;flex-wrap:wrap;align-items:center;justify-content:flex-end;gap:8px 23px;min-width:0}
 .daily-flow-footer .btn{min-height:50px;padding:12px 22px;font-size:.7rem;font-weight:500;white-space:nowrap;border-radius:99px}
 .daily-flow-footer .btn-primary{min-width:136px;justify-content:space-between;gap:22px}
 .daily-flow-footer .btn-ghost,.daily-flow-footer .toolbar-save{border:0;border-radius:0;background:transparent;color:var(--daily-ink);box-shadow:none;padding-right:0;padding-left:0}
 .daily-flow-footer .btn-ghost:hover,.daily-flow-footer .toolbar-save:hover{color:var(--daily-accent);text-decoration:underline;text-underline-offset:6px}
+.daily-flow-footer .review-delete-draft{border:0;background:transparent;color:#943f36;box-shadow:none;padding-inline:0}
+.daily-flow-footer .review-delete-draft:hover{background:transparent;color:#943f36;text-decoration:underline;text-underline-offset:5px}
 .daily-flow-footer [data-daily-back]{margin-right:12px}
 .daily-flow button:disabled{cursor:default;opacity:.5;transform:none}
 .daily-flow input:disabled,.daily-flow textarea:disabled,.daily-flow select:disabled{opacity:1;-webkit-text-fill-color:var(--daily-ink);cursor:default}
