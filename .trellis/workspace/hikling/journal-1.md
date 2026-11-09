@@ -1462,3 +1462,25 @@ Removed archive delete controls; all six draft review footers expose delete only
 ### Status
 
 [OK] **Completed**
+
+
+## Session 64: Archive section hierarchy and settings navigation
+<!-- trellis-session: v=2 fp=39939f0a1991a1be -->
+
+**Date**: 2026-11-09
+**Task**: Archive section hierarchy and settings navigation
+**Branch**: `main`
+
+### Summary
+
+Designed consistent archive/pending/verified section titles with semantic glyph, description and separate real count; removed duplicate action tally. Settings retains stage/guide and motion, account remains in shared menus. 261 tests/build/check and isolated UI asset smoke passed. Local browser disabled, no visual QA claimed.
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `c43f8ee` | refactor: clarify archive section headings and settings navigation |
+
+### Status
+
+[OK] **Completed**
