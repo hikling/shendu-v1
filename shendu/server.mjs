@@ -11,6 +11,7 @@ import { atomicWriteFile, validBase64 } from './scripts/backup-safety.mjs';
 import { verificationMinimum } from './public/verification-policy.js';
 import { reviewQuestions, reviewDisabledFields } from './public/review-schema.js';
 import { normalizeReviewMetricIds } from './public/review-metrics.js';
+import { normalizeBackupSchedule, backupScheduleDue, backupHistoryCutoff } from './public/backup-schedule.js';
 
 process.umask(0o077);
 const PORT = Number(process.env.SHENDU_PORT || 3000);
@@ -98,9 +99,31 @@ db.exec(`
     created_at TEXT NOT NULL
   );
   CREATE INDEX IF NOT EXISTS idx_backup_runs_user ON backup_runs(user_id,created_at DESC);
-  INSERT OR IGNORE INTO schema_meta(key,value) VALUES ('schema_version','6');
+  INSERT OR IGNORE INTO schema_meta(key,value) VALUES ('schema_version','7');
   INSERT OR IGNORE INTO schema_meta(key,value) VALUES ('public_registration','true');
 `);
+
+// Additive migration keeps existing credentials and backup data untouched.
+function migrateBackupSchedules(){
+  const columns=table=>new Set(db.prepare(`PRAGMA table_info(${table})`).all().map(column=>column.name));
+  const targets=columns('backup_targets'),runs=columns('backup_runs');
+  db.exec('BEGIN IMMEDIATE');
+  try{
+    for(const [name,definition] of [['schedule_time',"TEXT NOT NULL DEFAULT '02:00'"],['schedule_weekday','INTEGER NOT NULL DEFAULT 1'],['schedule_anchor_at','TEXT'],['last_scheduled_slot','TEXT'],['schedule_claim_token','TEXT'],['schedule_claim_until','TEXT']])if(!targets.has(name))db.exec(`ALTER TABLE backup_targets ADD COLUMN ${name} ${definition}`);
+    for(const [name,definition] of [['operation',"TEXT NOT NULL DEFAULT 'legacy'"],['target_name',"TEXT NOT NULL DEFAULT ''"],['target_kind',"TEXT NOT NULL DEFAULT ''"],['trigger_kind',"TEXT NOT NULL DEFAULT 'unknown'"]])if(!runs.has(name))db.exec(`ALTER TABLE backup_runs ADD COLUMN ${name} ${definition}`);
+    db.prepare(`UPDATE backup_targets SET schedule_anchor_at=? WHERE schedule_anchor_at IS NULL`).run(new Date().toISOString());
+    // Old test failures were not distinguished from failed backups. Only migrate
+    // outcomes known to represent real backups; do not invent their provenance.
+    db.exec(`UPDATE backup_runs SET operation='backup',trigger_kind=CASE WHEN message='定时备份成功' THEN 'scheduled' ELSE 'manual' END WHERE operation='legacy' AND message IN ('备份成功','定时备份成功')`);
+    db.exec(`UPDATE backup_runs SET target_name=COALESCE((SELECT name FROM backup_targets WHERE id=target_id),''),target_kind=COALESCE((SELECT kind FROM backup_targets WHERE id=target_id),'') WHERE target_name='' OR target_kind=''`);
+    // Older connection tests overwrote the target's backup dates. Repair only
+    // timestamps positively identified as tests; ambiguous failures stay unknown.
+    db.exec(`UPDATE backup_targets SET last_success_at=(SELECT MAX(created_at) FROM backup_runs WHERE target_id=backup_targets.id AND operation='backup' AND status='success') WHERE EXISTS(SELECT 1 FROM backup_runs WHERE target_id=backup_targets.id AND operation='legacy' AND message='连接测试成功' AND created_at=backup_targets.last_success_at) AND NOT EXISTS(SELECT 1 FROM backup_runs WHERE target_id=backup_targets.id AND operation='backup' AND status='success' AND created_at=backup_targets.last_success_at)`);
+    db.exec(`UPDATE backup_targets SET last_run_at=(SELECT MAX(created_at) FROM backup_runs WHERE target_id=backup_targets.id AND operation='backup' AND status IN ('success','error')),last_error=(SELECT CASE WHEN status='error' THEN message ELSE NULL END FROM backup_runs WHERE target_id=backup_targets.id AND operation='backup' AND status IN ('success','error') ORDER BY created_at DESC,id DESC LIMIT 1) WHERE EXISTS(SELECT 1 FROM backup_runs WHERE target_id=backup_targets.id AND operation='legacy' AND message='连接测试成功' AND created_at=backup_targets.last_run_at) AND NOT EXISTS(SELECT 1 FROM backup_runs WHERE target_id=backup_targets.id AND operation='backup' AND created_at=backup_targets.last_run_at)`);
+    db.exec('COMMIT');
+  }catch(error){try{db.exec('ROLLBACK')}catch{}throw error}
+}
+migrateBackupSchedules();
 
 const DATA_ENVELOPE_PREFIX = 'sd1.';
 const dataScope = (...parts) => parts.join(':');
@@ -445,7 +468,7 @@ function migrateSensitiveData() {
       if(isEncryptedData(row.value))continue;
       updateSetting.run(encryptData(JSON.parse(row.value),dataScope('setting',row.user_id,row.key)),row.user_id,row.key);migrated=true;
     }
-    db.prepare(`INSERT INTO schema_meta(key,value) VALUES('schema_version','6') ON CONFLICT(key) DO UPDATE SET value='6'`).run();
+    db.prepare(`INSERT INTO schema_meta(key,value) VALUES('schema_version','7') ON CONFLICT(key) DO UPDATE SET value='7'`).run();
     db.prepare(`INSERT INTO schema_meta(key,value) VALUES('data_encryption','AES-256-GCM') ON CONFLICT(key) DO UPDATE SET value='AES-256-GCM'`).run();
     db.exec('COMMIT');
     if(migrated){db.exec('PRAGMA wal_checkpoint(TRUNCATE)');db.exec('VACUUM');db.exec('PRAGMA wal_checkpoint(TRUNCATE)');try{chmodSync(DATABASE_PATH,0o600)}catch{}}
@@ -833,13 +856,13 @@ function siteBackupPayload() {
     });
     const records=db.prepare(`SELECT * FROM records ORDER BY user_id,updated_at,id`).all().map(recordOut);
     const targets=db.prepare(`SELECT * FROM backup_targets ORDER BY user_id,created_at,id`).all().map(row=>({
-      id:row.id,user_id:row.user_id,name:row.name,kind:row.kind,config:decryptSecret(row.encrypted_config),schedule:row.schedule,
+      id:row.id,user_id:row.user_id,name:row.name,kind:row.kind,config:decryptSecret(row.encrypted_config),...normalizeBackupSchedule(row),schedule_anchor_at:row.schedule_anchor_at,last_scheduled_slot:row.last_scheduled_slot,
       enabled:Number(row.enabled),last_run_at:row.last_run_at,last_success_at:row.last_success_at,last_error:row.last_error,created_at:row.created_at,updated_at:row.updated_at
     }));
-    const runs=db.prepare(`SELECT id,target_id,user_id,status,message,created_at FROM backup_runs ORDER BY created_at,id`).all();
+    const runs=db.prepare(`SELECT id,target_id,user_id,status,message,created_at,operation,target_name,target_kind,trigger_kind AS 'trigger' FROM backup_runs ORDER BY created_at,id`).all();
     const payload={
       format:'shendu-site-data',version:1,createdAt:now(),
-      schemaVersion:Number(db.prepare(`SELECT value FROM schema_meta WHERE key='schema_version'`).get()?.value||6),
+      schemaVersion:Number(db.prepare(`SELECT value FROM schema_meta WHERE key='schema_version'`).get()?.value||7),
       publicRegistration:db.prepare(`SELECT value FROM schema_meta WHERE key='public_registration'`).get()?.value==='true',
       users,settings,records,targets,runs
     };
@@ -919,7 +942,7 @@ function validateSiteBackupPayload(payload) {
   const targetIds=new Set(),targetOwners=new Map();
   for(const target of payload.targets){
     if(!userIds.has(target.user_id)||!validEntityId(target.id)||targetIds.has(target.id)||!['webdav','s3'].includes(target.kind)||!['manual','daily','weekly'].includes(target.schedule)||!isPlainObject(target.config))throw new Error('整站备份中的外部备份配置无效');
-    try{normalizeBackupConfig(target.kind,target.config)}catch{throw new Error('整站备份中的外部备份配置无效')}
+    try{normalizeBackupConfig(target.kind,target.config);normalizeBackupSchedule(target)}catch{throw new Error('整站备份中的外部备份配置无效')}
     targetIds.add(target.id);targetOwners.set(target.id,target.user_id);
   }
   const runIds=new Set();
@@ -949,10 +972,15 @@ function applySiteBackup(payload) {
       insertRecord.run(record.id,record.user_id,record.type,record.period,encryptData(safeText(record.title,200),dataScope('record',record.user_id,record.id,'title')),encryptData(record.data||{},dataScope('record',record.user_id,record.id,'data')),record.status,Math.max(1,Number(record.version)||1),record.verification?encryptData(record.verification,dataScope('record',record.user_id,record.id,'verification')):null,createdAt,updatedAt,validTime(record.completed_at)?record.completed_at:null,validTime(record.verified_at)?record.verified_at:null);
     }
     for(const user of payload.users)if(accountRecordBytes(user.id)>MAX_ACCOUNT_CONTENT_BYTES)throw new Error('整站备份中的单个账户内容超过存储上限');
-    const insertTarget=db.prepare(`INSERT INTO backup_targets(id,user_id,name,kind,encrypted_config,schedule,enabled,last_run_at,last_success_at,last_error,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)`);
-    for(const target of payload.targets)insertTarget.run(target.id,target.user_id,safeText(target.name,80),target.kind,encryptSecret(target.config),target.schedule,target.enabled===0?0:1,validTime(target.last_run_at)?target.last_run_at:null,validTime(target.last_success_at)?target.last_success_at:null,safeText(target.last_error,300)||null,validTime(target.created_at)?target.created_at:now(),validTime(target.updated_at)?target.updated_at:now());
-    const insertRun=db.prepare(`INSERT INTO backup_runs(id,target_id,user_id,status,message,created_at) VALUES(?,?,?,?,?,?)`);
-    for(const run of payload.runs)insertRun.run(run.id,run.target_id,run.user_id,safeText(run.status,40),safeText(run.message,300),validTime(run.created_at)?run.created_at:now());
+    const insertTarget=db.prepare(`INSERT INTO backup_targets(id,user_id,name,kind,encrypted_config,schedule,schedule_time,schedule_weekday,schedule_anchor_at,last_scheduled_slot,enabled,last_run_at,last_success_at,last_error,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`);
+    for(const target of payload.targets){const plan=normalizeBackupSchedule(target);insertTarget.run(target.id,target.user_id,safeText(target.name,80),target.kind,encryptSecret(target.config),plan.schedule,plan.scheduleTime,plan.scheduleWeekday,validTime(target.schedule_anchor_at)?new Date(target.schedule_anchor_at).toISOString():now(),validTime(target.last_scheduled_slot)?new Date(target.last_scheduled_slot).toISOString():null,target.enabled===0?0:1,validTime(target.last_run_at)?target.last_run_at:null,validTime(target.last_success_at)?target.last_success_at:null,safeText(target.last_error,300)||null,validTime(target.created_at)?target.created_at:now(),validTime(target.updated_at)?target.updated_at:now());}
+    const insertRun=db.prepare(`INSERT INTO backup_runs(id,target_id,user_id,status,message,created_at,operation,target_name,target_kind,trigger_kind) VALUES(?,?,?,?,?,?,?,?,?,?)`);
+    for(const run of payload.runs){
+      const target=payload.targets.find(target=>target.id===run.target_id),metadata=backupRunMetadata(run,target);
+      if(metadata.operation!=='backup'||!['success','error'].includes(run.status))continue;
+      const stamp=validTime(run.created_at)?new Date(run.created_at).toISOString():now();if(stamp<backupHistoryCutoff())continue;
+      insertRun.run(run.id,run.target_id,run.user_id,run.status,safeText(run.message,300),stamp,'backup',metadata.target_name,metadata.target_kind,metadata.trigger);
+    }
     db.prepare(`INSERT INTO schema_meta(key,value) VALUES('public_registration',?) ON CONFLICT(key) DO UPDATE SET value=excluded.value`).run(payload.publicRegistration?'true':'false');
     db.exec('COMMIT');
     return siteBackupPreview(payload);
@@ -1004,12 +1032,12 @@ function normalizeBackupConfig(kind,value) {
     return {url:url.href.replace(/\/$/,''),username:credentialText(value.username,'WebDAV 账号',256),password:credentialText(value.password,'WebDAV 密码'),directory};
   }
   if(kind==='s3'){
-    const endpoint=endpointUrl(value.endpoint,'S3 Endpoint'),pathStyle=value.pathStyle===true;
+    const endpoint=endpointUrl(value.endpoint,'存储服务地址'),pathStyle=value.pathStyle===true;
     const bucket=String(value.bucket||'').trim();
     const bucketPattern=pathStyle?/^[A-Za-z0-9][A-Za-z0-9._-]{1,61}[A-Za-z0-9]$/:/^[a-z0-9][a-z0-9.-]{1,61}[a-z0-9]$/;
-    if(!bucketPattern.test(bucket)||bucket.includes('..'))throw new Error('S3 Bucket 名称格式不正确');
-    const region=String(value.region||'auto').trim();if(!/^[A-Za-z0-9-]{1,64}$/.test(region))throw new Error('S3 Region 格式不正确');
-    return {endpoint:endpoint.href.replace(/\/$/,''),region,bucket,accessKey:credentialText(value.accessKey,'S3 Access Key',256),secretKey:credentialText(value.secretKey,'S3 Secret Key'),directory,pathStyle};
+    if(!bucketPattern.test(bucket)||bucket.includes('..'))throw new Error('存储桶名称格式不正确');
+    const region=String(value.region||'auto').trim();if(!/^[A-Za-z0-9-]{1,64}$/.test(region))throw new Error('存储区域格式不正确');
+    return {endpoint:endpoint.href.replace(/\/$/,''),region,bucket,accessKey:credentialText(value.accessKey,'访问密钥标识',256),secretKey:credentialText(value.secretKey,'访问密钥密码'),directory,pathStyle};
   }
   throw new Error('目标类型不正确');
 }
@@ -1102,16 +1130,36 @@ async function runExternalBackup(target, test = false) {
   } finally { activeExternalBackupUsers.delete(target.user_id); }
 }
 
-function saveBackupOutcome(target,status,message) {
-  const stamp=now(),cleanMessage=safeText(message,300);
+function backupRunMetadata(run,target){
+  const known=run.message==='备份成功'||run.message==='定时备份成功';
+  const operation=run.operation==='backup'?'backup':!run.operation&&known?'backup':'legacy';
+  return {operation,target_name:safeText(run.target_name||target?.name||'',80),target_kind:['s3','webdav'].includes(run.target_kind)?run.target_kind:target?.kind||'',trigger:['manual','scheduled'].includes(run.trigger)?run.trigger:run.message==='定时备份成功'?'scheduled':known?'manual':'unknown'};
+}
+function pruneBackupRuns(stamp=new Date()){
+  db.prepare(`DELETE FROM backup_runs WHERE created_at<? OR operation!='backup' OR status NOT IN ('success','error')`).run(backupHistoryCutoff(stamp));
+}
+function safeBackupTarget(target){
+  const result={id:target.id,name:target.name,kind:target.kind,...normalizeBackupSchedule(target),enabled:target.enabled,last_run_at:target.last_run_at,last_success_at:target.last_success_at,last_error:target.last_error,created_at:target.created_at};
+  try{
+    const config=decryptSecret(target.encrypted_config);
+    result.config=target.kind==='s3'?{endpoint:config.endpoint,region:config.region,bucket:config.bucket,directory:config.directory,pathStyle:config.pathStyle===true}:{url:config.url,username:config.username,directory:config.directory};
+  }catch{result.config={}}
+  return result;
+}
+function saveBackupOutcome(target,status,message,trigger='manual',scheduled=null) {
+  const stamp=now(),cleanMessage=safeText(message,300),success=status==='success';
   db.exec('BEGIN IMMEDIATE');
   try{
-    const updated=status==='success'
-      ?db.prepare(`UPDATE backup_targets SET last_run_at=?,last_success_at=?,last_error=NULL WHERE id=? AND user_id=?`).run(stamp,stamp,target.id,target.user_id)
-      :db.prepare(`UPDATE backup_targets SET last_run_at=?,last_error=? WHERE id=? AND user_id=?`).run(stamp,cleanMessage,target.id,target.user_id);
+    const fields=success?'last_run_at=?,last_success_at=?,last_error=NULL':'last_run_at=?,last_error=?';
+    const values=success?[stamp,stamp]:[stamp,cleanMessage];
+    const leaseFields=scheduled?',last_scheduled_slot=?,schedule_claim_token=NULL,schedule_claim_until=NULL':'';
+    if(scheduled)values.push(scheduled.slot);
+    values.push(target.id,target.user_id);
+    if(scheduled)values.push(scheduled.claimToken);
+    const updated=db.prepare(`UPDATE backup_targets SET ${fields}${leaseFields} WHERE id=? AND user_id=?${scheduled?' AND schedule_claim_token=?':''}`).run(...values);
     if(updated.changes!==1){db.exec('ROLLBACK');return false}
-    db.prepare(`INSERT INTO backup_runs VALUES(?,?,?,?,?,?)`).run(randomUUID(),target.id,target.user_id,status,cleanMessage,stamp);
-    db.prepare(`DELETE FROM backup_runs WHERE user_id=? AND id NOT IN (SELECT id FROM backup_runs WHERE user_id=? ORDER BY created_at DESC LIMIT 500)`).run(target.user_id,target.user_id);
+    db.prepare(`INSERT INTO backup_runs(id,target_id,user_id,status,message,created_at,operation,target_name,target_kind,trigger_kind) VALUES(?,?,?,?,?,?,'backup',?,?,?)`).run(randomUUID(),target.id,target.user_id,status,cleanMessage,stamp,safeText(target.name,80),target.kind,trigger);
+    pruneBackupRuns(new Date(stamp));
     db.exec('COMMIT');return true;
   }catch(error){try{db.exec('ROLLBACK')}catch{}throw error}
 }
@@ -1319,29 +1367,33 @@ async function api(req, res, url) {
     }catch(e){return error(res,e.status||400,e.message||'无法恢复整站备份',e.code||'site_backup_restore_failed')}
   }
   if (path === '/api/backup/targets' && method === 'GET') {
-    const targets=db.prepare(`SELECT id,name,kind,schedule,enabled,last_run_at,last_success_at,last_error,created_at FROM backup_targets WHERE user_id=? ORDER BY created_at DESC`).all(user.id); const runs=db.prepare(`SELECT * FROM backup_runs WHERE user_id=? ORDER BY created_at DESC LIMIT 12`).all(user.id); return json(res,200,{targets,runs});
+    pruneBackupRuns();const targets=db.prepare(`SELECT * FROM backup_targets WHERE user_id=? ORDER BY created_at DESC`).all(user.id).map(safeBackupTarget);const runs=db.prepare(`SELECT id,target_id,status,message,created_at,target_name,target_kind,trigger_kind AS 'trigger',operation FROM backup_runs WHERE user_id=? AND operation='backup' AND status IN ('success','error') AND created_at>=? AND created_at<=? ORDER BY created_at DESC,id DESC`).all(user.id,backupHistoryCutoff(),now());return json(res,200,{targets,runs});
   }
   if (path === '/api/backup/targets' && method === 'POST') {
     const body=await readJson(req); if(!['webdav','s3'].includes(body.kind))return error(res,400,'目标类型不正确'); if(db.prepare(`SELECT COUNT(*) AS n FROM backup_targets WHERE user_id=?`).get(user.id).n>=8)return error(res,400,'最多设置 8 个外部目标');
     const name=safeText(body.name,80).trim();if(!name)return error(res,400,'请填写备份目标名称');
     let config;try{config=normalizeBackupConfig(body.kind,body.config)}catch(validationError){return error(res,400,validationError.message,'backup_target_invalid')}
-    const id=randomUUID(),stamp=now(); db.prepare(`INSERT INTO backup_targets(id,user_id,name,kind,encrypted_config,schedule,enabled,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?)`).run(id,user.id,name,body.kind,encryptSecret(config),['manual','daily','weekly'].includes(body.schedule)?body.schedule:'manual',body.enabled===false?0:1,stamp,stamp); return json(res,201,{id});
+    let plan;try{plan=normalizeBackupSchedule(body)}catch(validationError){return error(res,400,validationError.message,'backup_schedule_invalid')}
+    const id=randomUUID(),stamp=now();db.prepare(`INSERT INTO backup_targets(id,user_id,name,kind,encrypted_config,schedule,schedule_time,schedule_weekday,schedule_anchor_at,enabled,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)`).run(id,user.id,name,body.kind,encryptSecret(config),plan.schedule,plan.scheduleTime,plan.scheduleWeekday,stamp,body.enabled===false?0:1,stamp,stamp);return json(res,201,{id});
   }
   if (/^\/api\/backup\/targets\/[^/]+$/.test(path) && method === 'PATCH') {
     const id=path.split('/')[4], body=await readJson(req), target=db.prepare(`SELECT * FROM backup_targets WHERE id=? AND user_id=?`).get(id,user.id); if(!target)return error(res,404,'备份目标不存在');
-    const kind=['webdav','s3'].includes(body.kind)?body.kind:target.kind, schedule=['manual','daily','weekly'].includes(body.schedule)?body.schedule:target.schedule;
+    const kind=['webdav','s3'].includes(body.kind)?body.kind:target.kind;
+    let plan;try{plan=normalizeBackupSchedule(body,target)}catch(validationError){return error(res,400,validationError.message,'backup_schedule_invalid')}
     const name=safeText(body.name||target.name,80).trim();if(!name)return error(res,400,'请填写备份目标名称');
     if(kind!==target.kind&&!body.config)return error(res,400,'切换目标类型时必须重新填写连接配置');
     let encryptedConfig=target.encrypted_config;
     if(body.config){try{encryptedConfig=encryptSecret(normalizeBackupConfig(kind,body.config))}catch(validationError){return error(res,400,validationError.message,'backup_target_invalid')}}
-    db.prepare(`UPDATE backup_targets SET name=?,kind=?,encrypted_config=?,schedule=?,enabled=?,updated_at=? WHERE id=? AND user_id=?`).run(name,kind,encryptedConfig,schedule,body.enabled===false?0:1,now(),id,user.id); return json(res,200,{ok:true});
+    const enabled=body.enabled===undefined?target.enabled:body.enabled===false?0:1;
+    const changed=plan.schedule!==target.schedule||plan.scheduleTime!==target.schedule_time||plan.scheduleWeekday!==target.schedule_weekday||(target.enabled===0&&enabled===1),stamp=now();
+    db.prepare(`UPDATE backup_targets SET name=?,kind=?,encrypted_config=?,schedule=?,schedule_time=?,schedule_weekday=?,schedule_anchor_at=?,enabled=?,updated_at=? WHERE id=? AND user_id=?`).run(name,kind,encryptedConfig,plan.schedule,plan.scheduleTime,plan.scheduleWeekday,changed?stamp:target.schedule_anchor_at,enabled,stamp,id,user.id);return json(res,200,{ok:true});
   }
   if (/^\/api\/backup\/targets\/[^/]+$/.test(path) && method === 'DELETE') { const id=path.split('/')[4]; db.prepare(`DELETE FROM backup_targets WHERE id=? AND user_id=?`).run(id,user.id); return json(res,200,{ok:true}); }
   if (/^\/api\/backup\/targets\/[^/]+\/(test|run)$/.test(path) && method === 'POST') {
     const [,,, ,id,action]=path.split('/'); const target=db.prepare(`SELECT * FROM backup_targets WHERE id=? AND user_id=?`).get(id,user.id); if(!target)return error(res,404,'备份目标不存在');
     if(limited(req,`backup-run:${user.id}`,12,3600000))return error(res,429,'外部备份操作过多，请稍后再试','backup_rate_limited');
-    try { await runExternalBackup(target,action==='test'); if(!saveBackupOutcome(target,'success',action==='test'?'连接测试成功':'备份成功'))return error(res,409,'备份目标已被删除'); return json(res,200,{ok:true}); }
-    catch(e){if(e.code!=='backup_busy')saveBackupOutcome(target,'error',e.message);return error(res,e.status||400,e.message,e.code||'request_error')}
+    try {await runExternalBackup(target,action==='test');if(action==='run'&&!saveBackupOutcome(target,'success','备份成功','manual'))return error(res,409,'备份目标已被删除');return json(res,200,{ok:true});}
+    catch(e){if(action==='run'&&e.code!=='backup_busy')saveBackupOutcome(target,'error',e.message,'manual');return error(res,e.status||400,e.message,e.code||'request_error')}
   }
   if (path === '/api/admin/users' && method === 'GET') {
     if(!['admin','superadmin'].includes(user.role))return error(res,403,'没有权限'); const q=safeText(url.searchParams.get('q')||'',100); return json(res,200,{users:db.prepare(`SELECT id,username,display_name,role,status,created_at FROM users WHERE username LIKE ? OR display_name LIKE ? ORDER BY created_at DESC`).all(`%${q}%`,`%${q}%`).map(cleanUser),registrationOpen:db.prepare(`SELECT value FROM schema_meta WHERE key='public_registration'`).get().value==='true'});
@@ -1413,15 +1465,33 @@ const server = http.createServer(async (req,res) => {
 });
 
 const cleanup = () => {
+  pruneBackupRuns();
   db.prepare(`DELETE FROM sessions WHERE expires_at<?`).run(now());
   const stamp=Date.now();for(const [key,value] of rateMap)if(value.until<stamp)rateMap.delete(key);
 };
 const scheduledBackups = async () => {
   const targets=db.prepare(`SELECT * FROM backup_targets WHERE enabled=1 AND schedule!='manual'`).all();
-  for(const t of targets){const last=t.last_run_at?Date.parse(t.last_run_at):0,interval=t.schedule==='daily'?86400000:7*86400000;if(Date.now()-last<interval)continue;try{await runExternalBackup(t,false);saveBackupOutcome(t,'success','定时备份成功')}catch(e){if(e.code==='backup_busy')continue;try{saveBackupOutcome(t,'error',e.message)}catch(saveError){console.error('定时备份状态写入失败',saveError)}}}
+  for(const target of targets){
+    const slot=backupScheduleDue(target);if(!slot)continue;
+    // Busy work must not consume this schedule slot. An expiring lease allows
+    // a restarted process to retry an interrupted upload, but known terminal
+    // outcomes consume the slot once in the same transaction as their log.
+    if(activeExternalBackupUsers.has(target.user_id)||activeExternalBackupUsers.size>=4)continue;
+    const claimToken=randomUUID(),stamp=now(),claimUntil=new Date(Date.parse(stamp)+5*60000).toISOString();
+    const claimed=db.prepare(`UPDATE backup_targets SET schedule_claim_token=?,schedule_claim_until=? WHERE id=? AND user_id=? AND last_scheduled_slot IS ? AND schedule=? AND schedule_time=? AND schedule_weekday=? AND schedule_anchor_at IS ? AND updated_at IS ? AND enabled=1 AND (schedule_claim_until IS NULL OR schedule_claim_until<=?)`).run(claimToken,claimUntil,target.id,target.user_id,target.last_scheduled_slot,target.schedule,target.schedule_time,target.schedule_weekday,target.schedule_anchor_at,target.updated_at,stamp);
+    if(claimed.changes!==1)continue;
+    const scheduled={slot,claimToken};
+    try{await runExternalBackup(target,false);saveBackupOutcome(target,'success','定时备份成功','scheduled',scheduled)}
+    catch(error){
+      if(error.code==='backup_busy'){db.prepare(`UPDATE backup_targets SET schedule_claim_token=NULL,schedule_claim_until=NULL WHERE id=? AND user_id=? AND schedule_claim_token=?`).run(target.id,target.user_id,claimToken);continue}
+      try{saveBackupOutcome(target,'error',error.message,'scheduled',scheduled)}catch(saveError){console.error('定时备份状态写入失败',saveError)}
+    }
+  }
 };
+
 let scheduledBackupRunning=false;
 const runScheduledBackups=async()=>{if(scheduledBackupRunning)return;scheduledBackupRunning=true;try{await scheduledBackups()}catch(error){console.error('定时备份任务失败',error)}finally{scheduledBackupRunning=false}};
-setInterval(cleanup,15*60000).unref(); setInterval(runScheduledBackups,60*60000).unref(); cleanup();
+setInterval(cleanup,15*60000).unref();setInterval(runScheduledBackups,60000).unref();cleanup();
 server.listen(PORT,'0.0.0.0',()=>console.log(`慎独已启动：http://0.0.0.0:${PORT}`));
+void runScheduledBackups();
 const shutdown=()=>server.close(()=>{db.close();process.exit(0)}); process.on('SIGTERM',shutdown);process.on('SIGINT',shutdown);

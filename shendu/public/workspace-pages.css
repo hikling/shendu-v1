@@ -355,3 +355,27 @@ form:is(#backup-pass-form,#restore-password-form,#site-export-form,#site-inspect
 .stage-metric-row>.link-button{margin:8px 0 4px}
 [data-add-metric]{margin-top:16px}
 @media(max-width:620px){.template-question-row{grid-template-columns:1fr;gap:4px}.template-question-actions{justify-content:space-between}.template-question-tools{flex-direction:column}}
+/* Backup schedules and result history share the existing paper workspace. */
+.backup-schedule-fields{padding:16px 0 2px;border-top:1px solid var(--workspace-line)}
+#target-form [hidden]{display:none!important}
+#target-form [data-backup-weekday] .sd-choice-group{display:flex;flex-wrap:wrap;gap:8px}
+#target-form [data-backup-time] input{max-width:240px;font-variant-numeric:tabular-nums}
+.workspace-backup-runs .backup-runs-table{table-layout:fixed;width:100%}
+.workspace-backup-runs .backup-runs-table th:first-child{width:17%}
+.workspace-backup-runs .backup-runs-table th:nth-child(2){width:23%}
+.workspace-backup-runs .backup-runs-table th:nth-child(3){width:13%}
+.workspace-backup-runs .backup-runs-table th:nth-child(4){width:13%}
+.workspace-backup-runs .backup-runs-table :is(td,th){white-space:normal;overflow-wrap:anywhere;vertical-align:top}
+.backup-runs-table td>strong,.backup-runs-table td>small{display:block}
+.backup-runs-table td>small{margin-top:5px;color:var(--workspace-muted);font-size:.65rem}
+@media(max-width:820px){
+ .workspace-backup-runs .table-wrap{overflow:visible}
+ .workspace-backup-runs .backup-runs-table,.workspace-backup-runs .backup-runs-table tbody,.workspace-backup-runs .backup-runs-table tr{display:block;width:100%}
+ .workspace-backup-runs .backup-runs-table thead{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
+ .workspace-backup-runs .backup-runs-table tr{padding:13px 0;border-top:1px solid var(--workspace-line)}
+ .workspace-backup-runs .backup-runs-table td{display:grid;grid-template-columns:74px minmax(0,1fr);gap:5px 12px;width:100%;padding:7px 0;border:0;min-width:0}
+ .workspace-backup-runs .backup-runs-table td:before{content:attr(data-label);grid-column:1;grid-row:1 / span 2;font-weight:700;color:var(--workspace-muted)}
+ .workspace-backup-runs .backup-runs-table td>*{grid-column:2;justify-self:start;max-width:100%}
+ .workspace-backup-runs .backup-runs-table td.workspace-empty-cell{display:block;text-align:left}
+ .workspace-backup-runs .backup-runs-table td.workspace-empty-cell:before{display:none}
+}

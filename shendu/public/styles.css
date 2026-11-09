@@ -1332,8 +1332,8 @@ body.reduce-motion .history-record,body.reduce-motion .history-record-art img,bo
 .action-reading{grid-column:1/-1;min-width:0;margin:2px 0 0;border:1px solid color-mix(in srgb,var(--action-tone) 16%,#e0e5d9);border-radius:14px;background:#fffefaad;overflow-wrap:anywhere}
 .action-reading h4{margin:0;color:var(--action-tone);font:700 .76rem/1.75 "Noto Sans SC","Microsoft YaHei",sans-serif}
 .action-reading p{margin:9px 0 0;color:#35483e;font-size:.86rem;line-height:1.95;white-space:pre-wrap;overflow-wrap:anywhere}
-.action-reading-plan{display:grid;grid-template-columns:minmax(85px,.2fr) minmax(0,1fr);align-items:baseline;gap:12px 24px;min-width:0;padding:20px 23px}
-.action-reading-plan>p{margin:0}
+.action-reading-plan{display:block;min-width:0;padding:20px 23px}
+.action-reading-plan>p{margin:9px 0 0}
 .action-reading-outcome{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));min-width:0;border-top:1px solid color-mix(in srgb,var(--action-tone) 17%,transparent);background:color-mix(in srgb,var(--action-soft) 60%,#fffefa);border-radius:0 0 13px 13px}
 .action-reading-outcome>section{min-width:0;padding:20px 23px}
 .action-reading-outcome>section+section{border-left:1px solid color-mix(in srgb,var(--action-tone) 17%,transparent)}
@@ -1366,7 +1366,7 @@ body.reduce-motion .history-record,body.reduce-motion .history-record-art img,bo
 .actions-page .action-reading-plan{padding:16px 20px}
 .actions-page .action-reading-outcome>section{padding:17px 20px}
 .actions-page .action-reading p{margin-top:7px;line-height:1.8}
-.actions-page .action-reading-plan>p{margin-top:0}
+.actions-page .action-reading-plan>p{margin-top:7px}
 @media(max-width:960px){
  .actions-page .actions-hero{grid-template-columns:minmax(0,1fr) 290px;min-height:250px;gap:20px}
  .actions-page .actions-hero-art{right:0;bottom:-76px;width:320px}

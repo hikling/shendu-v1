@@ -52,8 +52,8 @@ if (command === 'snapshot' || command === 'migration') {
     snapshotDb=new DatabaseSync(database);snapshotDb.exec(`VACUUM INTO '${temp.replaceAll("'","''")}'`);snapshotDb.close();snapshotDb=null;
     const persistedMasterKey=existsSync(masterKeyPath)?readFileSync(masterKeyPath,'utf8').trim():String(process.env.SHENDU_MASTER_KEY||'').trim();
     if(!/^[a-f0-9]{64}$/i.test(persistedMasterKey))throw new Error('找不到有效的 64 位内部数据加密密钥，已停止创建快照');
-    const check=new DatabaseSync(temp);try{validateSnapshotDatabase(check,persistedMasterKey)}finally{check.close()}
-    const payload={createdAt:new Date().toISOString(),schemaVersion:6,masterKey:persistedMasterKey,database:readFileSync(temp).toString('base64')};
+    const check=new DatabaseSync(temp);let schemaVersion;try{validateSnapshotDatabase(check,persistedMasterKey);schemaVersion=Number(check.prepare("SELECT value FROM schema_meta WHERE key='schema_version'").get()?.value||0)}finally{check.close()}
+    const payload={createdAt:new Date().toISOString(),schemaVersion,masterKey:persistedMasterKey,database:readFileSync(temp).toString('base64')};
     mkdirSync(dirname(resolve(output)),{recursive:true});atomicWriteFile(resolve(output),seal(payload,command));
     console.log(resolve(output));
   } finally {

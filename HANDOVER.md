@@ -63,6 +63,7 @@ git rev-parse HEAD
 | `shendu/public/history-archive.css`、`workspace-pages.css` | 历史、行动与账户等工作区页面 |
 | `shendu/ui/stage.css`、`lunar-calendar.js` | 阶段日历布局、农历与节气 |
 | `shendu/public/daily-flow.js`、`extended-flow.js` | 每日及另外五类的逐题填写流程 |
+| `shendu/public/backup-schedule.js` | 北京时间定时计划、到期判断及十天日志日期边界 |
 | `shendu/public/review-schema.js`、`review-metrics.js` | 共享问题配置与草稿指标无损同步 |
 | `shendu/public/daily-calendar.js`、`verification-policy.js` | 北京日历日期处理与最早验证日期 |
 | `shendu/public/overview-reel.js`、`record-art.js` | 概览连续长卷与历史/行动配图规则 |
@@ -106,7 +107,7 @@ React 只拥有自己的组件岛；原生页面替换前要从最深层清理 R
 
 CLI 恢复必须先停止应用，并先在隔离环境演练。三个入口不能互换文件。测试应覆盖错误密码、篡改/损坏、归属、重复、已完成保护、失败回滚及输出路径保护；旧兼容解析器与合成测试样本不是可随意删除的死代码。
 
-外部 WebDAV/S3 备份保留 HTTPS、DNS/IP 限制、固定解析地址、不跟随跳转、超时与并发限制。直接运行 Node.js 时默认不信任代理头；只在可信反向代理隔离应用端口的部署中开启代理信任。
+外部 WebDAV/S3 备份保留 HTTPS、DNS/IP 限制、固定解析地址、不跟随跳转、超时与并发限制。定时按北京时间具体时分/星期执行，测试不计入备份日志或改变成功状态；运行记录只保留十天的真实备份结果并带目标快照。数据库新增计划与日志元数据需和网页整站备份/CLI快照一起维护。直接运行 Node.js 时默认不信任代理头；只在可信反向代理隔离应用端口的部署中开启代理信任。
 
 普通管理员通过应用不能读取其他成员的复盘，但服务器维护者持有运行时解密能力。公开源码不等于公开用户数据，也不代表端到端加密。既有安全检查是有时间和环境边界的证据，后续仍需更新依赖并测试恢复。
 

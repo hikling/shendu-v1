@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import {JSDOM} from 'jsdom';
+import {backupScheduleLabel} from '../public/backup-schedule.js';
 
 const source=await readFile(new URL('../public/app.js',import.meta.url),'utf8');
 const html=await readFile(new URL('../public/index.html',import.meta.url),'utf8');
@@ -25,8 +26,8 @@ function fixture(impl=async path=>path==='/api/backup/status'?status:targets){
   const state={user:{id:'owner',username:'owner',role:'superadmin'},saving:false},calls=[],notices=[],downloads=[];
   const request=(path,options)=>{calls.push({path,...options});return impl(path,options)};
   const shell=html=>ui.renderMarkup($('#app'),`<main>${html}</main>`);
-  const names=['syncOverlayBackground','openModal','closeModal','dialogWriteTask','renderBackup','bindBackup','bindSiteBackup','refreshData'];
-  const functions=new Function('$','$$','state','request','renderMarkup','prepareDialogContainer','showDialog','dismissDialog','cancelDailyTypewriter','esc','shell','spacePageHead','workspaceArt','siteBackupSection','beijingDateTime','today','toast','downloadBlob','openTargetModal','targetAction','applyTheme',`let modalReturnFocus=null;\n${names.map(owner).join('\n')}\nreturn {renderBackup,bindBackup,bindSiteBackup,openModal,closeModal,refreshData};`)($,$$,state,request,ui.renderMarkup,ui.prepareDialogContainer,ui.showDialog,ui.dismissDialog,()=>{},esc,shell,()=>'<h1>数据备份</h1>',()=>'',()=>'<button id="site-backup-export">整站导出</button><input id="site-backup-file" type="file">',value=>value||'',()=> '2026-11-06',(...args)=>notices.push(args),(blob,name)=>downloads.push({blob,name}),()=>{},()=>{},()=>{});
+  const names=['syncOverlayBackground','openModal','closeModal','dialogWriteTask','backupTargetKindLabel','backupRunRows','renderBackup','bindBackup','bindSiteBackup','refreshData'];
+  const functions=new Function('$','$$','state','request','renderMarkup','prepareDialogContainer','showDialog','dismissDialog','cancelDailyTypewriter','esc','shell','spacePageHead','workspaceArt','siteBackupSection','beijingDateTime','today','toast','downloadBlob','openTargetModal','targetAction','applyTheme','backupScheduleLabel',`let modalReturnFocus=null;\n${names.map(owner).join('\n')}\nreturn {renderBackup,bindBackup,bindSiteBackup,openModal,closeModal,refreshData};`)($,$$,state,request,ui.renderMarkup,ui.prepareDialogContainer,ui.showDialog,ui.dismissDialog,()=>{},esc,shell,()=>'<h1>数据备份</h1>',()=>'',()=>'<button id="site-backup-export">整站导出</button><input id="site-backup-file" type="file">',value=>value||'',()=> '2026-11-06',(...args)=>notices.push(args),(blob,name)=>downloads.push({blob,name}),()=>{},()=>{},()=>{},backupScheduleLabel);
   return {state,calls,notices,downloads,...functions};
 }
 function choose(id,file){const input=$(id);Object.defineProperty(input,'files',{value:[file],configurable:true});input.dispatchEvent(new win.Event('change',{bubbles:true}));}
@@ -42,6 +43,20 @@ test('backup page loads belong to their original visit and account, and metadata
   assert.equal(current.querySelector('script,svg,[onerror],[onload]'),null);assert.match(current.textContent,/<img src=x onerror=alert\(1\)>/);
   const third=f.renderBackup();f.state.user={id:'other',username:'other'};pending[4].reject(new Error('late failure'));pending[5].resolve(targets);await third;
   assert.equal($('#backup-retry'),null,'old account errors cannot alter new account rendering');
+});
+
+test('backup page shows exact Beijing plans and complete target-aware result rows without the old twelve-row truncation',async()=>{
+  const payload={targets:[
+    {id:'cloud',name:'云存储',kind:'s3',schedule:'daily',scheduleTime:'02:35',scheduleWeekday:1},
+    {id:'dav',name:'家里网络存储',kind:'webdav',schedule:'weekly',scheduleTime:'21:10',scheduleWeekday:7}
+  ],runs:Array.from({length:16},(_,index)=>({operation:'backup',created_at:'2026-11-06',target_name:index%2?'家里网络存储':'云存储',target_kind:index%2?'webdav':'s3',trigger:index%2?'scheduled':'manual',status:index%2?'error':'success',message:index%2?'备份上传失败':'备份成功'}))};
+  const f=fixture(async path=>path==='/api/backup/status'?status:payload);await f.renderBackup();
+  assert.match($('.workspace-external-backup').textContent,/每天 02:35（北京时间）/);
+  assert.match($('.workspace-external-backup').textContent,/每周日 21:10（北京时间）/);
+  assert.deepEqual($$('.backup-runs-table th').map(node=>node.textContent),['时间','备份目标','执行方式','结果','说明']);
+  assert.equal($$('.backup-runs-table tbody tr').length,16);
+  assert.match($('.workspace-backup-runs').textContent,/最近十天（北京时间）/);
+  const row=$('.backup-runs-table tbody tr');assert.match(row.textContent,/云存储.*S3 兼容存储.*手动备份.*备份成功/);
 });
 
 test('personal backup inspection is single-flight, busy-protected and cannot replace a newer dialog',async()=>{

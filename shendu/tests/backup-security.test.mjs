@@ -171,6 +171,10 @@ test('网页整站恢复能恢复原账户、加密记录并注销旧会话', as
 });
 test('服务器快照往返恢复可解密；数据库与密钥匹配', () => {
   const file = join(root, 'snapshot.shendu-db'); assert.equal(cli('snapshot', file).status, 0);
+  const envelope=JSON.parse(readFileSync(file,'utf8')),snapshotKey=pbkdf2Sync(backupPassword,Buffer.from(envelope.salt,'base64'),600000,32,'sha256'),snapshotDecipher=createDecipheriv('aes-256-gcm',snapshotKey,Buffer.from(envelope.iv,'base64'));
+  snapshotDecipher.setAAD(Buffer.from(envelope.format));snapshotDecipher.setAuthTag(Buffer.from(envelope.tag,'base64'));
+  const snapshotPayload=JSON.parse(gunzipSync(Buffer.concat([snapshotDecipher.update(Buffer.from(envelope.data,'base64')),snapshotDecipher.final()])));
+  const sourceDb=new DatabaseSync(join(dataDir,'shendu.db'),{readOnly:true});try{assert.equal(snapshotPayload.schemaVersion,Number(sourceDb.prepare("SELECT value FROM schema_meta WHERE key='schema_version'").get().value))}finally{sourceDb.close()}
   const dest = join(root, 'restored'); assert.equal(cli('restore', file, dest).status, 0);
   const restoredKey = readFileSync(join(dest, 'backup-master.key')); assert.deepEqual(restoredKey, readFileSync(join(dataDir, 'backup-master.key')));
   const db = new DatabaseSync(join(dest, 'shendu.db'), { readOnly: true });
