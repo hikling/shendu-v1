@@ -1396,3 +1396,25 @@ User corrected delivery scope to GitHub links. Replaced full-source/archive enum
 ### Status
 
 [OK] **Completed**
+
+
+## Session 61: Precise backup scheduling and result history
+<!-- trellis-session: v=2 fp=acc95bf3476dcfec -->
+
+**Date**: 2026-11-09
+**Task**: Precise backup scheduling and result history
+**Branch**: `main`
+
+### Summary
+
+Chinese S3 fields; Beijing daily/weekly times; target-aware ten-day backup-only logs; stacked original action text; schema migration and crash-safe scheduler leases. 239 tests/build/check and isolated server smoke passed. Browser visual checks unavailable in host settings.
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `e0065fb` | fix: add precise backup schedules and clear result history |
+
+### Status
+
+[OK] **Completed**
