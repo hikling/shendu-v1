@@ -99,35 +99,29 @@
 @media(prefers-reduced-motion:reduce){.history-page .history-record,.history-page .history-record-art img,.history-page .history-record-arrow{transition:none}}
 body.reduce-motion .history-page .history-record,body.reduce-motion .history-page .history-record-art img,body.reduce-motion .history-page .history-record-arrow{transition:none}
 
-/* The archive and verification groups share a readable title/count hierarchy. */
-:is(.history-page,.actions-page) .archive-section-head{--section-tone:#345585;--section-line:#ced8d7;display:flex;align-items:center;gap:20px;min-width:0;margin:26px 0 18px;padding:18px 20px;border-top:2px solid color-mix(in srgb,var(--section-tone) 36%,#d7dfd3);border-bottom:1px solid var(--section-line);background:linear-gradient(90deg,color-mix(in srgb,var(--section-tone) 5%,#fffefa),#fffefa00 80%)}
-.actions-page .archive-section-pending{--section-tone:#875b21;--section-line:#ded7c7}
-.actions-page .archive-section-verified{--section-tone:#15584e;--section-line:#ccdcd3}
-.archive-section-main{display:grid;grid-template-columns:38px minmax(0,1fr) auto;align-items:center;gap:16px;flex:1;min-width:0}
-.archive-section-icon{display:grid;place-items:center;align-self:start;width:38px;height:44px;color:var(--section-tone)}
-.archive-section-icon svg{display:block;width:30px;height:30px}
+/* Quiet chapter headings: title first, a small count and one trailing rule. */
+:is(.history-page,.actions-page) .archive-section-head{display:flex;align-items:flex-start;gap:24px;min-width:0;margin:28px 0 22px;padding:0;border:0;background:none}
+.archive-section-head:after{content:"";order:1;flex:1;min-width:24px;height:1px;margin-top:22px;background:#d2dacf}
+.archive-section-main{flex:0 1 auto;min-width:0}
 .archive-section-copy{min-width:0}
-:is(.history-page,.actions-page) .archive-section-head h2{display:block;margin:0;color:var(--section-tone);font:900 clamp(1.4rem,2.2vw,1.8rem)/1.45 "SimSun","宋体","Noto Serif SC",serif;letter-spacing:.04em;overflow-wrap:anywhere}
-:is(.history-page,.actions-page) .archive-section-head .archive-section-copy p{margin:5px 0 0;color:#5c6b63;font-size:.72rem;line-height:1.8;overflow-wrap:anywhere}
-.archive-section-count{display:flex;flex-direction:column;align-items:flex-end;gap:3px;min-width:54px;padding-left:20px;border-left:1px solid var(--section-line);color:var(--section-tone)}
-.archive-section-count strong{font:500 2.2rem/1.05 Georgia,"Times New Roman",serif;font-variant-numeric:tabular-nums;letter-spacing:-.035em}
-.archive-section-count>span{color:#5c6b63;font-size:.61rem;line-height:1.6;white-space:nowrap}
-.archive-section-head .history-reset{min-height:44px;margin-left:auto;padding:8px 0 8px 10px;flex-shrink:0}
+.archive-section-title-row{display:flex;align-items:baseline;flex-wrap:wrap;gap:5px 14px;min-width:0}
+:is(.history-page,.actions-page) .archive-section-head h2{display:block;min-width:0;margin:0;color:#2d4338;font:700 clamp(1.5rem,2.3vw,1.9rem)/1.45 "SimSun","宋体","Noto Serif SC",serif;letter-spacing:.03em;overflow-wrap:anywhere}
+:is(.history-page,.actions-page) .archive-section-head .archive-section-copy p{max-width:42em;margin:7px 0 0;color:#59665c;font-size:.7rem;line-height:1.8;overflow-wrap:anywhere}
+.archive-section-count{display:inline-flex;align-items:baseline;gap:4px;color:#59665c;font:400 .68rem/1.6 "Noto Sans SC","Microsoft YaHei",sans-serif;white-space:nowrap}
+.archive-section-count strong{font:inherit;font-variant-numeric:tabular-nums}
+.archive-section-count>span{font:inherit}
+.archive-section-head .history-reset{order:2;flex-shrink:0;min-height:44px;margin:0;padding:2px 0 8px 0;font-size:.67rem}
 @media(max-width:820px){
- :is(.history-page,.actions-page) .archive-section-head{padding:15px 14px;gap:12px}
- .archive-section-main{grid-template-columns:30px minmax(0,1fr) auto;gap:10px}
- .archive-section-icon{width:30px;height:38px}
- .archive-section-icon svg{width:26px;height:26px}
- .archive-section-count{padding-left:12px;min-width:46px}
- .archive-section-count strong{font-size:1.9rem}
+ :is(.history-page,.actions-page) .archive-section-head{gap:16px}
+ .archive-section-head:after{margin-top:19px}
+ .archive-section-title-row{gap:4px 10px}
 }
 @media(max-width:620px){
- .history-page .archive-section-head{flex-wrap:wrap;gap:4px 10px}
- .history-page .archive-section-main{flex-basis:100%}
- :is(.history-page,.actions-page) .archive-section-head{padding:14px 10px}
+ .history-page .archive-section-head{flex-wrap:wrap;gap:6px 12px}
+ .history-page .archive-section-main{flex:1 1 65%}
+ .history-page .archive-section-head:after{display:none}
  .actions-section-pending>.actions-section-head>.archive-section-main{max-width:none}
  .actions-page .actions-hero-art{margin-bottom:-20px}
- .archive-section-head .history-reset{padding:4px 0;min-height:36px}
- .archive-section-count{padding-left:10px;min-width:42px}
+ .archive-section-head .history-reset{min-height:44px;margin-left:auto;padding:4px 0}
  :is(.history-page,.actions-page) .archive-section-head .archive-section-copy p{font-size:.68rem}
 }
