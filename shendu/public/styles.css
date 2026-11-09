@@ -1181,19 +1181,9 @@ body.reduce-motion #daily-intro-text.is-typing .daily-glyph:not(.is-visible){opa
 .actions-hero h1,.actions-hero .history-hero-note{overflow-wrap:anywhere}
 .actions-hero .history-hero-note{max-width:32em;font-size:.78rem;line-height:1.9}
 .actions-pending-surface{position:relative;z-index:1;padding:14px 18px 18px;border:1px solid #d6e0d0;border-radius:22px;background:#f2f6eb}
-.actions-tallies{display:flex;justify-content:flex-end;align-items:center;gap:28px;padding:0 7px 13px;border:0}
-.actions-tallies>div{display:flex;align-items:baseline;gap:9px;min-width:0}
-.actions-tallies>div+div{padding-left:26px;border-left:1px solid #c9d5c7}
-.actions-tallies strong{color:#2e4d38;font:500 1.75rem/1.2 Georgia,serif;letter-spacing:-.04em;font-variant-numeric:tabular-nums}
-.actions-tallies span{color:#536a55;font-size:.7rem;line-height:1.6;overflow-wrap:anywhere}
 .actions-pending-surface .actions-empty{padding-block:10px 18px;border:0;background:transparent}
 .actions-section{margin-top:29px}
 .actions-section+.actions-section{margin-top:39px}
-.actions-section-head{display:flex;align-items:center;justify-content:space-between;gap:18px;margin:0 3px 18px}
-.actions-section-kicker{margin:0 0 7px;color:#5d705e;font-size:.6rem;line-height:1.6;letter-spacing:.1em;font-weight:650}
-.actions-section-head h2{display:flex;align-items:center;flex-wrap:wrap;gap:11px;margin:0;color:#304d3a;font:850 1.22rem/1.5 "SimSun","宋体","Noto Serif SC",serif;letter-spacing:.03em}
-.actions-section-head h2>span{padding:3px 9px;border:1px solid #cfdbcb;border-radius:99px;background:#f6f8ee;color:#546b52;font:500 .62rem/1.4 "Noto Sans SC","Microsoft YaHei",sans-serif;letter-spacing:0}
-.actions-section-head>div>p:last-child:not(.actions-section-kicker){margin:7px 0 0;color:#5c6b5d;font-size:.7rem;line-height:1.85;overflow-wrap:anywhere}
 .action-archive-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));align-items:start;gap:20px}
 .action-archive-card,.verification-dialog{--action-tone:#15584e;--action-soft:#edf4ed;--history-tone:var(--action-tone)}
 :is(.action-archive-card,.verification-dialog).type-weekly{--action-tone:#8f4335;--action-soft:#f7ebe4}
@@ -1283,9 +1273,6 @@ body.reduce-motion #daily-intro-text.is-typing .daily-glyph:not(.is-visible){opa
   .actions-hero .history-hero-note{font-size:.72rem}
   .actions-section{margin-top:26px}
   .actions-section+.actions-section{margin-top:32px}
-  .actions-section-head{margin-bottom:15px;gap:10px}
-  .actions-section-head h2{font-size:1.17rem}
-  .actions-section-head>div>p:last-child:not(.actions-section-kicker){font-size:.69rem}
   .action-archive-grid{grid-template-columns:minmax(0,1fr);gap:17px}
   .action-archive-card{padding:18px 20px 16px}
   .action-archive-body{grid-template-columns:minmax(0,1fr) 39%;min-height:175px}
@@ -1362,8 +1349,8 @@ body.reduce-motion .history-record,body.reduce-motion .history-record-art img,bo
 .actions-page .actions-hero-art:before{inset:12% 9%;}
 .actions-page .actions-hero-art .history-hero-orbit{inset:17% 9% 18%}
 .actions-page .actions-section-pending{margin-top:0}
-.actions-section-pending>.actions-section-head{min-height:98px;margin-bottom:0;padding:7px 0 20px}
-.actions-section-pending>.actions-section-head>div{max-width:calc(100% - 430px)}
+.actions-section-pending>.actions-section-head{min-height:114px;margin-bottom:18px}
+.actions-section-pending>.actions-section-head>.archive-section-main{max-width:calc(100% - 430px)}
 .actions-page .action-archive-card{padding:21px 25px 17px}
 .actions-page .action-reading-plan{padding:16px 20px}
 .actions-page .action-reading-outcome>section{padding:17px 20px}
@@ -1372,8 +1359,8 @@ body.reduce-motion .history-record,body.reduce-motion .history-record-art img,bo
 @media(max-width:960px){
  .actions-page .actions-hero{grid-template-columns:minmax(0,1fr) 290px;min-height:250px;gap:20px}
  .actions-page .actions-hero-art{right:0;bottom:-76px;width:320px}
- .actions-section-pending>.actions-section-head{min-height:88px}
- .actions-section-pending>.actions-section-head>div{max-width:calc(100% - 320px)}
+ .actions-section-pending>.actions-section-head{min-height:106px}
+ .actions-section-pending>.actions-section-head>.archive-section-main{max-width:calc(100% - 320px)}
  .actions-page .action-archive-body{grid-template-columns:minmax(0,1fr) 220px;gap:0 22px}
  .actions-page .action-archive-art{height:220px}
  .actions-page .verification-times{gap:9px 22px}
@@ -1382,14 +1369,9 @@ body.reduce-motion .history-record,body.reduce-motion .history-record-art img,bo
  .actions-page .actions-hero{display:block;min-height:0;padding:8px 0 0}
  .actions-page .actions-hero-art{position:relative;right:auto;bottom:auto;width:clamp(190px,61vw,260px);height:auto;margin:-26px 0 -62px auto}
  .actions-page .actions-hero .history-hero-note{max-width:100%}
- .actions-section-pending>.actions-section-head{min-height:86px;padding-bottom:18px}
- .actions-section-pending>.actions-section-head>div{max-width:calc(100% - 85px)}
+ .actions-section-pending>.actions-section-head{min-height:106px}
+ .actions-section-pending>.actions-section-head>.archive-section-main{max-width:calc(100% - 85px)}
  .actions-pending-surface{padding:12px 10px 10px;border-radius:19px}
- .actions-tallies{gap:18px;padding:0 4px 12px}
- .actions-tallies>div{gap:7px}
- .actions-tallies>div+div{padding-left:17px}
- .actions-tallies strong{font-size:1.5rem}
- .actions-tallies span{font-size:.65rem}
  .actions-pending-surface .actions-empty{padding:10px 12px 19px}
  .actions-page .action-archive-card{padding:17px 16px 14px}
  .actions-page .action-archive-body{grid-template-columns:minmax(0,1fr) clamp(120px,31vw,170px);gap:0 10px;padding:6px 0 0}
@@ -1408,9 +1390,6 @@ body.reduce-motion .history-record,body.reduce-motion .history-record-art img,bo
  .actions-page .action-archive-body{grid-template-columns:minmax(0,1fr) 108px;gap:0 7px}
  .actions-page .action-archive-copy h3{font-size:1.14rem}
  .actions-page .action-archive-art{height:124px}
- .actions-tallies{gap:12px}
- .actions-tallies>div+div{padding-left:12px}
- .actions-tallies span{font-size:.61rem}
 }
 
 /* Review and archive content share the same reading boundary at every width. */

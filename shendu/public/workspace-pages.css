@@ -25,7 +25,7 @@
 .workspace-page .workspace-panel{display:flex;flex-direction:column;gap:0}
 .workspace-page .workspace-return{height:auto;min-height:32px;margin:0;padding:0;border:0;border-radius:0;background:transparent;box-shadow:none;color:var(--workspace-tone);font-size:.72rem;text-align:left}
 .workspace-page .workspace-return:hover{background:transparent;text-decoration:underline;text-underline-offset:5px}
-.workspace-settings.workspace-page .workspace-settings-menu{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px;border:0}
+.workspace-settings.workspace-page .workspace-settings-menu{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px;border:0}
 .workspace-settings.workspace-page .settings-menu-item{display:grid;min-height:244px;grid-template-columns:minmax(0,1fr) 168px;grid-template-rows:auto;align-items:center;gap:12px;padding:26px 22px}
 .workspace-settings.workspace-page .settings-menu-item strong{font-size:1.4rem;line-height:1.45}
 .workspace-settings.workspace-page .settings-menu-item small{font-size:.78rem;line-height:1.8}
@@ -169,7 +169,6 @@
 .workspace-setting-enter{display:flex;align-items:center;gap:17px;margin-top:16px;color:#566a4b;font-size:.6rem;font-weight:650}
 .workspace-setting-enter>span{font-size:.95rem}
 .workspace-setting-art{width:100px;align-self:center}
-.workspace-settings-menu [data-settings-target="account"]{--workspace-tone:#455f34}
 .workspace-settings-menu [data-settings-target="stage"]{--workspace-tone:#345585}
 .workspace-settings-menu [data-settings-target="guide"]{--workspace-tone:#15584e;grid-column:1/-1;min-height:112px}
 .workspace-dialog .workspace-form{min-width:0}
