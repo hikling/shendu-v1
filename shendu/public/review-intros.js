@@ -101,14 +101,21 @@ export function reviewIntroLayout(text) {
   };
 }
 
-// A fresh entry consumes one item. Rendering/going back within the same visit
-// only reads it, so a save or answer redraw cannot change the opening words.
+// Saved record IDs select stable words across visits and reloads. Keep the
+// published pool order stable; new unsaved visits alone consume shuffled items.
+// Rendering/going back within one visit only reads the already selected words.
 export function createReviewIntroPicker({ random = Math.random } = {}) {
   const bags = new Map(), last = new Map();
   let visit = null;
-  function enter(type) {
+  function enter(type, recordId = null) {
     const pool = REVIEW_INTROS[type];
     if (!pool) throw new RangeError(`Unknown review intro type: ${type}`);
+    if (typeof recordId === 'string' && recordId.length) {
+      let hash = 2166136261;
+      for (const unit of `${type}\0${recordId}`) hash = Math.imul(hash ^ unit.codePointAt(0), 16777619) >>> 0;
+      visit = { type, text: pool[hash % pool.length] };
+      return visit.text;
+    }
     let bag = bags.get(type);
     if (!bag?.length) {
       bag = [...pool];

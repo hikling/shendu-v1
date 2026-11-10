@@ -553,12 +553,12 @@ body.reduce-motion *,body.reduce-motion *:before,body.reduce-motion *:after{anim
 .overview-shell{background:var(--overview-bg)}
 .overview-shell .overview-main{width:100%;max-width:none;padding:0}
 .overview-shell .header-rail-button{display:inline-flex}
-.overview-page{min-height:calc(100dvh - var(--header-height));overflow:hidden;background:var(--overview-bg);color:var(--overview-ink);font-family:"Noto Sans SC","Microsoft YaHei","PingFang SC",system-ui,sans-serif}
-.overview-hero{max-width:1200px;margin:auto;padding:20px 24px 0;text-align:center}
+.overview-page{--overview-copy-drop:24px;min-height:calc(100dvh - var(--header-height));overflow:hidden;background:var(--overview-bg);color:var(--overview-ink);font-family:"Noto Sans SC","Microsoft YaHei","PingFang SC",system-ui,sans-serif}
+.overview-hero{position:relative;top:var(--overview-copy-drop);max-width:1200px;margin:auto;padding:20px 24px 0;text-align:center}
 .overview-hero h1{max-width:1100px;margin:0 auto 14px;color:var(--overview-ink);font:700 clamp(3.4rem,7.1vw,6rem)/1.2 "Songti SC","Noto Serif SC","STSong",serif;letter-spacing:.045em;text-wrap:balance}
 .overview-hero h1 em{font-style:normal;color:var(--primary)}
 .overview-hero p{margin:0 auto;max-width:690px;color:var(--overview-muted);font-size:clamp(.82rem,1.4vw,.98rem);line-height:1.8}
-.overview-types{position:relative;z-index:20;max-width:1140px;margin:18px auto 0;padding:0 24px}
+.overview-types{position:relative;top:var(--overview-copy-drop);z-index:20;max-width:1140px;margin:18px auto 0;padding:0 24px}
 .overview-types-heading{text-align:center}
 .overview-types-heading h2{margin:7px 0 21px;font:800 1.08rem/1.4 "Noto Sans SC","Microsoft YaHei",system-ui,sans-serif;color:var(--overview-ink);letter-spacing:.035em}
 .overview-type-grid{display:flex;align-items:center;justify-content:center;gap:18px}
@@ -662,6 +662,7 @@ body.reduce-motion *,body.reduce-motion *:before,body.reduce-motion *:after{anim
   .header-rail-button:before{content:"阶段";font-size:.65rem}
   .mobile-nav-main{grid-template-columns:repeat(3,minmax(0,1fr))}
   .mobile-nav-group>div{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .overview-page{--overview-copy-drop:16px}
   .overview-hero{padding:18px 8px 0}
   .overview-hero h1{font-size:min(clamp(2.65rem,11.5vw,3.7rem),calc((100vw - 24px)/7.15));letter-spacing:.02em}
   .overview-hero p{font-size:.78rem}

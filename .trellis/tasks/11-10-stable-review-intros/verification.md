@@ -1,0 +1,9 @@
+# Verification — 2026-11-10
+
+- `npm run check --prefix shendu` and production UI build passed. Full suite288/288 passed, no failures/skips/cancellations.
+- 14 targeted introduction/navigation tests passed during implementation: six categories, draft/completed/verified, explicit history/action/calendar/overview sources, same type/period implicit recovery, fresh picker/reload stability, edits/status/timestamp independence, no record mutation, saved reads not consuming the new-review shuffle bag, force-new decisions, first-save current-visit retention and cancelled dirty navigation.
+- Saved intros use a stable category+record-ID hash into the existing fixed pool; keep published slot order stable. Old rows require no migration. First-save ID allocation leaves the already-visible new visit alone; reopening the now-saved record selects its stable quote. No quote metadata or private content is written, and API/backup formats are unchanged.
+- PostCSS parsed styles.css/history-archive.css. Task manifests and `git diff --check` passed. Isolated runtime health/HTML/app/real built shadcn JS/CSS smoke passed.
+- History composition alone receives relative top-20px (-12px on phones), keeping h1 alignment and moving number/unit together. Overview hero and types receive relative top24px (16px on phones); their flow size is unchanged and the reel has no diff. The arc, hover, focus and reduced-motion code is unchanged.
+- Local browser create-tab returned“Local browser use is disabled in Work settings” again this turn. No alternate automation was used, no actual screenshot/overlap/desktop/mobile visual acceptance is claimed, and old QA images were not reused as new evidence.
+- Isolated local service is stopped and temporary data removed before archival. Final source review is recorded in the session journal.

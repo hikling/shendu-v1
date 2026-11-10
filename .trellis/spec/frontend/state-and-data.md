@@ -8,6 +8,8 @@ Use `request()` for JSON API operations. It sends same-origin credentials and ha
 
 ## Review lifecycle
 
+Saved-review introductions are record identity, not a new random visit. All six types' draft/completed/verified rows choose from the fixed category pool using their stable ID, independent of content, status or timestamps. Explicit history/action/calendar/reel entries and implicit type/period recovery must resolve the same row before selecting. Keep the new unsaved visit's text through local redraw/first save; cancelled guards cannot consume a new choice. Do not reorder the existing stable quote slots without addressing saved-record consistency, and do not write quote metadata into record payloads merely to stabilize this presentation.
+
 - `newRecord()` defines draft shape; `renderReview()` loads a record or draft. `templatesForRecord()` respects the saved template snapshot.
 - `bindReview()` marks editable inputs dirty. `collectCurrent()` copies current DOM values into `state.current.data`. Collect before a rerender that replaces form nodes; `renderReviewFromCurrent()` demonstrates this for add/remove item actions.
 - `saveCurrent()` explicitly sends `PUT /api/records`, updates the record cache, and clears dirty state. The current app has no automatic draft save.

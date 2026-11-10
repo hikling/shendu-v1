@@ -9,7 +9,7 @@ import {EXTENDED_FLOW,extendedPrompts,extendedPromptNeighbor,extendedPromptIssue
 import {verificationMinimum} from './verification-policy.js?v=1.0.0-verification2';
 import {createReviewNavigator} from './review-navigation.js?v=1.0.0-pages1';
 import {RECORD_ART,recordArtAssignments} from './record-art.js?v=1.0.0-records1';
-import {createReviewIntroPicker,reviewIntroLines,reviewIntroLayout} from './review-intros.js?v=1.0.0-intros1';
+import {createReviewIntroPicker,reviewIntroLines,reviewIntroLayout} from './review-intros.js?v=1.0.0-intros2';
 const $ = (s, root = document) => root.querySelector(s);
 const $$ = (s, root = document) => [...root.querySelectorAll(s)];
 const esc = (v = '') => String(v).replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
@@ -87,7 +87,8 @@ const reviewNavigation=createReviewNavigator({
   source:()=>({route:state.route,scrollY:window.scrollY}),
   guard:next=>attemptNavigate(next),
   open:({type,period,forceNew=false,record=null})=>{
-    reviewIntros.enter(type);
+    if(!record&&!forceNew)record=state.records.find(item=>item.type===type&&item.period===period)||null;
+    reviewIntros.enter(type,record?.id);
     state.route=type;state.current=record;
     document.title=`${TYPES[type].label} · 慎独`;
     renderReview(type,period,forceNew,record);
