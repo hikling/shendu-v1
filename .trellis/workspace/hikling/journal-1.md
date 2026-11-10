@@ -1533,3 +1533,30 @@ Removed section glyphs, tinted bands, oversized counter columns and status color
 ### Status
 
 [OK] **Completed**
+
+
+## Session 67: 档案册计数与跨日操作流水
+<!-- trellis-session: v=2 fp=9766c5a93d091ed0 -->
+
+**Date**: 2026-11-10
+**Task**: 档案册计数与跨日操作流水
+**Branch**: `main`
+
+### Summary
+
+内置绘图生成档案册，动态精确计数融入书页；日志改为跨日期流水，管理员全站、成员本人，列出操作人/时间/动作。
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `47f6b53` | feat: blend archive count into artwork and show activity feed |
+
+### Testing
+
+- [OK] check/build及283项测试通过，后端独立审查与9项接口测试通过。
+- [OK] 实际隔离浏览器页面、跨日分页及手机溢出检查通过；计数20组视口/数值组合均在书页内，截图已保存。
+
+### Status
+
+[OK] **Completed**
