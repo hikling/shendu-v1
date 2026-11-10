@@ -109,6 +109,7 @@ db.exec(`
     created_at TEXT NOT NULL
   );
   CREATE INDEX IF NOT EXISTS idx_activity_user_time ON activity_events(user_id,created_at DESC,id DESC);
+  CREATE INDEX IF NOT EXISTS idx_activity_time ON activity_events(created_at DESC,id DESC);
   INSERT OR IGNORE INTO schema_meta(key,value) VALUES ('schema_version','8');
   INSERT OR IGNORE INTO schema_meta(key,value) VALUES ('public_registration','true');
 `);
@@ -473,7 +474,7 @@ function withActivity(userId,action,metadata,write){
   try{const result=write();if(result!==false&&result?.changes!==0)appendActivity(userId,action,metadata);db.exec('RELEASE activity_write');return result}
   catch(error){db.exec('ROLLBACK TO activity_write; RELEASE activity_write');throw error}
 }
-function activityOut(row){return{id:row.id,action:row.action,recordType:row.record_type,period:row.period,targetKind:row.target_kind,createdAt:row.created_at}}
+function activityOut(row){return{id:row.id,actorName:row.actor_name,action:row.action,recordType:row.record_type,period:row.period,targetKind:row.target_kind,createdAt:row.created_at}}
 
 function migrateSensitiveData() {
   if (!masterKey) return;
@@ -1276,18 +1277,19 @@ async function api(req, res, url) {
     return json(res,200,response);
   }
   if(path==='/api/activity'&&method==='GET'){
-    const date=url.searchParams.has('date')?url.searchParams.get('date'):todayDate(),cursor=url.searchParams.get('cursor');
-    if(!validIsoDate(date))return error(res,400,'请选择有效的日志日期','activity_date_invalid');
-    const start=new Date(`${date}T00:00:00+08:00`).toISOString(),end=new Date(Date.parse(start)+86400000).toISOString(),stamp=now(),args=[user.id,start,end,stamp];
-    let where='user_id=? AND created_at>=? AND created_at<? AND created_at<=?';
+    const date=url.searchParams.has('date')?url.searchParams.get('date'):null,cursor=url.searchParams.get('cursor'),scope=['admin','superadmin'].includes(user.role)?'site':'personal';
+    if(date!==null&&!validIsoDate(date))return error(res,400,'请选择有效的日志日期','activity_date_invalid');
+    const args=[now()];let where='e.created_at<=?';
+    if(scope==='personal'){where+=' AND e.user_id=?';args.push(user.id)}
+    if(date!==null){const start=new Date(`${date}T00:00:00+08:00`).toISOString(),end=new Date(Date.parse(start)+86400000).toISOString();where+=' AND e.created_at>=? AND e.created_at<?';args.push(start,end)}
     if(cursor!==null){
       if(!validEntityId(cursor))return error(res,400,'日志分页位置无效，请重新加载','activity_cursor_invalid');
-      const anchor=db.prepare(`SELECT id,created_at FROM activity_events WHERE id=? AND user_id=? AND created_at>=? AND created_at<? AND created_at<=?`).get(cursor,user.id,start,end,stamp);
+      const anchor=db.prepare(`SELECT e.id,e.created_at FROM activity_events e WHERE e.id=? AND ${where}`).get(cursor,...args);
       if(!anchor)return error(res,404,'日志分页位置不存在，请重新加载','activity_cursor_not_found');
-      where+=' AND (created_at<? OR (created_at=? AND id<?))';args.push(anchor.created_at,anchor.created_at,anchor.id);
+      where+=' AND (e.created_at<? OR (e.created_at=? AND e.id<?))';args.push(anchor.created_at,anchor.created_at,anchor.id);
     }
-    const rows=db.prepare(`SELECT * FROM activity_events WHERE ${where} ORDER BY created_at DESC,id DESC LIMIT 51`).all(...args),entries=rows.slice(0,50).map(activityOut);
-    return json(res,200,{date,entries,nextCursor:rows.length>50?entries.at(-1).id:null});
+    const rows=db.prepare(`SELECT e.*,u.username AS actor_name FROM activity_events e JOIN users u ON u.id=e.user_id WHERE ${where} ORDER BY e.created_at DESC,e.id DESC LIMIT 51`).all(...args),entries=rows.slice(0,50).map(activityOut);
+    return json(res,200,{date,scope,entries,nextCursor:rows.length>50?entries.at(-1).id:null});
   }
   if (path === '/api/stats' && method === 'GET') {
     const current = todayDate();

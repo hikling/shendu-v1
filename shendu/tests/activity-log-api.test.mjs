@@ -64,7 +64,7 @@ test('all six review lifecycles emit truthful metadata and never persist their p
   }
   const remove=await draft('decision');assert.equal((await api(`/api/records/${remove.id}`,{method:'DELETE',body:{version:remove.version}})).status,200);
   const events=await log();assert.equal(events.filter(event=>event.action==='draft_saved').length,13);assert.equal(events.filter(event=>event.action==='review_completed').length,6);assert.equal(events.filter(event=>event.action==='action_verified').length,6);assert.equal(events.filter(event=>event.action==='draft_deleted').length,1);
-  for(const event of events){assert.deepEqual(Object.keys(event).sort(),['id','action','recordType','period','targetKind','createdAt'].sort());assert.ok(['daily','weekly','monthly','quarterly','yearly','decision'].includes(event.recordType));assert.equal(event.period,period(event.recordType));assert.equal(event.targetKind,null)}
+  for(const event of events){assert.deepEqual(Object.keys(event).sort(),['id','actorName','action','recordType','period','targetKind','createdAt'].sort());assert.equal(event.actorName,`activity_member_${index}`);assert.ok(['daily','weekly','monthly','quarterly','yearly','decision'].includes(event.recordType));assert.equal(event.period,period(event.recordType));assert.equal(event.targetKind,null)}
   assert.doesNotMatch(JSON.stringify(rows()),/PRIVATE|ACTION_BODY/);assert.doesNotMatch(JSON.stringify(events),/PRIVATE|ACTION_BODY/);
 });
 
@@ -81,6 +81,36 @@ test('day windows are Beijing civil dates and keyset pages remain complete witho
   for(const value of ['',"' OR 1=1",'not-a-uuid'])assert.equal((await api(`/api/activity?date=${today}&cursor=${encodeURIComponent(value)}`)).status,400);
   assert.equal((await api('/api/activity',{auth:''})).status,401);assert.equal((await api('/api/activity',{headers:{'Sec-Fetch-Site':'cross-site'}})).status,403);
   assert.equal((await api('/api/activity',{method:'POST',body:{action:'review_completed'}})).status,404);assert.equal(rows().length,124,'reads and rejected writes never create use-log entries');
+});
+
+test('cross-day feeds show actors and enforce site access for both administrator roles while members remain private',async()=>{
+  const start=new Date(today+'T00:00:00+08:00').toISOString(),previous=new Date(Date.parse(start)-86400000).toISOString(),ownerId=db.prepare("SELECT id FROM users WHERE username='activity_owner'").get().id;
+  const ownToday=Array.from({length:55},()=>insertEvent({stamp:start,recordType:'daily',periodValue:today}));
+  const ownPrevious=Array.from({length:7},()=>insertEvent({stamp:previous,recordType:'daily',periodValue:previous.slice(0,10)}));
+  const ownerEvent=insertEvent({owner:ownerId,stamp:previous,action:'stage_updated'}),future=insertEvent({owner:ownerId,stamp:new Date(Date.now()+3600000).toISOString()});
+  const adminName=`activity_admin_${index}`,created=await api('/api/admin/users',{method:'POST',auth:ownerCookie,body:{username:adminName,password,role:'admin'}});assert.equal(created.status,201,created.text);
+  const admin=await api('/api/auth/login',{method:'POST',auth:'',body:{username:adminName,password}});assert.equal(admin.status,200);assert.equal(admin.value.user.role,'admin');const adminCookie=admin.cookie,adminId=admin.value.user.id;
+  const adminEvent=insertEvent({owner:adminId,stamp:previous,action:'preferences_updated'}),allBefore=db.prepare('SELECT count(*) AS n FROM activity_events').get().n;
+  async function collect(auth,path='/api/activity'){
+    let cursor=null;const entries=[];do{const result=await api(path+(cursor?(path.includes('?')?'&':'?')+'cursor='+cursor:''),{auth});assert.equal(result.status,200,result.text);assert.ok(result.value.entries.length<=50);entries.push(...result.value.entries);cursor=result.value.nextCursor}while(cursor);return entries;
+  }
+  const personal=await api(`/api/activity?scope=site&userId=${ownerId}`);assert.equal(personal.status,200);assert.equal(personal.value.date,null);assert.equal(personal.value.scope,'personal');assert.equal(personal.value.entries.length,50);assert.ok(personal.value.nextCursor);
+  const ownEntries=await collect(cookie),expectedOwn=db.prepare('SELECT id FROM activity_events WHERE user_id=? ORDER BY created_at DESC,id DESC').all(userId).map(row=>row.id);
+  assert.deepEqual(ownEntries.map(event=>event.id),expectedOwn);assert.equal(ownEntries.length,62);assert.equal(new Set(ownEntries.map(event=>event.id)).size,62);assert.ok(ownEntries.every(event=>event.actorName===`activity_member_${index}`));assert.ok(ownEntries.some(event=>ownPrevious.includes(event.id)));
+  for(const id of [ownerEvent,adminEvent,future])assert.equal((await api(`/api/activity?scope=site&cursor=${id}`)).status,404,'members cannot widen reads or anchor a page to another account');
+  const siteExpected=db.prepare('SELECT e.id,u.username AS actor_name FROM activity_events e JOIN users u ON u.id=e.user_id WHERE e.created_at<=? ORDER BY e.created_at DESC,e.id DESC').all(new Date().toISOString());
+  for(const auth of [ownerCookie,adminCookie]){
+    const first=await api('/api/activity',{auth});assert.equal(first.status,200);assert.equal(first.value.date,null);assert.equal(first.value.scope,'site');
+    const entries=await collect(auth);assert.deepEqual(entries.map(event=>event.id),siteExpected.map(row=>row.id));assert.deepEqual(entries.map(event=>event.actorName),siteExpected.map(row=>row.actor_name));assert.equal(new Set(entries.map(event=>event.id)).size,entries.length);
+    assert.ok(entries.some(event=>event.id===ownerEvent));assert.ok(entries.some(event=>event.id===adminEvent));assert.ok(entries.some(event=>ownToday.includes(event.id)));assert.ok(!entries.some(event=>event.id===future));
+    for(const event of entries)assert.deepEqual(Object.keys(event).sort(),['id','actorName','action','recordType','period','targetKind','createdAt'].sort());
+    assert.equal((await api(`/api/activity?date=${today}&cursor=${ownerEvent}`,{auth})).status,404,'site scope does not bypass an explicit date');
+    assert.equal((await api(`/api/activity?cursor=${future}`,{auth})).status,404,'future anchors are never valid');
+  }
+  assert.equal(db.prepare('SELECT count(*) AS n FROM activity_events').get().n,allBefore,'reading either scope never creates events');
+  assert.equal((await api(`/api/admin/users/${adminId}`,{method:'PATCH',auth:ownerCookie,body:{role:'member'}})).status,200);
+  assert.equal((await api('/api/activity',{auth:adminCookie})).status,401,'role changes invalidate the old site session');
+  const demoted=await api('/api/auth/login',{method:'POST',auth:'',body:{username:adminName,password}});assert.equal(demoted.status,200);const restricted=await api('/api/activity?scope=site',{auth:demoted.cookie});assert.equal(restricted.value.scope,'personal');assert.ok(restricted.value.entries.every(event=>event.actorName===adminName));assert.equal((await api(`/api/activity?cursor=${ownToday[0]}`,{auth:demoted.cookie})).status,404);
 });
 
 test('settings, authentication and password changes log their operation without values',async()=>{

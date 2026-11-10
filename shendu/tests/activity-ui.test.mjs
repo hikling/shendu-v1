@@ -3,140 +3,70 @@ import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import {JSDOM} from 'jsdom';
 
-// Run the actual app owners against the production component bridge: native
-// date values and delegated button events must survive React enhancement.
-const source=await readFile(new URL('../public/app.js',import.meta.url),'utf8');
-const html=await readFile(new URL('../public/index.html',import.meta.url),'utf8');
+// Exercise actual app owners through the production component bridge.
+const source=await readFile(new URL('../public/app.js',import.meta.url),'utf8'),html=await readFile(new URL('../public/index.html',import.meta.url),'utf8');
 const dom=new JSDOM(html,{url:'http://localhost',pretendToBeVisual:true}),win=dom.window;
 for(const name of ['window','document','HTMLElement','HTMLInputElement','HTMLTextAreaElement','HTMLSelectElement','HTMLButtonElement','HTMLFormElement','Element','Node','NodeFilter','Event','CustomEvent','KeyboardEvent','MouseEvent','MutationObserver','getComputedStyle','FormData'])globalThis[name]=win[name];
-Object.defineProperty(globalThis,'navigator',{value:win.navigator,configurable:true});
-globalThis.requestAnimationFrame=win.requestAnimationFrame.bind(win);globalThis.cancelAnimationFrame=win.cancelAnimationFrame.bind(win);
-globalThis.ResizeObserver=class{observe(){}unobserve(){}disconnect(){}};
+Object.defineProperty(globalThis,'navigator',{value:win.navigator,configurable:true});globalThis.requestAnimationFrame=win.requestAnimationFrame.bind(win);globalThis.cancelAnimationFrame=win.cancelAnimationFrame.bind(win);globalThis.ResizeObserver=class{observe(){}unobserve(){}disconnect(){}};
 const ui=await import('../public/ui/shadcn.js');
-const $=(selector,root=document)=>root.querySelector(selector),$$=(selector,root=document)=>[...root.querySelectorAll(selector)];
-const esc=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
-const settle=()=>new Promise(resolve=>setTimeout(resolve,25));
-function owner(name){
-  const match=new RegExp(`(?:^|\\n)((?:async )?function ${name}\\()`).exec(source);assert.ok(match,name);
-  const start=match.index+(source[match.index]==='\n'?1:0),next=/\n(?:async )?function /.exec(source.slice(start+1));
-  return source.slice(start,next?start+1+next.index:source.length).split('\ndocument.addEventListener')[0];
+const $=(s,root=document)=>root.querySelector(s),$$=(s,root=document)=>[...root.querySelectorAll(s)];
+const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])),settle=()=>new Promise(resolve=>setTimeout(resolve,25));
+function owner(name){const match=new RegExp(`(?:^|\\n)((?:async )?function ${name}\\()`).exec(source);assert.ok(match,name);const start=match.index+(source[match.index]==='\n'?1:0),next=/\n(?:async )?function /.exec(source.slice(start+1));return source.slice(start,next?start+1+next.index:source.length).split('\ndocument.addEventListener')[0]}
+const types=source.slice(source.indexOf('const TYPES ='),source.indexOf('const TYPE_ICONS =')),zone=source.match(/const BEIJING_TIME_ZONE=[^\n]+/)[0];
+function event(id='first',extra={}){return {id,actorName:'青山',action:'draft_saved',recordType:'daily',period:'2026-11-10',targetKind:'',createdAt:'2026-11-09T16:05:00.000Z',...extra}}
+function feed(entries=[],nextCursor=null,scope='personal'){return {date:null,scope,entries,nextCursor}}
+function fixture(impl=async()=>feed(),role='member'){
+  ui.disposeUi($('#app'));$('#app').replaceChildren();const state={user:{id:'self',username:'self',role},saving:false,dirty:false},calls=[],targets=[];
+  const context={$,$$,state,request:(path,options)=>{calls.push({path,...options});return impl(path,options)},shell:markup=>ui.renderMarkup($('#app'),`<main id="main-content">${markup}</main>`),spacePageHead:(_,{title,description,action=''})=>`<header><h1>${esc(title)}</h1><p>${esc(description)}</p>${action}</header>`,renderMarkup:ui.renderMarkup,esc,FormData:win.FormData,workspaceArt:()=>'',openSettingsTarget:target=>targets.push(target),applyTheme:()=>{},toast:()=>{}};
+  const names=['beijingDateParts','formatDate','beijingTime','activityEntryHtml','renderActivity','renderSettings','bindMotionPreferences'],f=new Function(...Object.keys(context),`${zone}\n${types}\n${names.map(owner).join('\n')}\nreturn {renderActivity,activityEntryHtml,renderSettings};`)(...Object.values(context));return {state,calls,targets,...f};
 }
-const types=source.slice(source.indexOf('const TYPES ='),source.indexOf('const TYPE_ICONS ='));
-const zone=source.match(/const BEIJING_TIME_ZONE=[^\n]+/)[0];
-function event(id='first',overrides={}){
-  return {id,action:'draft_saved',recordType:'daily',period:'2026-11-10',targetKind:'',createdAt:'2026-11-09T16:05:00.000Z',...overrides};
-}
-function fixture(impl=async()=>({date:'2026-11-10',entries:[],nextCursor:null})){
-  ui.disposeUi($('#app'));$('#app').replaceChildren();
-  const state={user:{id:'self',username:'self'},saving:false,dirty:false},calls=[],targets=[];
-  let instant='2026-11-09T16:05:00.000Z';
-  const request=(path,options)=>{calls.push({path,...options});return impl(path,options)};
-  const shell=markup=>ui.renderMarkup($('#app'),`<main id="main-content">${markup}</main>`);
-  const head=(_,{title,description,action=''})=>`<header><h1>${esc(title)}</h1><p>${esc(description)}</p>${action}</header>`;
-  const names=['beijingDateParts','isoDate','shiftIsoDate','formatDate','beijingTime','activityEntryHtml','renderActivity','renderSettings','bindMotionPreferences'];
-  const context={$,$$,state,request,shell,spacePageHead:head,renderMarkup:ui.renderMarkup,esc,clockNow:()=>new Date(instant),FormData:win.FormData,workspaceArt:()=>'',openSettingsTarget:target=>targets.push(target),applyTheme:()=>{},toast:()=>{}};
-  const functions=new Function(...Object.keys(context),`${zone}\n${types}\n${names.map(owner).join('\n')}\nfunction today(){return beijingDateParts(clockNow()).iso}\nreturn {renderActivity,activityEntryHtml,renderSettings};`)(...Object.values(context));
-  return {state,calls,targets,...functions,setNow:value=>{instant=value}};
-}
-function changeDate(value){const field=$('#activity-date');field.value=value;field.dispatchEvent(new win.Event('change',{bubbles:true}));}
-function deferred(){let resolve,reject;const promise=new Promise((yes,no)=>{resolve=yes;reject=no});return {promise,resolve,reject};}
+function deferred(){let resolve,reject;const promise=new Promise((yes,no)=>{resolve=yes;reject=no});return {promise,resolve,reject}}
+function actions(){return $$('.activity-entry-action').map(n=>n.textContent)}
 
-test('activity starts on Beijing today across the UTC day boundary and retains its native accessible date controls',async()=>{
-  const f=fixture(async()=>({date:'2026-11-10',entries:[event()],nextCursor:null}));f.renderActivity();
-  const input=$('#activity-date'),previous=$('#activity-prev');await settle();
-  assert.deepEqual(f.calls,[{path:'/api/activity?date=2026-11-10'}]);assert.equal(input.type,'date');assert.equal(input.value,'2026-11-10');assert.equal(input.max,'2026-11-10');assert.equal($('label[for="activity-date"]').textContent,'查看日期（北京时间）');
-  assert.equal($('#activity-next').disabled,true);assert.equal($('#activity-date'),input);assert.equal($('#activity-prev'),previous);
-  assert.equal($('.activity-entry time').textContent,'00:05');assert.equal($('.activity-entry time').getAttribute('datetime'),'2026-11-09T16:05:00.000Z');
-  assert.match($('#activity-summary').textContent,/2026年11月10日.*已显示 1 条记录/);assert.equal($('.activity-entry h3').textContent,'保存草稿');assert.match($('.activity-history-note').textContent,/启用前的操作/);
+test('activity opens a cross-day ledger grouped by Beijing date with time, actor and operation, without a date picker',async()=>{
+  const entries=[event('today'),event('late',{actorName:'白露',action:'action_verified',createdAt:'2026-11-09T15:59:00.000Z'}),event('early',{createdAt:'2026-11-08T16:00:00.000Z'})],f=fixture(async()=>feed(entries));f.renderActivity();await settle();
+  assert.deepEqual(f.calls,[{path:'/api/activity'}]);assert.equal($('#activity-date,#activity-prev,#activity-next,#activity-today'),null);assert.deepEqual($$('.activity-day').map(n=>n.dataset.activityDate),['2026-11-10','2026-11-09']);assert.deepEqual($$('.activity-day').map(n=>$$('.activity-entry',n).length),[1,2]);
+  assert.deepEqual($$('.activity-day h2 time').map(n=>n.getAttribute('datetime')),['2026-11-10','2026-11-09']);assert.match($('.activity-day h2').textContent,/2026年11月10日/);assert.deepEqual($$('.activity-entry>time').map(n=>n.textContent),['00:05','23:59','00:00']);assert.equal($('.activity-entry>time').getAttribute('datetime'),'2026-11-09T16:05:00.000Z');
+  assert.deepEqual($$('.activity-entry-actor').map(n=>n.textContent),['青山','白露','青山']);assert.deepEqual(actions(),['保存草稿','提交行动验证','保存草稿']);assert.match($('#activity-scope').textContent,/我的操作.*北京时间/);assert.match($('#activity-summary').textContent,/已显示 3 条记录/);assert.match($('.activity-history-note').textContent,/启用前的操作/);assert.equal($('#activity-summary').getAttribute('role'),'status');assert.equal($('#activity-feedback').getAttribute('aria-live'),'polite');assert.ok($('[data-nav="settings"]'));
 });
-
-test('settings exposes the usage log alongside stage and guide, without restoring a duplicate account destination',()=>{
-  const f=fixture();f.renderSettings();assert.deepEqual($$('[data-settings-target]').map(node=>node.dataset.settingsTarget),['stage','activity','guide']);
-  $('[data-settings-target="activity"]').click();assert.deepEqual(f.targets,['activity']);assert.equal($('[data-settings-target="account"]'),null);assert.ok($('#motion-form'));
+test('settings exposes the ledger beside stage and guide without duplicate account management',()=>{const f=fixture();f.renderSettings();assert.deepEqual($$('[data-settings-target]').map(n=>n.dataset.settingsTarget),['stage','activity','guide']);$('[data-settings-target="activity"]').click();assert.deepEqual(f.targets,['activity']);assert.equal($('[data-settings-target="account"]'),null);assert.ok($('#motion-form'))});
+test('actors and metadata are escaped while private title/body/summary fields and unknown operation text never render',async()=>{
+  const hostile='<img src=x onerror=alert(1)>',entries=[event('saved',{actorName:hostile,period:hostile,title:'DO NOT SHOW TITLE',data:{body:'DO NOT SHOW BODY'},summary:'DO NOT SHOW SUMMARY'}),event('failed',{action:'backup_failed',recordType:'',targetKind:'s3'}),event('unknown',{action:'<svg onload=alert(1)>',recordType:'constructor',targetKind:hostile,period:hostile}),event('webdav',{action:'backup_target_updated',recordType:'',targetKind:'webdav'})],f=fixture(async()=>feed(entries));f.renderActivity();await settle();
+  assert.equal($('#activity-list script,#activity-list svg,#activity-list img,#activity-list [onerror]'),null);assert.equal($('.activity-entry-actor').textContent,hostile);assert.match($('.activity-entry-detail').textContent,/<img src=x onerror=alert\(1\)>/);assert.deepEqual(actions(),['保存草稿','外部备份失败','使用记录','修改备份目标']);assert.equal($$('.activity-entry-failed').length,1);assert.match($('#activity-list').textContent,/S3 兼容存储/);assert.match($('#activity-list').textContent,/WebDAV 网络存储/);assert.doesNotMatch($('#activity-list').textContent,/DO NOT SHOW/);assert.equal($$('.activity-entry')[2].querySelector('.activity-entry-detail'),null);
 });
-
-test('activity displays fixed Chinese action labels and only safe escaped metadata, never supplied body or title',async()=>{
-  const hostile='<img src=x onerror=alert(1)>',entries=[
-    event('saved',{period:hostile,title:'DO NOT SHOW PRIVATE TITLE',data:{body:'DO NOT SHOW BODY'},summary:'DO NOT SHOW SUMMARY'}),
-    event('failed',{action:'backup_failed',recordType:'',targetKind:'s3'}),
-    event('unknown',{action:'<svg onload=alert(1)>',recordType:'constructor',targetKind:hostile,period:hostile}),
-    event('webdav',{action:'backup_target_updated',recordType:'',targetKind:'webdav'})
-  ];const f=fixture(async()=>({date:'2026-11-10',entries,nextCursor:null}));f.renderActivity();await settle();
-  assert.equal($('#activity-list script,#activity-list svg,#activity-list img,#activity-list [onerror]'),null);assert.match($('.activity-entry p').textContent,/<img src=x onerror=alert\(1\)>/);
-  assert.deepEqual($$('.activity-entry h3').map(node=>node.textContent),['保存草稿','外部备份失败','使用记录','修改备份目标']);assert.equal($$('.activity-entry-failed').length,1);
-  assert.match($('#activity-list').textContent,/S3 兼容存储/);assert.match($('#activity-list').textContent,/WebDAV 网络存储/);assert.doesNotMatch($('#activity-list').textContent,/DO NOT SHOW/);
-  assert.equal($$('.activity-entry')[2].querySelector('p'),null,'unknown fields cannot introduce user-authored labels or detail text');
+test('all declared actions use Chinese labels and missing actor/time values have truthful fallbacks',()=>{
+  const f=fixture(),labels={login:'登录慎独',logout:'退出登录',draft_saved:'保存草稿',draft_deleted:'删除草稿',review_completed:'提交并锁定复盘',action_verified:'提交行动验证',stage_updated:'修改阶段与复盘内容',preferences_updated:'修改动态偏好',backup_success:'外部备份成功',backup_failed:'外部备份失败',backup_target_created:'新增备份目标',backup_target_updated:'修改备份目标',backup_target_deleted:'删除备份目标',data_exported:'导出个人备份',data_imported:'恢复个人资料',site_exported:'导出整站备份',site_imported:'恢复整站资料',password_updated:'修改登录密码',backup_password_updated:'修改备份密码'};ui.renderMarkup($('#app'),`<ol>${Object.keys(labels).map(action=>f.activityEntryHtml(event(action,{action,recordType:'',actorName:'',createdAt:'invalid'}))).join('')}</ol>`);assert.deepEqual(actions(),Object.values(labels));assert.equal($('.activity-entry-actor').textContent,'操作人未记录');assert.equal($('.activity-entry>time').textContent,'时间未记录');
 });
-
-test('all declared activity actions use Chinese operation labels with no raw enum leakage',()=>{
-  const f=fixture(),actions={login:'登录慎独',logout:'退出登录',draft_saved:'保存草稿',draft_deleted:'删除草稿',review_completed:'提交并锁定复盘',action_verified:'提交行动验证',stage_updated:'修改阶段与复盘内容',preferences_updated:'修改动态偏好',backup_success:'外部备份成功',backup_failed:'外部备份失败',backup_target_created:'新增备份目标',backup_target_updated:'修改备份目标',backup_target_deleted:'删除备份目标',data_exported:'导出个人备份',data_imported:'恢复个人资料',site_exported:'导出整站备份',site_imported:'恢复整站资料',password_updated:'修改登录密码',backup_password_updated:'修改备份密码'};
-  ui.renderMarkup($('#app'),`<ol>${Object.keys(actions).map(action=>f.activityEntryHtml(event(action,{action,recordType:''}))).join('')}</ol>`);
-  assert.deepEqual($$('h3').map(node=>node.textContent),Object.values(actions));
+test('scope describes the accepted feed for both administrator roles and members',async()=>{
+  for(const role of ['admin','superadmin','member']){const scope=role==='member'?'personal':'site',f=fixture(async()=>feed([event()],null,scope),role);f.renderActivity();await settle();assert.match($('#activity-scope').textContent,scope==='site'?/全站操作/:/我的操作/);assert.deepEqual(f.calls,[{path:'/api/activity'}])}
+  const f=fixture(async()=>feed([event()],null,'personal'),'admin');f.renderActivity();await settle();assert.match($('#activity-scope').textContent,/我的操作/,'do not claim site results for a personal response');
 });
-
-test('previous, next and today use civil dates, prevent future queries and keep the mounted date field',async()=>{
-  const f=fixture(async path=>({date:new URL(path,'http://local').searchParams.get('date'),entries:[],nextCursor:null}));f.renderActivity();await settle();const input=$('#activity-date');
-  $('#activity-prev').click();await settle();assert.equal(input.value,'2026-11-09');assert.equal($('#activity-next').disabled,false);
-  $('#activity-next').click();await settle();assert.equal(input.value,'2026-11-10');assert.equal($('#activity-next').disabled,true);
-  const before=f.calls.length;$('#activity-next').click();changeDate('2026-11-11');changeDate('');assert.equal(input.value,'2026-11-10');assert.equal(f.calls.length,before);
-  changeDate('2026-01-01');await settle();$('#activity-prev').click();await settle();assert.equal(input.value,'2025-12-31');
-  $('#activity-today').click();await settle();assert.equal(input.value,'2026-11-10');assert.equal($('#activity-date'),input);
-  assert.deepEqual(f.calls.map(call=>call.path),['/api/activity?date=2026-11-10','/api/activity?date=2026-11-09','/api/activity?date=2026-11-10','/api/activity?date=2026-01-01','/api/activity?date=2025-12-31','/api/activity?date=2026-11-10']);
-  f.setNow('2026-11-10T16:01:00.000Z');$('#activity-today').click();await settle();assert.equal(input.value,'2026-11-11');assert.equal(input.max,'2026-11-11');
+test('load more encodes its cursor once, deduplicates entries and merges dates across page boundaries',async()=>{
+  const next=deferred(),cursor='record /?&=';let count=0;const f=fixture(async()=>++count===1?feed([event('newer')],cursor):next.promise);f.renderActivity();await settle();const more=$('#activity-more'),refresh=$('#activity-refresh');more.click();more.click();assert.equal(f.calls.length,2);assert.equal(more.disabled,true);assert.equal(f.calls[1].path,`/api/activity?cursor=${encodeURIComponent(cursor)}`);
+  next.resolve(feed([event('newer'),event('same-day',{action:'action_verified'}),event('same-day'),event('older',{createdAt:'2026-11-09T15:59:00.000Z'})]));await settle();assert.equal($$('.activity-entry').length,3);assert.deepEqual($$('.activity-day').map(n=>$$('.activity-entry',n).length),[2,1]);assert.deepEqual(actions(),['保存草稿','提交行动验证','保存草稿']);assert.match($('#activity-summary').textContent,/已显示 3 条记录.*已到最早/);assert.equal(more.hidden,true);assert.equal(more.disabled,false);assert.equal($('#activity-refresh'),refresh);
 });
-
-test('load more uses the exact same-day encoded cursor once, deduplicates overlapping entries and marks the end',async()=>{
-  const next=deferred(),cursor='record /?&=';let count=0;
-  const f=fixture(async()=>++count===1?{date:'2026-11-10',entries:[event('newer')],nextCursor:cursor}:next.promise);f.renderActivity();await settle();
-  const input=$('#activity-date'),more=$('#activity-more');assert.equal(more.hidden,false);more.click();more.click();
-  assert.equal(f.calls.length,2);assert.equal(more.disabled,true);assert.equal(f.calls[1].path,`/api/activity?date=2026-11-10&cursor=${encodeURIComponent(cursor)}`);assert.match($('#activity-list').textContent,/保存草稿/);
-  next.resolve({date:'2026-11-10',entries:[event('newer'),event('older',{action:'action_verified'})],nextCursor:null});await settle();
-  assert.equal($$('.activity-entry').length,2);assert.deepEqual($$('.activity-entry h3').map(node=>node.textContent),['保存草稿','提交行动验证']);assert.match($('#activity-summary').textContent,/已显示 2 条记录/);assert.equal(more.hidden,true);assert.equal(more.disabled,false);assert.equal($('#activity-date'),input);
+test('failed append retains rows and retries the exact cursor with escaped error feedback',async()=>{
+  let count=0;const retry=deferred(),f=fixture(async()=>{count++;if(count===1)return feed([event('kept')],'page-two');if(count===2)throw new Error('<img onerror=alert(1)> 读取失败');return retry.promise});f.renderActivity();await settle();$('#activity-more').click();await settle();assert.equal($$('.activity-entry').length,1);assert.match($('#activity-summary').textContent,/已显示 1 条记录/);assert.equal($('#activity-feedback img'),null);assert.match($('#activity-feedback').textContent,/<img onerror=alert\(1\)>/);assert.equal($('#activity-more').disabled,false);
+  $('#activity-retry').click();$('#activity-more').click();assert.equal(f.calls.length,3);assert.equal(f.calls[2].path,'/api/activity?cursor=page-two');retry.resolve(feed([event('earlier',{action:'preferences_updated',createdAt:'2026-11-08T16:00:00.000Z'})]));await settle();assert.equal($$('.activity-entry').length,2);assert.equal($('#activity-retry'),null);assert.equal($('#activity-more').hidden,true);
 });
-
-test('a failed next page keeps loaded rows and retries the same cursor, with error text escaped',async()=>{
-  let count=0;const retry=deferred(),f=fixture(async()=>{count++;if(count===1)return {date:'2026-11-10',entries:[event('kept')],nextCursor:'page-two'};if(count===2)throw new Error('<img onerror=alert(1)> 读取失败');return retry.promise});f.renderActivity();await settle();
-  $('#activity-more').click();await settle();assert.equal($$('.activity-entry').length,1);assert.match($('#activity-summary').textContent,/已显示 1 条记录/);assert.equal($('#activity-feedback img'),null);assert.match($('#activity-feedback').textContent,/<img onerror=alert\(1\)>/);assert.equal($('#activity-more').disabled,false);
-  $('#activity-retry').click();$('#activity-more').click();assert.equal(f.calls.length,3);assert.equal(f.calls[2].path,'/api/activity?date=2026-11-10&cursor=page-two');
-  retry.resolve({date:'2026-11-10',entries:[event('earlier',{action:'preferences_updated'})],nextCursor:null});await settle();assert.equal($$('.activity-entry').length,2);assert.equal($('#activity-retry'),null);assert.equal($('#activity-more').hidden,true);
+test('initial read failure is distinct from empty feed and retry restores the truthful empty state',async()=>{
+  let count=0;const f=fixture(async()=>{if(++count===1)throw new Error('网络暂时不可用');return feed()});f.renderActivity();await settle();assert.ok($('#activity-retry'));assert.equal($('.activity-empty'),null);assert.match($('#activity-summary').textContent,/暂时无法读取记录/);$('#activity-retry').click();await settle();assert.equal(f.calls.length,2);assert.equal($('.activity-empty h2').textContent,'还没有使用记录');assert.equal($('#activity-retry'),null);assert.match($('#activity-summary').textContent,/已显示 0 条记录/);assert.equal($('#activity-more').hidden,true);
 });
-
-test('an initial failure remains a read error until retry, then shows the truthful empty day state',async()=>{
-  let count=0;const f=fixture(async()=>{if(++count===1)throw new Error('网络暂时不可用');return {date:'2026-11-10',entries:[],nextCursor:null}});f.renderActivity();await settle();
-  assert.ok($('#activity-retry'));assert.equal($('.activity-empty'),null);assert.match($('#activity-summary').textContent,/暂时无法读取记录/);$('#activity-retry').click();await settle();
-  assert.equal(f.calls.length,2);assert.ok($('.activity-empty'));assert.equal($('#activity-retry'),null);assert.match($('#activity-summary').textContent,/已显示 0 条记录/);assert.equal($('#activity-more').hidden,true);
+test('refresh replaces feed/cursor while superseded append cannot release the newer read',async()=>{
+  const oldPage=deferred(),refreshed=deferred();let count=0;const f=fixture(()=>{count++;if(count===1)return Promise.resolve(feed([event('old')],'old-cursor'));if(count===2)return oldPage.promise;if(count===3)return refreshed.promise;return Promise.resolve(feed())});f.renderActivity();await settle();const refresh=$('#activity-refresh');$('#activity-more').click();refresh.click();assert.equal(f.calls[2].path,'/api/activity');oldPage.resolve(feed([event('too-late')],'late-cursor'));await settle();assert.equal($$('.activity-entry').length,1);assert.equal($('#activity-more').disabled,true);assert.equal($('#activity-retry'),null);
+  refreshed.resolve(feed([event('fresh',{action:'draft_deleted'})],'fresh-cursor'));await settle();assert.deepEqual(actions(),['删除草稿']);assert.equal($('#activity-more').disabled,false);assert.equal($('#activity-refresh'),refresh);$('#activity-more').click();await settle();assert.equal(f.calls[3].path,'/api/activity?cursor=fresh-cursor');
 });
-
-test('changing the date discards its cursor and late success or failure cannot replace the newer day',async()=>{
-  const reads=[];const f=fixture(()=>{const request=deferred();reads.push(request);return request.promise});f.renderActivity();
-  changeDate('2026-11-09');changeDate('2026-11-08');assert.equal(reads.length,3);assert.deepEqual(f.calls.map(call=>call.path),['/api/activity?date=2026-11-10','/api/activity?date=2026-11-09','/api/activity?date=2026-11-08']);
-  reads[1].resolve({date:'2026-11-09',entries:[event('wrong-day',{action:'backup_success'})],nextCursor:'wrong-cursor'});reads[0].reject(new Error('old read failed'));await settle();
-  assert.equal($$('.activity-entry').length,0);assert.equal($('#activity-retry'),null);assert.match($('#activity-summary').textContent,/11月8日/);assert.equal($('#activity-more').hidden,true);
-  reads[2].resolve({date:'2026-11-08',entries:[event('current',{action:'draft_deleted'})],nextCursor:null});await settle();assert.equal($('.activity-entry h3').textContent,'删除草稿');assert.equal($('#activity-more').disabled,false);assert.equal($('#activity-date').value,'2026-11-08');
+test('late refresh successes/errors/finally work cannot overwrite the newest feed',async()=>{
+  const reads=[],f=fixture(()=>{const read=deferred();reads.push(read);return read.promise});f.renderActivity();$('#activity-refresh').click();$('#activity-refresh').click();assert.equal(reads.length,3);reads[1].resolve(feed([event('wrong')],'wrong-cursor'));reads[0].reject(new Error('old read failed'));await settle();assert.equal($$('.activity-entry').length,0);assert.equal($('#activity-retry'),null);assert.equal($('#activity-more').disabled,true);reads[2].resolve(feed([event('current',{action:'draft_deleted'})]));await settle();assert.deepEqual(actions(),['删除草稿']);assert.equal($('#activity-more').disabled,false);assert.equal($('#activity-more').hidden,true);
 });
-
-test('switching days during a pending next page never reuses the previous cursor or lets its completion unlock the new read',async()=>{
-  const oldPage=deferred(),newDay=deferred();let count=0;
-  const f=fixture(()=>{if(++count===1)return Promise.resolve({date:'2026-11-10',entries:[event('kept')],nextCursor:'old-cursor'});return count===2?oldPage.promise:newDay.promise});f.renderActivity();await settle();$('#activity-more').click();changeDate('2026-11-09');
-  assert.equal(f.calls[2].path,'/api/activity?date=2026-11-09');oldPage.resolve({date:'2026-11-10',entries:[event('too-late')],nextCursor:'late-cursor'});await settle();assert.equal($$('.activity-entry').length,0);assert.equal($('#activity-more').disabled,true);assert.equal($('#activity-more').hidden,true);
-  newDay.resolve({date:'2026-11-09',entries:[],nextCursor:null});await settle();assert.equal($('#activity-more').disabled,false);assert.ok($('.activity-empty'));
+test('refresh failure retains displayed rows and retries from the beginning without an old cursor',async()=>{
+  let count=0;const retry=deferred(),f=fixture(()=>{count++;if(count===1)return Promise.resolve(feed([event('kept')],'old-cursor'));if(count===2)return Promise.reject(new Error('刷新失败'));return retry.promise});f.renderActivity();await settle();$('#activity-refresh').click();await settle();assert.equal($$('.activity-entry').length,1);assert.match($('#activity-summary').textContent,/已显示 1 条记录.*刷新失败/);$('#activity-retry').click();$('#activity-more').click();assert.equal(f.calls.length,3);assert.equal(f.calls[2].path,'/api/activity');retry.resolve(feed([event('new',{action:'login'})]));await settle();assert.deepEqual(actions(),['登录慎独']);assert.equal($('#activity-retry'),null);
 });
-
-test('each page visit and account owns its own result and failures cannot write into replacements',async()=>{
-  const reads=[],f=fixture(()=>{const request=deferred();reads.push(request);return request.promise});f.renderActivity();const first=$('.workspace-activity');f.renderActivity();const second=$('.workspace-activity');assert.notEqual(first,second);
-  reads[0].resolve({date:'2026-11-10',entries:[event('stale',{action:'backup_failed'})],nextCursor:'stale'});await settle();assert.equal($$('.activity-entry').length,0);assert.equal($('#activity-more').hidden,true);
-  reads[1].resolve({date:'2026-11-10',entries:[event('current')],nextCursor:null});await settle();assert.equal($('.activity-entry h3').textContent,'保存草稿');
-  f.renderActivity();f.state.user={id:'another'};ui.renderMarkup($('#app'),'<main id="other-account">另一个账户页面</main>');reads[2].reject(new Error('old-account failure'));await settle();assert.ok($('#other-account'));assert.equal($('#activity-retry'),null);
+test('each visit/account owns its response and failures cannot write into replacement pages',async()=>{
+  const reads=[],f=fixture(()=>{const read=deferred();reads.push(read);return read.promise});f.renderActivity();const first=$('.workspace-activity');f.renderActivity();assert.notEqual(first,$('.workspace-activity'));reads[0].resolve(feed([event('stale',{action:'backup_failed'})],'stale'));await settle();assert.equal($$('.activity-entry').length,0);assert.equal($('#activity-more').hidden,true);reads[1].resolve(feed([event('current')]));await settle();assert.deepEqual(actions(),['保存草稿']);f.renderActivity();f.state.user={id:'another',role:'member'};ui.renderMarkup($('#app'),'<main id="other-account">另一个账户页面</main>');reads[2].reject(new Error('old-account failure'));await settle();assert.ok($('#other-account'));assert.equal($('#activity-retry'),null);
 });
-
-test('an account change invalidates success and failure even while the old page remains mounted',async()=>{
-  for(const outcome of ['success','failure']){
-    const read=deferred(),f=fixture(()=>read.promise);f.renderActivity();const page=$('.workspace-activity'),summary=$('#activity-summary').textContent;
-    f.state.user={id:'other-owner'};
-    if(outcome==='success')read.resolve({date:'2026-11-10',entries:[event('private-old-account')],nextCursor:'old-private-cursor'});else read.reject(new Error('private old error'));
-    await settle();assert.equal(page.isConnected,true);assert.equal($('#activity-summary').textContent,summary);assert.equal($$('.activity-entry').length,0);assert.equal($('#activity-retry'),null);assert.equal($('#activity-more').hidden,true);
-  }
+test('account identity and in-place ID/role changes invalidate pending site-wide success and failure',async()=>{
+  for(const change of ['account','id','role'])for(const outcome of ['success','failure']){const read=deferred(),f=fixture(()=>read.promise,'admin');f.renderActivity();const page=$('.workspace-activity'),summary=$('#activity-summary').textContent;if(change==='account')f.state.user={id:'other',role:'admin'};else if(change==='id')f.state.user.id='other';else f.state.user.role='member';if(outcome==='success')read.resolve(feed([event('private-old-account')],'private-cursor','site'));else read.reject(new Error('private old error'));await settle();assert.equal(page.isConnected,true);assert.equal($('#activity-summary').textContent,summary);assert.equal($$('.activity-entry').length,0);assert.equal($('#activity-retry'),null);assert.equal($('#activity-more').hidden,true)}
 });
-
 test.afterEach(()=>{ui.disposeUi($('#app'));$('#app').replaceChildren()});
 test.after(()=>dom.window.close());

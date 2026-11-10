@@ -379,23 +379,27 @@ form:is(#backup-pass-form,#restore-password-form,#site-export-form,#site-inspect
  .workspace-backup-runs .backup-runs-table td.workspace-empty-cell:before{display:none}
 }
 
-/* The activity log keeps its date controls mounted above a daily reading list. */
+/* A continuous operation ledger, grouped by civil date instead of date filters. */
 .workspace-activity{--workspace-tone:#345585;--workspace-soft:#edf1f8}
 .workspace-activity .activity-panel{padding:26px 30px}
 .workspace-activity [hidden]{display:none!important}
-.activity-toolbar{display:grid;grid-template-columns:auto minmax(180px,1fr) auto auto;align-items:end;gap:12px;min-width:0;padding-bottom:22px;border-bottom:1px solid var(--workspace-line)}
-.activity-date-field{display:grid;gap:8px;min-width:0;max-width:300px}
-.activity-date-field label{font-size:.69rem;font-weight:650;line-height:1.6;color:#526451}
-.workspace-activity .activity-date-field input{width:100%;max-width:100%;min-width:0;min-height:44px;height:auto;padding:10px 13px;border:1px solid #bdcab9;border-radius:11px;background:#fffefa;color:var(--workspace-ink);font:500 .8rem/1.5 "Microsoft YaHei",sans-serif;font-variant-numeric:tabular-nums}
-.workspace-activity .activity-toolbar .btn{min-height:44px;margin:0;white-space:nowrap}
-.activity-day-summary{margin:20px 0 5px;color:var(--workspace-muted);font-size:.7rem;line-height:1.8;font-variant-numeric:tabular-nums}
+.activity-feed-heading{display:flex;align-items:center;justify-content:space-between;gap:16px;min-width:0;padding-bottom:13px}
+#activity-scope{margin:0;color:var(--workspace-ink);font-size:.8rem;font-weight:700;line-height:1.8;overflow-wrap:anywhere}
+#activity-scope>span{display:block;margin-top:2px;color:var(--workspace-muted);font-size:.65rem;font-weight:400}
+.workspace-activity #activity-refresh{min-height:44px;margin:0;white-space:nowrap}
+.activity-feed-summary{margin:0 0 12px;color:var(--workspace-muted);font-size:.67rem;line-height:1.8;font-variant-numeric:tabular-nums}
+.activity-day{min-width:0;margin-top:24px}
+.activity-day:first-child{margin-top:5px}
+.workspace-activity .activity-day h2{margin:0;padding:0 0 12px;border-bottom:2px solid #c8d3c4;color:#304b3b;font:800 1.12rem/1.6 "SimSun","宋体","Noto Serif SC",serif;overflow-wrap:anywhere}
 .activity-list{display:block;margin:0;padding:0;list-style:none}
-.activity-entry{display:grid;grid-template-columns:90px minmax(0,1fr);gap:20px;align-items:start;padding:20px 0;border-bottom:1px solid var(--workspace-line);min-width:0}
-.activity-entry time{display:block;padding-top:3px;color:#5b6d64;font:500 .74rem/1.6 "Microsoft YaHei",sans-serif;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.activity-entry{display:grid;grid-template-columns:72px minmax(0,1fr);gap:20px;align-items:start;padding:17px 0;border-bottom:1px solid var(--workspace-line);min-width:0}
+.activity-entry time{display:block;padding-top:2px;color:#5b6d64;font:500 .74rem/1.7 "Microsoft YaHei",sans-serif;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
 .activity-entry-copy{min-width:0}
-.workspace-activity .activity-entry h3{margin:0;color:#304b3b;font:800 1rem/1.6 "SimSun","宋体","Noto Serif SC",serif;overflow-wrap:anywhere}
-.activity-entry p{margin:5px 0 0;color:var(--workspace-muted);font-size:.7rem;line-height:1.8;overflow-wrap:anywhere}
-.workspace-activity .activity-entry-failed h3{color:#923d2b}
+.activity-entry-operation{display:grid;grid-template-columns:minmax(90px,180px) minmax(0,1fr);align-items:baseline;gap:8px 24px;margin:0;min-width:0;color:#304b3b;font-size:.8rem;line-height:1.8}
+.activity-entry-actor{min-width:0;font-weight:650;overflow-wrap:anywhere}
+.activity-entry-action{min-width:0;font-weight:500;overflow-wrap:anywhere}
+.activity-entry-detail{margin:5px 0 0;padding-left:204px;color:var(--workspace-muted);font-size:.68rem;line-height:1.8;overflow-wrap:anywhere}
+.workspace-activity .activity-entry-failed .activity-entry-action{color:#923d2b}
 .activity-empty{padding:40px 20px;text-align:center}
 .workspace-activity .activity-empty h2{font-size:1.3rem}
 .activity-empty p{margin:12px 0 0;color:var(--workspace-muted);font-size:.76rem;line-height:1.85;overflow-wrap:anywhere}
@@ -406,22 +410,23 @@ form:is(#backup-pass-form,#restore-password-form,#site-export-form,#site-inspect
 .workspace-activity .activity-history-note{margin-top:24px;padding-top:17px;border-top:1px solid var(--workspace-line)}
 @media(max-width:820px){
  .workspace-activity .activity-panel{padding:22px}
- .activity-toolbar{grid-template-columns:auto minmax(150px,1fr) auto;gap:12px}
- #activity-today{grid-column:2;justify-self:start}
- .activity-entry{grid-template-columns:75px minmax(0,1fr);gap:16px}
+ .activity-entry{grid-template-columns:62px minmax(0,1fr);gap:16px}
+ .activity-entry-operation{grid-template-columns:minmax(80px,130px) minmax(0,1fr);gap:7px 18px}
+ .activity-entry-detail{padding-left:148px}
 }
-@media(max-width:540px){
+@media(max-width:620px){
  .workspace-activity .activity-panel{padding:18px 16px}
- .activity-toolbar{grid-template-columns:repeat(3,minmax(0,1fr));gap:12px 8px;padding-bottom:18px}
- .activity-date-field{grid-column:1/-1;grid-row:1;width:100%;max-width:none}
- .workspace-activity .activity-toolbar .btn{width:100%;padding-inline:5px;font-size:.65rem}
- #activity-prev{grid-column:1;grid-row:2}
- #activity-today{grid-column:2;grid-row:2;justify-self:stretch}
- #activity-next{grid-column:3;grid-row:2}
- .activity-entry{grid-template-columns:62px minmax(0,1fr);gap:12px;padding:18px 0}
+ .activity-feed-heading{gap:12px;align-items:flex-start}
+ .workspace-activity #activity-refresh{padding-inline:10px;font-size:.66rem}
+ #activity-scope{font-size:.76rem}
+ #activity-scope>span{font-size:.61rem}
+ .workspace-activity .activity-day h2{font-size:1.02rem;padding-bottom:10px}
+ .activity-entry{grid-template-columns:48px minmax(0,1fr);gap:10px;padding:15px 0}
  .activity-entry time{font-size:.68rem}
- .workspace-activity .activity-entry h3{font-size:.95rem}
- .activity-entry p{font-size:.67rem}
+ .activity-entry-operation{display:flex;flex-wrap:wrap;gap:2px 10px;font-size:.76rem}
+ .activity-entry-actor{max-width:100%}
+ .activity-entry-action{max-width:100%}
+ .activity-entry-detail{padding-left:0;font-size:.66rem}
  .activity-empty{padding:30px 4px}
  .workspace-activity .activity-empty h2{font-size:1.15rem}
  .activity-empty p{font-size:.7rem}
