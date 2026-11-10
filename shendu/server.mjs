@@ -99,7 +99,17 @@ db.exec(`
     created_at TEXT NOT NULL
   );
   CREATE INDEX IF NOT EXISTS idx_backup_runs_user ON backup_runs(user_id,created_at DESC);
-  INSERT OR IGNORE INTO schema_meta(key,value) VALUES ('schema_version','7');
+  CREATE TABLE IF NOT EXISTS activity_events (
+    id TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    action TEXT NOT NULL,
+    record_type TEXT,
+    period TEXT,
+    target_kind TEXT,
+    created_at TEXT NOT NULL
+  );
+  CREATE INDEX IF NOT EXISTS idx_activity_user_time ON activity_events(user_id,created_at DESC,id DESC);
+  INSERT OR IGNORE INTO schema_meta(key,value) VALUES ('schema_version','8');
   INSERT OR IGNORE INTO schema_meta(key,value) VALUES ('public_registration','true');
 `);
 
@@ -341,8 +351,10 @@ const createSession = (res, user) => {
   const token = randomBytes(32).toString('base64url');
   const tokenHash = createHash('sha256').update(token).digest('hex');
   const expires = new Date(Date.now() + 30 * 86400000).toISOString();
-  db.prepare(`INSERT INTO sessions(token_hash,user_id,session_version,expires_at,created_at) VALUES(?,?,?,?,?)`).run(tokenHash, user.id, user.session_version, expires, now());
-  db.prepare(`DELETE FROM sessions WHERE user_id=? AND token_hash NOT IN (SELECT token_hash FROM sessions WHERE user_id=? ORDER BY created_at DESC LIMIT 20)`).run(user.id,user.id);
+  withActivity(user.id,'login',{},()=>{
+    db.prepare(`INSERT INTO sessions(token_hash,user_id,session_version,expires_at,created_at) VALUES(?,?,?,?,?)`).run(tokenHash,user.id,user.session_version,expires,now());
+    db.prepare(`DELETE FROM sessions WHERE user_id=? AND token_hash NOT IN (SELECT token_hash FROM sessions WHERE user_id=? ORDER BY created_at DESC LIMIT 20)`).run(user.id,user.id);
+  });
   setSessionCookie(res, token);
 };
 const checkPasswordShape = p => typeof p === 'string' && p.length >= 15 && p.length <= 128;
@@ -449,6 +461,20 @@ const validEntityId = value => /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab]
 // Keep their IDs intact so encrypted content and restored links retain identity.
 const validStoredRecordId = value => typeof value==='string'&&value.length>0&&value.length<=100&&!/[\x00-\x1f\x7f/\\]/.test(value);
 const validStoredRecordPeriod = value => typeof value==='string'&&value.length>0&&value.length<=100&&!/[\x00-\x1f\x7f]/.test(value);
+// Activity stores fixed operation metadata only, never titles, bodies or credentials.
+const ACTIVITY_ACTIONS=new Set(['login','logout','draft_saved','draft_deleted','review_completed','action_verified','stage_updated','preferences_updated','password_updated','backup_password_updated','backup_success','backup_failed','backup_target_created','backup_target_updated','backup_target_deleted','data_exported','data_imported','site_exported','site_imported']);
+const activityPeriod=value=>typeof value==='string'&&/^\d{4}(?:-\d{2}(?:-\d{2})?|-W\d{2})?$/.test(value)?value:null;
+function appendActivity(userId,action,{recordType=null,period=null,targetKind=null}={},stamp=now()){
+  if(!ACTIVITY_ACTIONS.has(action))throw new Error('使用日志操作类型无效');
+  db.prepare(`INSERT INTO activity_events(id,user_id,action,record_type,period,target_kind,created_at) VALUES(?,?,?,?,?,?,?)`).run(randomUUID(),userId,action,validRecordType(recordType)?recordType:null,activityPeriod(period),['s3','webdav'].includes(targetKind)?targetKind:null,stamp);
+}
+function withActivity(userId,action,metadata,write){
+  db.exec('SAVEPOINT activity_write');
+  try{const result=write();if(result!==false&&result?.changes!==0)appendActivity(userId,action,metadata);db.exec('RELEASE activity_write');return result}
+  catch(error){db.exec('ROLLBACK TO activity_write; RELEASE activity_write');throw error}
+}
+function activityOut(row){return{id:row.id,action:row.action,recordType:row.record_type,period:row.period,targetKind:row.target_kind,createdAt:row.created_at}}
+
 function migrateSensitiveData() {
   if (!masterKey) return;
   const records=db.prepare(`SELECT id,user_id,title,data,verification FROM records`).all();
@@ -468,7 +494,7 @@ function migrateSensitiveData() {
       if(isEncryptedData(row.value))continue;
       updateSetting.run(encryptData(JSON.parse(row.value),dataScope('setting',row.user_id,row.key)),row.user_id,row.key);migrated=true;
     }
-    db.prepare(`INSERT INTO schema_meta(key,value) VALUES('schema_version','7') ON CONFLICT(key) DO UPDATE SET value='7'`).run();
+    db.prepare(`INSERT INTO schema_meta(key,value) VALUES('schema_version','8') ON CONFLICT(key) DO UPDATE SET value='8'`).run();
     db.prepare(`INSERT INTO schema_meta(key,value) VALUES('data_encryption','AES-256-GCM') ON CONFLICT(key) DO UPDATE SET value='AES-256-GCM'`).run();
     db.exec('COMMIT');
     if(migrated){db.exec('PRAGMA wal_checkpoint(TRUNCATE)');db.exec('VACUUM');db.exec('PRAGMA wal_checkpoint(TRUNCATE)');try{chmodSync(DATABASE_PATH,0o600)}catch{}}
@@ -835,6 +861,7 @@ function applyBackup(userId, parsed, mode) {
     }
     if(db.prepare(`SELECT COUNT(*) AS n FROM records WHERE user_id=?`).get(userId).n>MAX_RECORDS_PER_USER)throw new Error('恢复后的复盘记录数量超过账户上限');
     if(accountRecordBytes(userId)>MAX_ACCOUNT_CONTENT_BYTES)throw new Error('恢复后的复盘内容超过账户存储上限');
+    appendActivity(userId,'data_imported');
     db.exec('COMMIT');
     return records.length;
   } catch (e) { db.exec('ROLLBACK'); throw e; }
@@ -862,9 +889,9 @@ function siteBackupPayload() {
     const runs=db.prepare(`SELECT id,target_id,user_id,status,message,created_at,operation,target_name,target_kind,trigger_kind AS 'trigger' FROM backup_runs ORDER BY created_at,id`).all();
     const payload={
       format:'shendu-site-data',version:1,createdAt:now(),
-      schemaVersion:Number(db.prepare(`SELECT value FROM schema_meta WHERE key='schema_version'`).get()?.value||7),
+      schemaVersion:Number(db.prepare(`SELECT value FROM schema_meta WHERE key='schema_version'`).get()?.value||8),
       publicRegistration:db.prepare(`SELECT value FROM schema_meta WHERE key='public_registration'`).get()?.value==='true',
-      users,settings,records,targets,runs
+      users,settings,records,targets,runs,activity:db.prepare(`SELECT * FROM activity_events ORDER BY created_at,id`).all()
     };
     db.exec('COMMIT');
     return payload;
@@ -917,6 +944,7 @@ function validateSiteBackupPayload(payload) {
   const groups=['users','settings','records','targets','runs'];
   if(groups.some(key=>!Array.isArray(payload[key])))throw new Error('整站备份数据结构无效');
   if(!payload.users.length||payload.users.length>MAX_USERS||payload.settings.length>30000||payload.records.length>500000||payload.targets.length>80000||payload.runs.length>500000)throw new Error('整站备份数据结构无效');
+  if(payload.activity!==undefined&&(!Array.isArray(payload.activity)||payload.activity.length>1000000))throw new Error('整站备份中的使用日志无效');
   const userIds=new Set(),usernames=new Set();let superadmins=0;
   for(const user of payload.users){
     const usernameKey=String(user.username||'').toLocaleLowerCase();
@@ -944,6 +972,11 @@ function validateSiteBackupPayload(payload) {
     if(!userIds.has(target.user_id)||!validEntityId(target.id)||targetIds.has(target.id)||!['webdav','s3'].includes(target.kind)||!['manual','daily','weekly'].includes(target.schedule)||!isPlainObject(target.config))throw new Error('整站备份中的外部备份配置无效');
     try{normalizeBackupConfig(target.kind,target.config);normalizeBackupSchedule(target)}catch{throw new Error('整站备份中的外部备份配置无效')}
     targetIds.add(target.id);targetOwners.set(target.id,target.user_id);
+  }
+  const activityIds=new Set();
+  for(const event of payload.activity||[]){
+    if(!isPlainObject(event)||!validEntityId(event.id)||activityIds.has(event.id)||!userIds.has(event.user_id)||!ACTIVITY_ACTIONS.has(event.action)||(event.record_type!==null&&!validRecordType(event.record_type))||(event.period!==null&&activityPeriod(event.period)!==event.period)||(event.target_kind!==null&&!['s3','webdav'].includes(event.target_kind))||!validTime(event.created_at))throw new Error('整站备份中的使用日志无效');
+    activityIds.add(event.id);
   }
   const runIds=new Set();
   for(const run of payload.runs){
@@ -981,6 +1014,9 @@ function applySiteBackup(payload) {
       const stamp=validTime(run.created_at)?new Date(run.created_at).toISOString():now();if(stamp<backupHistoryCutoff())continue;
       insertRun.run(run.id,run.target_id,run.user_id,run.status,safeText(run.message,300),stamp,'backup',metadata.target_name,metadata.target_kind,metadata.trigger);
     }
+    const insertActivity=db.prepare(`INSERT INTO activity_events(id,user_id,action,record_type,period,target_kind,created_at) VALUES(?,?,?,?,?,?,?)`);
+    for(const event of payload.activity||[])insertActivity.run(event.id,event.user_id,event.action,event.record_type,event.period,event.target_kind,new Date(event.created_at).toISOString());
+    const restoredOwner=payload.users.find(user=>user.role==='superadmin');appendActivity(restoredOwner.id,'site_imported');
     db.prepare(`INSERT INTO schema_meta(key,value) VALUES('public_registration',?) ON CONFLICT(key) DO UPDATE SET value=excluded.value`).run(payload.publicRegistration?'true':'false');
     db.exec('COMMIT');
     return siteBackupPreview(payload);
@@ -1160,6 +1196,7 @@ function saveBackupOutcome(target,status,message,trigger='manual',scheduled=null
     if(updated.changes!==1){db.exec('ROLLBACK');return false}
     db.prepare(`INSERT INTO backup_runs(id,target_id,user_id,status,message,created_at,operation,target_name,target_kind,trigger_kind) VALUES(?,?,?,?,?,?,'backup',?,?,?)`).run(randomUUID(),target.id,target.user_id,status,cleanMessage,stamp,safeText(target.name,80),target.kind,trigger);
     pruneBackupRuns(new Date(stamp));
+    appendActivity(target.user_id,success?'backup_success':'backup_failed',{targetKind:target.kind},stamp);
     db.exec('COMMIT');return true;
   }catch(error){try{db.exec('ROLLBACK')}catch{}throw error}
 }
@@ -1221,7 +1258,7 @@ async function api(req, res, url) {
     if (user.status !== 'active') return error(res,403,'该账户已停用'); createSession(res,user); return json(res,200,{user:cleanUser(user)});
   }
   if (path === '/api/auth/logout' && method === 'POST') {
-    const token = parseCookies(req).shendu_session; if (token) db.prepare(`DELETE FROM sessions WHERE token_hash=?`).run(createHash('sha256').update(token).digest('hex'));
+    const actor=sessionUser(req),token=parseCookies(req).shendu_session;if(token){const remove=()=>db.prepare(`DELETE FROM sessions WHERE token_hash=?`).run(createHash('sha256').update(token).digest('hex'));if(actor)withActivity(actor.id,'logout',{},remove);else remove()}
     setSessionCookie(res,'',0); return json(res,200,{ok:true});
   }
   const user = requireUser(req,res); if (!user) return;req.authUser=user;
@@ -1230,14 +1267,27 @@ async function api(req, res, url) {
     if (limited(req,`password:${user.id}`,6,3600000)) return error(res,429,'尝试次数过多');
     const body=await readJson(req); if (!verifyPassword(body.currentPassword || '',user.password_hash)) return error(res,400,'当前密码不正确');
     if (!checkPasswordShape(body.newPassword)) return error(res,400,'新密码需为 15–128 个字符');
-    db.prepare(`UPDATE users SET password_hash=?,session_version=session_version+1 WHERE id=?`).run(hashPassword(body.newPassword),user.id);
-    db.prepare(`DELETE FROM sessions WHERE user_id=?`).run(user.id); setSessionCookie(res,'',0); return json(res,200,{ok:true,relogin:true});
+    withActivity(user.id,'password_updated',{},()=>{db.prepare(`UPDATE users SET password_hash=?,session_version=session_version+1 WHERE id=?`).run(hashPassword(body.newPassword),user.id);db.prepare(`DELETE FROM sessions WHERE user_id=?`).run(user.id)});setSessionCookie(res,'',0); return json(res,200,{ok:true,relogin:true});
   }
   if (path === '/api/settings' && method === 'PUT') {
     const body=await readJson(req),response={ok:true};
-    if(body.stage){response.stage=normalizeStage(body.stage);putSetting(user.id,'stage',response.stage)}
-    if(body.theme){response.theme=normalizeTheme(body.theme);putSetting(user.id,'theme',response.theme)}
+    if(body.stage)response.stage=normalizeStage(body.stage);if(body.theme)response.theme=normalizeTheme(body.theme);
+    db.exec('SAVEPOINT settings_activity');try{if(body.stage){putSetting(user.id,'stage',response.stage);appendActivity(user.id,'stage_updated')}if(body.theme){putSetting(user.id,'theme',response.theme);appendActivity(user.id,'preferences_updated')}db.exec('RELEASE settings_activity')}catch(writeError){db.exec('ROLLBACK TO settings_activity; RELEASE settings_activity');throw writeError}
     return json(res,200,response);
+  }
+  if(path==='/api/activity'&&method==='GET'){
+    const date=url.searchParams.has('date')?url.searchParams.get('date'):todayDate(),cursor=url.searchParams.get('cursor');
+    if(!validIsoDate(date))return error(res,400,'请选择有效的日志日期','activity_date_invalid');
+    const start=new Date(`${date}T00:00:00+08:00`).toISOString(),end=new Date(Date.parse(start)+86400000).toISOString(),stamp=now(),args=[user.id,start,end,stamp];
+    let where='user_id=? AND created_at>=? AND created_at<? AND created_at<=?';
+    if(cursor!==null){
+      if(!validEntityId(cursor))return error(res,400,'日志分页位置无效，请重新加载','activity_cursor_invalid');
+      const anchor=db.prepare(`SELECT id,created_at FROM activity_events WHERE id=? AND user_id=? AND created_at>=? AND created_at<? AND created_at<=?`).get(cursor,user.id,start,end,stamp);
+      if(!anchor)return error(res,404,'日志分页位置不存在，请重新加载','activity_cursor_not_found');
+      where+=' AND (created_at<? OR (created_at=? AND id<?))';args.push(anchor.created_at,anchor.created_at,anchor.id);
+    }
+    const rows=db.prepare(`SELECT * FROM activity_events WHERE ${where} ORDER BY created_at DESC,id DESC LIMIT 51`).all(...args),entries=rows.slice(0,50).map(activityOut);
+    return json(res,200,{date,entries,nextCursor:rows.length>50?entries.at(-1).id:null});
   }
   if (path === '/api/stats' && method === 'GET') {
     const current = todayDate();
@@ -1259,12 +1309,12 @@ async function api(req, res, url) {
     const id=path.split('/')[3]; const row=db.prepare(`SELECT * FROM records WHERE id=? AND user_id=?`).get(id,user.id); if(!row)return error(res,404,'记录不存在'); return json(res,200,{record:recordOut(row)});
   }
   if (/^\/api\/records\/[^/]+$/.test(path) && method === 'DELETE') {
-    const body=await readJson(req),id=path.split('/')[3],row=db.prepare(`SELECT status,version FROM records WHERE id=? AND user_id=?`).get(id,user.id);
+    const body=await readJson(req),id=path.split('/')[3],row=db.prepare(`SELECT status,version,type,period FROM records WHERE id=? AND user_id=?`).get(id,user.id);
     if(!row)return error(res,404,'记录不存在或已被删除','record_not_found');
     if(row.status!=='draft')return error(res,409,'已提交的记录不能删除','locked');
     if(!Number.isSafeInteger(body.version)||body.version<1)return error(res,400,'请提供有效的草稿版本后重试','invalid_record_version');
     if(body.version!==row.version)return error(res,409,'这条草稿已在其他设备更新，请刷新后再删除','version_conflict');
-    const deleted=db.prepare(`DELETE FROM records WHERE id=? AND user_id=? AND status='draft' AND version=?`).run(id,user.id,body.version);
+    const deleted=withActivity(user.id,'draft_deleted',{recordType:row.type,period:row.period},()=>db.prepare(`DELETE FROM records WHERE id=? AND user_id=? AND status='draft' AND version=?`).run(id,user.id,body.version));
     if(deleted.changes!==1)return error(res,409,'这条草稿状态已变化，请刷新后再试','version_conflict');
     return json(res,200,{ok:true});
   }
@@ -1282,8 +1332,7 @@ async function api(req, res, url) {
     if(!existing&&db.prepare(`SELECT COUNT(*) AS n FROM records WHERE user_id=?`).get(user.id).n>=MAX_RECORDS_PER_USER)return error(res,403,`每个账户最多保存 ${MAX_RECORDS_PER_USER} 条复盘记录`,'record_limit_reached');
     const data=encryptData(cleanData,dataScope('record',user.id,id,'data')),title=encryptData(safeText(body.title||'',200),dataScope('record',user.id,id,'title'));
     if(accountRecordBytes(user.id)-recordStoredBytes(existing)+Buffer.byteLength(data)+Buffer.byteLength(title)>MAX_ACCOUNT_CONTENT_BYTES)return error(res,413,'账户复盘内容已达到存储上限','account_storage_limit');
-    if(existing)db.prepare(`UPDATE records SET type=?,period=?,title=?,data=?,version=?,updated_at=? WHERE id=? AND user_id=?`).run(body.type,body.period,title,data,version,stamp,id,user.id);
-    else db.prepare(`INSERT INTO records(id,user_id,type,period,title,data,status,version,created_at,updated_at) VALUES(?,?,?,?,?,?,'draft',1,?,?)`).run(id,user.id,body.type,body.period,title,data,stamp,stamp);
+    withActivity(user.id,'draft_saved',{recordType:body.type,period:body.period},()=>{if(existing)return db.prepare(`UPDATE records SET type=?,period=?,title=?,data=?,version=?,updated_at=? WHERE id=? AND user_id=?`).run(body.type,body.period,title,data,version,stamp,id,user.id);return db.prepare(`INSERT INTO records(id,user_id,type,period,title,data,status,version,created_at,updated_at) VALUES(?,?,?,?,?,?,'draft',1,?,?)`).run(id,user.id,body.type,body.period,title,data,stamp,stamp)});
     return json(res,200,{record:recordOut(db.prepare(`SELECT * FROM records WHERE id=?`).get(id))});
   }
   if (/^\/api\/records\/[^/]+\/complete$/.test(path) && method === 'POST') {
@@ -1298,7 +1347,7 @@ async function api(req, res, url) {
     data.templateSnapshot=snapshot;
     const stamp=now(),storedData=encryptData(data,dataScope('record',user.id,id,'data'));
     if(accountRecordBytes(user.id)-Buffer.byteLength(row.data)+Buffer.byteLength(storedData)>MAX_ACCOUNT_CONTENT_BYTES)return error(res,413,'账户复盘内容已达到存储上限','account_storage_limit');
-    db.prepare(`UPDATE records SET data=?,status='completed',version=version+1,completed_at=?,updated_at=? WHERE id=?`).run(storedData,stamp,stamp,id); return json(res,200,{record:recordOut(db.prepare(`SELECT * FROM records WHERE id=?`).get(id))});
+    withActivity(user.id,'review_completed',{recordType:row.type,period:row.period},()=>db.prepare(`UPDATE records SET data=?,status='completed',version=version+1,completed_at=?,updated_at=? WHERE id=?`).run(storedData,stamp,stamp,id)); return json(res,200,{record:recordOut(db.prepare(`SELECT * FROM records WHERE id=?`).get(id))});
   }
   if (/^\/api\/records\/[^/]+\/verify$/.test(path) && method === 'POST') {
     const id=path.split('/')[3],body=await readJson(req),row=db.prepare(`SELECT * FROM records WHERE id=? AND user_id=?`).get(id,user.id);if(!row)return error(res,404,'记录不存在');if(row.status!=='completed')return error(res,409,'只有待验证记录可以提交结果');
@@ -1307,12 +1356,12 @@ async function api(req, res, url) {
     if(!safeText(body.result).trim()||!safeText(body.adjustment).trim()||(row.type==='decision'&&(!['好','差'].includes(body.outcome)||!['好','差'].includes(body.process))))return error(res,400,'请完整填写验证结果');
     const stamp=now(),decoded=recordOut(row),verification=encryptData({result:safeText(body.result),adjustment:safeText(body.adjustment),outcome:body.outcome||null,process:body.process||null,expectedDate:decoded.data.verifyDate||null,actualAt:stamp},dataScope('record',user.id,id,'verification'));
     if(accountRecordBytes(user.id)-Buffer.byteLength(row.verification||'')+Buffer.byteLength(verification)>MAX_ACCOUNT_CONTENT_BYTES)return error(res,413,'账户复盘内容已达到存储上限','account_storage_limit');
-    const updated=db.prepare(`UPDATE records SET status='verified',verification=?,verified_at=?,updated_at=?,version=version+1 WHERE id=? AND user_id=? AND status='completed'`).run(verification,stamp,stamp,id,user.id);
+    const updated=withActivity(user.id,'action_verified',{recordType:row.type,period:row.period},()=>db.prepare(`UPDATE records SET status='verified',verification=?,verified_at=?,updated_at=?,version=version+1 WHERE id=? AND user_id=? AND status='completed'`).run(verification,stamp,stamp,id,user.id));
     if(updated.changes!==1)return error(res,409,'这条行动已经被其他请求验证，请刷新后查看','already_verified');
     return json(res,200,{record:recordOut(db.prepare(`SELECT * FROM records WHERE id=?`).get(id))});
   }
   if (path === '/api/backup/password' && method === 'POST') {
-    const body=await readJson(req); if(!checkPasswordShape(body.password))return error(res,400,'备份密码需为 15–128 个字符'); putSetting(user.id,'backup_secret',encryptSecret({password:body.password,createdAt:now()})); return json(res,200,{ok:true});
+    const body=await readJson(req); if(!checkPasswordShape(body.password))return error(res,400,'备份密码需为 15–128 个字符'); withActivity(user.id,'backup_password_updated',{},()=>putSetting(user.id,'backup_secret',encryptSecret({password:body.password,createdAt:now()}))); return json(res,200,{ok:true});
   }
   if (path === '/api/backup/status' && method === 'GET') return json(res,200,getBackupStatus(user.id));
   if (path === '/api/backup/export' && method === 'POST') {
@@ -1320,6 +1369,7 @@ async function api(req, res, url) {
     await readJson(req);
     const password=getBackupPassword(user.id); if(!password)return error(res,400,'请先设置备份密码'); const body=createBackupBuffer(user.id,password);
     if(body.length>MAX_BACKUP_FILE_BYTES)return error(res,413,'个人备份超过 36 MB，无法生成可恢复的文件');
+    appendActivity(user.id,'data_exported');
     const filename=accountBackupFilename();
     res.writeHead(200,{'Content-Type':'application/octet-stream','Content-Disposition':`attachment; filename="shendu-account-${todayDate()}.shendu"; filename*=UTF-8''${encodeURIComponent(filename)}`,'Content-Length':body.length,'Cache-Control':'no-store'}); return res.end(body);
   }
@@ -1355,6 +1405,7 @@ async function api(req, res, url) {
     try{
       const backup=createSiteBackupBuffer(body.backupPassword);
       if(backup.length>MAX_SITE_BACKUP_FILE_BYTES)return error(res,413,'整站备份超过 128 MB，无法通过网页下载');
+      appendActivity(user.id,'site_exported');
       const filename=`shendu-site-${beijingFileStamp()}.shendu-site`;
       res.writeHead(200,{'Content-Type':'application/octet-stream','Content-Disposition':`attachment; filename="${filename}"`,'Content-Length':backup.length,'Cache-Control':'no-store'});return res.end(backup);
     }catch(e){return error(res,e.status||500,e.message||'整站备份生成失败',e.code||'site_backup_export_failed')}
@@ -1385,7 +1436,7 @@ async function api(req, res, url) {
     const name=safeText(body.name,80).trim();if(!name)return error(res,400,'请填写备份目标名称');
     let config;try{config=normalizeBackupConfig(body.kind,body.config)}catch(validationError){return error(res,400,validationError.message,'backup_target_invalid')}
     let plan;try{plan=normalizeBackupSchedule(body)}catch(validationError){return error(res,400,validationError.message,'backup_schedule_invalid')}
-    const id=randomUUID(),stamp=now();db.prepare(`INSERT INTO backup_targets(id,user_id,name,kind,encrypted_config,schedule,schedule_time,schedule_weekday,schedule_anchor_at,enabled,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)`).run(id,user.id,name,body.kind,encryptSecret(config),plan.schedule,plan.scheduleTime,plan.scheduleWeekday,stamp,body.enabled===false?0:1,stamp,stamp);return json(res,201,{id});
+    const id=randomUUID(),stamp=now();withActivity(user.id,'backup_target_created',{targetKind:body.kind},()=>db.prepare(`INSERT INTO backup_targets(id,user_id,name,kind,encrypted_config,schedule,schedule_time,schedule_weekday,schedule_anchor_at,enabled,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)`).run(id,user.id,name,body.kind,encryptSecret(config),plan.schedule,plan.scheduleTime,plan.scheduleWeekday,stamp,body.enabled===false?0:1,stamp,stamp));return json(res,201,{id});
   }
   if (/^\/api\/backup\/targets\/[^/]+$/.test(path) && method === 'PATCH') {
     const id=path.split('/')[4], body=await readJson(req), target=db.prepare(`SELECT * FROM backup_targets WHERE id=? AND user_id=?`).get(id,user.id); if(!target)return error(res,404,'备份目标不存在');
@@ -1397,9 +1448,9 @@ async function api(req, res, url) {
     if(body.config){try{encryptedConfig=encryptSecret(normalizeBackupConfig(kind,body.config))}catch(validationError){return error(res,400,validationError.message,'backup_target_invalid')}}
     const enabled=body.enabled===undefined?target.enabled:body.enabled===false?0:1;
     const changed=plan.schedule!==target.schedule||plan.scheduleTime!==target.schedule_time||plan.scheduleWeekday!==target.schedule_weekday||(target.enabled===0&&enabled===1),stamp=now();
-    db.prepare(`UPDATE backup_targets SET name=?,kind=?,encrypted_config=?,schedule=?,schedule_time=?,schedule_weekday=?,schedule_anchor_at=?,enabled=?,updated_at=? WHERE id=? AND user_id=?`).run(name,kind,encryptedConfig,plan.schedule,plan.scheduleTime,plan.scheduleWeekday,changed?stamp:target.schedule_anchor_at,enabled,stamp,id,user.id);return json(res,200,{ok:true});
+    withActivity(user.id,'backup_target_updated',{targetKind:kind},()=>db.prepare(`UPDATE backup_targets SET name=?,kind=?,encrypted_config=?,schedule=?,schedule_time=?,schedule_weekday=?,schedule_anchor_at=?,enabled=?,updated_at=? WHERE id=? AND user_id=?`).run(name,kind,encryptedConfig,plan.schedule,plan.scheduleTime,plan.scheduleWeekday,changed?stamp:target.schedule_anchor_at,enabled,stamp,id,user.id));return json(res,200,{ok:true});
   }
-  if (/^\/api\/backup\/targets\/[^/]+$/.test(path) && method === 'DELETE') { const id=path.split('/')[4]; db.prepare(`DELETE FROM backup_targets WHERE id=? AND user_id=?`).run(id,user.id); return json(res,200,{ok:true}); }
+  if (/^\/api\/backup\/targets\/[^/]+$/.test(path) && method === 'DELETE') { const id=path.split('/')[4];const target=db.prepare(`SELECT kind FROM backup_targets WHERE id=? AND user_id=?`).get(id,user.id);if(target)withActivity(user.id,'backup_target_deleted',{targetKind:target.kind},()=>db.prepare(`DELETE FROM backup_targets WHERE id=? AND user_id=?`).run(id,user.id));return json(res,200,{ok:true}); }
   if (/^\/api\/backup\/targets\/[^/]+\/(test|run)$/.test(path) && method === 'POST') {
     const [,,, ,id,action]=path.split('/'); const target=db.prepare(`SELECT * FROM backup_targets WHERE id=? AND user_id=?`).get(id,user.id); if(!target)return error(res,404,'备份目标不存在');
     if(limited(req,`backup-run:${user.id}`,12,3600000))return error(res,429,'外部备份操作过多，请稍后再试','backup_rate_limited');

@@ -50,7 +50,7 @@ test('settings saves only motion through the existing API and preserves all lega
   let finish;
   const fixture=settingsFixture(()=>new Promise(resolve=>{finish=resolve})),{dom,state,calls,applied,notices,$,$$,form,checkbox,submit}=fixture;
   const original=state.theme;Object.freeze(original);
-  assert.deepEqual($$('[data-settings-target]').map(node=>node.dataset.settingsTarget),['stage','guide']);
+  assert.deepEqual($$('[data-settings-target]').map(node=>node.dataset.settingsTarget),['stage','activity','guide']);
   assert.equal($('input[type="color"],#theme-form,[data-palette]'),null);
   checkbox.checked=true;submit();submit();
   assert.equal(calls.length,1);

@@ -50,7 +50,7 @@ function schedulerFixture(){
   db.exec(`CREATE TABLE backup_targets(id TEXT PRIMARY KEY,user_id TEXT,name TEXT,kind TEXT,schedule TEXT,schedule_time TEXT,schedule_weekday INTEGER,schedule_anchor_at TEXT,last_scheduled_slot TEXT,enabled INTEGER,updated_at TEXT,last_run_at TEXT,last_success_at TEXT,last_error TEXT,schedule_claim_token TEXT,schedule_claim_until TEXT);CREATE TABLE backup_runs(id TEXT PRIMARY KEY,target_id TEXT,user_id TEXT,status TEXT,message TEXT,created_at TEXT,operation TEXT,target_name TEXT,target_kind TEXT,trigger_kind TEXT);`);
   const source=readFileSync(new URL('../server.mjs',import.meta.url),'utf8'),implementation=source.slice(source.indexOf('const scheduledBackups ='),source.indexOf('let scheduledBackupRunning='));
   const outcome=source.slice(source.indexOf('function saveBackupOutcome('),source.indexOf('function staticFile(')),now=()=>new Date().toISOString();
-  const save=new Function('db','now','safeText','randomUUID','pruneBackupRuns',outcome+';return saveBackupOutcome;')(db,now,value=>value,randomUUID,()=>{});
+  const save=new Function('db','now','safeText','randomUUID','pruneBackupRuns','appendActivity',outcome+';return saveBackupOutcome;')(db,now,value=>value,randomUUID,()=>{},()=>{});
   const insert=(id=randomUUID())=>{const anchor='2000-01-01T00:00:00.000Z';db.prepare('INSERT INTO backup_targets(id,user_id,name,kind,schedule,schedule_time,schedule_weekday,schedule_anchor_at,enabled,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?)').run(id,id,'自己的目标','s3','daily','02:00',1,anchor,1,anchor);return id};
   const runner=(worker,active=new Set())=>new Function('db','backupScheduleDue','activeExternalBackupUsers','runExternalBackup','saveBackupOutcome','randomUUID','now',`${implementation};return scheduledBackups;`)(db,backupScheduleDue,active,worker,save,randomUUID,now);
   return{db,insert,runner};
@@ -101,7 +101,7 @@ test('successful and failed connection tests do not record outcomes; real manual
   const outcome=source.slice(source.indexOf('function saveBackupOutcome('),source.indexOf('function staticFile('));
   const db=new DatabaseSync(':memory:');
   db.exec(`CREATE TABLE backup_targets(id TEXT PRIMARY KEY,user_id TEXT,name TEXT,kind TEXT,last_run_at TEXT,last_success_at TEXT,last_error TEXT);CREATE TABLE backup_runs(id TEXT PRIMARY KEY,target_id TEXT,user_id TEXT,status TEXT,message TEXT,created_at TEXT,operation TEXT,target_name TEXT,target_kind TEXT,trigger_kind TEXT);INSERT INTO backup_targets(id,user_id,name,kind) VALUES('target','owner','执行时的名称','webdav');`);
-  const save=new Function('db','now','safeText','randomUUID','pruneBackupRuns',outcome+';return saveBackupOutcome;')(db,()=> '2026-11-09T03:00:00.000Z',value=>value,randomUUID,()=>{});
+  const save=new Function('db','now','safeText','randomUUID','pruneBackupRuns','appendActivity',outcome+';return saveBackupOutcome;')(db,()=> '2026-11-09T03:00:00.000Z',value=>value,randomUUID,()=>{},()=>{});
   let mode='success';const calls=[];
   const handler=new Function('db','user','req','res','limited','runExternalBackup','saveBackupOutcome','json','error','path','method',`return (async()=>{${branch}})();`);
   const call=action=>handler(db,{id:'owner'},{},{},()=>false,async(target,test)=>{calls.push(test);if(mode==='failure')throw new Error('上传失败')},save,(_res,status,value)=>({status,value}),(_res,status,message)=>({status,message}),`/api/backup/targets/target/${action}`,'POST');
