@@ -1560,3 +1560,29 @@ Removed section glyphs, tinted bands, oversized counter columns and status color
 ### Status
 
 [OK] **Completed**
+
+
+## Session 68: 书页标题右上与数字居中
+<!-- trellis-session: v=2 fp=3a222cc32cf94a3e -->
+
+**Date**: 2026-11-10
+**Task**: 书页标题右上与数字居中
+**Branch**: `main`
+
+### Summary
+
+将篇复盘记录独立固定在右页右上角，数字独立居中，更新样式缓存版本和验收截图。
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `2c62235` | style: position ledger caption above centered count |
+
+### Testing
+
+- [OK] 脚本检查与CSS解析通过；20组浏览器视口/数值组合确认说明在页内、数字居中、两者不重叠且无页面溢出。
+
+### Status
+
+[OK] **Completed**
