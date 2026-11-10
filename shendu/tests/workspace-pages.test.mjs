@@ -68,6 +68,21 @@ test('stage cancellation and reset keep dirty input protected; failed save retai
   f.submit();await settle();assert.equal(f.calls.length,2);assert.equal(f.state.dirty,false);assert.equal(f.navigated.at(-1),'calendar');f.dom.window.close();
 });
 
+test('stage settings always include all six review templates without an enable-quarter switch and preserve legacy values on save',async()=>{
+  for(const showQuarter of [true,false]){
+    const f=fixture();f.state.stage.showQuarter=showQuarter;f.renderStageSettings();
+    assert.equal(f.$('[name="showQuarter"],.quarter-toggle-card,.quarter-switch'),null);
+    assert.doesNotMatch(f.$('#stage-form').textContent,/启用 90 天/);
+    assert.deepEqual(f.$$('[data-template-type]').map(panel=>panel.dataset.templateType),['daily','weekly','monthly','quarterly','yearly','decision']);
+    assert.ok(f.$('[data-template-type="quarterly"] [data-review-template]'),'90-day review content stays editable for either old setting');
+    f.submit();await settle();assert.equal(f.calls.length,1);
+    assert.equal(f.calls[0].body.stage.showQuarter,showQuarter,'saving another setting must not rewrite the obsolete compatibility flag');
+    assert.equal(f.state.stage.showQuarter,showQuarter);
+    assert.equal(Object.keys(f.calls[0].body.stage.reviewTemplates).length,6);
+    f.dom.window.close();
+  }
+});
+
 test('obsolete stage completion cannot overwrite a new account or release a newer write owner',async()=>{
   let finish;const f=fixture(body=>new Promise(resolve=>{finish=()=>resolve(body)}));f.renderStageSettings();f.submit();
   const original=f.state.stage,newOwner={};f.state.user={id:'other'};f.state.settingsWriteOwner=newOwner;f.state.saving=true;

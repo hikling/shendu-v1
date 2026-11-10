@@ -1,0 +1,11 @@
+# Verification — 2026-11-10
+
+- `npm run check --prefix shendu` passed. `npm test --prefix shendu` rebuilt the production UI and passed all284 tests with no failures/skips/cancellations.
+- The new stage-settings regression exercises legacy showQuarter=true and false: no toggle exists, all six template editors including quarterly remain present, saving preserves the obsolete compatibility value. Workspace suite11/11 passed independently during implementation.
+- PostCSS parsed both changed CSS files. `git diff --check` and task context validation passed (the existing oversized UI-quality spec emits a truncation warning).
+- Isolated startup and resource smoke passed: health, HTML, app module and actual built shadcn JS/CSS. A synthetic account/eight synthetic verified decisions were prepared for visual checks; no real user data or configuration was used.
+- Visual browser acceptance is unavailable this round. Initial create-tab returned“Local browser use is disabled in Work settings”. The user reported enabling it, but a fresh attempt and then runtime reset/new attempt returned the same disabled state. No alternate browser mechanism was used. No screenshot, pixel alignment, overflow or focus acceptance is claimed for the new layout.
+- Source review resolves the title root cause: history had vertically centered text in an artwork-sized Grid, action had a different minimum height. Both copies now start-align with zero extra copy padding; both heroes share top padding48/28/16px at desktop/820/620 breakpoints and the same h1 size/line-height. Artwork keeps independent placement.
+- Ledger text is now only the exact number plus smaller“篇” on one baseline, centered in the right page. Numeric size increases from12/8.5/6/4.4cqw to14/9.4/6.8/4.8cqw by digit count, retaining a unit width allowance. This source calculation is not a browser fit certificate.
+- Overview fonts increase while hero/section spacing is reduced, reel margin changes-12→-28px. Existing focus/reduced-motion0-margin static list rules and the arc/hover algorithms remain untouched. Phone text uses a wider safe copy area and a seven-glyph/tracking width cap.
+- Temporary local service/data are stopped/removed before archival. No new screenshot artifacts replace older QA evidence.

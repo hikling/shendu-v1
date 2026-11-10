@@ -273,19 +273,6 @@ body.reduce-motion *,body.reduce-motion *:before,body.reduce-motion *:after{anim
 .settings-section-title>span{display:grid;place-items:center;width:38px;height:38px;flex:0 0 38px;border:1px solid color-mix(in srgb,var(--primary) 28%,#fff);border-radius:13px;background:color-mix(in srgb,var(--primary) 8%,#fff);color:var(--primary);font:800 .7rem/1 ui-monospace,monospace}
 .settings-section-title h3{margin:0 0 4px;font-size:.96rem}
 .settings-section-title p{margin:0;color:var(--muted);font-size:.72rem;line-height:1.6}
-.quarter-toggle-card{position:relative;display:grid;grid-template-columns:84px minmax(0,1fr) 50px;align-items:center;gap:15px;margin-top:17px;padding:15px;border:1px solid #dcccad;border-radius:20px;background:linear-gradient(135deg,#fffaf0,#f1eadc);cursor:pointer;box-shadow:inset 0 1px #fff,0 7px 18px #281d0e0a}
-.quarter-toggle-card:focus-within{outline:3px solid color-mix(in srgb,var(--primary) 35%,transparent);outline-offset:2px}
-.quarter-toggle-art{display:grid;place-items:center;width:84px;height:84px;border:1px solid color-mix(in srgb,var(--tertiary) 30%,#fff);border-radius:22px;background:color-mix(in srgb,var(--tertiary) 9%,#fff);color:var(--tertiary);box-shadow:inset 0 1px #fff}
-.quarter-toggle-art strong{font:700 2.45rem/.9 Georgia,serif;letter-spacing:-.08em}
-.quarter-toggle-art small{font:700 .56rem/1 ui-monospace,monospace;letter-spacing:.18em}
-.quarter-toggle-copy{display:grid;gap:5px;min-width:0}
-.quarter-toggle-copy b{font-size:.9rem}
-.quarter-toggle-copy small{color:var(--muted);font-size:.72rem;line-height:1.65}
-.quarter-toggle-card>input{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
-.quarter-switch{position:relative;width:48px;height:28px;border:1px solid #cec3b1;border-radius:99px;background:#ddd5c8;box-shadow:inset 0 2px 4px #21190f18;transition:.18s}
-.quarter-switch:after{content:"";position:absolute;left:3px;top:3px;width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:0 2px 6px #241a0f30;transition:.18s}
-.quarter-toggle-card>input:checked+.quarter-switch{border-color:var(--primary);background:var(--primary)}
-.quarter-toggle-card>input:checked+.quarter-switch:after{transform:translateX(20px)}
 .template-list{display:grid;gap:10px}
 .template-panel{min-width:0;border:1px solid var(--line);border-radius:17px;background:#faf6ee;overflow:hidden}
 .template-panel>summary{display:grid;grid-template-columns:42px minmax(0,1fr) 18px;align-items:center;gap:11px;padding:12px 14px;cursor:pointer;list-style:none;background:#f8f2e8}
@@ -307,13 +294,8 @@ body.reduce-motion *,body.reduce-motion *:before,body.reduce-motion *:after{anim
 .stage-save-actions{padding-top:18px;border-top:1px solid var(--line)}
 @media(max-width:620px){
   .template-field-grid{grid-template-columns:1fr}
-  .quarter-toggle-card{grid-template-columns:70px minmax(0,1fr) 48px;gap:11px;padding:12px}
-  .quarter-toggle-art{width:70px;height:70px;border-radius:18px}.quarter-toggle-art strong{font-size:2rem}
-  .quarter-toggle-copy small{font-size:.68rem}
 }
 @media(max-width:430px){
-  .quarter-toggle-card{grid-template-columns:68px minmax(0,1fr)}
-  .quarter-switch{grid-column:2;justify-self:start}
   .template-panel>summary{grid-template-columns:38px minmax(0,1fr) 16px;padding:11px}
   .template-panel-body{padding:13px 11px}
 }
@@ -572,11 +554,11 @@ body.reduce-motion *,body.reduce-motion *:before,body.reduce-motion *:after{anim
 .overview-shell .overview-main{width:100%;max-width:none;padding:0}
 .overview-shell .header-rail-button{display:inline-flex}
 .overview-page{min-height:calc(100dvh - var(--header-height));overflow:hidden;background:var(--overview-bg);color:var(--overview-ink);font-family:"Noto Sans SC","Microsoft YaHei","PingFang SC",system-ui,sans-serif}
-.overview-hero{max-width:1100px;margin:auto;padding:clamp(24px,2.5vw,36px) 24px 0;text-align:center}
-.overview-hero h1{max-width:1000px;margin:0 auto 17px;color:var(--overview-ink);font:700 clamp(3rem,6.2vw,5.2rem)/1.28 "Songti SC","Noto Serif SC","STSong",serif;letter-spacing:.045em;text-wrap:balance}
+.overview-hero{max-width:1200px;margin:auto;padding:20px 24px 0;text-align:center}
+.overview-hero h1{max-width:1100px;margin:0 auto 14px;color:var(--overview-ink);font:700 clamp(3.4rem,7.1vw,6rem)/1.2 "Songti SC","Noto Serif SC","STSong",serif;letter-spacing:.045em;text-wrap:balance}
 .overview-hero h1 em{font-style:normal;color:var(--primary)}
 .overview-hero p{margin:0 auto;max-width:690px;color:var(--overview-muted);font-size:clamp(.82rem,1.4vw,.98rem);line-height:1.8}
-.overview-types{position:relative;z-index:20;max-width:1140px;margin:clamp(28px,3vw,42px) auto 0;padding:0 24px}
+.overview-types{position:relative;z-index:20;max-width:1140px;margin:18px auto 0;padding:0 24px}
 .overview-types-heading{text-align:center}
 .overview-types-heading h2{margin:7px 0 21px;font:800 1.08rem/1.4 "Noto Sans SC","Microsoft YaHei",system-ui,sans-serif;color:var(--overview-ink);letter-spacing:.035em}
 .overview-type-grid{display:flex;align-items:center;justify-content:center;gap:18px}
@@ -587,7 +569,7 @@ body.reduce-motion *,body.reduce-motion *:before,body.reduce-motion *:after{anim
 .overview-type-mark{width:var(--type-size);height:var(--type-size);display:grid;place-items:center;border:1px solid color-mix(in srgb,var(--type-accent) 23%,var(--type-soft));border-radius:20px;background:var(--type-soft);box-shadow:0 11px 22px -8px color-mix(in srgb,var(--type-color) 26%,transparent),0 4px 8px rgba(28,58,56,.06);transform:scale(1);transition:transform .28s cubic-bezier(.18,.9,.25,1.3),box-shadow .25s;pointer-events:none}
 .overview-type-mark img{display:block;width:100%;height:100%;border-radius:inherit}
 .overview-type-trigger:hover .overview-type-mark{box-shadow:0 16px 28px -8px color-mix(in srgb,var(--type-color) 35%,transparent),0 5px 10px rgba(28,58,56,.08)}
-.overview-reel{margin-top:-12px;padding-bottom:24px}
+.overview-reel{margin-top:-28px;padding-bottom:24px}
 .overview-reel:has(.overview-record-card:focus-visible){margin-top:0}
 .overview-empty h2{margin:5px 0;color:var(--overview-ink);font:700 1.35rem/1.3 "Songti SC","Noto Serif SC",serif}
 .overview-empty p{margin:0;color:var(--overview-muted);font-size:.71rem;line-height:1.65}
@@ -680,10 +662,10 @@ body.reduce-motion *,body.reduce-motion *:before,body.reduce-motion *:after{anim
   .header-rail-button:before{content:"阶段";font-size:.65rem}
   .mobile-nav-main{grid-template-columns:repeat(3,minmax(0,1fr))}
   .mobile-nav-group>div{grid-template-columns:repeat(2,minmax(0,1fr))}
-  .overview-hero{padding:24px 16px 0}
-  .overview-hero h1{font-size:min(clamp(2.2rem,11vw,3.3rem),calc((100vw - 44px)/7.2));letter-spacing:.025em}
+  .overview-hero{padding:18px 8px 0}
+  .overview-hero h1{font-size:min(clamp(2.65rem,11.5vw,3.7rem),calc((100vw - 24px)/7.15));letter-spacing:.02em}
   .overview-hero p{font-size:.78rem}
-  .overview-types{margin-top:28px;padding:0 16px}
+  .overview-types{margin-top:18px;padding:0 16px}
   .overview-type-grid{gap:12px 8px}
   .overview-type-card{--type-size:clamp(88px,calc((100vw - 63px)/3),96px)}
   .overview-type-mark{border-radius:17px}
