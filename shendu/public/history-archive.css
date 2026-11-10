@@ -12,9 +12,9 @@
 .history-page .history-hero-actions{display:flex;align-items:center;flex-wrap:wrap;gap:14px 24px}
 .history-archive-visual{position:relative;container-type:inline-size;min-width:0;width:100%;aspect-ratio:4/3;pointer-events:none}
 .history-ledger-image{display:block;width:100%;height:100%;object-fit:contain}
-.history-ledger-count{position:absolute;left:51%;top:51%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;width:41%;height:27%;color:#235447;text-align:center}
-.history-ledger-count strong{display:block;max-width:100%;font:500 var(--count-size,12cqw)/1.1 Georgia,"Times New Roman",serif;letter-spacing:-.045em;font-variant-numeric:tabular-nums;white-space:nowrap}
-.history-ledger-count>span{font:500 max(12px,2.7cqw)/1.5 "Microsoft YaHei",sans-serif;letter-spacing:.08em;white-space:nowrap}
+.history-ledger-count{position:absolute;left:51%;top:40%;width:41%;height:43%;color:#235447;text-align:center}
+.history-ledger-count strong{position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);display:block;max-width:100%;font:500 var(--count-size,12cqw)/1.1 Georgia,"Times New Roman",serif;letter-spacing:-.045em;font-variant-numeric:tabular-nums;white-space:nowrap}
+.history-ledger-count>span{position:absolute;top:8%;right:9%;font:500 max(12px,2.7cqw)/1.5 "Microsoft YaHei",sans-serif;letter-spacing:.08em;white-space:nowrap}
 .history-page .history-archive-count{display:inline-flex;align-items:baseline;gap:8px;align-self:auto;margin:0;padding:0;border:0;color:#5d6d63}
 .history-page .history-archive-count strong{display:inline;margin:0;color:#2e4d38;font:500 1.35rem/1.3 Georgia,"Times New Roman",serif;font-variant-numeric:tabular-nums}
 .history-page .history-archive-count>span{display:inline;font-size:.67rem;line-height:1.7;letter-spacing:0}
@@ -34,7 +34,6 @@
  .history-page .history-hero-note{margin:12px 0 16px}
  .history-page .history-hero-art{width:clamp(190px,61vw,260px);margin:0 0 -8px}
  .history-archive-visual{justify-self:center;width:min(100%,360px);margin-top:6px}
- .history-ledger-count{gap:5px}
  .history-page .history-archive-count strong{font-size:1.2rem}
 }
 .history-page .history-kicker{margin-bottom:8px;color:#657162;font-size:.65rem;letter-spacing:.14em}

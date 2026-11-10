@@ -1,0 +1,182 @@
+[
+  {
+    "labelAboveNumber": true,
+    "labelInside": true,
+    "noOverflow": true,
+    "numberCentered": true,
+    "numberFits": true,
+    "value": "0",
+    "width": 320
+  },
+  {
+    "labelAboveNumber": true,
+    "labelInside": true,
+    "noOverflow": true,
+    "numberCentered": true,
+    "numberFits": true,
+    "value": "14",
+    "width": 320
+  },
+  {
+    "labelAboveNumber": true,
+    "labelInside": true,
+    "noOverflow": true,
+    "numberCentered": true,
+    "numberFits": true,
+    "value": "1,000",
+    "width": 320
+  },
+  {
+    "labelAboveNumber": true,
+    "labelInside": true,
+    "noOverflow": true,
+    "numberCentered": true,
+    "numberFits": true,
+    "value": "123,456",
+    "width": 320
+  },
+  {
+    "labelAboveNumber": true,
+    "labelInside": true,
+    "noOverflow": true,
+    "numberCentered": true,
+    "numberFits": true,
+    "value": "1,234,567,890",
+    "width": 320
+  },
+  {
+    "labelAboveNumber": true,
+    "labelInside": true,
+    "noOverflow": true,
+    "numberCentered": true,
+    "numberFits": true,
+    "value": "0",
+    "width": 390
+  },
+  {
+    "labelAboveNumber": true,
+    "labelInside": true,
+    "noOverflow": true,
+    "numberCentered": true,
+    "numberFits": true,
+    "value": "14",
+    "width": 390
+  },
+  {
+    "labelAboveNumber": true,
+    "labelInside": true,
+    "noOverflow": true,
+    "numberCentered": true,
+    "numberFits": true,
+    "value": "1,000",
+    "width": 390
+  },
+  {
+    "labelAboveNumber": true,
+    "labelInside": true,
+    "noOverflow": true,
+    "numberCentered": true,
+    "numberFits": true,
+    "value": "123,456",
+    "width": 390
+  },
+  {
+    "labelAboveNumber": true,
+    "labelInside": true,
+    "noOverflow": true,
+    "numberCentered": true,
+    "numberFits": true,
+    "value": "1,234,567,890",
+    "width": 390
+  },
+  {
+    "labelAboveNumber": true,
+    "labelInside": true,
+    "noOverflow": true,
+    "numberCentered": true,
+    "numberFits": true,
+    "value": "0",
+    "width": 820
+  },
+  {
+    "labelAboveNumber": true,
+    "labelInside": true,
+    "noOverflow": true,
+    "numberCentered": true,
+    "numberFits": true,
+    "value": "14",
+    "width": 820
+  },
+  {
+    "labelAboveNumber": true,
+    "labelInside": true,
+    "noOverflow": true,
+    "numberCentered": true,
+    "numberFits": true,
+    "value": "1,000",
+    "width": 820
+  },
+  {
+    "labelAboveNumber": true,
+    "labelInside": true,
+    "noOverflow": true,
+    "numberCentered": true,
+    "numberFits": true,
+    "value": "123,456",
+    "width": 820
+  },
+  {
+    "labelAboveNumber": true,
+    "labelInside": true,
+    "noOverflow": true,
+    "numberCentered": true,
+    "numberFits": true,
+    "value": "1,234,567,890",
+    "width": 820
+  },
+  {
+    "labelAboveNumber": true,
+    "labelInside": true,
+    "noOverflow": true,
+    "numberCentered": true,
+    "numberFits": true,
+    "value": "0",
+    "width": 1280
+  },
+  {
+    "labelAboveNumber": true,
+    "labelInside": true,
+    "noOverflow": true,
+    "numberCentered": true,
+    "numberFits": true,
+    "value": "14",
+    "width": 1280
+  },
+  {
+    "labelAboveNumber": true,
+    "labelInside": true,
+    "noOverflow": true,
+    "numberCentered": true,
+    "numberFits": true,
+    "value": "1,000",
+    "width": 1280
+  },
+  {
+    "labelAboveNumber": true,
+    "labelInside": true,
+    "noOverflow": true,
+    "numberCentered": true,
+    "numberFits": true,
+    "value": "123,456",
+    "width": 1280
+  },
+  {
+    "labelAboveNumber": true,
+    "labelInside": true,
+    "noOverflow": true,
+    "numberCentered": true,
+    "numberFits": true,
+    "value": "1,234,567,890",
+    "width": 1280
+  }
+]
