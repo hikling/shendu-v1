@@ -1586,3 +1586,30 @@ Removed section glyphs, tinted bands, oversized counter columns and status color
 ### Status
 
 [OK] **Completed**
+
+
+## Session 69: 标题对齐、概览间距与90天设置精简
+<!-- trellis-session: v=2 fp=16c5581d08a84e64 -->
+
+**Date**: 2026-11-10
+**Task**: 标题对齐、概览间距与90天设置精简
+**Branch**: `main`
+
+### Summary
+
+历史/行动标题共用顶部定位与字号，书页改更大数字加篇，概览主句放大及轮播上移，移除90天开关保留旧值兼容。
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `92cf952` | style: align archive headings and refine overview spacing |
+
+### Testing
+
+- [OK] check/build及284项测试通过；CSS解析、隔离启动和UI资源smoke通过；独立源码复查无阻塞。
+- [OK] 用户报告开启后浏览器仍返回禁用，重试及重置无效；本轮无截图实测，不宣称视觉验收。
+
+### Status
+
+[OK] **Completed**
