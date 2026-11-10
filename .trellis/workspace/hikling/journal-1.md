@@ -1613,3 +1613,30 @@ Removed section glyphs, tinted bands, oversized counter columns and status color
 ### Status
 
 [OK] **Completed**
+
+
+## Session 70: 固定已存复盘引导与局部位置微调
+<!-- trellis-session: v=2 fp=4cc9859defb66522 -->
+
+**Date**: 2026-11-10
+**Task**: 固定已存复盘引导与局部位置微调
+**Branch**: `main`
+
+### Summary
+
+已保存草稿、已完成、已验证复盘按类别和记录ID固定引导，多入口/刷新不变；历史插画略上移，概览上半区下移且轮播布局不动。
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `9f6443d` | fix: keep saved review introductions stable across visits |
+
+### Testing
+
+- [OK] check/build和288项测试通过；14项引导/导航测试、独立8项引导测试及源码复查通过；CSS解析和隔离启动/资源smoke通过。
+- [OK] 浏览器仍由工具报告禁用，本轮未进行实际截图/桌面手机视觉验收。
+
+### Status
+
+[OK] **Completed**
