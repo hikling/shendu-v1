@@ -1506,3 +1506,30 @@ Removed section glyphs, tinted bands, oversized counter columns and status color
 ### Status
 
 [OK] **Completed**
+
+
+## Session 66: 历史页排版与每日使用日志
+<!-- trellis-session: v=2 fp=6af1075f3a86bd94 -->
+
+**Date**: 2026-11-10
+**Task**: 历史页排版与每日使用日志
+**Branch**: `main`
+
+### Summary
+
+历史页放大插画并移除页头横线，分区线紧跟标题数量并加粗；设置新增个人按日使用日志，固定元数据隐私、事务一致性与旧备份兼容。
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `1bf809b` | feat: add personal activity log and refine archive layout |
+
+### Testing
+
+- [OK] check/build及281项测试通过；新增日志界面12项补充复测通过；隔离启动与静态资源检查通过。
+- [OK] 后端独立只读审查无阻塞项；浏览器当前禁用，未完成桌面/窄屏截图验收。
+
+### Status
+
+[OK] **Completed**
