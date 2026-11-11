@@ -8,8 +8,8 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 70
-- **Last Active**: 2026-11-10
+- **Total Sessions**: 71
+- **Last Active**: 2026-11-11
 <!-- @@@/auto:current-status -->
 
 ---
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~1642 | Active |
+| `journal-1.md` | ~1669 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -29,6 +29,7 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 71 | 2026-11-11 | 历史页插画缩小与留白收紧 | `d71bc6e` | `main` |
 | 70 | 2026-11-10 | 固定已存复盘引导与局部位置微调 | `9f6443d` | `main` |
 | 69 | 2026-11-10 | 标题对齐、概览间距与90天设置精简 | `92cf952` | `main` |
 | 68 | 2026-11-10 | 书页标题右上与数字居中 | `2c62235` | `main` |

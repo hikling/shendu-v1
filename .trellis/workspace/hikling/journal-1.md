@@ -1640,3 +1640,30 @@ Removed section glyphs, tinted bands, oversized counter columns and status color
 ### Status
 
 [OK] **Completed**
+
+
+## Session 71: 历史页插画缩小与留白收紧
+<!-- trellis-session: v=2 fp=b388e553b783808e -->
+
+**Date**: 2026-11-11
+**Task**: 历史页插画缩小与留白收紧
+**Branch**: `main`
+
+### Summary
+
+历史书册缩小并上移，以负上边距收回原占高；筛选和记录区上移，标题及其他页面保持原布局。
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `d71bc6e` | style: compact history hero and reduce archive whitespace |
+
+### Testing
+
+- [OK] 脚本检查、CSS解析、隔离应用资源smoke通过。实际浏览器四视口对照：桌面筛选/记录上移95.55px，标题不动，无溢出；20组计数与篇单位检查通过。
+- [OK] 桌面调整前后及手机截图、原始测量已保存在docs/history-compact-qa，临时标签/服务/数据已清理。
+
+### Status
+
+[OK] **Completed**
