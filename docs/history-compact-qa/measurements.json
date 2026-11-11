@@ -1,0 +1,238 @@
+[
+  {
+    "art": {
+      "height": 294.515625,
+      "width": 392.6875,
+      "x": 736.71875,
+      "y": 98
+    },
+    "filters": {
+      "height": 107,
+      "width": 1087.8125,
+      "x": 47.59375,
+      "y": 404.515625
+    },
+    "overflow": false,
+    "recordsTitle": {
+      "height": 39.6875,
+      "width": 114.90625,
+      "x": 47.59375,
+      "y": 539.515625
+    },
+    "title": {
+      "height": 62.421875,
+      "width": 647.125,
+      "x": 53.59375,
+      "y": 130
+    },
+    "unit": "15篇",
+    "variant": "after",
+    "viewport": 1190
+  },
+  {
+    "art": {
+      "height": 209.09375,
+      "width": 278.796875,
+      "x": 516.203125,
+      "y": 64
+    },
+    "filters": {
+      "height": 182,
+      "width": 781,
+      "x": 16,
+      "y": 285.09375
+    },
+    "overflow": false,
+    "recordsTitle": {
+      "height": 39.140625,
+      "width": 113.359375,
+      "x": 16,
+      "y": 495.09375
+    },
+    "title": {
+      "height": 50.015625,
+      "width": 480.203125,
+      "x": 18,
+      "y": 96
+    },
+    "unit": "15篇",
+    "variant": "after",
+    "viewport": 820
+  },
+  {
+    "art": {
+      "height": 225,
+      "width": 300,
+      "x": 41.5,
+      "y": 218.015625
+    },
+    "filters": {
+      "height": 261,
+      "width": 351,
+      "x": 16,
+      "y": 455.015625
+    },
+    "overflow": false,
+    "recordsTitle": {
+      "height": 39.140625,
+      "width": 113.359375,
+      "x": 16,
+      "y": 744.015625
+    },
+    "title": {
+      "height": 52.703125,
+      "width": 347,
+      "x": 18,
+      "y": 84
+    },
+    "unit": "15篇",
+    "variant": "after",
+    "viewport": 390
+  },
+  {
+    "art": {
+      "height": 187.421875,
+      "width": 249.90625,
+      "x": 35.046875,
+      "y": 218.015625
+    },
+    "filters": {
+      "height": 261,
+      "width": 288,
+      "x": 16,
+      "y": 417.4375
+    },
+    "overflow": false,
+    "recordsTitle": {
+      "height": 39.140625,
+      "width": 113.359375,
+      "x": 16,
+      "y": 706.4375
+    },
+    "title": {
+      "height": 52.703125,
+      "width": 284,
+      "x": 18,
+      "y": 84
+    },
+    "unit": "15篇",
+    "variant": "after",
+    "viewport": 320
+  },
+  {
+    "art": {
+      "height": 348.0625,
+      "width": 464.09375,
+      "x": 665.3125,
+      "y": 110
+    },
+    "filters": {
+      "height": 107,
+      "width": 1087.8125,
+      "x": 47.59375,
+      "y": 500.0625
+    },
+    "overflow": false,
+    "recordsTitle": {
+      "height": 39.6875,
+      "width": 114.90625,
+      "x": 47.59375,
+      "y": 635.0625
+    },
+    "title": {
+      "height": 62.421875,
+      "width": 575.71875,
+      "x": 53.59375,
+      "y": 130
+    },
+    "variant": "before",
+    "viewport": 1190
+  },
+  {
+    "art": {
+      "height": 246,
+      "width": 328,
+      "x": 467,
+      "y": 76
+    },
+    "filters": {
+      "height": 182,
+      "width": 781,
+      "x": 16,
+      "y": 360
+    },
+    "overflow": false,
+    "recordsTitle": {
+      "height": 39.140625,
+      "width": 113.359375,
+      "x": 16,
+      "y": 570
+    },
+    "title": {
+      "height": 50.015625,
+      "width": 431,
+      "x": 18,
+      "y": 96
+    },
+    "variant": "before",
+    "viewport": 820
+  },
+  {
+    "art": {
+      "height": 260.25,
+      "width": 347,
+      "x": 18,
+      "y": 226.015625
+    },
+    "filters": {
+      "height": 261,
+      "width": 351,
+      "x": 16,
+      "y": 516.265625
+    },
+    "overflow": false,
+    "recordsTitle": {
+      "height": 39.140625,
+      "width": 113.359375,
+      "x": 16,
+      "y": 805.265625
+    },
+    "title": {
+      "height": 52.703125,
+      "width": 347,
+      "x": 18,
+      "y": 84
+    },
+    "variant": "before",
+    "viewport": 390
+  },
+  {
+    "art": {
+      "height": 213,
+      "width": 284,
+      "x": 18,
+      "y": 226.015625
+    },
+    "filters": {
+      "height": 261,
+      "width": 288,
+      "x": 16,
+      "y": 469.015625
+    },
+    "overflow": false,
+    "recordsTitle": {
+      "height": 39.140625,
+      "width": 113.359375,
+      "x": 16,
+      "y": 758.015625
+    },
+    "title": {
+      "height": 52.703125,
+      "width": 284,
+      "x": 18,
+      "y": 84
+    },
+    "variant": "before",
+    "viewport": 320
+  }
+]
