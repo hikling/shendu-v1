@@ -1690,3 +1690,25 @@ Removed section glyphs, tinted bands, oversized counter columns and status color
 ### Status
 
 [OK] **Completed**
+
+
+## Session 73: 复盘滚轮切题与滚动条优化
+<!-- trellis-session: v=2 fp=ed6a986b8dcdbd55 -->
+
+**Date**: 2026-11-13
+**Task**: 复盘滚轮切题与滚动条优化
+**Branch**: `main`
+
+### Summary
+
+统一轻量滚动条，六类复盘增加带阻尼且尊重内容滚动的滚轮导航，设置按账户保存开关；341项应用测试、13项交接测试和双平台CI通过，Releases保留最近四个。用户选择先完成代码与自动检查，实际滚轮手感与窄屏验收待浏览器可用。
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `8c4884c` | feat: add damped review wheel navigation and preferences |
+
+### Status
+
+[OK] **Completed**
