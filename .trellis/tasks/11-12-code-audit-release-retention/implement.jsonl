@@ -1,0 +1,3 @@
+{"file": ".trellis/spec/backend/http-and-security.md", "reason": "Auth/API/backup security contracts"}
+{"file": ".trellis/spec/backend/runtime-and-data.md", "reason": "Encryption and transaction contracts"}
+{"file": ".trellis/spec/frontend/state-and-data.md", "reason": "Async ownership and lifecycle"}

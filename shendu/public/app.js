@@ -108,11 +108,11 @@ function enterReview(type,period,forceNew=false,record=null){reviewNavigation.en
 let modalReturnFocus=null;
 let overviewReelObserver=null;
 let dailyTypingTimer=null,dailyTypingCleanup=null;
-async function request(path, options = {}) {
+async function request(path, options = {}, isCurrent = () => true) {
   const opts = { credentials:'same-origin', ...options, headers:{ ...(options.body && !(options.body instanceof Blob) && !(options.body instanceof ArrayBuffer) ? {'Content-Type':'application/json'} : {}), ...(options.headers||{}) } };
   if (opts.body && opts.headers['Content-Type']==='application/json' && typeof opts.body !== 'string') opts.body = JSON.stringify(opts.body);
   const res = await fetch(path,opts); const type=res.headers.get('content-type')||''; const data=type.includes('json')?await res.json():await res.blob();
-  if(!res.ok){if(res.status===401&&state.user&&!state.reauthOpen&&!path.startsWith('/api/auth/'))sessionExpired();const e=new Error(data.message||'请求失败');e.code=data.error;e.status=res.status;throw e} return data;
+  if(!res.ok){if(res.status===401&&state.user&&!state.reauthOpen&&!path.startsWith('/api/auth/')&&isCurrent())sessionExpired();const e=new Error(data.message||'请求失败');e.code=data.error;e.status=res.status;throw e} return data;
 }
 function sessionExpired(){state.reauthOpen=true;openModal(`<div class="modal-head"><div><h2>登录已失效</h2><p>重新登录后，页面中尚未保存的内容仍会保留。</p></div><div class="legacy-dialog-art" aria-hidden="true"><img src="/assets/records/daily-28-night-lamp.webp" alt="" width="640" height="640" draggable="false"></div></div><form id="reauth-form"><div class="field"><label for="reauth-username">用户名</label><input id="reauth-username" name="username" value="${esc(state.user.username)}" readonly autocomplete="username"></div><div class="field"><label for="reauth-password">密码</label><input id="reauth-password" name="password" type="password" minlength="15" required autocomplete="current-password"></div><div class="modal-actions"><button class="btn btn-primary">重新登录</button></div></form>`,'legacy-reauth',true);const form=$('#reauth-form'),account=state.user,current=()=>form.isConnected&&state.user===account&&state.reauthOpen;let pending=false;form.addEventListener('submit',async e=>{e.preventDefault();if(pending||!current())return;const body=JSON.stringify(Object.fromEntries(new FormData(form))),controls=$$('button,input',form),disabled=controls.map(control=>control.disabled);pending=true;controls.forEach(control=>{control.disabled=true});try{const res=await fetch('/api/auth/login',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body});const data=await res.json();if(!current())return;if(!res.ok)throw new Error(data.message||'登录失败');state.reauthOpen=false;closeModal(true);toast('已重新登录，请再次保存')}catch(error){if(current())toast(error.message||'登录失败','error')}finally{pending=false;if(form.isConnected)controls.forEach((control,index)=>{control.disabled=disabled[index]})}})}
 function toast(message,kind='success'){showToast($('#toast-root'),message,kind)}
@@ -616,22 +616,59 @@ function setReviewBusy(busy){
   $$('input,textarea,select,button',main).forEach(control=>{if(busy&&!control.disabled){control.dataset.reviewBusy='true';control.disabled=true}else if(!busy&&control.dataset.reviewBusy){control.disabled=false;delete control.dataset.reviewBusy}});
   const save=$('#save-draft');if(save){if(busy&&!save.dataset.idleHtml){save.dataset.idleHtml=save.innerHTML;renderMarkup(save,'正在保存…')}else if(!busy&&save.dataset.idleHtml){renderMarkup(save,save.dataset.idleHtml);delete save.dataset.idleHtml}}
 }
-async function saveCurrent(silent=false){
+async function saveCurrent(silent=false,completion=null){
   if(state.saving)return null;
-  collectCurrent();state.saving=true;setReviewBusy(true);
-  try{const {record}=await request('/api/records',{method:'PUT',body:state.current});state.current=record;const i=state.records.findIndex(r=>r.id===record.id);if(i>=0)state.records[i]=record;else state.records.push(record);state.dirty=false;$('.save-state')&&($('.save-state').textContent=`${beijingTime(record.updated_at)} 草稿已存入纸笺`);if(!silent)toast('草稿已保存');return record}
-  catch(e){$('.save-state')&&($('.save-state').textContent='保存失败，内容已保留，请重试');if(!silent)toast(e.message,'error');if(e.code==='version_conflict')await refreshData();throw e}
-  finally{state.saving=false;setReviewBusy(false)}
+  collectCurrent();let account=state.user,record=state.current;
+  const editor=$('#daily-editor'),page=$('#main-content'),token={};
+  const current=()=>state.user===account&&state.current===record&&editor?.isConnected&&$('#daily-editor')===editor&&page?.isConnected&&state.reviewWriteOwner===token&&!state.dialogWriteOwner&&!state.accountWriteOwner&&!state.settingsWriteOwner&&!state.adminWriteOwner&&(!completion||completion.current());
+  state.reviewWriteOwner=token;state.saving=true;setReviewBusy(true);
+  try{
+    const result=await request('/api/records',{method:'PUT',body:record},current);if(!current())return null;
+    record=result.record;state.current=record;const i=state.records.findIndex(r=>r.id===record.id);if(i>=0)state.records[i]=record;else state.records.push(record);state.dirty=false;
+    $('.save-state')&&($('.save-state').textContent=`${beijingTime(record.updated_at)} 草稿已存入纸笺`);if(!silent)toast('草稿已保存');return record;
+  }catch(e){
+    if(current()){
+      $('.save-state')&&($('.save-state').textContent='保存失败，内容已保留，请重试');if(!silent)toast(e.message,'error');
+      if(e.code==='version_conflict'&&await refreshData(current)){account=state.user;completion?.refreshed(account)}
+    }
+    throw e;
+  }finally{
+    if(state.reviewWriteOwner===token){delete state.reviewWriteOwner;if(!state.dialogWriteOwner&&!state.accountWriteOwner&&!state.settingsWriteOwner&&!state.adminWriteOwner){state.saving=false;if(editor?.isConnected&&$('#daily-editor')===editor&&page?.isConnected)setReviewBusy(false)}}
+  }
 }
 async function completeCurrent(){
   if(state.saving)return;
   const missing=validateCurrent();if(missing.length){toast(`请先填写：${missing.slice(0,3).join('、')}${missing.length>3?'等':''}`,'error');return}
+  let account=state.user,record=state.current;
+  const editor=$('#daily-editor'),page=$('#main-content'),extendedPrompt=state.extendedPrompt;
   openModal(`<div class="modal-head"><div><h2>${state.current.type==='decision'?'完成并封存依据？':'完成并永久锁定？'}</h2><p>锁定后，正文、标题、日期、日记和行动都不能修改。</p></div><button class="modal-close" data-close>×</button></div><div class="lock-summary">复盘周期：${esc(state.current.period)}<br>预期验证日期：${esc(state.current.data.verifyDate)}<br>达到最早验证日期后，可按实际情况提交，系统会自动记录实际验证时间。</div><div class="modal-actions"><button class="btn btn-ghost" data-close>再检查一下</button><button class="btn btn-red" id="confirm-complete">确认完成并锁定</button></div>`);
-  $('#confirm-complete').addEventListener('click',async event=>{
-    if(state.saving)return;const button=event.currentTarget,modal=button.closest('.modal');button.disabled=true;button.textContent='正在锁定…';modal.dataset.reviewLockBusy='true';modal.setAttribute('aria-busy','true');$$('[data-close]',modal).forEach(control=>control.setAttribute('aria-disabled','true'));
-    try{if(!state.current.id||state.dirty)await saveCurrent(true);state.saving=true;setReviewBusy(true);const {record}=await request(`/api/records/${state.current.id}/complete`,{method:'POST'});const i=state.records.findIndex(x=>x.id===record.id);if(i>=0)state.records[i]=record;else state.records.push(record);state.current=record;closeModal(true);await refreshStats().catch(()=>{});toast('复盘已完成并锁定');renderReview(record.type,record.period,false,record,{dailySection:record.type==='daily'?currentDailyPrompts().at(-1).step:'intro',dailyPrompt:record.type==='daily'?currentDailyPrompts().at(-1).id:null,extendedPrompt:state.extendedPrompt})}
-    catch(e){toast(e.message,'error')}
-    finally{state.saving=false;setReviewBusy(false);if(modal.isConnected){delete modal.dataset.reviewLockBusy;modal.removeAttribute('aria-busy');$$('[data-close]',modal).forEach(control=>control.removeAttribute('aria-disabled'))}if(button.isConnected){button.disabled=false;button.textContent='确认完成并锁定'}}
+  const button=$('#confirm-complete'),modal=button.closest('.modal'),root=$('#modal-root');let pending=false;
+  const surfaceCurrent=()=>state.user===account&&editor?.isConnected&&$('#daily-editor')===editor&&page?.isConnected&&button.isConnected&&root.contains(button)&&button.closest('.modal')===modal;
+  const current=()=>surfaceCurrent()&&state.current===record;
+  button.addEventListener('click',async()=>{
+    if(pending||state.saving||!current())return;pending=true;
+    const token={},finish=()=>{if(state.reviewWriteOwner===token){delete state.reviewWriteOwner;if(!state.dialogWriteOwner&&!state.accountWriteOwner&&!state.settingsWriteOwner&&!state.adminWriteOwner){state.saving=false;if(editor?.isConnected&&$('#daily-editor')===editor&&page?.isConnected)setReviewBusy(false)}}};
+    const owns=()=>current()&&state.reviewWriteOwner===token&&!state.dialogWriteOwner&&!state.accountWriteOwner&&!state.settingsWriteOwner&&!state.adminWriteOwner;
+    button.disabled=true;button.textContent='正在锁定…';modal.dataset.reviewLockBusy='true';modal.setAttribute('aria-busy','true');$$('[data-close]',modal).forEach(control=>control.setAttribute('aria-disabled','true'));
+    try{
+      if(!record.id||state.dirty){
+        const saved=await saveCurrent(true,{current,refreshed:user=>{account=user}});
+        if(!saved||!surfaceCurrent()||state.current!==saved||state.saving)return;record=saved;
+      }
+      if(!current()||state.saving)return;
+      state.reviewWriteOwner=token;state.saving=true;setReviewBusy(true);
+      const {record:completed}=await request(`/api/records/${record.id}/complete`,{method:'POST'},owns);if(!owns())return;
+      const i=state.records.findIndex(x=>x.id===completed.id);if(i>=0)state.records[i]=completed;else state.records.push(completed);state.current=completed;
+      finish();closeModal(true);toast('复盘已完成并锁定');renderReview(completed.type,completed.period,false,completed,{dailySection:completed.type==='daily'?currentDailyPrompts().at(-1).step:'intro',dailyPrompt:completed.type==='daily'?currentDailyPrompts().at(-1).id:null,extendedPrompt});
+      const locked=state.current,statsEditor=$('#daily-editor'),statsPage=$('#main-content'),statsModal=$('.modal',root);
+      const statsCurrent=()=>state.user===account&&state.current===locked&&statsEditor?.isConnected&&$('#daily-editor')===statsEditor&&statsPage?.isConnected&&root.isConnected&&$('#modal-root')===root&&$('.modal',root)===statsModal;
+      void request('/api/stats',{},statsCurrent).then(stats=>{
+        if(!statsCurrent())return;state.stats=stats;
+        const link=$('.header-nav [data-nav="actions"]'),badge=link?$('.header-count',link):null;
+        if(stats.pending){if(badge)badge.textContent=String(Number(stats.pending));else if(link){const count=document.createElement('span');count.className='header-count';count.textContent=String(Number(stats.pending));link.append(count)}}else badge?.remove();
+      }).catch(()=>{});
+    }catch(e){if(current()&&(!state.saving||owns()))toast(e.message,'error')}
+    finally{finish();pending=false;if(modal.isConnected&&!state.saving){delete modal.dataset.reviewLockBusy;modal.removeAttribute('aria-busy');$$('[data-close]',modal).forEach(control=>control.removeAttribute('aria-disabled'));button.disabled=false;button.textContent='确认完成并锁定'}}
   });
 }
 
@@ -744,7 +781,7 @@ function dialogWriteTask(anchor){
     },
     finish(){
       if(!active)return;active=false;delete anchor.dataset.dialogBusy;
-      if(state.dialogWriteOwner===anchor){delete state.dialogWriteOwner;state.saving=false}
+      if(state.dialogWriteOwner===anchor){delete state.dialogWriteOwner;if(!state.reviewWriteOwner&&!state.accountWriteOwner&&!state.settingsWriteOwner&&!state.adminWriteOwner)state.saving=false}
       if(connected()){root.dataset.persistent=persistent;controls.forEach(([control,disabled])=>{control.disabled=disabled})}
     }
   };
@@ -928,18 +965,75 @@ async function loadManagedUsers(q=$('#user-search')?.value||''){
   }finally{if(current())owner.removeAttribute('aria-busy')}
 }
 
+function managedUsersWriteTask(anchor,owner){
+  const account=state.user,role=account?.role,page=owner.closest('.workspace-users')||owner,token={};
+  let active=false,controls=[];
+  const current=()=>anchor.isConnected&&owner.isConnected&&owner.contains(anchor)&&state.user===account&&state.user?.role===role;
+  return {current,
+    begin(){
+      if(active||state.saving||!current())return false;
+      active=true;controls=$$('button,input,select,textarea',page).map(control=>[control,control.disabled]);
+      controls.forEach(([control])=>{control.disabled=true});owner.setAttribute('aria-busy','true');
+      state.adminWriteOwner=token;state.saving=true;return true;
+    },
+    finish(){
+      if(!active)return;active=false;
+      if(state.adminWriteOwner===token){delete state.adminWriteOwner;if(!state.dialogWriteOwner&&!state.accountWriteOwner&&!state.settingsWriteOwner&&!state.reviewWriteOwner)state.saving=false}
+      if(current()){owner.removeAttribute('aria-busy');controls.forEach(([control,disabled])=>{control.disabled=disabled})}
+    }
+  };
+}
+
 function bindUsers(users=[],owner=$('#users-content')){
   $('#user-search',owner)?.addEventListener('change',e=>loadManagedUsers(e.target.value));
-  $('#registration-open',owner)?.addEventListener('change',async e=>{const control=e.target;try{await request('/api/admin/registration',{method:'PUT',body:{open:control.checked}});if(control.isConnected)toast('公开注册设置已更新')}catch(error){if(control.isConnected)toast(error.message,'error')}});
-  $$('[data-user-toggle]',owner).forEach(button=>button.addEventListener('click',()=>patchUser(button.dataset.userToggle,{status:button.dataset.status})));
-  $$('[data-user-role]',owner).forEach(button=>button.addEventListener('click',()=>patchUser(button.dataset.userRole,{role:button.dataset.role})));
+  const registration=$('#registration-open',owner);
+  if(registration){let savedOpen=registration.checked,syncing=false;
+  const showOpen=open=>{registration.checked=open;syncing=true;registration.dispatchEvent(new Event('change',{bubbles:true}));syncing=false};
+  registration.addEventListener('change',async()=>{
+    if(syncing)return;
+    const open=registration.checked,task=managedUsersWriteTask(registration,owner);
+    if(!task.begin()){showOpen(savedOpen);return}
+    try{await request('/api/admin/registration',{method:'PUT',body:{open}},task.current);if(!task.current())return;savedOpen=open;showOpen(open);toast('公开注册设置已更新')}
+    catch(error){if(task.current()){showOpen(savedOpen);toast(error.message,'error')}}
+    finally{task.finish()}
+  })}
+  $$('[data-user-toggle]',owner).forEach(button=>button.addEventListener('click',()=>patchUser(button.dataset.userToggle,{status:button.dataset.status},button,owner)));
+  $$('[data-user-role]',owner).forEach(button=>button.addEventListener('click',()=>patchUser(button.dataset.userRole,{role:button.dataset.role},button,owner)));
   $$('[data-user-reset]',owner).forEach(button=>button.addEventListener('click',()=>openUserModal(button.dataset.userReset)));
   $$('[data-user-delete]',owner).forEach(button=>button.addEventListener('click',()=>{const target=users.find(user=>user.id===button.dataset.userDelete);if(target)openDeleteUserModal(target)}));
 }
 
-function openDeleteUserModal(target){openModal(`<div class="modal-head"><div><h2>永久删除用户</h2><p>删除后，${esc(target.displayName)} 的复盘、设置、会话和备份目标都会一并清除。</p></div><button class="modal-close" data-close>×</button></div><div class="backup-notice delete-warning">这项操作无法撤销。请先确认已经保存所需备份。</div><form id="delete-user-form"><div class="field"><label for="delete-user-confirm">输入用户名 <strong>${esc(target.username)}</strong> 确认</label><input id="delete-user-confirm" name="confirmationUsername" required autocomplete="off" autocapitalize="none" spellcheck="false"></div><div class="field"><label for="delete-user-password">你的当前登录密码</label><input id="delete-user-password" name="currentPassword" type="password" minlength="15" maxlength="128" required autocomplete="current-password"></div><div class="modal-actions"><button type="button" class="btn btn-ghost" data-close>取消</button><button class="btn btn-red" type="submit">永久删除此用户</button></div></form>`);$('#delete-user-form').addEventListener('submit',async e=>{e.preventDefault();const body=Object.fromEntries(new FormData(e.currentTarget)),normalizeUsername=value=>String(value||'').trim().normalize('NFKC').toLocaleLowerCase('zh-CN');if(normalizeUsername(body.confirmationUsername)!==normalizeUsername(target.username)){toast('输入的用户名与待删除账户不一致','error');return}try{await request(`/api/admin/users/${target.id}`,{method:'DELETE',body});closeModal();toast(`用户 ${target.username} 已永久删除`);loadManagedUsers()}catch(err){toast(err.message,'error')}})}
-function openUserModal(resetId=null){openModal(`<div class="modal-head"><div><h2>${resetId?'重置成员密码':'创建新账户'}</h2><p>${resetId?'该账户现有登录会立即失效，复盘数据会保留。':'管理员创建的账户可以直接登录。'}</p></div><button class="modal-close" data-close>×</button></div><form id="user-form">${resetId?'':`<div class="input-grid"><div class="field"><label>称呼</label><input name="displayName" required maxlength="32"></div><div class="field"><label>用户名</label><input name="username" required minlength="3" maxlength="32"></div></div>${state.user.role==='superadmin'?`<div class="field"><label>角色</label><select name="role"><option value="member">成员</option><option value="admin">管理员</option></select></div>`:''}`}<div class="field"><label>${resetId?'新密码':'初始密码'}</label><input name="password" type="password" required minlength="15" maxlength="128" autocomplete="new-password"></div><div class="modal-actions"><button type="button" class="btn btn-ghost" data-close>取消</button><button class="btn btn-primary">确认</button></div></form>`);$('#user-form').addEventListener('submit',async e=>{e.preventDefault();try{const body=Object.fromEntries(new FormData(e.currentTarget));if(resetId)await request(`/api/admin/users/${resetId}`,{method:'PATCH',body:{password:body.password}});else await request('/api/admin/users',{method:'POST',body});closeModal();toast(resetId?'密码已重置':'账户已创建');loadManagedUsers()}catch(err){toast(err.message,'error')}})}
-async function patchUser(id,body){try{await request(`/api/admin/users/${id}`,{method:'PATCH',body});toast('账户已更新');loadManagedUsers()}catch(e){toast(e.message,'error')}}
+function openDeleteUserModal(target){
+  const page=$('#users-content'),role=state.user?.role;
+  openModal(`<div class="modal-head"><div><h2>永久删除用户</h2><p>删除后，${esc(target.displayName)} 的复盘、设置、会话和备份目标都会一并清除。</p></div><button class="modal-close" data-close>×</button></div><div class="backup-notice delete-warning">这项操作无法撤销。请先确认已经保存所需备份。</div><form id="delete-user-form"><div class="field"><label for="delete-user-confirm">输入用户名 <strong>${esc(target.username)}</strong> 确认</label><input id="delete-user-confirm" name="confirmationUsername" required autocomplete="off" autocapitalize="none" spellcheck="false"></div><div class="field"><label for="delete-user-password">你的当前登录密码</label><input id="delete-user-password" name="currentPassword" type="password" minlength="15" maxlength="128" required autocomplete="current-password"></div><div class="modal-actions"><button type="button" class="btn btn-ghost" data-close>取消</button><button class="btn btn-red" type="submit">永久删除此用户</button></div></form>`);
+  const form=$('#delete-user-form'),task=dialogWriteTask(form),current=()=>task.current()&&(!page||page.isConnected)&&state.user?.role===role;
+  form.addEventListener('submit',async e=>{
+    e.preventDefault();if(!current()||form.dataset.dialogBusy==='1')return;
+    const body=Object.fromEntries(new FormData(form)),normalizeUsername=value=>String(value||'').trim().normalize('NFKC').toLocaleLowerCase('zh-CN');
+    if(normalizeUsername(body.confirmationUsername)!==normalizeUsername(target.username)){toast('输入的用户名与待删除账户不一致','error');return}
+    if(!task.begin())return;
+    try{await request(`/api/admin/users/${target.id}`,{method:'DELETE',body},current);if(!current())return;task.finish();closeModal();toast(`用户 ${target.username} 已永久删除`);loadManagedUsers()}
+    catch(err){if(current())toast(err.message,'error')}
+    finally{task.finish()}
+  });
+}
+function openUserModal(resetId=null){
+  const page=$('#users-content'),role=state.user?.role;
+  openModal(`<div class="modal-head"><div><h2>${resetId?'重置成员密码':'创建新账户'}</h2><p>${resetId?'该账户现有登录会立即失效，复盘数据会保留。':'管理员创建的账户可以直接登录。'}</p></div><button class="modal-close" data-close>×</button></div><form id="user-form">${resetId?'':`<div class="input-grid"><div class="field"><label>称呼</label><input name="displayName" required maxlength="32"></div><div class="field"><label>用户名</label><input name="username" required minlength="3" maxlength="32"></div></div>${state.user.role==='superadmin'?`<div class="field"><label>角色</label><select name="role"><option value="member">成员</option><option value="admin">管理员</option></select></div>`:''}`}<div class="field"><label>${resetId?'新密码':'初始密码'}</label><input name="password" type="password" required minlength="15" maxlength="128" autocomplete="new-password"></div><div class="modal-actions"><button type="button" class="btn btn-ghost" data-close>取消</button><button class="btn btn-primary">确认</button></div></form>`);
+  const form=$('#user-form'),task=dialogWriteTask(form),current=()=>task.current()&&(!page||page.isConnected)&&state.user?.role===role;
+  form.addEventListener('submit',async e=>{
+    e.preventDefault();if(!current())return;const body=Object.fromEntries(new FormData(form));if(!task.begin())return;
+    try{if(resetId)await request(`/api/admin/users/${resetId}`,{method:'PATCH',body:{password:body.password}},current);else await request('/api/admin/users',{method:'POST',body},current);if(!current())return;task.finish();closeModal();toast(resetId?'密码已重置':'账户已创建');loadManagedUsers()}
+    catch(err){if(current())toast(err.message,'error')}
+    finally{task.finish()}
+  });
+}
+async function patchUser(id,body,button,owner=$('#users-content')){
+  if(!owner||!button)return;const task=managedUsersWriteTask(button,owner);if(!task.begin())return;
+  try{await request(`/api/admin/users/${id}`,{method:'PATCH',body},task.current);if(!task.current())return;task.finish();toast('账户已更新');loadManagedUsers()}
+  catch(e){if(task.current())toast(e.message,'error')}
+  finally{task.finish()}
+}
 
 function settingsGuideHtml(){return `<div class="guide-flow">${['定标','事实','差距','机制','改变','验证'].map((x,i)=>`<div class="guide-step"><b>${String(i+1).padStart(2,'0')}</b><span>${x}</span></div>`).join('')}</div><h3>不同周期分别解决什么问题？</h3><p>每日看行动，不超过 8 分钟；每周找重复出现的条件；每月只选一个瓶颈和一个小实验；90 天重新校准方向；年度看人生结构；重大决策留下当时依据，避免事后诸葛亮。</p><h3>阶段指标怎么写？</h3><p>指标要能在一天结束时明确判断，而不是“变得更好”。例如把“提升收入能力”写成“专注 60 分钟，形成一个可展示的具体输出”。达标线是最低有效行动，不是理想状态。</p><h3>怎样避免越复盘越自责？</h3><ul><li>先写摄像头能拍到的事实，再写自己的解释。</li><li>一次只调整一个最可能影响结果的条件。</li><li>状态差时降低动作门槛，不把休息等同于失败。</li><li>验证的是方法，不是证明自己好或不好。</li></ul><h3>重大决定怎么回看？</h3><p>把过程质量与结果好坏分开。好结果可能来自运气，坏结果也不一定说明当时的判断错误。回到当时真正掌握的信息、可选方案和风险边界，再决定保留什么。</p>`}
 
@@ -1161,7 +1255,7 @@ function navigate(route){
 }
 
 async function refreshStats(){state.stats=await request('/api/stats')}
-async function refreshData(isCurrent=()=>true){const account=state.user;const [me,rec,stats]=await Promise.all([request('/api/me'),request('/api/records'),request('/api/stats')]);if(state.user!==account||!isCurrent())return false;state.user=me.user;state.stage=me.stage;state.theme=me.theme;state.records=rec.records;state.stats=stats;applyTheme(state.theme);return true}
+async function refreshData(isCurrent=()=>true){const account=state.user,current=()=>state.user===account&&isCurrent();const [me,rec,stats]=await Promise.all([request('/api/me',{},current),request('/api/records',{},current),request('/api/stats',{},current)]);if(!current())return false;state.user=me.user;state.stage=me.stage;state.theme=me.theme;state.records=rec.records;state.stats=stats;applyTheme(state.theme);return true}
 async function boot(user){cancelDailyTypewriter();setDailyImmersive(false);state.user=user;renderMarkup($('#app'),`<main class="connection-screen"><section class="connection-card" role="status"><div class="connection-brand"><span class="seal header-seal" aria-hidden="true">慎</span><span class="brand-cn header-wordmark">慎獨</span></div><div class="connection-art" aria-hidden="true"><img src="/assets/records/daily-01-morning-window.webp" alt="" width="640" height="640" draggable="false"></div><h1>正在翻开你的记录</h1><p>正在读取复盘与阶段资料。</p><div class="connection-loading" aria-hidden="true"><span></span><span></span><span></span></div></section></main>`);try{await refreshData();navigate('overview')}catch(e){if(e.status===401)return init();renderMarkup($('#app'),`<main class="connection-screen"><section class="connection-card"><div class="connection-brand"><span class="seal header-seal" aria-hidden="true">慎</span><span class="brand-cn header-wordmark">慎獨</span></div><div class="connection-art" aria-hidden="true"><img src="/assets/records/daily-28-night-lamp.webp" alt="" width="640" height="640" draggable="false"></div><h1>暂时无法打开复盘室</h1><p>${esc(e.message)}</p><button class="btn btn-primary" id="retry">重试</button></section></main>`);$('#retry').addEventListener('click',()=>boot(user))}}
 async function init(){cancelDailyTypewriter();setDailyImmersive(false);try{const info=await request('/api/auth/state');if(info.user)await boot(info.user);else renderAuth(info)}catch(e){renderMarkup($('#app'),`<main class="connection-screen"><section class="connection-card"><div class="connection-brand"><span class="seal header-seal" aria-hidden="true">慎</span><span class="brand-cn header-wordmark">慎獨</span></div><div class="connection-art" aria-hidden="true"><img src="/assets/records/daily-01-morning-window.webp" alt="" width="640" height="640" draggable="false"></div><h1>服务器连接失败</h1><p>请确认服务已经启动，然后再试一次。</p><button class="btn btn-primary" id="reconnect">重新连接</button></section></main>`);$('#reconnect').addEventListener('click',()=>location.reload())}}
 

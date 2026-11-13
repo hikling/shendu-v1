@@ -1327,14 +1327,17 @@ async function api(req, res, url) {
     const id=body.id||randomUUID(), existing=db.prepare(`SELECT * FROM records WHERE id=? AND user_id=?`).get(id,user.id);
     if(body.id&&!existing)return error(res,404,'记录不存在或已被删除','record_not_found');
     if(existing&&existing.status!=='draft')return error(res,409,'已完成的记录不能修改','locked');
+    if(existing&&(existing.type!==body.type||existing.period!==String(body.period)))return error(res,409,'已保存草稿的类型和周期不能更改，请重新打开原记录','record_identity_conflict');
     if(existing&&Number(body.version)!==Number(existing.version))return error(res,409,'这条记录已在其他设备更新，请刷新后再继续','version_conflict');
+    if(!existing&&body.type!=='decision'&&db.prepare(`SELECT 1 FROM records WHERE user_id=? AND type=? AND period=?`).get(user.id,body.type,body.period))return error(res,409,'这个周期已有复盘记录，请刷新后打开原记录','period_conflict');
     const stamp=now(), version=existing?existing.version+1:1,cleanData=isPlainObject(body.data)?body.data:{};
     if('templateSnapshot' in cleanData){const snapshot=normalizeTemplateSnapshot(cleanData.templateSnapshot,body.type);if(snapshot)cleanData.templateSnapshot=snapshot;else delete cleanData.templateSnapshot}
     if(Buffer.byteLength(JSON.stringify(cleanData))>MAX_RECORD_DATA_BYTES)return error(res,413,'单条复盘内容过大，请精简后再保存','record_too_large');
     if(!existing&&db.prepare(`SELECT COUNT(*) AS n FROM records WHERE user_id=?`).get(user.id).n>=MAX_RECORDS_PER_USER)return error(res,403,`每个账户最多保存 ${MAX_RECORDS_PER_USER} 条复盘记录`,'record_limit_reached');
     const data=encryptData(cleanData,dataScope('record',user.id,id,'data')),title=encryptData(safeText(body.title||'',200),dataScope('record',user.id,id,'title'));
     if(accountRecordBytes(user.id)-recordStoredBytes(existing)+Buffer.byteLength(data)+Buffer.byteLength(title)>MAX_ACCOUNT_CONTENT_BYTES)return error(res,413,'账户复盘内容已达到存储上限','account_storage_limit');
-    withActivity(user.id,'draft_saved',{recordType:body.type,period:body.period},()=>{if(existing)return db.prepare(`UPDATE records SET type=?,period=?,title=?,data=?,version=?,updated_at=? WHERE id=? AND user_id=?`).run(body.type,body.period,title,data,version,stamp,id,user.id);return db.prepare(`INSERT INTO records(id,user_id,type,period,title,data,status,version,created_at,updated_at) VALUES(?,?,?,?,?,?,'draft',1,?,?)`).run(id,user.id,body.type,body.period,title,data,stamp,stamp)});
+    try{withActivity(user.id,'draft_saved',{recordType:body.type,period:body.period},()=>{if(existing)return db.prepare(`UPDATE records SET title=?,data=?,version=?,updated_at=? WHERE id=? AND user_id=?`).run(title,data,version,stamp,id,user.id);return db.prepare(`INSERT INTO records(id,user_id,type,period,title,data,status,version,created_at,updated_at) VALUES(?,?,?,?,?,?,'draft',1,?,?)`).run(id,user.id,body.type,body.period,title,data,stamp,stamp)})}
+    catch(saveError){if(!existing&&body.type!=='decision'&&saveError.errcode===2067&&db.prepare(`SELECT 1 FROM records WHERE user_id=? AND type=? AND period=?`).get(user.id,body.type,body.period))return error(res,409,'这个周期已有复盘记录，请刷新后打开原记录','period_conflict');throw saveError}
     return json(res,200,{record:recordOut(db.prepare(`SELECT * FROM records WHERE id=?`).get(id))});
   }
   if (/^\/api\/records\/[^/]+\/complete$/.test(path) && method === 'POST') {
@@ -1477,9 +1480,14 @@ async function api(req, res, url) {
     if(!actor||actor.status!=='active'||!['admin','superadmin'].includes(actor.role))return error(res,403,'权限已经变化，请重新登录');
     if(!target||target.id===user.id||target.role==='superadmin'||(actor.role==='admin'&&target.role==='admin'))return error(res,403,'不能管理该账户');
     if(body.password&&!checkPasswordShape(body.password))return error(res,400,'密码需为 15–128 个字符');
-    if(body.status&&['active','disabled'].includes(body.status))db.prepare(`UPDATE users SET status=?,session_version=session_version+1 WHERE id=?`).run(body.status,id);
-    if(body.role&&actor.role==='superadmin'&&['admin','member'].includes(body.role))db.prepare(`UPDATE users SET role=?,session_version=session_version+1 WHERE id=?`).run(body.role,id);
-    if(body.password)db.prepare(`UPDATE users SET password_hash=?,session_version=session_version+1 WHERE id=?`).run(hashPassword(body.password),id); db.prepare(`DELETE FROM sessions WHERE user_id=?`).run(id); return json(res,200,{ok:true});
+    const passwordHash=body.password?hashPassword(body.password):null;
+    db.exec('BEGIN IMMEDIATE');
+    try{
+      if(body.status&&['active','disabled'].includes(body.status))db.prepare(`UPDATE users SET status=?,session_version=session_version+1 WHERE id=?`).run(body.status,id);
+      if(body.role&&actor.role==='superadmin'&&['admin','member'].includes(body.role))db.prepare(`UPDATE users SET role=?,session_version=session_version+1 WHERE id=?`).run(body.role,id);
+      if(passwordHash)db.prepare(`UPDATE users SET password_hash=?,session_version=session_version+1 WHERE id=?`).run(passwordHash,id);
+      db.prepare(`DELETE FROM sessions WHERE user_id=?`).run(id);db.exec('COMMIT');return json(res,200,{ok:true});
+    }catch(updateError){try{db.exec('ROLLBACK')}catch{}throw updateError}
   }
   if (/^\/api\/admin\/users\/[^/]+$/.test(path) && method === 'DELETE') {
     if(!['admin','superadmin'].includes(user.role))return error(res,403,'没有权限');
@@ -1520,7 +1528,10 @@ const server = http.createServer(async (req,res) => {
   try {
     const requestTarget=req.url||'/';if(!requestTarget.startsWith('/')||requestTarget.startsWith('//'))return error(res,400,'请求地址格式不正确');
     const url=new URL(requestTarget,'http://localhost');
-    if (url.pathname === '/healthz') return masterKey?json(res,200,{ok:true,schema:6,dataEncryption:'AES-256-GCM'}):json(res,503,{ok:false,schema:6,error:'data_key_unavailable'});
+    if (url.pathname === '/healthz') {
+      const schema=Number(db.prepare(`SELECT value FROM schema_meta WHERE key='schema_version'`).get()?.value||8);
+      return masterKey?json(res,200,{ok:true,schema,dataEncryption:'AES-256-GCM'}):json(res,503,{ok:false,schema,error:'data_key_unavailable'});
+    }
     if (url.pathname.startsWith('/api/')) return await api(req,res,url);
     if (staticFile(req,res,url.pathname)) return;
     if (req.method === 'GET') return staticFile(req,res,'/');

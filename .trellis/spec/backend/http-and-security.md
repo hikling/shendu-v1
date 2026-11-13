@@ -8,7 +8,7 @@ The outer server handler catches unexpected route failures and returns a generic
 
 `clientAddress()` trusts `X-Forwarded-For` only when `SHENDU_TRUST_PROXY=true`; default/direct Node startup uses the socket address. Bundled Compose enables trust because the application port is unpublished and Caddy supplies the immediate forwarded hop. Never enable this behind an unprotected public application port. Body reads revalidate `req.authUser` against the current session before any subsequent write, including backup restore after slow uploads.
 
-`PUT /api/records` only writes the current allowed period, rejects edits to completed records, compares `version` to prevent overwrites, and enforces size limits. `POST /api/records/:id/complete` validates required fields and locks the record; verification is a later transition. UI reorganization must preserve these contracts unless an explicit API/data task changes them.
+`PUT /api/records` only writes the current allowed period, preserves an existing draft's type/period identity, rejects edits to completed records, compares `version` to prevent overwrites, and enforces size limits. Ordinary review creation is unique per account/type/period; decisions allow multiple records in one day. Conflict responses and administrator mutation atomicity are specified under [Write integrity and health metadata](#write-integrity-and-health-metadata). `POST /api/records/:id/complete` validates required fields and locks the record; verification is a later transition. UI reorganization must preserve these contracts unless an explicit API/data task changes them.
 
 `DELETE /api/records/:id` only removes owned draft rows, regardless of period. Read/validate the JSON body (which revalidates the session) before querying; require a numeric safe-integer version >=1 and match owner/status/version in the delete itself. Unknown/foreign IDs return404, submitted/verified rows409 locked, stale versions409 version_conflict. `PUT` with a supplied ID missing an owned row must return404 record_not_found rather than inserting: another device must not resurrect a deleted draft. ID-less requests remain the creation path. Test competing saves, submission and logout while a slow delete body arrives.
 
@@ -27,6 +27,57 @@ Review templates normalize through public/review-schema.js (questions<=30, valid
 External backup schedules use public/backup-schedule.js as the shared Beijing civil-time owner. API fields scheduleTime(HH:MM)/scheduleWeekday(1Mon..7Sun) map to additive SQLite columns; manual and test operations never shift scheduled slots. Validate schedules on create/update/restore and preserve existing enabled state unless explicitly supplied. Claim scheduled work with a five-minute expiring token lease; terminal outcome/log/slot consumption must commit atomically, while an abandoned claim can retry after expiry and stale completions cannot release a new owner. Do not export transient leases in site backups. Startup/migration must not replay a slot before the new plan anchor; stale selected targets must pass anchor+updated_at guards before execution. Tests never write backup outcomes or last-success state. Retain HTTPS/public-address pinning, one-account/four-global resource guards and rate limits.
 
 Result history retains ten Beijing calendar days including today, without a12-row or500-row truncation within that window. Only identifiable backup success/error events enter the result list; store attempted target name/kind and manual/scheduled source. Do not expose credentials when returning safe edit configuration. New site backups preserve schedule and run metadata; normalize imported timestamps to ISO before lexical cutoff comparisons. Legacy unknown test/backup failures must not be falsely relabeled. CLI snapshots read actual schema_meta version rather than hard-coding one.
+
+## Write integrity and health metadata
+
+### 1. Scope / Trigger
+
+Preserve these contracts when changing record save requests, administrator account editing, transaction boundaries, or health reporting. They prevent old drafts being relabeled into a new period, duplicate-period saves being treated as new successful records, partially applied account changes, and stale migration metadata.
+
+### 2. Signatures
+
+- `PUT /api/records`: `{id?,type,period,version?,title?,data?}`; successful response `{record}`.
+- `PATCH /api/admin/users/:id`: optional `status`, `role`, `password`; successful response `{ok:true}`.
+- `GET /healthz`: numeric `schema` read from `schema_meta` where `key='schema_version'`, using the existing version-8 fallback when metadata is absent.
+
+### 3. Contracts
+
+For an owned draft identified by `id`, both stored `type` and stored `period` are immutable. The save `UPDATE` changes only title, data, version and update timestamp. Validate the requested current period first; an old draft cannot be made writable by sending a new period/type. ID-less creation checks `(user_id,type,period)` for daily/weekly/monthly/quarterly/yearly records regardless of the existing row's status. Return the same `period_conflict` if the insert subsequently raises SQLite unique constraint `2067` and that owned period now exists. `decision` is exempt from this period uniqueness rule. Failed checks leave both records and activity events unchanged.
+
+Administrator PATCH rechecks the current actor after reading the body, preserves the existing self/superadmin/peer-admin restrictions, validates a supplied nonempty password, and derives its hash before writes. Accepted status/role/password changes, their existing per-field `session_version` increments, and deletion of all target sessions run in one `BEGIN IMMEDIATE` transaction. Return success only after commit; a field-write or session-deletion error rolls back the entire operation. Preserve existing field allowlists and the rule that only a superadministrator can change roles.
+
+Healthy `/healthz` returns `200 {ok:true,schema,dataEncryption:'AES-256-GCM'}`. An unavailable data key returns `503 {ok:false,schema,error:'data_key_unavailable'}`. Both responses read the same actual stored schema version; neither hard-codes an obsolete version based on key availability.
+
+### 4. Validation & Error Matrix
+
+| Condition | Response / effect |
+| --- | --- |
+| Requested period is not current for its requested type | `400 period_locked`, before row identity checks |
+| Supplied ID has no owned row | `404 record_not_found` |
+| Owned row is completed or verified | `409 locked`, before draft identity/version checks |
+| Owned draft type or period differs from a valid current-period request | `409 record_identity_conflict` |
+| Same-identity draft has stale version | `409 version_conflict` |
+| ID-less ordinary review duplicates an owned type/period | `409 period_conflict`; preserve the original row and activity |
+| Same-day ID-less decisions or another account's matching period | Independent creations remain allowed |
+| Administrator lacks current authority or cannot manage target | `403`, no account/session mutation |
+| Nonempty administrator-supplied password fails shape validation | `400`, no account/session mutation |
+| Any transactional administrator write fails | Generic `500` through the outer handler; all fields and sessions restored |
+
+### 5. Good / Base / Bad Cases
+
+- Good: save the same draft ID/type/period with its latest version; its version increments. Create two independent decisions on the same day.
+- Base: create one daily review, then attempt ID-less creation for that same account/day; receive `period_conflict` and reopen the original record.
+- Bad: change an old weekly draft's period to this week, or change an existing decision to a daily review; receive `record_identity_conflict` after current-period validation. Do not rewrite identity to bypass locks.
+
+### 6. Tests Required
+
+`tests/auth-record-integrity.test.mjs` covers identity immutability for all six types, old-period lock precedence, valid updates/version conflicts, duplicate ordinary records in draft/completed/verified states, multiple decisions, per-account isolation, and unchanged activity on rejected writes. Inject a password-write or session-delete failure into a disposable database and assert all administrator target fields, session versions and sessions roll back together; also assert successful combined edits revoke old sessions and retain role boundaries. `tests/health-schema.test.mjs` compares actual SQLite metadata with both the healthy and unavailable-key HTTP responses, then changes temporary metadata and checks both branches follow it.
+
+### 7. Wrong vs Correct
+
+Wrong: update a stored draft's type/period from submitted fields; perform administrator status/role writes before a later password write outside a transaction; return `schema:6` from health responses.
+
+Correct: reject identity changes, normalize expected ordinary-period uniqueness to `409 period_conflict`, commit all accepted account changes and session revocation together, and read the current `schema_meta` value for both health states.
 
 ## Activity feed
 
