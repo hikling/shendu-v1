@@ -10,4 +10,9 @@
 - Earlier isolated desktop browser check verified settings checkbox save, refresh persistence and the two-row1280×860 layout. This continuation could not reconnect to local browser access. User explicitly chose “先完成代码和自动检查”; physical wheel feel, narrow viewport and full scrollbar visual acceptance remain unverified. No claim of those browser checks is made.
 - Fixture uses local disposable data only. No production account or review data was changed during acceptance checks.
 
-GitHub synchronization and CI evidence will be appended after publication.
+## Publication
+
+- Work commit `8c4884ccf245936f36e17d84e092bc18b73a139e` pushed to `main`; application tree `c512e1e38de62c4b459264e3f81fb12eb298b470`.
+- GitHub Actions run [43427303768](https://github.com/hikling/shendu-v1/actions/runs/43427303768) completed successfully: handover, native amd64/arm64 verification, immutable publication, and public download smoke on both architectures. Compact evidence is in `research/ci-result.json`.
+- Following the earlier request to keep the latest four Releases, verified all four retained versions have their complete architecture assets/checksums; removed only the oldest fifth Release (`deploy-720aceb0bcfed89a389e03fade90c355cfff9753`). Final inventory contains four Releases including the new application tree. Git tags were preserved. Inventory plan/result are in `research/`.
+- Isolated preview process16068 was stopped after checks. Ignored disposable local data is excluded from Git.

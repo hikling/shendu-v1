@@ -1,0 +1,145 @@
+{
+  "repository": "hikling/shendu-v1",
+  "completedAt": "2026-11-13T12:45:00.2936808Z",
+  "deleted": [
+    {
+      "id": 440217230,
+      "tag": "deploy-720aceb0bcfed89a389e03fade90c355cfff9753",
+      "published_at": "2026-11-10T10:27:58Z",
+      "assets": [
+        {
+          "name": "shendu-linux-amd64.tar.gz",
+          "size": 104130883,
+          "state": "uploaded"
+        },
+        {
+          "name": "shendu-linux-amd64.tar.gz.sha256",
+          "size": 92,
+          "state": "uploaded"
+        },
+        {
+          "name": "shendu-linux-arm64.tar.gz",
+          "size": 102940814,
+          "state": "uploaded"
+        },
+        {
+          "name": "shendu-linux-arm64.tar.gz.sha256",
+          "size": 92,
+          "state": "uploaded"
+        }
+      ]
+    }
+  ],
+  "retained": [
+    {
+      "id": 444218148,
+      "tag": "deploy-c512e1e38de62c4b459264e3f81fb12eb298b470",
+      "published_at": "2026-11-13T12:43:28Z",
+      "assets": [
+        {
+          "name": "shendu-linux-amd64.tar.gz",
+          "size": 104159711,
+          "state": "uploaded"
+        },
+        {
+          "name": "shendu-linux-amd64.tar.gz.sha256",
+          "size": 92,
+          "state": "uploaded"
+        },
+        {
+          "name": "shendu-linux-arm64.tar.gz",
+          "size": 102985116,
+          "state": "uploaded"
+        },
+        {
+          "name": "shendu-linux-arm64.tar.gz.sha256",
+          "size": 92,
+          "state": "uploaded"
+        }
+      ]
+    },
+    {
+      "id": 444158126,
+      "tag": "deploy-6bc42050193eccd2e2efc08afa128c3c37fd7c8d",
+      "published_at": "2026-11-13T11:39:51Z",
+      "assets": [
+        {
+          "name": "shendu-linux-amd64.tar.gz",
+          "size": 104158381,
+          "state": "uploaded"
+        },
+        {
+          "name": "shendu-linux-amd64.tar.gz.sha256",
+          "size": 92,
+          "state": "uploaded"
+        },
+        {
+          "name": "shendu-linux-arm64.tar.gz",
+          "size": 102986749,
+          "state": "uploaded"
+        },
+        {
+          "name": "shendu-linux-arm64.tar.gz.sha256",
+          "size": 92,
+          "state": "uploaded"
+        }
+      ]
+    },
+    {
+      "id": 441188555,
+      "tag": "deploy-98037b3e0fd34acdbb5954fc5550576699195e53",
+      "published_at": "2026-11-11T03:04:01Z",
+      "assets": [
+        {
+          "name": "shendu-linux-amd64.tar.gz",
+          "size": 104134048,
+          "state": "uploaded"
+        },
+        {
+          "name": "shendu-linux-amd64.tar.gz.sha256",
+          "size": 92,
+          "state": "uploaded"
+        },
+        {
+          "name": "shendu-linux-arm64.tar.gz",
+          "size": 102934669,
+          "state": "uploaded"
+        },
+        {
+          "name": "shendu-linux-arm64.tar.gz.sha256",
+          "size": 92,
+          "state": "uploaded"
+        }
+      ]
+    },
+    {
+      "id": 440250990,
+      "tag": "deploy-a5fbe2e2c9f3987782c620fb82ac81bf86891c29",
+      "published_at": "2026-11-10T11:02:00Z",
+      "assets": [
+        {
+          "name": "shendu-linux-amd64.tar.gz",
+          "size": 104128987,
+          "state": "uploaded"
+        },
+        {
+          "name": "shendu-linux-amd64.tar.gz.sha256",
+          "size": 92,
+          "state": "uploaded"
+        },
+        {
+          "name": "shendu-linux-arm64.tar.gz",
+          "size": 102938962,
+          "state": "uploaded"
+        },
+        {
+          "name": "shendu-linux-arm64.tar.gz.sha256",
+          "size": 92,
+          "state": "uploaded"
+        }
+      ]
+    }
+  ],
+  "verified": true,
+  "gitTagsDeleted": false
+}
