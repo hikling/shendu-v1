@@ -404,10 +404,10 @@ const defaultStage = () => ({
   ],
   reviewTemplates: freshReviewTemplates(), actionTemplate: {...ACTION_TEMPLATE_DEFAULTS}
 });
-const defaultTheme = () => ({ preset: '潮汐青', primary: '#176B67', secondary: '#A86436', tertiary: '#536C9C', reduceMotion: false });
+const defaultTheme = () => ({ preset: '潮汐青', primary: '#176B67', secondary: '#A86436', tertiary: '#536C9C', reduceMotion: false, reviewWheelNavigation: true });
 const normalizeTheme = value => {
   const defaults=defaultTheme(),source=isPlainObject(value)?value:{},color=(key)=>/^#[0-9a-f]{6}$/i.test(String(source[key]||''))?String(source[key]).toUpperCase():defaults[key];
-  return {preset:templateText(source.preset,defaults.preset,40),primary:color('primary'),secondary:color('secondary'),tertiary:color('tertiary'),reduceMotion:source.reduceMotion===true};
+  return {preset:templateText(source.preset,defaults.preset,40),primary:color('primary'),secondary:color('secondary'),tertiary:color('tertiary'),reduceMotion:source.reduceMotion===true,reviewWheelNavigation:source.reviewWheelNavigation!==false};
 };
 const recordOut = r => {
   const titleScope=dataScope('record',r.user_id,r.id,'title'),dataValueScope=dataScope('record',r.user_id,r.id,'data'),verificationScope=dataScope('record',r.user_id,r.id,'verification');

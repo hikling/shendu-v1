@@ -1,6 +1,8 @@
 # UI Quality
 
-`shendu/public/styles.css` defines surface, ink, line, accent, radius, and shadow variables in `:root`. `applyTheme()` in `app.js` sets three accent variables and computes their text contrast. Color controls/presets are removed. Fixed `DEFAULT_ACCENTS` and the six category palettes determine visual color. Settings exposes only the independent motion preference; legacy saved colors must not affect readability.
+`shendu/public/styles.css` defines surface, ink, line, accent, radius, and shadow variables in `:root`. `applyTheme()` in `app.js` sets three accent variables and computes their text contrast. Color controls/presets are removed. Fixed `DEFAULT_ACCENTS` and the six category palettes determine visual color. Settings exposes independent wheel-navigation and motion preferences; legacy saved colors must not affect readability.
+
+Global native scrollbars share scrollbar tokens with transparent tracks and rounded sage thumbs. Standard thin scrollbars are the fallback; WebKit uses a10px gutter with transparent borders for a4px painted thumb, widened on hover/drag. Preserve native scrolling/dragging and forced-colors system colors. Do not hide scrollbars or add per-surface synthetic scroll handlers merely for their appearance.
 
 The shell has shared top navigation and a main column. Settings, calendar, stage settings and guide are ordinary workspace pages, without a centered Dialog, backdrop or background inert state. Mobile navigation retains the same destinations. Check breakpoint transitions as well as wide desktop.
 

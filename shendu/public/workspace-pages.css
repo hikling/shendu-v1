@@ -173,7 +173,11 @@
 .workspace-settings-menu [data-settings-target="guide"]{--workspace-tone:#15584e;grid-column:1/-1;min-height:112px}
 .workspace-dialog .workspace-form{min-width:0}
 .workspace-motion-form{margin-top:16px;padding:17px 20px;border:1px solid #d8decf;border-radius:17px;background:#faf7ee}
-.workspace-motion-form fieldset{display:grid;grid-template-columns:minmax(0,1fr) auto auto;align-items:center;gap:18px;min-width:0;margin:0;padding:0;border:0}
+.workspace-motion-form fieldset{display:grid;grid-template-columns:minmax(0,1fr);gap:0;min-width:0;margin:0;padding:0;border:0}
+.workspace-preference-row{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:24px;padding:18px 0}
+.workspace-preference-row:first-child{padding-top:0}
+.workspace-preference-row+.workspace-preference-row{border-top:1px solid var(--workspace-line,#d8decf)}
+.workspace-preferences-actions{display:flex;justify-content:flex-end;padding-top:4px}
 .workspace-motion-copy{min-width:0}
 .workspace-motion-copy label{color:var(--workspace-ink);font:900 1rem/1.6 "SimSun","宋体","Noto Serif SC",serif;cursor:pointer}
 .workspace-motion-copy p{margin:5px 0 0;color:var(--workspace-muted);font-size:.66rem;line-height:1.8;overflow-wrap:anywhere}
@@ -282,7 +286,9 @@
   .workspace-settings-menu [data-settings-target="guide"]{display:grid;grid-template-columns:minmax(0,1fr) 78px;min-height:105px;gap:12px;padding:14px 15px}
   .workspace-settings-menu [data-settings-target="guide"] .workspace-setting-art{width:78px;margin:0}
   .workspace-motion-form{padding:14px 15px}
-  .workspace-motion-form fieldset{grid-template-columns:minmax(0,1fr) auto;gap:12px}
+  .workspace-motion-form fieldset{grid-template-columns:minmax(0,1fr)}
+  .workspace-preference-row{gap:16px;padding:16px 0}
+  .workspace-preferences-actions{display:block}
   .workspace-motion-copy label{font-size:.92rem}
   .workspace-motion-copy p{font-size:.62rem}
   .workspace-motion-form .btn{grid-column:1/-1;width:100%}

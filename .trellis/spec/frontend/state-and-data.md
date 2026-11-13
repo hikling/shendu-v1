@@ -38,28 +38,28 @@ For a reel period in YYYY-MM-DD, `overviewDateParts()` provides a calendar-date 
 
 When waiting rules change, derive the eligibility date of existing completed records from their original completed_at (created_at fallback), without rewriting verifyDate, answers, status or prior verification. dueBadge must report waiting before that absolute minimum even when an old expected date has passed; action buttons and submission guards use the same earliestActualVerification boundary. Already verified records retain their original result and timing.
 
-## Motion preference compatibility
+## Interaction preference compatibility
 
 ### Scope / trigger
-Theme-color controls and `openTheme()` are removed. Settings owns the independent motion checkbox; old accounts must retain saved compatibility fields.
+Theme-color controls and `openTheme()` are removed. Settings owns independent reduce-motion and review-wheel checkboxes; old accounts must retain saved compatibility fields. Missing `reviewWheelNavigation` means enabled; explicit false disables it.
 
 ### Signatures
-`renderSettings()` binds `#motion-form`; `PUT /api/settings` still accepts `{theme}` and returns the existing settings object. No server/schema change.
+`renderSettings()` binds `#motion-form`; `PUT /api/settings` still accepts `{theme}` and returns the existing settings object. Server normalization includes the wheel preference without a schema change.
 
 ### Contracts
-Read `new FormData(form).get('reduceMotion') === 'on'`, spread `state.theme`, then update only `reduceMotion`. Preserve preset, three colors and unknown compatibility fields. Apply returned theme only on success. `DEFAULT_ACCENTS` determines displayed colors on every load, including all-white legacy values.
+Read FormData before disabling the form, spread `state.theme`, then update `reduceMotion` and `reviewWheelNavigation` from their independent checkbox values. Preserve preset, three colors and existing compatibility fields in the outgoing payload. Apply returned theme only on success. `DEFAULT_ACCENTS` determines displayed colors on every load, including all-white legacy values.
 
 ### Validation / error matrix
-Unchecked -> send false. Pending -> one request, disabled fieldset/buttons and guarded departure. Failure -> retain checkbox, original saved state and dirty flag for retry. Completion checks the connected form, account and request owner; old finally handlers cannot release a newer write.
+Unchecked -> send false for that preference. Either checkbox differing from its saved value marks the form dirty. Pending -> one request, disabled fieldset/buttons and guarded departure. Failure -> retain both checkboxes, original saved state and dirty flag for retry. Completion checks the connected form, account and request owner; pass the same current predicate into `request` to suppress obsolete 401 side effects. Old finally handlers cannot release a newer write.
 
 ### Good / base / bad cases
-Legacy all-white account retains fixed readable accents; ordinary accounts can save either motion value; a failed save must never silently reset the checkbox or drop legacy data.
+Legacy all-white account retains fixed readable accents and defaults wheel navigation on; accounts can save either preference independently. A failed save must never silently reset checkboxes or drop legacy data.
 
 ### Tests required
-`tests/settings-motion.test.mjs` executes real form/API behavior: legacy colors, true/false, unknown field preservation, failure retry and obsolete form/account completion guards. Browser-check the genuine checkbox/label, saved motion and narrow layout in an isolated fixture without changing real account preferences.
+`tests/settings-motion.test.mjs` executes real form/API behavior: legacy colors, independent true/false values, missing wheel preference, compatibility field preservation, failure retry and obsolete form/account completion guards. `tests/review-wheel-settings-api.test.mjs` covers encrypted persistence, account isolation and personal/site backup compatibility. Browser-check genuine checkbox labels, saved preferences and narrow layout in an isolated fixture without changing real account preferences when browser access is available.
 
 ### Wrong vs correct
-Wrong: save `{theme:{reduceMotion:true}}`, apply legacy colors or add another color menu. Correct: save `{theme:{...state.theme,reduceMotion:checked}}` and derive visual accents from `DEFAULT_ACCENTS`.
+Wrong: save a partial theme that drops the other preference, apply legacy colors or add another color menu. Correct: save `{theme:{...state.theme,reduceMotion,reviewWheelNavigation}}` and derive visual accents from `DEFAULT_ACCENTS`.
 
 ## Workspace navigation and stage writes
 
@@ -92,6 +92,14 @@ Use actual JSDOM plus the built shadcn bridge in `tests/backup-ui.test.mjs`, `te
 `public/review-schema.js` normalizes each template's questions (stable id/label/required, max30) and disabledFields (daily sleep/energy/risk/journal only). Missing questions preserves legacy default behavior; [] removes all ordinary questions. Pass the record-specific review template into both flow modules and validators. Daily custom questions join reflection; extended custom questions precede action in the final stage. Preserve core action/ifThen/date, daily ifCondition and decision title requirements. A blank editor row must remain mounted for validation; normalize only persisted schemas.
 
 Current-period drafts use live settings; completed/verified/expired drafts use their snapshots. Keep old answer keys when a question disappears. Stage metrics accept0–12 entries with stable IDs. `review-metrics.js` reconciles editable draft metrics by identity, retains removed entries in data.archivedMetrics and recovers matched archived answers. Never reconcile historical metrics. Settings region replacements must retain unrelated values and focus the inserted/adjacent input; saves retain existing ownership/pending/error guards.
+
+## Review wheel navigation
+
+`public/review-wheel.js` is the single wheel gesture owner. `bindReviewWheel()` attaches to the current `.daily-flow` after existing daily/extended handlers. Default `theme.reviewWheelNavigation` is enabled unless explicitly false. Intro, first-up and last-down boundaries do not start/exit/submit a review. Step only through the existing visible enabled previous/next buttons, preserving each flow's validators, mounted inputs, collection, focus and readonly behavior.
+
+Normalize pixel/line/page units and require 90 vertical pixels. A continuous burst steps once, then needs both a650ms cooldown and220ms quiet interval before rearming. Direction reversal resets incomplete accumulation but must not bypass a consumed burst. Give scrollable textarea/ancestor/document content first use; if any event scrolls content natively, consume the whole burst even after reaching its edge. Ignore zoom/horizontal/modifier wheels, IME composition, numeric/range/select controls, disabled preferences, saving, replaced/detached account/editor contexts and open modal/menu/listbox surfaces. Keep listeners local and disposable, with no global wheel interception or timers.
+
+`review-wheel.test.mjs` covers gesture timing, units, scrolling and ignored controls. `review-wheel-flow.test.mjs` executes actual six-flow render/bind/validation/collection with the built component bridge: readonly traversal, editable errors/input retention, no automatic completion, long bursts, settings and owner guards. Old review-write and draft-delete fixtures must include the shared binder without stubbing the wheel module or changing their existing assertions.
 
 ## Review and member-management write ownership
 

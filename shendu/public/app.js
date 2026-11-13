@@ -8,6 +8,7 @@ import {dailyCalendarModel,dailyCalendarDateLabel} from './daily-calendar.js?v=1
 import {EXTENDED_FLOW,extendedPrompts,extendedPromptNeighbor,extendedPromptIssues,extendedReviewIssues} from './extended-flow.js?v=1.0.0-custom1';
 import {verificationMinimum} from './verification-policy.js?v=1.0.0-verification2';
 import {createReviewNavigator} from './review-navigation.js?v=1.0.0-pages1';
+import {attachReviewWheel} from './review-wheel.js?v=1.0.0-wheel1';
 import {RECORD_ART,recordArtAssignments} from './record-art.js?v=1.0.0-records1';
 import {createReviewIntroPicker,reviewIntroLines,reviewIntroLayout} from './review-intros.js?v=1.0.0-intros2';
 const $ = (s, root = document) => root.querySelector(s);
@@ -595,6 +596,21 @@ function renderReview(type,period=state.current?.type===type?state.current.perio
 }
 function verificationRead(rec){const v=rec.verification||{},t=templatesForRecord(rec).action;return `<section class="card section-card verification-result-card"><div class="section-head"><div class="section-title"><span class="art-num">验</span><div><h2>${esc(t.lockedTitle)}</h2><p>${esc(t.lockedIntro)}</p></div></div></div>${verificationTimes(rec,t)}<div class="action-part action-result-part"><div class="action-part-heading"><div><span>${esc(t.reviewEyebrow)}</span><h3>${esc(t.reviewTitle)}</h3></div><small>${esc(t.reviewNote)}</small></div><div class="action-detail-grid"><section class="action-detail result-detail"><div class="action-detail-head"><span>01</span><h3>${esc(t.resultTitle)}</h3></div><p>${esc(v.result||t.missingResultText)}</p></section><section class="action-detail adjustment-detail"><div class="action-detail-head"><span>02</span><h3>${esc(t.adjustmentTitle)}</h3></div><p>${esc(v.adjustment||t.missingResultText)}</p></section></div>${rec.type==='decision'?`<div class="decision-result-badges"><span class="badge">${esc(t.decisionOutcomeLabel)}：${esc(v.outcome||'—')}</span><span class="badge">${esc(t.decisionProcessLabel)}：${esc(v.process||'—')}</span></div>`:''}</div></section>`}
 
+function bindReviewWheel(){
+  const canvas=$('.daily-flow'),editor=$('#daily-editor'),account=state.user;
+  if(!canvas||!editor)return;
+  canvas.reviewWheelDispose?.();
+  canvas.reviewWheelDispose=attachReviewWheel(canvas,{
+    enabled:()=>state.theme?.reviewWheelNavigation!==false,
+    active:()=>state.user===account&&$('#daily-editor')===editor&&!editor.hidden&&!state.saving&&!editor.closest('[inert]')&&!document.querySelector('.modal,[role="dialog"],[role="alertdialog"],[role="listbox"],[role="menu"]'),
+    canStep:direction=>{
+      const daily=state.current.type==='daily',prompts=daily?currentDailyPrompts():currentExtendedPrompts(),id=daily?state.dailyPrompt:state.extendedPrompt,index=prompts.findIndex(prompt=>prompt.id===id);
+      const button=$(direction>0?'[data-daily-next]':'[data-daily-back]',canvas);
+      return index>=0&&index+direction>=0&&index+direction<prompts.length&&button&&!button.hidden&&!button.disabled;
+    },
+    step:direction=>$(direction>0?'[data-daily-next]':'[data-daily-back]',canvas)?.click()
+  });
+}
 function bindReview(){
   const mark=()=>{if(state.current.status==='draft'){state.dirty=true;$('.save-state')&&($('.save-state').textContent='有未保存内容')}};
   $$('.main input,.main textarea,.main select').forEach(el=>el.addEventListener('input',()=>{mark();clearDailyIssues();if(el.matches('textarea')){const preview=$('[data-answer-preview]',el.closest('[data-daily-answer]')||el);if(preview)preview.textContent=dailyAnswerPreview(el.value)}if(el.matches('[data-gauge-input]'))updateGauge(el);if(el.dataset.simple==='journal')$('#journal-count').textContent=`${el.value.length} 字`}));
@@ -606,6 +622,7 @@ function bindReview(){
   $('#complete-record')?.addEventListener('click',completeCurrent);
   $('#delete-draft')?.addEventListener('click',()=>deleteDraftRecord(state.current));
   if(state.current.type==='daily')bindDailyFlow();else bindExtendedFlow();
+  bindReviewWheel();
 }
 function renderReviewFromCurrent(){const keep=clone(state.current);renderReview(keep.type,keep.period,false,keep,{dailySection:state.dailySection,dailyPrompt:state.dailyPrompt,extendedPrompt:state.extendedPrompt,dirty:true})}
 function collectCurrent(){if(!state.current)return;const d=state.current.data||(state.current.data={});d.answers=d.answers||{};$$('[data-answer]').forEach(el=>{const k=el.dataset.answer,i=Number(el.dataset.index);d.answers[k]=d.answers[k]||[];d.answers[k][i]=el.value});$$('[data-simple]').forEach(el=>d[el.dataset.simple]=el.value);$$('[data-metric-action]').forEach(el=>{const i=Number(el.dataset.metricAction);d.metrics[i].action=el.value});$$('[data-metric-status]').forEach(el=>{const i=Number(el.dataset.metricStatus);d.metrics[i].status=el.value});if($('#record-title'))state.current.title=$('#record-title').value;if(state.current.status==='draft')d.templateSnapshot=currentTemplateSnapshot(state.current.type)}
@@ -1079,19 +1096,19 @@ function renderActivity(){
 }
 function renderSettings(){
   const items=[['stage','阶段设置','目标与复盘问题'],['activity','使用日志','哪天 · 谁 · 做了什么'],['guide','使用指南','记录与验证方法']];
-  shell(`<section class="workspace-page workspace-settings" aria-labelledby="workspace-settings-title">${spacePageHead('settings',{title:'设置',description:'留出适合自己的节奏，让每一次记录更从容。'})}<div class="settings-menu workspace-settings-menu">${items.map(([key,label,note])=>`<button class="settings-menu-item" type="button" data-settings-target="${key}"><span class="workspace-setting-copy"><strong>${label}</strong><small>${note}</small><span class="workspace-setting-enter" aria-hidden="true">打开 <span>↗</span></span></span>${workspaceArt(key,'workspace-setting-art')}</button>`).join('')}</div><form id="motion-form" class="workspace-panel workspace-motion-form"><fieldset><div class="workspace-motion-copy"><label id="motion-label" for="settings-reduce-motion">减少动态效果</label><p id="motion-description">减弱移动与翻转，让阅读更安静。</p></div><input id="settings-reduce-motion" name="reduceMotion" type="checkbox" aria-labelledby="motion-label" aria-describedby="motion-description" ${state.theme?.reduceMotion?'checked':''}><button class="btn btn-primary" type="submit">保存偏好</button></fieldset></form></section>`);
+  shell(`<section class="workspace-page workspace-settings" aria-labelledby="workspace-settings-title">${spacePageHead('settings',{title:'设置',description:'留出适合自己的节奏，让每一次记录更从容。'})}<div class="settings-menu workspace-settings-menu">${items.map(([key,label,note])=>`<button class="settings-menu-item" type="button" data-settings-target="${key}"><span class="workspace-setting-copy"><strong>${label}</strong><small>${note}</small><span class="workspace-setting-enter" aria-hidden="true">打开 <span>↗</span></span></span>${workspaceArt(key,'workspace-setting-art')}</button>`).join('')}</div><form id="motion-form" class="workspace-panel workspace-motion-form"><fieldset><div class="workspace-preference-row"><div class="workspace-motion-copy"><label id="wheel-label" for="settings-review-wheel">滚轮切换题目</label><p id="wheel-description">向下下一题，向上上一题。停一下再切换，长内容优先滚动。</p></div><input id="settings-review-wheel" name="reviewWheelNavigation" type="checkbox" aria-labelledby="wheel-label" aria-describedby="wheel-description" ${state.theme?.reviewWheelNavigation!==false?'checked':''}></div><div class="workspace-preference-row"><div class="workspace-motion-copy"><label id="motion-label" for="settings-reduce-motion">减少动态效果</label><p id="motion-description">减弱移动与翻转，让阅读更安静。</p></div><input id="settings-reduce-motion" name="reduceMotion" type="checkbox" aria-labelledby="motion-label" aria-describedby="motion-description" ${state.theme?.reduceMotion?'checked':''}></div><div class="workspace-preferences-actions"><button class="btn btn-primary" type="submit">保存偏好</button></div></fieldset></form></section>`);
   $$('[data-settings-target]').forEach(button=>button.addEventListener('click',()=>openSettingsTarget(button.dataset.settingsTarget)));
   bindMotionPreferences();
 }
 function bindMotionPreferences(){
   const form=$('#motion-form'),account=state.user;let saving=false;
   const current=()=>form.isConnected&&state.user===account;
-  form.addEventListener('change',()=>{state.dirty=$('[name="reduceMotion"]',form).checked!==!!state.theme?.reduceMotion});
+  form.addEventListener('change',()=>{state.dirty=$('[name="reduceMotion"]',form).checked!==!!state.theme?.reduceMotion||$('[name="reviewWheelNavigation"]',form).checked!==(state.theme?.reviewWheelNavigation!==false)});
   form.addEventListener('submit',async event=>{
     event.preventDefault();if(saving||!current())return;
-    const theme={...state.theme,reduceMotion:new FormData(form).get('reduceMotion')==='on'},fieldset=$('fieldset',form);
+    const values=new FormData(form),theme={...state.theme,reduceMotion:values.get('reduceMotion')==='on',reviewWheelNavigation:values.get('reviewWheelNavigation')==='on'},fieldset=$('fieldset',form);
     saving=true;state.settingsWriteOwner=form;state.saving=true;form.setAttribute('aria-busy','true');fieldset.disabled=true;
-    try{const result=await request('/api/settings',{method:'PUT',body:{theme}});if(!current())return;state.theme=result.theme||theme;state.dirty=false;applyTheme(state.theme);toast('动态偏好已保存')}
+    try{const result=await request('/api/settings',{method:'PUT',body:{theme}},current);if(!current())return;state.theme=result.theme||theme;state.dirty=false;applyTheme(state.theme);toast('偏好已保存')}
     catch(error){if(current())toast(error.message,'error')}
     finally{saving=false;if(state.settingsWriteOwner===form){state.saving=false;delete state.settingsWriteOwner}if(form.isConnected){form.removeAttribute('aria-busy');fieldset.disabled=false}}
   });

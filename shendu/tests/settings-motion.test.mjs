@@ -46,7 +46,7 @@ function settingsFixture(requestImpl,theme=legacyTheme()){
   return {dom,document,state,calls,applied,notices,$,$$,form,checkbox,submit};
 }
 
-test('settings saves only motion through the existing API and preserves all legacy theme fields',async()=>{
+test('settings saves both interaction preferences through the existing API and preserves legacy theme fields',async()=>{
   let finish;
   const fixture=settingsFixture(()=>new Promise(resolve=>{finish=resolve})),{dom,state,calls,applied,notices,$,$$,form,checkbox,submit}=fixture;
   const original=state.theme;Object.freeze(original);
@@ -55,15 +55,15 @@ test('settings saves only motion through the existing API and preserves all lega
   checkbox.checked=true;submit();submit();
   assert.equal(calls.length,1);
   assert.equal(calls[0].path,'/api/settings');assert.equal(calls[0].method,'PUT');
-  assert.deepEqual(calls[0].body,{theme:{...original,reduceMotion:true}});
+  assert.deepEqual(calls[0].body,{theme:{...original,reduceMotion:true,reviewWheelNavigation:true}});
   assert.equal(original.reduceMotion,false);
   assert.equal(form.getAttribute('aria-busy'),'true');
   assert.equal($('fieldset',form).disabled,true);
   assert.equal(state.saving,true);
   assert.equal($('#modal-root').childElementCount,0,'settings is a page, not a dialog');
   finish({theme:calls[0].body.theme});await flush();
-  assert.deepEqual(state.theme,{...original,reduceMotion:true});
-  assert.equal(applied[0],state.theme);assert.deepEqual(notices,[['动态偏好已保存']]);
+  assert.deepEqual(state.theme,{...original,reduceMotion:true,reviewWheelNavigation:true});
+  assert.equal(applied[0],state.theme);assert.deepEqual(notices,[['偏好已保存']]);
   assert.equal(form.isConnected,true);assert.equal(form.hasAttribute('aria-busy'),false);
   assert.equal($('fieldset',form).disabled,false);assert.equal($('#modal-root').dataset.persistent,'0');
   assert.equal(state.saving,false);assert.equal(state.dirty,false);
@@ -111,4 +111,24 @@ test('unchecking motion persists false while reauthentication remains a separate
   assert.equal(state.theme.reduceMotion,false);assert.equal(applied.length,1);
   assert.equal($('#modal-root').dataset.persistent,'1');assert.ok($('#reauth-form'));
   dom.window.close();
+});
+
+test('wheel navigation defaults on for legacy preferences and both controls independently mark dirty',()=>{
+  const f=settingsFixture(async body=>({theme:body.theme})),wheel=f.form.elements.reviewWheelNavigation;
+  assert.equal(wheel.checked,true);assert.equal(f.checkbox.checked,false);
+  wheel.checked=false;wheel.dispatchEvent(new f.dom.window.Event('change',{bubbles:true}));assert.equal(f.state.dirty,true);
+  wheel.checked=true;wheel.dispatchEvent(new f.dom.window.Event('change',{bubbles:true}));assert.equal(f.state.dirty,false);
+  f.checkbox.checked=true;f.checkbox.dispatchEvent(new f.dom.window.Event('change',{bubbles:true}));assert.equal(f.state.dirty,true);
+  f.dom.window.close();
+});
+
+test('wheel off persists alongside independent reduced motion, survives failure and retries without duplicate writes',async()=>{
+  let reject,finish;const pending=[],f=settingsFixture(()=>new Promise((resolve,no)=>{finish=resolve;reject=no;pending.push(resolve)}));
+  const wheel=f.form.elements.reviewWheelNavigation;wheel.checked=false;f.checkbox.checked=true;
+  wheel.dispatchEvent(new f.dom.window.Event('change',{bubbles:true}));f.submit();f.submit();assert.equal(f.calls.length,1);
+  assert.equal(f.calls[0].body.theme.reviewWheelNavigation,false);assert.equal(f.calls[0].body.theme.reduceMotion,true);
+  reject(new Error('保存失败'));await flush();assert.equal(wheel.checked,false);assert.equal(f.checkbox.checked,true);assert.equal(f.state.dirty,true);assert.equal(f.state.theme.reviewWheelNavigation,undefined);
+  f.submit();finish({theme:f.calls[1].body.theme});await flush();assert.equal(f.state.theme.reviewWheelNavigation,false);assert.equal(f.state.theme.reduceMotion,true);assert.equal(f.state.dirty,false);
+  const reopened=settingsFixture(async body=>({theme:body.theme}),f.state.theme);assert.equal(reopened.form.elements.reviewWheelNavigation.checked,false);assert.equal(reopened.checkbox.checked,true);
+  f.dom.window.close();reopened.dom.window.close();
 });
