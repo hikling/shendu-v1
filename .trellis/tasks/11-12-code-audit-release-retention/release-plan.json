@@ -1,8 +1,35 @@
 {
   "repository": "hikling/shendu-v1",
-  "currentTree": "98037b3e0fd34acdbb5954fc5550576699195e53",
-  "createdAt": "2026-11-13T11:05:46.3409593Z",
+  "currentTree": "6bc42050193eccd2e2efc08afa128c3c37fd7c8d",
+  "createdAt": "2026-11-13T11:40:49.1712151Z",
   "keep": [
+    {
+      "id": 444158126,
+      "tag": "deploy-6bc42050193eccd2e2efc08afa128c3c37fd7c8d",
+      "published_at": "2026-11-13T11:39:51Z",
+      "assets": [
+        {
+          "name": "shendu-linux-amd64.tar.gz",
+          "size": 104158381,
+          "state": "uploaded"
+        },
+        {
+          "name": "shendu-linux-amd64.tar.gz.sha256",
+          "size": 92,
+          "state": "uploaded"
+        },
+        {
+          "name": "shendu-linux-arm64.tar.gz",
+          "size": 102986749,
+          "state": "uploaded"
+        },
+        {
+          "name": "shendu-linux-arm64.tar.gz.sha256",
+          "size": 92,
+          "state": "uploaded"
+        }
+      ]
+    },
     {
       "id": 441188555,
       "tag": "deploy-98037b3e0fd34acdbb5954fc5550576699195e53",
@@ -83,7 +110,9 @@
           "state": "uploaded"
         }
       ]
-    },
+    }
+  ],
+  "delete": [
     {
       "id": 440057228,
       "tag": "deploy-002db649347068e4245227cc3466062fc56f3d14",
@@ -110,9 +139,7 @@
           "state": "uploaded"
         }
       ]
-    }
-  ],
-  "delete": [
+    },
     {
       "id": 440045026,
       "tag": "deploy-23a4471679b70e7d9ac55ecee62144bf20740013",

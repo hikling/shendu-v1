@@ -20,6 +20,11 @@
 
 ## Release and main synchronization
 
-Pending the code commit's Linux CI: native amd64/arm64 syntax, isolated install/update/snapshot scenarios, full test/build, image health/resources, publication and anonymous deployment downloads. Cleanup will keep the newest four by published_at, including the current application tree, and preserve Git tags/commits. Initial public inventory is in releases-initial.json; refreshed plan and final deletion/retention evidence will be saved alongside this file.
+- Code commit: `caf2887bd09e22ecff3fafc52df8b4e985008c78`; application tree: `6bc42050193eccd2e2efc08afa128c3c37fd7c8d`.
+- [GitHub Actions run 43418605273](https://github.com/hikling/shendu-v1/actions/runs/43418605273): completed/success. Handover, both native architecture verification jobs, publication and both public-download smoke jobs succeeded.
+- Refreshed inventory had **17** published releases. The reviewed `release-plan.json` protected the latest four by published_at and required complete uploaded amd64/arm64 images and checksums. `retain-releases.ps1 -Mode Apply` rechecked each release's ID/tag/date and the protected set before deletion.
+- Cleanup completed on 2026-11-13: **13** obsolete Releases deleted, **4** retained, final inventory and assets verified. `release-retention-result.json` records every deleted/retained ID, tag, publication date and asset summary. No Git deletion endpoint was used; a fresh remote-tag listing confirmed all **17** source tags remain.
+- Retained application trees, newest first: `6bc42050193eccd2e2efc08afa128c3c37fd7c8d`, `98037b3e0fd34acdbb5954fc5550576699195e53`, `a5fbe2e2c9f3987782c620fb82ac81bf86891c29`, `720aceb0bcfed89a389e03fade90c355cfff9753`.
+- Final evidence/archive/journal commits only affect documentation and task records, so they reuse the same verified application tree and Release rather than creating a fifth release.
 
 No deployed database, real account, master key or third-party storage contents were accessed or changed. Local tests and source review are scoped evidence, not proof that every possible vulnerability is absent.
