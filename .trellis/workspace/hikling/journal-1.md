@@ -1667,3 +1667,26 @@ Removed section glyphs, tinted bands, oversized counter columns and status color
 ### Status
 
 [OK] **Completed**
+
+
+## Session 72: 安全逻辑审查与发布整理
+<!-- trellis-session: v=2 fp=3f158237f43c6c19 -->
+
+**Date**: 2026-11-13
+**Task**: 安全逻辑审查与发布整理
+**Branch**: `main`
+
+### Summary
+
+修复草稿身份与周期冲突、账户修改事务、前端异步写入及401归属、健康版本；更新README和审查记录；323项应用测试与13项交接测试通过，双架构CI成功，删除13个旧Releases保留最新4个并确认17个源码标签保留。
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `caf2887` | fix: harden record integrity and asynchronous account writes |
+| `05801153acec0a3989488f0d2c490b59c4cae786` | docs: record verified audit and four-release retention |
+
+### Status
+
+[OK] **Completed**
