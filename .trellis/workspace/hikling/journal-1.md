@@ -1756,3 +1756,25 @@ Removed section glyphs, tinted bands, oversized counter columns and status color
 ### Status
 
 [OK] **Completed**
+
+
+## Session 76: Finance ledger and private compressed receipts
+<!-- trellis-session: v=2 fp=403a4f16801ffb25 -->
+
+**Date**: 2026-11-16
+**Task**: Finance ledger and private compressed receipts
+**Branch**: `main`
+
+### Summary
+
+Implemented the approved CNY ledger, daily finance prompt after energy, expression and multi-entry confirmation, category suggestions, refunds/transfers/recycle bin, local Chinese/English OCR and compressed private S3 receipts. Preserved old templates, stable retry IDs, encrypted account boundaries, completion snapshots and backup associations; fixed cancellation, stale modal/account ownership, signed refund charts and legacy direct completion. Verification: npm check passed, 426 application tests passed with one optional browser skip, 13 handover tests passed, official production dependency audit zero vulnerabilities, isolated resource smoke passed. GitHub run43734198794 passed native amd64/arm64 tests, Docker build/health and public release downloads. Retained latest four complete Releases and all Git tags. README/design/UX/code specs updated. Real S3 and browser visual/mobile acceptance remain unverified; credentials belong in the application.
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `ade1611` | feat: add private finance ledger and screenshot receipts |
+
+### Status
+
+[OK] **Completed**
