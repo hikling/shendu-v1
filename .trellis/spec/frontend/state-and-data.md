@@ -101,6 +101,16 @@ Normalize pixel/line/page units and require 90 vertical pixels. A continuous bur
 
 `review-wheel.test.mjs` covers gesture timing, units, scrolling and ignored controls. `review-wheel-flow.test.mjs` executes actual six-flow render/bind/validation/collection with the built component bridge: readonly traversal, editable errors/input retention, no automatic completion, long bursts, settings and owner guards. Old review-write and draft-delete fixtures must include the shared binder without stubbing the wheel module or changing their existing assertions.
 
+## Review question transitions
+
+Daily and extended flows share one presentation transition after their existing navigation checks. Both buttons and wheel navigation use it; do not create a second wheel animation path. Animate mounted content and decorative art only, with a short outgoing fade followed directly by a small directional incoming movement. Do not clone/remount inputs, animate the entire document background, or overwrite artwork rotations and layout positioning.
+
+`moveReviewPrompt(promptId)` is the common accepted-navigation entry. `createReviewTransition(canvas)` in `public/review-transition.js` exposes `run(update,{direction,current,reduceMotion})`, `busy` and `cancel()`. It animates `.daily-editor-content` (or intro copy) and `.daily-scene-art`, since `#daily-editor` uses display:contents. Use100ms outgoing opacity/8px translate and220ms incoming opacity/16px translate. The persistent `data-review-transition-ready` flag disables the former child entrance animations after ownership transfers; the temporary `data-review-transition` flag scopes will-change and clears on finish/cancel.
+
+Visual work has its own canvas-scoped owner, independent of save state. While one transition is running, repeated navigation must not accumulate a queue. Every deferred screen update checks the original account, record and connected canvas/editor plus current saving/overlay state. Navigation away, replacement, programmatic error revelation and cancellation must invalidate the old work and release its presentation effects. All cancelled animation promises are handled. Failed validation stays synchronous on the original input; unchanged prompt redraws do not replay an effect. Reduced-motion account/system preferences and unavailable animation APIs preserve immediate navigation. Keep existing mounted-input, read-only, final-submit and focus contracts.
+
+Tests must control animation completion and cancellation, assert state before/after each phase and prove no stale update after ownership loss. Exercise real six-flow button/wheel handlers, validation errors and retained input nodes; metadata-only checks of duration/class names are insufficient.
+
 ## Review and member-management write ownership
 
 - `saveCurrent()` binds a write to the account, exact current record, mounted `#daily-editor`/page and `state.reviewWriteOwner`. First save applies the returned ID without remounting the editor or losing the current prompt. A late success/error from a replaced surface cannot change its replacement's record cache, dirty state, notification or busy owner.

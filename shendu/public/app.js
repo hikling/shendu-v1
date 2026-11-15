@@ -9,6 +9,7 @@ import {EXTENDED_FLOW,extendedPrompts,extendedPromptNeighbor,extendedPromptIssue
 import {verificationMinimum} from './verification-policy.js?v=1.0.0-verification2';
 import {createReviewNavigator} from './review-navigation.js?v=1.0.0-pages1';
 import {attachReviewWheel} from './review-wheel.js?v=1.0.0-wheel1';
+import {createReviewTransition} from './review-transition.js?v=1.0.0-transition1';
 import {RECORD_ART,recordArtAssignments} from './record-art.js?v=1.0.0-records1';
 import {createReviewIntroPicker,reviewIntroLines,reviewIntroLayout} from './review-intros.js?v=1.0.0-intros2';
 const $ = (s, root = document) => root.querySelector(s);
@@ -135,6 +136,7 @@ function recordFor(type,period){return state.records.find(r=>r.type===type&&r.pe
 function newRecord(type,period){const data={answers:{},action:'',ifCondition:'',ifThen:'',verifyDate:'',journal:'',metrics:[],sleep:'',energy:'',risk:'',templateSnapshot:currentTemplateSnapshot(type)};return {id:null,type,period,title:'',data,status:'draft',version:0}}
 
 function renderAuth(info={}){
+  $('.daily-flow')?.reviewTransition?.cancel();
   cancelDailyTypewriter();setDailyImmersive(false);
   dismissDialog($('#rail-root'));closeModal(true);
   reviewNavigation.clear();state.historyFilter={q:'',type:'all',year:'all',month:'all'};
@@ -191,7 +193,7 @@ function topbar(){
     </nav>
   </header>`;
 }
-function shell(content){cancelDailyTypewriter();setDailyImmersive(false);overviewReelObserver?.disconnect();overviewReelObserver=null;const overview=state.route==='overview';renderMarkup($('#app'),`<div class="app-shell ${overview?'overview-shell':''}">${topbar()}<div class="workspace"><main class="main ${overview?'overview-main':''}" id="main-content">${content}</main></div></div>`);bindCommon()}
+function shell(content){$('.daily-flow')?.reviewTransition?.cancel();cancelDailyTypewriter();setDailyImmersive(false);overviewReelObserver?.disconnect();overviewReelObserver=null;const overview=state.route==='overview';renderMarkup($('#app'),`<div class="app-shell ${overview?'overview-shell':''}">${topbar()}<div class="workspace"><main class="main ${overview?'overview-main':''}" id="main-content">${content}</main></div></div>`);bindCommon()}
 
 function overviewText(value,limit){const text=String(value??'').replace(/\s+/g,' ').trim(),points=Array.from(text);return points.length>limit?points.slice(0,limit).join('')+'…':text}
 function overviewRecordCard(record,appearance,duplicate=false,index=0){
@@ -461,6 +463,7 @@ function setDailyPromptHeading(title,prompt){
   setReviewPromptHeading(heading,title,metric?.name||phrases[prompt.id]||'');
 }
 function showDailyPrompt(promptId,focus=false){
+  $('.daily-flow')?.reviewTransition?.cancel();
   promptId=dailyPromptOwner(promptId);
   const prompts=currentDailyPrompts(),index=prompts.findIndex(prompt=>prompt.id===promptId),intro=index<0,prompt=prompts[index];
   state.dailySection=intro?'intro':prompt.step;state.dailyPrompt=intro?null:prompt.id;
@@ -507,11 +510,11 @@ function showDailyIssues(issues){
 }
 function bindDailyFlow(){
   bindDailyCalendar();
-  const move=prompt=>{if(state.saving)return;if($('#daily-editor').dataset.dailyLocked!=='true')collectCurrent();clearDailyIssues();showDailyPrompt(prompt,true)};
+  const move=moveReviewPrompt;
   $('#daily-start').addEventListener('click',()=>move(currentDailyPrompts()[0].id));
   $('[data-daily-exit]').addEventListener('click',()=>reviewNavigation.exit());
   $('[data-daily-back]').addEventListener('click',()=>move(dailyPromptNeighbor(currentDailyPrompts(),state.dailyPrompt,-1)));
-  $('[data-daily-next]').addEventListener('click',()=>{if(state.saving)return;if($('#daily-editor').dataset.dailyLocked!=='true'){collectCurrent();const issues=dailyPromptIssues(state.current.data,state.dailyPrompt,today(),templatesForRecord(state.current).review);if(issues.length){showDailyIssues(issues);return}}const next=dailyPromptNeighbor(currentDailyPrompts(),state.dailyPrompt,1);if(next)move(next)});
+  $('[data-daily-next]').addEventListener('click',()=>{if(state.saving||$('.daily-flow')?.reviewTransition?.busy)return;if($('#daily-editor').dataset.dailyLocked!=='true'){collectCurrent();const issues=dailyPromptIssues(state.current.data,state.dailyPrompt,today(),templatesForRecord(state.current).review);if(issues.length){showDailyIssues(issues);return}}const next=dailyPromptNeighbor(currentDailyPrompts(),state.dailyPrompt,1);if(next)move(next)});
   showDailySection(state.dailySection);
 }
 
@@ -521,6 +524,7 @@ function setExtendedPromptHeading(title,prompt){
   setReviewPromptHeading(heading,title,phrases[prompt.id]||'');
 }
 function showExtendedPrompt(promptId,focus=false){
+  $('.daily-flow')?.reviewTransition?.cancel();
   const type=state.current.type,config=EXTENDED_FLOW[type],prompts=currentExtendedPrompts(),index=prompts.findIndex(prompt=>prompt.id===promptId),intro=index<0,prompt=prompts[index],flow=$('.extended-review-flow');
   state.extendedPrompt=intro?null:prompt.id;
   $('#daily-intro').hidden=!intro;$('#daily-editor').hidden=intro;
@@ -570,12 +574,12 @@ function showExtendedIssues(issues){
 }
 function bindExtendedFlow(){
   bindDailyCalendar();
-  const move=prompt=>{if(state.saving)return;if($('#daily-editor').dataset.dailyLocked!=='true')collectCurrent();clearDailyIssues();showExtendedPrompt(prompt,true)};
+  const move=moveReviewPrompt;
   $('#daily-start').addEventListener('click',()=>move(currentExtendedPrompts()[0].id));
   $('[data-daily-exit]').addEventListener('click',()=>reviewNavigation.exit());
   $('[data-daily-back]').addEventListener('click',()=>move(extendedPromptNeighbor(currentExtendedPrompts(),state.extendedPrompt,-1)));
   $('[data-daily-next]').addEventListener('click',()=>{
-    if(state.saving)return;
+    if(state.saving||$('.daily-flow')?.reviewTransition?.busy)return;
     if($('#daily-editor').dataset.dailyLocked!=='true'){
       collectCurrent();const prompt=currentExtendedPrompts().find(item=>item.id===state.extendedPrompt),issues=extendedPromptIssues(state.current.data,state.current.title,prompt,verificationMinimum(state.current.type,today()));
       if(issues.length){showExtendedIssues(issues);return}
@@ -583,6 +587,19 @@ function bindExtendedFlow(){
     const next=extendedPromptNeighbor(currentExtendedPrompts(),state.extendedPrompt,1);if(next)move(next);
   });
   showExtendedPrompt(state.extendedPrompt);
+}
+
+function moveReviewPrompt(promptId){
+  const canvas=$('.daily-flow'),editor=$('#daily-editor'),account=state.user,record=state.current;
+  if(!canvas||!editor||state.saving||canvas.reviewTransition?.busy)return;
+  const current=()=>canvas.isConnected&&$('.daily-flow')===canvas&&$('#daily-editor')===editor&&state.user===account&&state.current===record&&!state.saving&&!canvas.closest('[inert]')&&!document.querySelector('.modal,[role="dialog"],[role="alertdialog"],[role="listbox"],[role="menu"]');
+  if(!current())return;
+  const daily=record.type==='daily',prompts=daily?currentDailyPrompts():currentExtendedPrompts(),from=prompts.findIndex(prompt=>prompt.id===(daily?state.dailyPrompt:state.extendedPrompt)),to=prompts.findIndex(prompt=>prompt.id===promptId),show=daily?showDailyPrompt:showExtendedPrompt;
+  const update=()=>{if(editor.dataset.dailyLocked!=='true')collectCurrent();clearDailyIssues();show(promptId,true)};
+  if(from===to){update();return}
+  canvas.reviewTransition??=createReviewTransition(canvas);
+  const transition=canvas.reviewTransition.run(update,{direction:to>from?1:-1,current,reduceMotion:()=>!!state.theme?.reduceMotion});
+  transition?.catch(error=>{if(current())toast(error.message,'error')});
 }
 
 function renderReview(type,period=state.current?.type===type?state.current.period:defaultPeriod(type),forceNew=false,draftOverride=null,options={}){
@@ -628,6 +645,7 @@ function renderReviewFromCurrent(){const keep=clone(state.current);renderReview(
 function collectCurrent(){if(!state.current)return;const d=state.current.data||(state.current.data={});d.answers=d.answers||{};$$('[data-answer]').forEach(el=>{const k=el.dataset.answer,i=Number(el.dataset.index);d.answers[k]=d.answers[k]||[];d.answers[k][i]=el.value});$$('[data-simple]').forEach(el=>d[el.dataset.simple]=el.value);$$('[data-metric-action]').forEach(el=>{const i=Number(el.dataset.metricAction);d.metrics[i].action=el.value});$$('[data-metric-status]').forEach(el=>{const i=Number(el.dataset.metricStatus);d.metrics[i].status=el.value});if($('#record-title'))state.current.title=$('#record-title').value;if(state.current.status==='draft')d.templateSnapshot=currentTemplateSnapshot(state.current.type)}
 function validateCurrent(){collectCurrent();const r=state.current,d=r.data;if(r.type==='daily'){const issues=dailyStepIssues(d,null,today(),templatesForRecord(r).review);if(issues.length)showDailyIssues(issues);return issues.map(dailyIssueLabel)}const issues=extendedReviewIssues(d,r.title,currentExtendedPrompts(),verificationMinimum(r.type,today()));if(issues.length)showExtendedIssues(issues);return issues.map(extendedIssueLabel)}
 function setReviewBusy(busy){
+  if(busy)$('.daily-flow')?.reviewTransition?.cancel();
   const main=$('#main-content');if(!main)return;
   main.setAttribute('aria-busy',String(busy));
   $$('input,textarea,select,button',main).forEach(control=>{if(busy&&!control.disabled){control.dataset.reviewBusy='true';control.disabled=true}else if(!busy&&control.dataset.reviewBusy){control.disabled=false;delete control.dataset.reviewBusy}});
@@ -1222,6 +1240,7 @@ function syncOverlayBackground(){
 }
 
 function openModal(content,size='',persistent=false){
+  $('.daily-flow')?.reviewTransition?.cancel();
   cancelDailyTypewriter();const root=prepareDialogContainer($('#modal-root'));if(!root.children.length)modalReturnFocus=document.activeElement;
   root.dataset.persistent=persistent?'1':'0';
   const template=document.createElement('template');template.innerHTML=content;

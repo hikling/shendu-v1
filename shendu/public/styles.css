@@ -794,6 +794,9 @@ body.reduce-motion .overview-record-card[aria-hidden="true"]{display:none}
 .daily-editor-content{grid-row:2;grid-column:1;align-self:center;width:100%;max-width:var(--review-width);margin-inline:auto;padding:30px var(--content-gutter) 0;position:relative;z-index:1;min-width:0}
 #daily-current-group{color:var(--daily-stage-color);font-weight:800}
 .daily-question-heading{width:52%;max-width:720px;margin:0 0 32px;animation:daily-question-enter .45s ease-out both}
+/* The shared turn controller owns repeatable copy/art movement after navigation. */
+.daily-art-flow[data-review-transition-ready] :is(.daily-question-heading,.daily-scene-image){animation:none}
+.daily-art-flow[data-review-transition] :is(.daily-editor-content,.daily-intro-copy,.daily-scene-art){will-change:opacity,translate}
 .daily-question-heading h2{margin:0 0 20px;color:var(--daily-ink);font:900 clamp(40px,calc(var(--review-unit)*4.1),64px)/1.4 "SimSun","宋体","Songti SC","Noto Serif SC",serif;-webkit-text-stroke:.18px currentColor;letter-spacing:.025em;overflow-wrap:break-word;text-wrap:pretty}
 .daily-prompt-line{display:block}
 .daily-title-emphasis{color:var(--daily-emphasis)}
