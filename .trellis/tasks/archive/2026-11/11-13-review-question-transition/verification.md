@@ -18,4 +18,7 @@
 ## Acceptance limit
 Browser access was unavailable on the preceding attempts (2026-11-13 and2026-11-14). The user had explicitly chosen code and automated checks. Physical animation appearance and narrow-layout browser acceptance are not claimed. No production account/review data was changed by tests.
 
-GitHub publication evidence will be appended after synchronization.
+## Publication
+- Work commit `6ee86afd35bdfe50ca0152d03b88f608dae3f976` pushed to `main`; application tree `250b9eddea7c9563d25020666b62482653f66db8`.
+- [GitHub Actions43664011584](https://github.com/hikling/shendu-v1/actions/runs/43664011584) passed handover, native amd64/arm64 verification, publication and both public-download smoke checks. Compact evidence is in `research/ci-result.json`.
+- Following the user's existing latest-four request, the current application release and the next three recent complete releases were protected. Only the oldest fifth Release `deploy-a5fbe2e2c9f3987782c620fb82ac81bf86891c29` was removed; final inventory contains four complete Releases and all Git tags are preserved. Inventory plan/result are retained under `research/`.

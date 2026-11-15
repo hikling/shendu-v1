@@ -14,6 +14,6 @@
 - [x] 六类按钮和滚轮均走同一动画入口，有行为测试验证时序和清理。
 - [x] 错误校验、输入保留、只读、忙碌、快速导航和减少动态回归通过。
 - [x] 检查构建及354项应用测试、13项交接测试通过，文档同步。
-- [ ] 提交main并核对GitHub构建发布。
+- [x] 提交main并核对GitHub构建发布：6ee86af，运行43664011584全部通过。
 
 Browser access was unavailable in the preceding task; the user chose code and automated acceptance. Attempt access when available without repeating a permission request, and record remaining visual acceptance honestly.
