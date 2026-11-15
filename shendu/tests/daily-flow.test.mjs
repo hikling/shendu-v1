@@ -38,6 +38,18 @@ test('daily prompts keep sleep and energy separate but pair obstacle and respons
   assert.deepEqual(prompts.map(prompt=>prompt.id),['sleep','energy','metric-0','metric-1','metric-2','risk','today','cause','action','ifCondition','verifyDate','journal']);
   assert.deepEqual(prompts.map(prompt=>prompt.step),['evidence','evidence','evidence','evidence','evidence','evidence','reflection','reflection','action','action','action','journal']);
 });
+
+test('new finance-enabled daily templates insert optional expenses immediately after energy, old snapshots retain their order',()=>{
+  const enabled=dailyPrompts(0,{financeEnabled:true}),legacy=dailyPrompts(0,{});
+  assert.deepEqual(enabled.slice(0,3).map(prompt=>prompt.id),['sleep','energy','finance']);
+  assert.equal(legacy.some(prompt=>prompt.id==='finance'),false);
+  assert.equal(dailyPrompts(0,{financeEnabled:false}).some(prompt=>prompt.id==='finance'),false);
+  assert.deepEqual(dailyPromptIssues({},'finance',today,{financeEnabled:true}),[]);
+  assert.deepEqual(dailyPromptIssues({financeDraft:{expression:'8+8-1'}},'finance',today,{financeEnabled:true}),[{step:'evidence',field:'finance',reason:'pending_finance'}]);
+  assert.deepEqual(dailyPromptIssues({financeDraft:{categoryId:'food'}},'finance',today,{financeEnabled:true}),[]);
+  assert.deepEqual(dailyStepIssues({...complete,financeDraft:{purpose:'早餐'}},null,today,{financeEnabled:true}).map(issue=>issue.field),['finance']);
+  assert.deepEqual(dailyStepIssues({...complete,financeDraft:{}},null,today,{financeEnabled:true}),[]);
+});
 test('historical metric counts determine the exact set of questions',()=>{
   for(const count of [0,1,2,5]){
     const prompts=dailyPrompts(count),metrics=prompts.filter(prompt=>prompt.id.startsWith('metric-'));

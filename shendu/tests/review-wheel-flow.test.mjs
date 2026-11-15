@@ -4,6 +4,8 @@ import {readFile} from 'node:fs/promises';
 import {JSDOM} from 'jsdom';
 import {attachReviewWheel} from '../public/review-wheel.js';
 import {createReviewTransition} from '../public/review-transition.js';
+import {mountDailyFinance} from '../public/finance-ui.js';
+import {DEFAULT_FINANCE_CATEGORIES} from '../public/finance-domain.js';
 import {DAILY_STEPS,dailyPrompts,dailyPromptOwner,dailyPromptIssues,dailyPromptNeighbor} from '../public/daily-flow.js';
 import {EXTENDED_FLOW,extendedPrompts,extendedPromptIssues,extendedPromptNeighbor} from '../public/extended-flow.js';
 import {reviewQuestions} from '../public/review-schema.js';
@@ -27,22 +29,24 @@ function owner(name){
 }
 const constants=source.slice(source.indexOf('const TYPES ='),source.indexOf('const TYPE_ICONS ='))+'\n'+source.match(/const TYPE_ICONS = [^\n]+/)[0]+'\n'+source.match(/const STATUS = [^\n]+/)[0]+'\n'+source.slice(source.indexOf('const QUESTIONS ='),source.indexOf('function mergeReviewTemplate('));
 const names=['dailyAnswerPreview','answerItemRow','answerAddButton','dailyAnswerInputs','gaugePresentation','gaugeCard','dailyEvidence','dailyReflection','dailyActionFields','dailyJournal','reviewAfterword','dailySceneArt','dailyReviewHtml','extendedSceneArt','extendedPromptCopy','extendedPromptHtml','extendedReviewHtml','verificationRead','currentDailyPrompts','dailyPromptCopy','setReviewPromptHeading','setDailyPromptHeading','showDailyPrompt','showDailySection','clearDailyIssues','dailyIssueLabel','showDailyIssues','bindDailyFlow','currentExtendedPrompts','setExtendedPromptHeading','showExtendedPrompt','extendedIssueLabel','showExtendedIssues','bindExtendedFlow','bindReviewWheel','bindReview','openDailyAnswer','renderReview','collectCurrent','moveReviewPrompt','shell','setReviewBusy','openModal','closeModal','syncOverlayBackground'];
-function fixture(type='daily',locked=false){
+function fixture(type='daily',locked=false,{financeEnabled=false}={}){
   ui.dismissDialog($('#modal-root'));ui.renderMarkup($('#app'),'');
   const period={daily:'2026-11-13',weekly:'2026-W46',monthly:'2026-11',quarterly:'2026-11-01',yearly:'2026',decision:'2026-11-13'}[type];
   const current={id:`${type}-record`,type,period,title:'',version:1,created_at:'2026-11-13T04:00:00.000Z',updated_at:'2026-11-13T04:00:00.000Z',status:locked?'completed':'draft',data:{answers:{},metrics:[],action:'',ifCondition:'',ifThen:'',verifyDate:'2027-12-31',journal:''}};
   const state={user:{id:'owner',displayName:'测试',username:'owner'},theme:{reviewWheelNavigation:true},stage:{sleepTarget:7,energyTarget:70,metrics:[]},current,records:[current],dirty:false,saving:false,route:type,dailySection:'intro',dailyPrompt:null,extendedPrompt:null};
-  let functions,templates,time=0;const writes=[];
-  const context={$,$$,state,esc,createReviewTransition,renderMarkup:ui.renderMarkup,topbar:()=>'',bindCommon:()=>{},prepareDialogContainer:ui.prepareDialogContainer,showDialog:ui.showDialog,dismissDialog:ui.dismissDialog,attachReviewWheel:(root,options)=>attachReviewWheel(root,{...options,now:()=>time}),DAILY_STEPS,dailyPrompts,dailyPromptOwner,dailyPromptIssues,dailyPromptNeighbor,EXTENDED_FLOW,extendedPrompts,extendedPromptIssues,extendedPromptNeighbor,reviewQuestions,reviewIntroLayout,dailyIntroLines:reviewIntroLines,
+  let functions,templates,time=0;const writes=[],financeCalls=[],financeEntries=[];
+  const financeSummary=()=>({incomeCents:0,expenseCents:financeEntries.reduce((sum,entry)=>sum+entry.amountCents,0),refundCents:0,netExpenseCents:financeEntries.reduce((sum,entry)=>sum+entry.amountCents,0),balanceCents:0,count:financeEntries.length});
+  const request=async(path,args={})=>{financeCalls.push({path,...args});if(path==='/api/finance/storage')return {configured:false,config:{},version:0,targets:[]};if(path==='/api/finance/entries'){const entry={...args.body,amountCents:2300,version:1,deletedAt:null};financeEntries.push(entry);return {entry}};if(path.startsWith('/api/finance?'))return {entries:[...financeEntries],categories:DEFAULT_FINANCE_CATEGORIES,summary:financeSummary(),trend:[],categoryTotals:[],nextCursor:null,day:{date:period,state:financeEntries.length?'recorded':'unrecorded',version:0}};throw new Error(`Unexpected finance API ${path}`)};
+  const context={$,$$,state,esc,createReviewTransition,mountDailyFinance,request,toast:()=>{},financeUiOptions:(container,extra={})=>({...extra,request,renderMarkup:ui.renderMarkup,today:()=> '2026-11-13',isCurrent:()=>container.isConnected&&state.user.id==='owner'&&(extra.isCurrent?.()??true),setDirty:value=>{if(value)state.dirty=true},beginWrite:()=>{if(state.saving)return null;state.saving=true;return {}},endWrite:()=>{state.saving=false}}),renderMarkup:ui.renderMarkup,topbar:()=>'',bindCommon:()=>{},prepareDialogContainer:ui.prepareDialogContainer,showDialog:ui.showDialog,dismissDialog:ui.dismissDialog,attachReviewWheel:(root,options)=>attachReviewWheel(root,{...options,now:()=>time}),DAILY_STEPS,dailyPrompts,dailyPromptOwner,dailyPromptIssues,dailyPromptNeighbor,EXTENDED_FLOW,extendedPrompts,extendedPromptIssues,extendedPromptNeighbor,reviewQuestions,reviewIntroLayout,dailyIntroLines:reviewIntroLines,
     defaultPeriod:()=>period,today:()=> '2026-11-13',quoteFor:()=> '回看事实，慢慢向前。',beijingTime:()=> '12:00',verificationMinimum:()=> '2026-11-13',dailyCalendarDateLabel:value=>value,verificationTimes:()=>'',verificationActualAt:r=>r.verified_at||'',formatDate:value=>value,clone:structuredClone,
     templatesForRecord:()=>templates,currentTemplateSnapshot:()=>({review:templates.review,action:templates.action}),reconcileReviewMetrics:metrics=>({metrics}),newRecord:()=>{throw new Error('new record unexpected')},
     dailyVerificationCalendar:value=>`<input type="hidden" data-simple="verifyDate" value="${esc(value)}"><div id="daily-verification-calendar" data-verify-month-value="2026-11"></div>`,renderDailyCalendar:()=>{},bindDailyCalendar:()=>{},reviewNavigation:{exit:()=>{}},cancelDailyTypewriter:()=>{},startDailyTypewriter:()=>{},setDailyImmersive:()=>{},focusDailyAnswer:()=>{},updateGauge:()=>{},renderReviewFromCurrent:()=>{},saveCurrent:()=>writes.push('save'),completeCurrent:()=>writes.push('complete'),deleteDraftRecord:()=>writes.push('delete')};
-  functions=new Function(...Object.keys(context),`let overviewReelObserver=null,modalReturnFocus=null;\n${constants}\n${names.map(owner).join('\n')}\nreturn {renderReview,showDailyPrompt,showExtendedPrompt,currentDailyPrompts,currentExtendedPrompts,shell,setReviewBusy,openModal,closeModal,review:DEFAULT_REVIEW_TEMPLATES,action:DEFAULT_ACTION_TEMPLATE};`)(...Object.values(context));
-  templates={review:functions.review[type],action:functions.action};functions.renderReview(type,period,false,current);
+  functions=new Function(...Object.keys(context),`let overviewReelObserver=null,modalReturnFocus=null;\n${constants}\n${names.map(owner).join('\n')}\nreturn {renderReview,showDailyPrompt,showExtendedPrompt,currentDailyPrompts,currentExtendedPrompts,collectCurrent,shell,setReviewBusy,openModal,closeModal,review:DEFAULT_REVIEW_TEMPLATES,action:DEFAULT_ACTION_TEMPLATE};`)(...Object.values(context));
+  templates={review:{...functions.review[type],financeEnabled},action:functions.action};functions.renderReview(type,period,false,current);
   const canvas=$('.daily-flow'),prompt=()=>type==='daily'?state.dailyPrompt:state.extendedPrompt,prompts=()=>type==='daily'?functions.currentDailyPrompts():functions.currentExtendedPrompts();
   const wheel=(direction=1,target=canvas,gap=800)=>{time+=gap;const event=new win.WheelEvent('wheel',{deltaY:direction*120,bubbles:true,cancelable:true});target.dispatchEvent(event);return event};
   const show=id=>type==='daily'?functions.showDailyPrompt(id):functions.showExtendedPrompt(id);
-  return {state,current:state.current,canvas,prompt,prompts,wheel,show,writes,start:()=>$('#daily-start').click(),replace:()=>functions.shell('<p>另一页</p>'),busy:functions.setReviewBusy,modal:()=>functions.openModal('<div class="modal-head"><h2>确认</h2></div><button data-close>返回</button>'),closeModal:functions.closeModal};
+  return {state,current:state.current,canvas,prompt,prompts,wheel,show,writes,financeCalls,financeEntries,collect:functions.collectCurrent,start:()=>$('#daily-start').click(),replace:()=>functions.shell('<p>另一页</p>'),busy:functions.setReviewBusy,modal:()=>functions.openModal('<div class="modal-head"><h2>确认</h2></div><button data-close>返回</button>'),closeModal:functions.closeModal};
 }
 
 test('all six real flow handlers keep intro and end boundaries, traverse readonly questions and never submit',()=>{
@@ -159,5 +163,24 @@ test('account and system reduced motion keep both real button and wheel navigati
   }}finally{win.matchMedia=oldMatchMedia}
 });
 
-test.afterEach(()=>{$('.daily-flow')?.reviewTransition?.cancel();ui.dismissDialog($('#modal-root'));ui.disposeUi($('#app'));$('#app').replaceChildren()});
+test('daily expense step uses the real widget, holds unconfirmed input and creates one shared ledger entry',async()=>{
+  const f=fixture('daily',false,{financeEnabled:true});
+  for(let i=0;i<12;i++)await Promise.resolve();
+  f.start();$('[data-daily-next]').click();assert.equal(f.prompt(),'energy');f.wheel();assert.equal(f.prompt(),'finance');
+  assert.equal(f.canvas.dataset.dailyScene,'finance');
+  const amount=$('#daily-finance [name="expression"]'),purpose=$('#daily-finance [name="purpose"]');
+  assert.ok(amount);amount.value='8+8+8-1';amount.dispatchEvent(new win.Event('input',{bubbles:true}));purpose.value='早餐';purpose.dispatchEvent(new win.Event('input',{bubbles:true}));
+  assert.equal(f.state.current.data.financeDraft.expression,'8+8+8-1');
+  $('[data-daily-next]').click();assert.equal(f.prompt(),'finance');assert.equal(amount.getAttribute('aria-invalid'),'true');
+  assert.equal(f.financeCalls.filter(call=>call.method==='POST').length,0);
+  f.collect();assert.equal(f.state.current.data.templateSnapshot.review.financeEnabled,true);assert.equal(f.state.current.data.financeDraft.purpose,'早餐');
+  const form=amount.closest('form');form.dispatchEvent(new win.Event('submit',{bubbles:true,cancelable:true}));
+  for(let i=0;i<30;i++)await Promise.resolve();
+  assert.equal(f.financeEntries.length,1);assert.equal(f.financeEntries[0].amountCents,2300);assert.equal(f.financeEntries[0].categoryId,'food');
+  assert.equal(f.state.current.data.financeDraft.expression,'');assert.equal(f.state.dirty,true);assert.equal(f.state.saving,false);
+  assert.equal($('#daily-finance [name="expression"]'),amount);$('[data-daily-next]').click();assert.notEqual(f.prompt(),'finance');
+  f.wheel(-1);assert.equal(f.prompt(),'finance');assert.equal(f.financeEntries.length,1);assert.equal($('#daily-finance [name="expression"]'),amount);
+});
+
+test.afterEach(()=>{$('#daily-finance')?.financeController?.dispose();$('.daily-flow')?.reviewTransition?.cancel();ui.dismissDialog($('#modal-root'));ui.disposeUi($('#app'));$('#app').replaceChildren()});
 test.after(()=>dom.window.close());

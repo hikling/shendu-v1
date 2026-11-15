@@ -10,6 +10,8 @@ export const REVIEW_QUESTIONS = {
 };
 
 const DAILY_OPTIONAL_FIELDS = ['sleep','energy','risk','journal'];
+// Missing in a saved historical snapshot means the finance step did not exist yet.
+export function reviewFinanceEnabled(template={}){return template?.financeEnabled===true}
 const object = value => value !== null && typeof value === 'object' && !Array.isArray(value);
 const labelText = value => typeof value === 'string' ? value.trim().slice(0,160) : '';
 

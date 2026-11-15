@@ -1,4 +1,4 @@
-const SOURCE_ROUTES = new Set(['overview','history','actions','backup','users','calendar']);
+const SOURCE_ROUTES = new Set(['overview','history','actions','backup','users','calendar','finance']);
 
 // The origin belongs to one review visit, not to the record or its save payload.
 export function createReviewNavigator({source,guard,open,restore}){

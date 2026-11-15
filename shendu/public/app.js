@@ -1,15 +1,16 @@
 import {backupScheduleLabel} from './backup-schedule.js?v=1.0.0-backups1';
 import {normalizeReviewMetricIds,reconcileReviewMetrics} from './review-metrics.js?v=1.0.0-custom1';
-import {reviewQuestions,reviewDisabledFields} from './review-schema.js?v=1.0.0-custom1';
+import {reviewQuestions,reviewDisabledFields} from './review-schema.js?v=1.0.0-finance1';
 import {renderMarkup,disposeUi,prepareDialogContainer,initializeToasts,showDialog,dismissDialog,showMenu,showVerificationCalendar,showStageCalendar,showToast} from './ui/shadcn.js?v=1.0.0-draftend1';
 import {overviewRecordAppearances,overviewVerifiedRecords,overviewRecordExcerpt,overviewLoopMetrics,overviewRecordTitle,overviewDateParts} from './overview-reel.js?v=1.0.0-overview15';
-import {DAILY_STEPS,dailyStepIssues,dailyPrompts,dailyPromptIssues,dailyPromptNeighbor,dailyPromptOwner} from './daily-flow.js?v=1.0.0-custom1';
+import {DAILY_STEPS,dailyStepIssues,dailyPrompts,dailyPromptIssues,dailyPromptNeighbor,dailyPromptOwner} from './daily-flow.js?v=1.0.0-finance1';
 import {dailyCalendarModel,dailyCalendarDateLabel} from './daily-calendar.js?v=1.0.0-art1';
 import {EXTENDED_FLOW,extendedPrompts,extendedPromptNeighbor,extendedPromptIssues,extendedReviewIssues} from './extended-flow.js?v=1.0.0-custom1';
 import {verificationMinimum} from './verification-policy.js?v=1.0.0-verification2';
-import {createReviewNavigator} from './review-navigation.js?v=1.0.0-pages1';
+import {createReviewNavigator} from './review-navigation.js?v=1.0.0-finance1';
 import {attachReviewWheel} from './review-wheel.js?v=1.0.0-wheel1';
 import {createReviewTransition} from './review-transition.js?v=1.0.0-transition1';
+import {mountFinancePage,mountDailyFinance} from './finance-ui.js?v=1.0.0-finance1';
 import {RECORD_ART,recordArtAssignments} from './record-art.js?v=1.0.0-records1';
 import {createReviewIntroPicker,reviewIntroLines,reviewIntroLayout} from './review-intros.js?v=1.0.0-intros2';
 const $ = (s, root = document) => root.querySelector(s);
@@ -55,6 +56,7 @@ const DEFAULT_REVIEW_TEMPLATES = Object.fromEntries(Object.entries(QUESTIONS).ma
   actionTitle:type==='daily'?'明天最重要的一件事':'接下来，具体要做什么？',
   obstacleTitle:'如果遇到阻碍，那么我就……',
   verifyDateTitle:type==='daily'?'预期何时验证？':'预期什么时候验证？',
+  ...(type==='daily'?{financeEnabled:true}:{}),
   ...(type==='decision'?{recordTitle:'决定的名字'}:{})
 }]));
 const DEFAULT_ACTION_TEMPLATE = {
@@ -78,9 +80,14 @@ function mergeActionTemplate(value){return{...DEFAULT_ACTION_TEMPLATE,...(value&
 function currentReviewTemplate(type){return mergeReviewTemplate(type,state.stage?.reviewTemplates?.[type])}
 function currentActionTemplate(){return mergeActionTemplate(state.stage?.actionTemplate)}
 function templatesForRecord(record){
-  if(!record||(record.status==='draft'&&record.period===defaultPeriod(record.type)))return{review:currentReviewTemplate(record?.type||'daily'),action:currentActionTemplate()};
+  if(!record||(record.status==='draft'&&record.period===defaultPeriod(record.type))){
+    const type=record?.type||'daily',review=currentReviewTemplate(type),snapshot=record?.data?.templateSnapshot;
+    if(type==='daily'&&(record?.id||snapshot?.review))review.financeEnabled=snapshot?.review?.financeEnabled===true;
+    return{review,action:currentActionTemplate()};
+  }
   const snapshot=record.data?.templateSnapshot;
-  return{review:mergeReviewTemplate(record.type,snapshot?.review),action:mergeActionTemplate(snapshot?.action)};
+  const review=mergeReviewTemplate(record.type,snapshot?.review);if(record.type==='daily')review.financeEnabled=snapshot?.review?.financeEnabled===true;
+  return{review,action:mergeActionTemplate(snapshot?.action)};
 }
 function currentTemplateSnapshot(type){return{version:1,review:clone(currentReviewTemplate(type)),action:clone(currentActionTemplate())}}
 
@@ -136,6 +143,7 @@ function recordFor(type,period){return state.records.find(r=>r.type===type&&r.pe
 function newRecord(type,period){const data={answers:{},action:'',ifCondition:'',ifThen:'',verifyDate:'',journal:'',metrics:[],sleep:'',energy:'',risk:'',templateSnapshot:currentTemplateSnapshot(type)};return {id:null,type,period,title:'',data,status:'draft',version:0}}
 
 function renderAuth(info={}){
+  $('#finance-workspace')?.financeController?.dispose();$('#daily-finance')?.financeController?.dispose();
   $('.daily-flow')?.reviewTransition?.cancel();
   cancelDailyTypewriter();setDailyImmersive(false);
   dismissDialog($('#rail-root'));closeModal(true);
@@ -155,7 +163,7 @@ function renderAuth(info={}){
       <p class="auth-privacy-note"><span aria-hidden="true"></span>你的记录，只属于你。</p>
     </form></section></div></main>`);
   const form=$('#auth-form'),current=()=>form.isConnected&&state.user===null;let pending=false;
-  form.addEventListener('submit',async e=>{e.preventDefault();if(pending||!current())return;const body=Object.fromEntries(new FormData(form)),controls=$$('button,input',form),disabled=controls.map(control=>control.disabled);const registering=info.firstRun||info.mode==='register';pending=true;controls.forEach(control=>{control.disabled=true});try{const data=await request(`/api/auth/${registering?'register':'login'}`,{method:'POST',body});if(current())await boot(data.user)}catch(err){if(current())$('#auth-error',form).textContent=err.message}finally{pending=false;if(form.isConnected)controls.forEach((control,index)=>{control.disabled=disabled[index]})}});
+  form.addEventListener('submit',async e=>{e.preventDefault();if(pending||!current())return;const body=Object.fromEntries(new FormData(form)),controls=$$('button,input',form),disabled=controls.map(control=>control.disabled);const registering=info.firstRun||info.mode==='register';pending=true;controls.forEach(control=>{control.disabled=true});try{const data=await request(`/api/auth/${registering?'register':'login'}`,{method:'POST',body});if(current()){if(data.reloadForStorage){window.location.reload();return}await boot(data.user)}}catch(err){if(current())$('#auth-error',form).textContent=err.message}finally{pending=false;if(form.isConnected)controls.forEach((control,index)=>{control.disabled=disabled[index]})}});
   $('#show-password').addEventListener('change',e=>{$('#password').type=e.target.checked?'text':'password'});
   $('#auth-switch')?.addEventListener('click',()=>renderAuth({...info,mode:info.mode==='register'?'login':'register'}));
 }
@@ -172,6 +180,7 @@ function topbar(){
         ${headerLink('overview','概览')}
         ${headerLink('history','历史复盘')}
         ${headerLink('actions',actionLabel,state.stats.pending?`<span class="header-count">${Number(state.stats.pending)}</span>`:'')}
+        ${headerLink('finance','财务收支')}
       </nav>
       <div class="header-actions">
         <button class="header-rail-button ${state.route==='calendar'?'active':''}" type="button" id="rail-toggle" data-nav="calendar" ${state.route==='calendar'?'aria-current="page"':''}>阶段与日历</button>
@@ -188,12 +197,12 @@ function topbar(){
       </div>
     </div>
     <nav class="header-mobile-nav" id="mobile-nav" data-ui-native aria-label="手机导航" hidden>
-      <div class="mobile-nav-main">${headerLink('overview','概览')}${headerLink('history','历史复盘')}${headerLink('actions',actionLabel)}</div>
+      <div class="mobile-nav-main">${headerLink('overview','概览')}${headerLink('history','历史复盘')}${headerLink('actions',actionLabel)}${headerLink('finance','财务收支')}</div>
       <div class="mobile-nav-bottom"><button type="button" class="${state.route==='backup'?'active':''}" data-nav="backup" ${state.route==='backup'?'aria-current="page"':''}>数据备份</button><button type="button" class="${state.route==='users'?'active':''}" data-nav="users" ${state.route==='users'?'aria-current="page"':''}>账户管理</button><button type="button" id="mobile-settings-trigger" data-nav="settings" ${state.route==='settings'?'aria-current="page"':''}>设置</button></div>
     </nav>
   </header>`;
 }
-function shell(content){$('.daily-flow')?.reviewTransition?.cancel();cancelDailyTypewriter();setDailyImmersive(false);overviewReelObserver?.disconnect();overviewReelObserver=null;const overview=state.route==='overview';renderMarkup($('#app'),`<div class="app-shell ${overview?'overview-shell':''}">${topbar()}<div class="workspace"><main class="main ${overview?'overview-main':''}" id="main-content">${content}</main></div></div>`);bindCommon()}
+function shell(content){$('#finance-workspace')?.financeController?.dispose();$('#daily-finance')?.financeController?.dispose();$('.daily-flow')?.reviewTransition?.cancel();cancelDailyTypewriter();setDailyImmersive(false);overviewReelObserver?.disconnect();overviewReelObserver=null;const overview=state.route==='overview';renderMarkup($('#app'),`<div class="app-shell ${overview?'overview-shell':''}">${topbar()}<div class="workspace"><main class="main ${overview?'overview-main':''}" id="main-content">${content}</main></div></div>`);bindCommon()}
 
 function overviewText(value,limit){const text=String(value??'').replace(/\s+/g,' ').trim(),points=Array.from(text);return points.length>limit?points.slice(0,limit).join('')+'…':text}
 function overviewRecordCard(record,appearance,duplicate=false,index=0){
@@ -331,9 +340,10 @@ function updateGauge(input){
   fill.hidden=!view.hasValue;fill.style.width=`${view.pct}%`;knob.hidden=!view.hasValue;knob.style.left=`${view.pct}%`;
   $('[data-gauge-reading]',card).textContent=view.reading;$('[data-gauge-status]',card).textContent=view.status;
 }
-function dailyEvidence(data,locked){const metrics=data.metrics||[];return `<section class="card section-card folio-card daily-evidence-card">
+function dailyEvidence(data,locked,template={}){const metrics=data.metrics||[];return `<section class="card section-card folio-card daily-evidence-card">
   <div class="daily-prompt" data-daily-prompt="sleep" hidden>${gaugeCard('sleep','昨夜睡眠测度',data.sleep,state.stage.sleepTarget,locked)}</div>
   <div class="daily-prompt" data-daily-prompt="energy" hidden>${gaugeCard('energy','主观精力值刻度',data.energy,state.stage.energyTarget,locked)}</div>
+  ${template.financeEnabled===true?'<div class="daily-prompt daily-finance-prompt" data-daily-prompt="finance" hidden><div id="daily-finance" class="daily-finance-widget"><p role="status">正在读取当天账目…</p></div></div>':''}
   ${metrics.map((m,i)=>`<div class="daily-prompt metric-ledger" data-daily-prompt="metric-${i}" hidden><div class="metric-row metric-${i}"><i></i><div class="metric-copy"><b>${esc(m.name)}</b><small>${esc(m.target)}</small><textarea data-metric-action="${i}" aria-label="${esc(m.name)}：今天的具体行动" maxlength="6000" placeholder="今天的具体行动" ${locked?'readonly':''}>${esc(m.action||'')}</textarea></div><div class="metric-status-control"><select data-metric-status="${i}" aria-label="${esc(m.name)}完成状态" ${locked?'disabled':''}><option value="">未记录</option>${['已达标','部分达标','未达标','计划休息'].map(x=>`<option ${m.status===x?'selected':''}>${x}</option>`).join('')}</select><span class="metric-status-chevron" aria-hidden="true"></span></div></div></div>`).join('')}
   <div class="daily-prompt" data-daily-prompt="risk" hidden><div class="risk-note"><span>!</span><div><b>风险信号与偏离对策</b><textarea data-simple="risk" aria-label="风险信号与偏离对策" maxlength="6000" ${locked?'readonly':''} placeholder="记下具体偏离，以及准备怎样应对">${esc(data.risk||'')}</textarea></div></div></div></section>`}
 
@@ -366,10 +376,10 @@ function dailyJournal(data,locked){return `<section class="card section-card fol
 function reviewAfterword(locked,data,actionTemplate){return `${locked&&state.current.status==='completed'?`<section class="card section-card review-completion"><h2>复盘已完成并锁定</h2><p class="help">原记录已保存。你可以回看历史，或前往行动验证查看待验证计划。</p><div class="review-completion-actions"><button type="button" class="btn btn-primary" data-nav="history">查看历史复盘</button><button type="button" class="btn btn-ghost" data-nav="actions">前往行动验证</button></div></section>`:''}${state.current.status==='verified'?verificationRead(state.current):''}`}
 
 // Each local scene is a pointer-inert illustration and a small static paper composition.
-function dailySceneArt(){return `<div class="daily-scene-art" aria-hidden="true"><span class="daily-scene-corner"></span><span class="daily-scene-signet"></span><span class="daily-scene-rule"></span>${['intro','sleep','energy','evidence','reflection','action','calendar','journal'].map(scene=>`<img class="daily-scene-image" data-daily-art="${scene}" src="/assets/daily/${scene}.webp?v=1.0.0-overview26" alt="" width="1254" height="1254" draggable="false">`).join('')}</div>`}
+function dailySceneArt(){return `<div class="daily-scene-art" aria-hidden="true"><span class="daily-scene-corner"></span><span class="daily-scene-signet"></span><span class="daily-scene-rule"></span>${['intro','sleep','energy','evidence','reflection','action','calendar','journal'].map(scene=>`<img class="daily-scene-image" data-daily-art="${scene}" src="/assets/daily/${scene}.webp?v=1.0.0-overview26" alt="" width="1254" height="1254" draggable="false">`).join('')}<img class="daily-scene-image" data-daily-art="finance" src="/assets/finance/ledger.webp?v=1.0.0-finance1" alt="" width="640" height="640" draggable="false"></div>`}
 function dailyIntroLines(quote){return reviewIntroLines(quote)}
 function dailyReviewHtml(period,locked,data,templates){
-  const panes=[dailyEvidence(data,locked),dailyReflection(data,locked,templates.review),dailyActionFields(data,locked,templates.review),dailyJournal(data,locked)];
+  const panes=[dailyEvidence(data,locked,templates.review),dailyReflection(data,locked,templates.review),dailyActionFields(data,locked,templates.review),dailyJournal(data,locked)];
   const lastPrompt=dailyPrompts(data.metrics?.length||0,templates.review).at(-1);
   const saved=locked?(period!==defaultPeriod('daily')?'非当前日期，仅可查看':'这份复盘已锁定'):state.dirty?'有未保存内容':state.current.updated_at?`${beijingTime(state.current.updated_at)} 草稿已保存`:'草稿尚未保存';
   const quote=quoteFor('daily'),{lines,columns,density}=reviewIntroLayout(quote);
@@ -439,6 +449,7 @@ function dailyPromptCopy(prompt){
   const template=templatesForRecord(state.current).review,metric=prompt.id.startsWith('metric-')?state.current.data.metrics[Number(prompt.id.slice(7))]:null;
   const question=reviewQuestions('daily',template).find(item=>item.id===prompt.id);
   if(question)return{title:question.label,description:question.required?'先写具体事实，再写自己的判断。':'选填。留下真正有用的线索即可。'};
+  if(prompt.id==='finance')return{title:'今天，花销多少？',description:'算一算今天的花销。确认入账后独立保存，暂时不记也可以跳过。'};
   if(metric)return{title:`${metric.name||'这项行动'}，今天做了什么？`,description:metric.target?`阶段目标：${metric.target}。记录具体行动，再选一个符合实际的状态。`:'记录具体行动，再选一个符合实际的状态。'};
   const copy={sleep:['昨夜，你睡了多久？','记下实际睡眠时间。暂时不想记录，也可以直接继续。'],energy:['此刻的精力状态如何？','用 0—100 记录你的感受，不需要为了达标而修改。'],risk:['有没有需要留意的风险或偏离？','选填。写下具体信号，以及准备怎样应对。'],today:[template.today,'至少留下一件真实发生的事。不记流水账，也不急着下结论。'],cause:[template.cause,'选填。看看哪些条件促成了它，哪些方法可以再用一次。'],action:[template.actionTitle,'如果明天只能完成一件事，你会选什么？把开始的动作写具体。'],ifCondition:['如果受阻，怎样继续？',template.obstacleTitle],verifyDate:[template.verifyDateTitle,'选定回看这次行动的日期。实际验证时间会在提交结果时自动记录。'],journal:['今天，还有什么想留下？','选填。这里不需要结论，几句话或一整页都可以。']};
   return{title:copy[prompt.id][0],description:copy[prompt.id][1]};
@@ -460,7 +471,7 @@ function setReviewPromptHeading(heading,title,phrase=''){
 function setDailyPromptHeading(title,prompt){
   const heading=$('#daily-prompt-title'),metric=prompt.id.startsWith('metric-')?state.current.data.metrics[Number(prompt.id.slice(7))]:null;
   const phrases={sleep:'睡了多久',energy:'精力状态',risk:'风险或偏离',today:'记下来',cause:'发生',action:'最重要的一件事',ifCondition:'受阻',verifyDate:'验证',journal:'想留下'};
-  setReviewPromptHeading(heading,title,metric?.name||phrases[prompt.id]||'');
+  setReviewPromptHeading(heading,title,prompt.id==='finance'?'花销':metric?.name||phrases[prompt.id]||'');
 }
 function showDailyPrompt(promptId,focus=false){
   $('.daily-flow')?.reviewTransition?.cancel();
@@ -471,7 +482,7 @@ function showDailyPrompt(promptId,focus=false){
   $$('[data-daily-pane]').forEach(pane=>pane.hidden=intro||pane.dataset.dailyPane!==prompt.step);
   $$('[data-daily-prompt]').forEach(question=>question.hidden=intro||question.dataset.dailyPrompt!==promptId);
   setDailyImmersive(true);
-  const scene=intro?'intro':prompt.id==='sleep'?'sleep':prompt.id==='energy'?'energy':prompt.step==='evidence'?'evidence':prompt.step==='reflection'?'reflection':prompt.id==='verifyDate'?'calendar':prompt.step==='action'?'action':'journal';
+  const scene=intro?'intro':prompt.id==='sleep'?'sleep':prompt.id==='energy'?'energy':prompt.id==='finance'?'finance':prompt.step==='evidence'?'evidence':prompt.step==='reflection'?'reflection':prompt.id==='verifyDate'?'calendar':prompt.step==='action'?'action':'journal';
   $('.daily-art-flow').dataset.dailyScene=scene;$('.daily-art-flow').dataset.dailyCurrentPrompt=intro?'intro':prompt.id;
   $('.daily-art-flow').dataset.dailySide=!intro&&['reflection','journal'].includes(prompt.step)?'left':'right';
   $('#daily-current-group').hidden=intro;
@@ -499,13 +510,13 @@ function clearDailyIssues(){
   $$('[aria-describedby]').filter(control=>control.getAttribute('aria-describedby').split(' ').includes('daily-flow-error')).forEach(control=>{control.removeAttribute('aria-invalid');const ids=control.getAttribute('aria-describedby').split(' ').filter(id=>id!=='daily-flow-error');if(ids.length)control.setAttribute('aria-describedby',ids.join(' '));else control.removeAttribute('aria-describedby')});
   if($('#daily-flow-error'))$('#daily-flow-error').hidden=true;
 }
-function dailyIssueLabel(issue){const template=templatesForRecord(state.current).review;return reviewQuestions('daily',template).find(item=>item.id===issue.field)?.label||{today:template.today,action:template.actionTitle,ifCondition:'如果遇到的阻碍',ifThen:template.obstacleTitle,verifyDate:`${template.verifyDateTitle}（不能早于今天）`}[issue.field]}
+function dailyIssueLabel(issue){const template=templatesForRecord(state.current).review;return reviewQuestions('daily',template).find(item=>item.id===issue.field)?.label||{finance:'待记账花销（请先确认入账或清空）',today:template.today,action:template.actionTitle,ifCondition:'如果遇到的阻碍',ifThen:template.obstacleTitle,verifyDate:`${template.verifyDateTitle}（不能早于今天）`}[issue.field]}
 function showDailyIssues(issues){
   clearDailyIssues();if(!issues.length)return;
   showDailyPrompt(issues[0].field);
   const error=$('#daily-flow-error');error.textContent=`请填写：${issues.map(dailyIssueLabel).join('、')}`;error.hidden=false;
   let first;
-  for(const issue of issues){const field=$(reviewQuestions('daily',templatesForRecord(state.current).review).some(item=>item.id===issue.field)?`[data-answer="${issue.field}"]`:issue.field==='verifyDate'?'[data-verify-day][tabindex="0"]':`[data-simple="${issue.field}"]`);if(field){field.setAttribute('aria-invalid','true');const ids=new Set((field.getAttribute('aria-describedby')||'').split(' ').filter(Boolean));ids.add('daily-flow-error');field.setAttribute('aria-describedby',[...ids].join(' '));first ||= field}}
+  for(const issue of issues){const field=$(issue.field==='finance'?'#daily-finance [name="expression"]':reviewQuestions('daily',templatesForRecord(state.current).review).some(item=>item.id===issue.field)?`[data-answer="${issue.field}"]`:issue.field==='verifyDate'?'[data-verify-day][tabindex="0"]':`[data-simple="${issue.field}"]`);if(field){field.setAttribute('aria-invalid','true');const ids=new Set((field.getAttribute('aria-describedby')||'').split(' ').filter(Boolean));ids.add('daily-flow-error');field.setAttribute('aria-describedby',[...ids].join(' '));first ||= field}}
   openDailyAnswer(first);first?.focus();first?.scrollIntoView({block:'center',behavior:'auto'});
 }
 function bindDailyFlow(){
@@ -638,11 +649,14 @@ function bindReview(){
   $('#save-draft')?.addEventListener('click',()=>saveCurrent().catch(()=>{}));
   $('#complete-record')?.addEventListener('click',completeCurrent);
   $('#delete-draft')?.addEventListener('click',()=>deleteDraftRecord(state.current));
-  if(state.current.type==='daily')bindDailyFlow();else bindExtendedFlow();
+  if(state.current.type==='daily'){
+    bindDailyFlow();const finance=$('#daily-finance'),editor=$('#daily-editor'),period=state.current.period,recordId=state.current.id;
+    if(finance)finance.financeController=mountDailyFinance(finance,financeUiOptions(finance,{date:period,readonly:editor.dataset.dailyLocked==='true',snapshot:state.current.data.financeSnapshot,draft:state.current.data.financeDraft||{},isCurrent:()=>$('#daily-editor')===editor&&state.current?.type==='daily'&&state.current.period===period&&(!recordId||state.current.id===recordId),onDraftChange:draft=>{if($('#daily-editor')===editor&&state.current?.type==='daily'&&state.current.period===period){state.current.data.financeDraft=draft;state.dirty=true}}}));
+  }else bindExtendedFlow();
   bindReviewWheel();
 }
 function renderReviewFromCurrent(){const keep=clone(state.current);renderReview(keep.type,keep.period,false,keep,{dailySection:state.dailySection,dailyPrompt:state.dailyPrompt,extendedPrompt:state.extendedPrompt,dirty:true})}
-function collectCurrent(){if(!state.current)return;const d=state.current.data||(state.current.data={});d.answers=d.answers||{};$$('[data-answer]').forEach(el=>{const k=el.dataset.answer,i=Number(el.dataset.index);d.answers[k]=d.answers[k]||[];d.answers[k][i]=el.value});$$('[data-simple]').forEach(el=>d[el.dataset.simple]=el.value);$$('[data-metric-action]').forEach(el=>{const i=Number(el.dataset.metricAction);d.metrics[i].action=el.value});$$('[data-metric-status]').forEach(el=>{const i=Number(el.dataset.metricStatus);d.metrics[i].status=el.value});if($('#record-title'))state.current.title=$('#record-title').value;if(state.current.status==='draft')d.templateSnapshot=currentTemplateSnapshot(state.current.type)}
+function collectCurrent(){if(!state.current)return;const d=state.current.data||(state.current.data={});d.answers=d.answers||{};$$('[data-answer]').forEach(el=>{const k=el.dataset.answer,i=Number(el.dataset.index);d.answers[k]=d.answers[k]||[];d.answers[k][i]=el.value});$$('[data-simple]').forEach(el=>d[el.dataset.simple]=el.value);$$('[data-metric-action]').forEach(el=>{const i=Number(el.dataset.metricAction);d.metrics[i].action=el.value});$$('[data-metric-status]').forEach(el=>{const i=Number(el.dataset.metricStatus);d.metrics[i].status=el.value});if($('#record-title'))state.current.title=$('#record-title').value;if(state.current.status==='draft'){const snapshot=currentTemplateSnapshot(state.current.type);if(state.current.type==='daily')snapshot.review.financeEnabled=templatesForRecord(state.current).review.financeEnabled===true;d.templateSnapshot=snapshot}}
 function validateCurrent(){collectCurrent();const r=state.current,d=r.data;if(r.type==='daily'){const issues=dailyStepIssues(d,null,today(),templatesForRecord(r).review);if(issues.length)showDailyIssues(issues);return issues.map(dailyIssueLabel)}const issues=extendedReviewIssues(d,r.title,currentExtendedPrompts(),verificationMinimum(r.type,today()));if(issues.length)showExtendedIssues(issues);return issues.map(extendedIssueLabel)}
 function setReviewBusy(busy){
   if(busy)$('.daily-flow')?.reviewTransition?.cancel();
@@ -865,7 +879,7 @@ function bindBackup(status,targets=[]){
           const preview=await request('/api/data/inspect',{method:'POST',body:{encryptedBackup,password}});
           if(!task.current())return;task.finish();
           const crossAccount=preview.requiresOwnerConfirmation===true;
-          openModal(`<div class="modal-head"><div><h2>恢复前确认</h2><p>备份已通过密码、完整性与账户归属校验。</p></div><button class="modal-close" data-close>×</button></div><div class="lock-summary">备份所属账户：${esc(preview.ownerUsername||'无法识别')}<br>当前登录账户：${esc(state.user.username)}<br>导出时间：${esc(beijingDateTime(preview.exportedAt)||preview.exportedAt||'未记录')}<br>总条目：${preview.count}<br>复盘记录：${preview.counts.record||0}</div>${crossAccount?`<div class="backup-notice">检测到备份账户与当前账户不同。为防止误恢复，请重新输入备份所属用户名和生成这份文件时使用的备份密码。</div><div class="input-grid"><div class="field"><label for="source-backup-username">备份所属用户名</label><input id="source-backup-username" maxlength="32" required autocomplete="username" placeholder="输入 ${esc(preview.ownerUsername||'原用户名')}"></div><div class="field"><label for="source-backup-password">该文件的备份密码</label><input id="source-backup-password" type="password" minlength="15" maxlength="256" required autocomplete="current-password"></div></div>`:''}<div class="field" style="margin-top:16px"><label>恢复方式</label><select id="restore-mode"><option value="merge">安全合并：保留较新的记录</option><option value="replace">完整恢复：替换当前账户复盘</option></select></div><div class="modal-actions"><button class="btn btn-ghost" data-close>取消</button><button class="btn btn-red" id="apply-restore">开始恢复</button></div>`);
+          openModal(`<div class="modal-head"><div><h2>恢复前确认</h2><p>备份已通过密码、完整性与账户归属校验。</p></div><button class="modal-close" data-close>×</button></div><div class="lock-summary">备份所属账户：${esc(preview.ownerUsername||'无法识别')}<br>当前登录账户：${esc(state.user.username)}<br>导出时间：${esc(beijingDateTime(preview.exportedAt)||preview.exportedAt||'未记录')}<br>总条目：${preview.count}<br>复盘记录：${preview.counts.record||0}${preview.finance?`<br>财务账目：${Number(preview.finance.entries)||0} 条 · 回收站 ${Number(preview.finance.deleted)||0} 条<br>压缩凭证：${Number(preview.finance.receipts)||0} 张（图片本体保存在外部存储）`:"<br>旧备份未含财务，恢复时保留现有账本"}</div>${crossAccount?`<div class="backup-notice">检测到备份账户与当前账户不同。为防止误恢复，请重新输入备份所属用户名和生成这份文件时使用的备份密码。</div><div class="input-grid"><div class="field"><label for="source-backup-username">备份所属用户名</label><input id="source-backup-username" maxlength="32" required autocomplete="username" placeholder="输入 ${esc(preview.ownerUsername||'原用户名')}"></div><div class="field"><label for="source-backup-password">该文件的备份密码</label><input id="source-backup-password" type="password" minlength="15" maxlength="256" required autocomplete="current-password"></div></div>`:''}<div class="field" style="margin-top:16px"><label>恢复方式</label><select id="restore-mode"><option value="merge">安全合并：保留较新的记录</option><option value="replace">完整恢复：替换当前账户复盘</option></select></div><div class="modal-actions"><button class="btn btn-ghost" data-close>取消</button><button class="btn btn-red" id="apply-restore">开始恢复</button></div>`);
           $('#apply-restore').addEventListener('click',async()=>{
             const button=$('#apply-restore'),mode=$('#restore-mode').value;
             if(button.disabled)return;
@@ -923,7 +937,7 @@ function bindSiteBackup(){
         try{
           inspectButton.disabled=true;inspectButton.textContent='正在校验…';const preview=await request('/api/admin/site-backup/inspect',{method:'POST',body:{encryptedBackup,backupPassword}});
           if(!task.current())return;task.finish();
-          openModal(`<div class="modal-head"><div><h2>确认恢复整站资料</h2><p>备份已通过密码与完整性校验。恢复完成后所有账户都会退出登录。</p></div><button class="modal-close" data-close>×</button></div><div class="lock-summary">创建时间：${esc(beijingDateTime(preview.createdAt)||preview.createdAt||'未记录')}<br>账户：${preview.users} 个<br>复盘记录：${preview.records} 条<br>设置：${preview.settings} 项<br>外部备份目标：${preview.targets} 个</div><div class="backup-notice">此操作会删除当前站点的全部账户与资料，再恢复备份中的完整数据。请确认你保存了当前站点所需内容。</div><form id="site-restore-form"><div class="field"><label for="site-restore-current-password">当前超级管理员登录密码</label><input id="site-restore-current-password" name="currentPassword" type="password" minlength="15" maxlength="128" required autocomplete="current-password"></div><div class="field"><label for="site-restore-confirmation">输入“恢复全部资料”确认</label><input id="site-restore-confirmation" name="confirmationText" required autocomplete="off" placeholder="恢复全部资料"></div><div class="modal-actions"><button type="button" class="btn btn-ghost" data-close>取消</button><button class="btn btn-red" type="submit">完整恢复本站</button></div></form>`);
+          openModal(`<div class="modal-head"><div><h2>确认恢复整站资料</h2><p>备份已通过密码与完整性校验。恢复完成后所有账户都会退出登录。</p></div><button class="modal-close" data-close>×</button></div><div class="lock-summary">创建时间：${esc(beijingDateTime(preview.createdAt)||preview.createdAt||'未记录')}<br>账户：${preview.users} 个<br>复盘记录：${preview.records} 条<br>设置：${preview.settings} 项<br>外部备份目标：${preview.targets} 个<br>财务账目：${Number(preview.financeEntries)||0} 条 · 压缩凭证 ${Number(preview.financeReceipts)||0} 张<br>${preview.legacyFinancePreserved?"旧备份未含财务，保留同一账户的现有账本":"账目和图片关联会恢复，外部图片本体需由原存储继续提供"}</div><div class="backup-notice">此操作会删除当前站点的全部账户与资料，再恢复备份中的完整数据。请确认你保存了当前站点所需内容。</div><form id="site-restore-form"><div class="field"><label for="site-restore-current-password">当前超级管理员登录密码</label><input id="site-restore-current-password" name="currentPassword" type="password" minlength="15" maxlength="128" required autocomplete="current-password"></div><div class="field"><label for="site-restore-confirmation">输入“恢复全部资料”确认</label><input id="site-restore-confirmation" name="confirmationText" required autocomplete="off" placeholder="恢复全部资料"></div><div class="modal-actions"><button type="button" class="btn btn-ghost" data-close>取消</button><button class="btn btn-red" type="submit">完整恢复本站</button></div></form>`);
           $('#site-restore-form').addEventListener('submit',async restoreEvent=>{
             restoreEvent.preventDefault();const restoreForm=restoreEvent.currentTarget,restoreButton=restoreForm.querySelector('button[type="submit"]'),values=Object.fromEntries(new FormData(restoreForm));
             if(String(values.confirmationText||'').trim()!=='恢复全部资料'){toast('请输入“恢复全部资料”后再继续','error');return}
@@ -1077,6 +1091,7 @@ function renderGuide(){shell(`<section class="workspace-page workspace-guide" ar
 function openSettings(){attemptNavigate(()=>navigate('settings'))}
 function activityEntryHtml(entry){
   const labels={login:'登录慎独',logout:'退出登录',draft_saved:'保存草稿',draft_deleted:'删除草稿',review_completed:'提交并锁定复盘',action_verified:'提交行动验证',stage_updated:'修改阶段与复盘内容',preferences_updated:'修改动态偏好',backup_success:'外部备份成功',backup_failed:'外部备份失败',backup_target_created:'新增备份目标',backup_target_updated:'修改备份目标',backup_target_deleted:'删除备份目标',data_exported:'导出个人备份',data_imported:'恢复个人资料',site_exported:'导出整站备份',site_imported:'恢复整站资料',password_updated:'修改登录密码',backup_password_updated:'修改备份密码'};
+  Object.assign(labels,{finance_entry_created:'确认记账',finance_entry_updated:'更正账目',finance_entry_deleted:'移入账目回收站',finance_entry_restored:'恢复账目',finance_category_updated:'修改记账分类',finance_day_updated:'更新每日花销记录',finance_storage_updated:'修改凭证存储设置',finance_receipt_uploaded:'保存压缩凭证'});
   const label=Object.hasOwn(labels,entry.action)?labels[entry.action]:'使用记录',type=Object.hasOwn(TYPES,entry.recordType)?TYPES[entry.recordType].label:'',period=type&&entry.period?formatDate(entry.period):'',target=entry.targetKind==='s3'?'S3 兼容存储':entry.targetKind==='webdav'?'WebDAV 网络存储':'';
   return `<li class="activity-entry${entry.action==='backup_failed'?' activity-entry-failed':''}"><time datetime="${esc(entry.createdAt||'')}">${esc(beijingTime(entry.createdAt)||'时间未记录')}</time><div class="activity-entry-copy"><p class="activity-entry-operation"><strong class="activity-entry-actor">${esc(entry.actorName||'操作人未记录')}</strong><span class="activity-entry-action">${esc(label)}</span></p>${type||period||target?`<p class="activity-entry-detail">${[type,period,target].filter(Boolean).map(esc).join(' · ')}</p>`:''}</div></li>`;
 }
@@ -1111,6 +1126,19 @@ function renderActivity(){
   };
   $('#activity-refresh',page).addEventListener('click',()=>load());
   more.addEventListener('click',()=>load(true));void load();
+}
+function financeUiOptions(container,extra={}){
+  const accountId=state.user?.id,current=()=>Boolean(accountId)&&container.isConnected&&state.user?.id===accountId;
+  return {renderMarkup,today,toast,openModal,closeModal,...extra,
+    request:(path,args={},guard=()=>true)=>request(path,args,()=>current()&&guard()),
+    isCurrent:()=>current()&&(extra.isCurrent?.()??true),
+    setDirty:value=>{if(current()&&(!extra.date||value))state.dirty=Boolean(value)},
+    beginWrite:()=>{if(!current()||state.saving)return null;const token={isCurrent:()=>current()&&state.settingsWriteOwner===token};state.settingsWriteOwner=token;state.saving=true;return token},
+    endWrite:token=>{if(state.settingsWriteOwner===token){delete state.settingsWriteOwner;if(!state.reviewWriteOwner&&!state.dialogWriteOwner&&!state.accountWriteOwner&&!state.adminWriteOwner)state.saving=false}}
+  };
+}
+function renderFinance(){
+  shell('<div id="finance-workspace"></div>');const container=$('#finance-workspace');container.financeController=mountFinancePage(container,financeUiOptions(container));
 }
 function renderSettings(){
   const items=[['stage','阶段设置','目标与复盘问题'],['activity','使用日志','哪天 · 谁 · 做了什么'],['guide','使用指南','记录与验证方法']];
@@ -1284,9 +1312,9 @@ function bindCommon(){
 function navigate(route){
  if(TYPES[route])return enterReview(route,defaultPeriod(route),route==='decision');
  reviewNavigation.clear();state.route=route;state.navOpen=false;
- document.title=`${({overview:'概览',history:'历史复盘',actions:currentActionTemplate().pageTitle,backup:'数据备份',users:'账户管理',settings:'设置',calendar:'阶段与日历','stage-settings':'阶段与内容设置',guide:'使用指南',activity:'使用日志'}[route]||'慎独')} · 慎独`;
- const render={overview:renderOverview,history:renderHistory,actions:renderActions,backup:renderBackup,users:renderUsers,settings:renderSettings,calendar:renderCalendar,'stage-settings':renderStageSettings,guide:renderGuide,activity:renderActivity}[route];
- if(render){const result=render();if(['settings','calendar','stage-settings','guide','activity'].includes(route)){const heading=$('main h1');if(heading){heading.tabIndex=-1;heading.focus({preventScroll:true})}window.scrollTo({top:0,behavior:'instant'})}return result}
+ document.title=`${({overview:'概览',history:'历史复盘',actions:currentActionTemplate().pageTitle,finance:'财务收支',backup:'数据备份',users:'账户管理',settings:'设置',calendar:'阶段与日历','stage-settings':'阶段与内容设置',guide:'使用指南',activity:'使用日志'}[route]||'慎独')} · 慎独`;
+ const render={overview:renderOverview,history:renderHistory,actions:renderActions,finance:renderFinance,backup:renderBackup,users:renderUsers,settings:renderSettings,calendar:renderCalendar,'stage-settings':renderStageSettings,guide:renderGuide,activity:renderActivity}[route];
+ if(render){const result=render();if(['settings','calendar','stage-settings','guide','activity','finance'].includes(route)){const heading=$('main h1');if(heading){heading.tabIndex=-1;heading.focus({preventScroll:true})}window.scrollTo({top:0,behavior:'instant'})}return result}
  renderReview('daily');
 }
 

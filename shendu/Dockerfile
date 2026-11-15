@@ -5,15 +5,17 @@ RUN --mount=type=cache,target=/root/.npm npm ci --no-audit --no-fund
 COPY components.json jsconfig.json vite.config.js ./
 COPY ui ./ui
 COPY scripts/ui-licenses.mjs ./scripts/ui-licenses.mjs
+COPY scripts/prepare-ocr.mjs ./scripts/prepare-ocr.mjs
 RUN npm run build
 
 FROM node:24-alpine AS runtime
 RUN apk add --no-cache tini tzdata su-exec
 WORKDIR /app
-COPY package.json server.mjs ./
+COPY package.json server.mjs finance-ledger.mjs finance-receipts.mjs ./
 COPY scripts ./scripts
 COPY public ./public
 COPY --from=ui-build /build/public/ui ./public/ui
+COPY --from=ui-build /build/public/ocr ./public/ocr
 RUN mkdir -p /app/data /app/tmp \
   && chmod +x /app/scripts/docker-entrypoint.sh \
   && chown -R node:node /app/data /app/tmp

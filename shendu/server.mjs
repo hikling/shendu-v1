@@ -12,6 +12,8 @@ import { verificationMinimum } from './public/verification-policy.js';
 import { reviewQuestions, reviewDisabledFields } from './public/review-schema.js';
 import { normalizeReviewMetricIds } from './public/review-metrics.js';
 import { normalizeBackupSchedule, backupScheduleDue, backupHistoryCutoff } from './public/backup-schedule.js';
+import { createFinanceLedger,normalizeFinanceDraft,financeDraftPending } from './finance-ledger.mjs';
+import { createFinanceReceipts } from './finance-receipts.mjs';
 
 process.umask(0o077);
 const PORT = Number(process.env.SHENDU_PORT || 3000);
@@ -110,7 +112,7 @@ db.exec(`
   );
   CREATE INDEX IF NOT EXISTS idx_activity_user_time ON activity_events(user_id,created_at DESC,id DESC);
   CREATE INDEX IF NOT EXISTS idx_activity_time ON activity_events(created_at DESC,id DESC);
-  INSERT OR IGNORE INTO schema_meta(key,value) VALUES ('schema_version','8');
+  INSERT OR IGNORE INTO schema_meta(key,value) VALUES ('schema_version','9');
   INSERT OR IGNORE INTO schema_meta(key,value) VALUES ('public_registration','true');
 `);
 
@@ -181,6 +183,11 @@ const encryptedContentRows = () => {
     if (isEncryptedData(row.data)) rows.push({ value: row.data, scope: dataScope('record', row.user_id, row.id, 'data') });
     if (isEncryptedData(row.verification)) rows.push({ value: row.verification, scope: dataScope('record', row.user_id, row.id, 'verification') });
   }
+  for(const [table,identity,scope] of [['finance_entries','id','finance-entry'],['finance_categories','id','finance-category'],['finance_days','date','finance-day']]){
+    if(!db.prepare("SELECT 1 FROM sqlite_master WHERE type='table' AND name=?").get(table))continue;
+    for(const row of db.prepare(`SELECT user_id,${identity} AS identity,data FROM ${table}`).all())if(isEncryptedData(row.data))rows.push({value:row.data,scope:dataScope(scope,row.user_id,row.identity)});
+  }
+  if(db.prepare("SELECT 1 FROM sqlite_master WHERE type='table' AND name='finance_receipts'").get())for(const row of db.prepare('SELECT user_id,id,data FROM finance_receipts').all())if(isEncryptedData(row.data))rows.push({value:row.data,scope:dataScope('finance-receipt',row.user_id,row.id,'data')});
   return rows;
 };
 const persistMasterKey = key => {
@@ -429,7 +436,7 @@ const templateText = (value,fallback,max=240) => safeText(value,max).trim()||fal
 const normalizeReviewTemplate = (type,value) => {
   const defaults=REVIEW_TEMPLATE_DEFAULTS[type],source=isPlainObject(value)?value:{};
   const labels=Object.fromEntries(Object.entries(defaults).map(([key,fallback])=>[key,templateText(source[key],fallback,160)]));
-  return {...labels,questions:reviewQuestions(type,{...source,...labels}),disabledFields:type==='daily'?reviewDisabledFields(source):[]};
+  return {...labels,questions:reviewQuestions(type,{...source,...labels}),disabledFields:type==='daily'?reviewDisabledFields(source):[],...(type==='daily'?{financeEnabled:source.financeEnabled!==false}:{})};
 };
 const normalizeReviewTemplates = value => Object.fromEntries(Object.keys(REVIEW_TEMPLATE_DEFAULTS).map(type=>[type,normalizeReviewTemplate(type,isPlainObject(value)?value[type]:null)]));
 const normalizeActionTemplate = value => {
@@ -451,7 +458,7 @@ const normalizeStage = value => {
 };
 const normalizeTemplateSnapshot = (value,type) => {
   if(!validRecordType(type)||!isPlainObject(value)||!isPlainObject(value.review)||!isPlainObject(value.action))return null;
-  return {version:1,review:normalizeReviewTemplate(type,value.review),action:normalizeActionTemplate(value.action)};
+  return {version:1,review:{...normalizeReviewTemplate(type,value.review),...(type==='daily'?{financeEnabled:value.review.financeEnabled===true}:{})},action:normalizeActionTemplate(value.action)};
 };
 const validIsoDate = value => {
   if(!/^\d{4}-\d{2}-\d{2}$/.test(String(value||'')))return false;
@@ -463,7 +470,7 @@ const validEntityId = value => /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab]
 const validStoredRecordId = value => typeof value==='string'&&value.length>0&&value.length<=100&&!/[\x00-\x1f\x7f/\\]/.test(value);
 const validStoredRecordPeriod = value => typeof value==='string'&&value.length>0&&value.length<=100&&!/[\x00-\x1f\x7f]/.test(value);
 // Activity stores fixed operation metadata only, never titles, bodies or credentials.
-const ACTIVITY_ACTIONS=new Set(['login','logout','draft_saved','draft_deleted','review_completed','action_verified','stage_updated','preferences_updated','password_updated','backup_password_updated','backup_success','backup_failed','backup_target_created','backup_target_updated','backup_target_deleted','data_exported','data_imported','site_exported','site_imported']);
+const ACTIVITY_ACTIONS=new Set(['login','logout','draft_saved','draft_deleted','review_completed','action_verified','stage_updated','preferences_updated','password_updated','backup_password_updated','backup_success','backup_failed','backup_target_created','backup_target_updated','backup_target_deleted','data_exported','data_imported','site_exported','site_imported','finance_entry_created','finance_entry_updated','finance_entry_deleted','finance_entry_restored','finance_category_updated','finance_day_updated','finance_storage_updated','finance_receipt_uploaded']);
 const activityPeriod=value=>typeof value==='string'&&/^\d{4}(?:-\d{2}(?:-\d{2})?|-W\d{2})?$/.test(value)?value:null;
 function appendActivity(userId,action,{recordType=null,period=null,targetKind=null}={},stamp=now()){
   if(!ACTIVITY_ACTIONS.has(action))throw new Error('使用日志操作类型无效');
@@ -495,7 +502,7 @@ function migrateSensitiveData() {
       if(isEncryptedData(row.value))continue;
       updateSetting.run(encryptData(JSON.parse(row.value),dataScope('setting',row.user_id,row.key)),row.user_id,row.key);migrated=true;
     }
-    db.prepare(`INSERT INTO schema_meta(key,value) VALUES('schema_version','8') ON CONFLICT(key) DO UPDATE SET value='8'`).run();
+    db.prepare(`INSERT INTO schema_meta(key,value) VALUES('schema_version','9') ON CONFLICT(key) DO UPDATE SET value='9'`).run();
     db.prepare(`INSERT INTO schema_meta(key,value) VALUES('data_encryption','AES-256-GCM') ON CONFLICT(key) DO UPDATE SET value='AES-256-GCM'`).run();
     db.exec('COMMIT');
     if(migrated){db.exec('PRAGMA wal_checkpoint(TRUNCATE)');db.exec('VACUUM');db.exec('PRAGMA wal_checkpoint(TRUNCATE)');try{chmodSync(DATABASE_PATH,0o600)}catch{}}
@@ -505,6 +512,9 @@ function migrateSensitiveData() {
   }
 }
 migrateSensitiveData();
+
+const financeReceipts=createFinanceReceipts({db,setting,putSetting,encryptData,decryptData,dataScope,now,readJson,json,error,assertPublicHttps,s3Request,normalizeBackupConfig,sessionUser,withActivity,recordActivity:appendActivity,getS3Targets:userId=>db.prepare("SELECT id,name FROM backup_targets WHERE user_id=? AND kind='s3' ORDER BY name,id").all(userId),getS3TargetConfig:(userId,id)=>{const target=db.prepare("SELECT encrypted_config FROM backup_targets WHERE user_id=? AND id=? AND kind='s3'").get(userId,id);return target?decryptSecret(target.encrypted_config):null}});
+const financeLedger=createFinanceLedger({db,encryptData,decryptData,dataScope,now,readJson,json,today:todayDate,withActivity,verifyReceipts:(userId,ids)=>ids.every(id=>financeReceipts.hasReadyReceipt(userId,id))});
 
 const rateMap = new Map();
 const clientAddress = req => {
@@ -526,16 +536,31 @@ function exportPayload(userId) {
     const user=db.prepare(`SELECT username,display_name FROM users WHERE id=?`).get(userId);
     if(!user)throw new Error('账户不存在');
     const records=db.prepare(`SELECT * FROM records WHERE user_id=? ORDER BY updated_at`).all(userId).map(recordOut);
-    const payload={profile:{username:user.username,displayName:user.display_name},records,stage:normalizeStage(setting(userId,'stage',defaultStage())),theme:normalizeTheme(setting(userId,'theme',defaultTheme())),exportedAt:now()};
+    const payload={profile:{username:user.username,displayName:user.display_name},records,stage:normalizeStage(setting(userId,'stage',defaultStage())),theme:normalizeTheme(setting(userId,'theme',defaultTheme())),finance:{...financeLedger.exportUser(userId),receipts:financeReceipts.exportUser(userId)},exportedAt:now()};
     db.exec('COMMIT');return payload;
   }catch(error){try{db.exec('ROLLBACK')}catch{}throw error}
+}
+
+function financeEnvelope(userId){return {...financeLedger.exportUser(userId),receipts:financeReceipts.exportUser(userId)}}
+function hasFinanceData(value){return Boolean(value&&(value.entries.length||value.categories.length||value.days.length||value.receipts?.storage||value.receipts?.receipts?.length))}
+function prepareFinance(value){
+  const ledger=financeLedger.validateImport(value);
+  const receipts=financeReceipts.validateImport(value.receipts);
+  const readyIds=new Set((receipts.receipts||[]).filter(item=>item.ready).map(item=>item.id));
+  for(const entry of ledger.entries)if(entry.receiptIds.some(id=>!readyIds.has(id)))throw Object.assign(new Error('备份中的账目凭证关联无效'),{status:400,code:'finance_backup_invalid'});
+  return {...ledger,receipts};
+}
+function importFinance(userId,value,{replace=false}={}){
+  financeReceipts.importUser(userId,value.receipts,{replace});
+  financeLedger.importUser(userId,value,{replace});
+  for(const entry of financeLedger.exportUser(userId).entries)if(entry.receiptIds.some(id=>!financeReceipts.hasReadyReceipt(userId,id)))throw Object.assign(new Error('恢复后的账目凭证关联无效'),{status:400,code:'finance_backup_invalid'});
 }
 
 function createBackupBuffer(userId, password) {
   const payload = exportPayload(userId);
   const entries = [
     { kind: 'profile', value: payload.profile }, { kind: 'stage', value: payload.stage },
-    { kind: 'theme', value: payload.theme }, ...payload.records.map(value => ({ kind: 'record', value }))
+    { kind: 'theme', value: payload.theme }, ...(hasFinanceData(payload.finance)?[{kind:'finance',value:payload.finance}]:[]), ...payload.records.map(value => ({ kind: 'record', value }))
   ];
   const salt=randomBytes(16),iv=randomBytes(12),key=pbkdf2Sync(password,salt,600000,32,'sha256');
   const header={format:'shendu-v4',version:4,kind:'account',kdf:{name:'PBKDF2-HMAC-SHA-256',iterations:600000,salt:salt.toString('base64')},cipher:{name:'AES-256-GCM',iv:iv.toString('base64')},compression:'gzip'};
@@ -729,7 +754,7 @@ function backupPreview(parsed,currentUser=null) {
   }, {});
   const owner=backupOwner(parsed),unsupportedFields=new Set(parsed.unsupportedFields||[]);
   for (const entry of parsed.entries) {
-    if (!['profile','stage','theme','record'].includes(entry.kind)) unsupportedFields.add(`entry.${entry.kind}`);
+    if (!['profile','stage','theme','record','finance'].includes(entry.kind)) unsupportedFields.add(`entry.${entry.kind}`);
     if (entry.kind==='stage'||entry.kind==='theme') reportDroppedPaths(entry.value,entry.kind==='stage'?normalizeStage(entry.value):normalizeTheme(entry.value),entry.kind,unsupportedFields);
   }
   const conflicts={existing:0,protected:0,newerOrEqualDraft:0,willUpdate:0,willCreate:0,idRemapped:0};
@@ -752,6 +777,8 @@ function backupPreview(parsed,currentUser=null) {
     total: counts.record || 0,
     counts,
     settings: Boolean(counts.stage || counts.theme),
+    finance:prepared.finance?{entries:prepared.finance.entries.filter(item=>!item.deletedAt).length,deleted:prepared.finance.entries.filter(item=>item.deletedAt).length,receipts:prepared.finance.receipts.receipts.length,externalImages:true}:null,
+    financeImagesNote:prepared.finance?'凭证图片保存在外部存储，恢复账目不会重新上传或找回已丢失的图片。':'此旧备份不含财务资料，恢复将保留当前财务账本。',
     ownerUsername: owner.username,
     ownerDisplayName: owner.displayName,
     ownerMatches:currentUser?backupOwnerMatches(currentUser.username,owner.username):null,
@@ -781,7 +808,7 @@ function prepareBackup(parsed) {
   const singleton=new Set(),records=[],ids=new Set(),periods=new Set();
   for(const entry of parsed.entries) {
     if(!isPlainObject(entry)||typeof entry.kind!=='string')throw Object.assign(new Error('备份包含无效条目'),{code:'backup_invalid_entries'});
-    if(['profile','stage','theme'].includes(entry.kind)) {
+    if(['profile','stage','theme','finance'].includes(entry.kind)) {
       if(singleton.has(entry.kind)||!isPlainObject(entry.value))throw Object.assign(new Error('备份的账户或设置条目无效'),{code:'backup_invalid_entries'});
       singleton.add(entry.kind);
     }
@@ -795,7 +822,8 @@ function prepareBackup(parsed) {
   if(records.length>MAX_RECORDS_PER_USER)throw Object.assign(new Error(`单个账户最多恢复 ${MAX_RECORDS_PER_USER} 条复盘记录`),{code:'backup_record_limit'});
   const profile=parsed.entries.find(entry=>entry.kind==='profile')?.value||parsed.owner||null;
   if(parsed.owner&&profile&&parsed.owner.username!==profile.username)throw Object.assign(new Error('备份账户归属信息不一致'),{code:'backup_owner_mismatch'});
-  return {records,profile};
+  const financeEntry=parsed.entries.find(entry=>entry.kind==='finance');
+  return {records,profile,finance:financeEntry?prepareFinance(financeEntry.value):null};
 }
 
 function getBackupPassword(userId) {
@@ -833,7 +861,7 @@ function normalizeImportedRecord(value) {
 }
 
 function applyBackup(userId, parsed, mode) {
-  const {records,profile}=prepareBackup(parsed);
+  const {records,profile,finance}=prepareBackup(parsed);
   db.exec('BEGIN IMMEDIATE');
   try {
     if (mode === 'replace') {
@@ -860,6 +888,7 @@ function applyBackup(userId, parsed, mode) {
       const exists=db.prepare(`SELECT 1 FROM user_settings WHERE user_id=? AND key=?`).get(userId,e.kind);
       if (mode==='replace'||!exists) putSetting(userId,e.kind,e.kind==='stage'?normalizeStage(e.value):normalizeTheme(e.value));
     }
+    if(finance)importFinance(userId,finance,{replace:mode==='replace'});
     if(db.prepare(`SELECT COUNT(*) AS n FROM records WHERE user_id=?`).get(userId).n>MAX_RECORDS_PER_USER)throw new Error('恢复后的复盘记录数量超过账户上限');
     if(accountRecordBytes(userId)>MAX_ACCOUNT_CONTENT_BYTES)throw new Error('恢复后的复盘内容超过账户存储上限');
     appendActivity(userId,'data_imported');
@@ -875,7 +904,7 @@ function siteBackupPayload() {
   db.exec('BEGIN');
   try{
     const users=db.prepare(`SELECT id,username,display_name,password_hash,role,status,session_version,created_at FROM users ORDER BY created_at,id`).all();
-    const settings=db.prepare(`SELECT user_id,key,value,updated_at FROM user_settings ORDER BY user_id,key`).all().map(row=>{
+    const settings=db.prepare(`SELECT user_id,key,value,updated_at FROM user_settings WHERE key!='finance_receipt_storage' ORDER BY user_id,key`).all().map(row=>{
       if(row.key==='backup_secret'){
         const wrapped=setting(row.user_id,'backup_secret');
         return {user_id:row.user_id,key:row.key,value:wrapped?decryptSecret(wrapped):null,updated_at:row.updated_at};
@@ -890,9 +919,9 @@ function siteBackupPayload() {
     const runs=db.prepare(`SELECT id,target_id,user_id,status,message,created_at,operation,target_name,target_kind,trigger_kind AS 'trigger' FROM backup_runs ORDER BY created_at,id`).all();
     const payload={
       format:'shendu-site-data',version:1,createdAt:now(),
-      schemaVersion:Number(db.prepare(`SELECT value FROM schema_meta WHERE key='schema_version'`).get()?.value||8),
+      schemaVersion:Number(db.prepare(`SELECT value FROM schema_meta WHERE key='schema_version'`).get()?.value||9),
       publicRegistration:db.prepare(`SELECT value FROM schema_meta WHERE key='public_registration'`).get()?.value==='true',
-      users,settings,records,targets,runs,activity:db.prepare(`SELECT * FROM activity_events ORDER BY created_at,id`).all()
+      users,settings,records,targets,runs,activity:db.prepare(`SELECT * FROM activity_events ORDER BY created_at,id`).all(),finance:users.map(user=>({user_id:user.id,value:financeEnvelope(user.id)})).filter(item=>hasFinanceData(item.value))
     };
     db.exec('COMMIT');
     return payload;
@@ -984,14 +1013,20 @@ function validateSiteBackupPayload(payload) {
     if(!userIds.has(run.user_id)||targetOwners.get(run.target_id)!==run.user_id||!validEntityId(run.id)||runIds.has(run.id))throw new Error('整站备份中的运行记录无效');
     runIds.add(run.id);
   }
+  if(payload.finance!==undefined){
+    if(!Array.isArray(payload.finance)||payload.finance.length>payload.users.length)throw new Error('整站备份中的财务资料无效');
+    const owners=new Set();
+    for(const item of payload.finance){if(!isPlainObject(item)||!userIds.has(item.user_id)||owners.has(item.user_id))throw new Error('整站备份中的财务归属无效');owners.add(item.user_id);prepareFinance(item.value)}
+  }
 }
 function siteBackupPreview(payload) {
-  return {createdAt:payload.createdAt||'',schemaVersion:Number(payload.schemaVersion||0),users:payload.users.length,records:payload.records.length,settings:payload.settings.length,targets:payload.targets.length,runs:payload.runs.length};
+  return {createdAt:payload.createdAt||'',schemaVersion:Number(payload.schemaVersion||0),users:payload.users.length,records:payload.records.length,settings:payload.settings.length,targets:payload.targets.length,runs:payload.runs.length,financeEntries:(payload.finance||[]).reduce((sum,item)=>sum+item.value.entries.length,0),financeReceipts:(payload.finance||[]).reduce((sum,item)=>sum+item.value.receipts.receipts.length,0),financeImagesExternal:true,legacyFinancePreserved:payload.finance===undefined};
 }
 function applySiteBackup(payload) {
   validateSiteBackupPayload(payload);requireMasterKey();
   db.exec('BEGIN IMMEDIATE');
   try{
+    const financeToRestore=payload.finance===undefined?payload.users.flatMap(user=>{const existing=db.prepare('SELECT username FROM users WHERE id=?').get(user.id);return existing?.username===user.username?[{user_id:user.id,value:financeEnvelope(user.id)}]:[]}):payload.finance;
     db.exec('DELETE FROM sessions; DELETE FROM backup_runs; DELETE FROM backup_targets; DELETE FROM records; DELETE FROM user_settings; DELETE FROM users;');
     const insertUser=db.prepare(`INSERT INTO users(id,username,display_name,password_hash,role,status,session_version,created_at) VALUES(?,?,?,?,?,?,?,?)`);
     for(const user of payload.users)insertUser.run(user.id,user.username,safeText(user.display_name||user.username,32),user.password_hash,user.role,user.status,Math.max(1,Number(user.session_version)||1),validTime(user.created_at)?user.created_at:now());
@@ -1017,6 +1052,7 @@ function applySiteBackup(payload) {
     }
     const insertActivity=db.prepare(`INSERT INTO activity_events(id,user_id,action,record_type,period,target_kind,created_at) VALUES(?,?,?,?,?,?,?)`);
     for(const event of payload.activity||[])insertActivity.run(event.id,event.user_id,event.action,event.record_type,event.period,event.target_kind,new Date(event.created_at).toISOString());
+    for(const item of financeToRestore)importFinance(item.user_id,prepareFinance(item.value),{replace:true});
     const restoredOwner=payload.users.find(user=>user.role==='superadmin');appendActivity(restoredOwner.id,'site_imported');
     db.prepare(`INSERT INTO schema_meta(key,value) VALUES('public_registration',?) ON CONFLICT(key) DO UPDATE SET value=excluded.value`).run(payload.publicRegistration?'true':'false');
     db.exec('COMMIT');
@@ -1101,7 +1137,7 @@ function pinnedHttpsRequest(validated,target,{method='GET',headers={},body=Buffe
       response.once('error',failResponse);
       response.once('aborted',()=>failResponse(new Error('外部备份服务响应中断')));
       response.on('data',chunk=>{size+=chunk.length;if(size>maxResponseBytes){failResponse(new Error('外部备份服务返回内容过大'));return}chunks.push(chunk)});
-      response.on('end',()=>resolveRequest({ok:response.statusCode>=200&&response.statusCode<300,status:response.statusCode||0,body:Buffer.concat(chunks)}));
+      response.on('end',()=>resolveRequest({ok:response.statusCode>=200&&response.statusCode<300,status:response.statusCode||0,headers:response.headers,body:Buffer.concat(chunks)}));
     });
     const deadline=setTimeout(()=>request.destroy(new Error('外部备份服务响应超时')),30000);
     request.once('close',()=>clearTimeout(deadline));request.once('error',rejectRequest);request.end(body);
@@ -1114,10 +1150,11 @@ async function s3Request(config, key, method, body = Buffer.alloc(0)) {
   let hostname,pathname;
   if(config.pathStyle){hostname=endpoint.hostname;pathname=`${endpoint.pathname.replace(/\/$/,'')}/${config.bucket}/${objectPath}`}
   else{hostname=`${config.bucket}.${endpoint.hostname}`;pathname=`${endpoint.pathname.replace(/\/$/,'')}/${objectPath}`}
-  pathname='/'+pathname.split('/').filter(Boolean).map(part=>{try{return encodeURIComponent(decodeURIComponent(part))}catch{return encodeURIComponent(part)}}).join('/');
+  pathname='/'+pathname.split('/').filter(Boolean).map(part=>{let value;try{value=decodeURIComponent(part)}catch{value=part}return encodeURIComponent(value).replace(/[!'()*]/g,char=>'%'+char.charCodeAt(0).toString(16).toUpperCase())}).join('/');
   const host=`${hostname}${endpoint.port?`:${endpoint.port}`:''}`;
   const stamp = awsDate(new Date()), date = stamp.slice(0,8), payloadHash = createHash('sha256').update(body).digest('hex');
   const headers = { host, 'x-amz-content-sha256': payloadHash, 'x-amz-date': stamp, 'content-type': 'application/octet-stream' };
+  if(method==='HEAD')headers['x-amz-checksum-mode']='ENABLED';
   const signedHeaders = Object.keys(headers).sort().join(';');
   const canonicalHeaders = Object.keys(headers).sort().map(k => `${k}:${headers[k].trim()}\n`).join('');
   const canonicalRequest = `${method}\n${pathname}\n\n${canonicalHeaders}\n${signedHeaders}\n${payloadHash}`;
@@ -1206,10 +1243,11 @@ function staticFile(req, res, pathname) {
   if(!['GET','HEAD'].includes(req.method||'GET'))return false;
   let relative;try{relative=pathname==='/'?'index.html':decodeURIComponent(pathname.slice(1))}catch{throw Object.assign(new Error('页面地址格式不正确'),{status:400})}
   const file = resolve(PUBLIC_DIR, relative);
-  if (!file.startsWith(`${PUBLIC_DIR}${sep}`) || !existsSync(file) || statSync(file).isDirectory()) return false;
-  const types = { '.html':'text/html; charset=utf-8','.css':'text/css; charset=utf-8','.js':'text/javascript; charset=utf-8','.svg':'image/svg+xml','.png':'image/png','.webp':'image/webp','.ico':'image/x-icon','.ttf':'font/ttf','.woff2':'font/woff2' };
+  if (!file.startsWith(`${PUBLIC_DIR}${sep}`) || !existsSync(file)) return false;
+  const info=statSync(file);if(info.isDirectory())return false;
+  const types = { '.html':'text/html; charset=utf-8','.css':'text/css; charset=utf-8','.js':'text/javascript; charset=utf-8','.wasm':'application/wasm','.svg':'image/svg+xml','.png':'image/png','.webp':'image/webp','.jpg':'image/jpeg','.jpeg':'image/jpeg','.ico':'image/x-icon','.ttf':'font/ttf','.woff2':'font/woff2' };
   const isHtml = extname(file) === '.html';
-  res.writeHead(200, { 'Content-Type': types[extname(file)] || 'application/octet-stream', 'Cache-Control': isHtml ? 'no-cache' : 'public, max-age=31536000, immutable' });
+  res.writeHead(200, { 'Content-Type': types[extname(file)] || 'application/octet-stream', 'Content-Length':info.size, 'Cache-Control': isHtml ? 'no-cache' : 'public, max-age=31536000, immutable' });
   if(req.method==='HEAD')res.end();else createReadStream(file).pipe(res);return true;
 }
 
@@ -1256,13 +1294,20 @@ async function api(req, res, url) {
     const user = db.prepare(`SELECT * FROM users WHERE username=? COLLATE NOCASE`).get(loginName);
     const passwordMatches=verifyPassword(body.password||'',user?.password_hash||DUMMY_PASSWORD_HASH);
     if (!user || !passwordMatches) return error(res,401,'用户名或密码不正确');
-    if (user.status !== 'active') return error(res,403,'该账户已停用'); createSession(res,user); return json(res,200,{user:cleanUser(user)});
+    if (user.status !== 'active') return error(res,403,'该账户已停用'); createSession(res,user); return json(res,200,{user:cleanUser(user),...(setting(user.id,'finance_receipt_storage',null)?.config?{reloadForStorage:true}:{})});
   }
   if (path === '/api/auth/logout' && method === 'POST') {
     const actor=sessionUser(req),token=parseCookies(req).shendu_session;if(token){const remove=()=>db.prepare(`DELETE FROM sessions WHERE token_hash=?`).run(createHash('sha256').update(token).digest('hex'));if(actor)withActivity(actor.id,'logout',{},remove);else remove()}
     setSessionCookie(res,'',0); return json(res,200,{ok:true});
   }
   const user = requireUser(req,res); if (!user) return;req.authUser=user;
+  if(path==='/api/finance'||path.startsWith('/api/finance/')){
+    if(method==='GET'&&limited(req,`finance-read:${user.id}`,120,60000))return error(res,429,'读取账目过于频繁，请稍后再试','finance_rate_limited');
+    if(method!=='GET'&&limited(req,`finance-write:${user.id}`,360,3600000))return error(res,429,'记账操作过于频繁，请稍后再试','finance_rate_limited');
+    if(await financeReceipts.handle(req,res,url,user))return;
+    if(await financeLedger.handle(req,res,url,user))return;
+    return error(res,404,'财务接口不存在','not_found');
+  }
   if (path === '/api/me' && method === 'GET') return json(res,200,{ user:cleanUser(user), stage:normalizeStage(setting(user.id,'stage',defaultStage())), theme:normalizeTheme(setting(user.id,'theme',defaultTheme())) });
   if (path === '/api/me/password' && method === 'POST') {
     if (limited(req,`password:${user.id}`,6,3600000)) return error(res,429,'尝试次数过多');
@@ -1331,6 +1376,8 @@ async function api(req, res, url) {
     if(existing&&Number(body.version)!==Number(existing.version))return error(res,409,'这条记录已在其他设备更新，请刷新后再继续','version_conflict');
     if(!existing&&body.type!=='decision'&&db.prepare(`SELECT 1 FROM records WHERE user_id=? AND type=? AND period=?`).get(user.id,body.type,body.period))return error(res,409,'这个周期已有复盘记录，请刷新后打开原记录','period_conflict');
     const stamp=now(), version=existing?existing.version+1:1,cleanData=isPlainObject(body.data)?body.data:{};
+    delete cleanData.financeSnapshot;
+    if('financeDraft' in cleanData){const draft=normalizeFinanceDraft(cleanData.financeDraft);if(body.type==='daily'&&draft)cleanData.financeDraft=draft;else delete cleanData.financeDraft}
     if('templateSnapshot' in cleanData){const snapshot=normalizeTemplateSnapshot(cleanData.templateSnapshot,body.type);if(snapshot)cleanData.templateSnapshot=snapshot;else delete cleanData.templateSnapshot}
     if(Buffer.byteLength(JSON.stringify(cleanData))>MAX_RECORD_DATA_BYTES)return error(res,413,'单条复盘内容过大，请精简后再保存','record_too_large');
     if(!existing&&db.prepare(`SELECT COUNT(*) AS n FROM records WHERE user_id=?`).get(user.id).n>=MAX_RECORDS_PER_USER)return error(res,403,`每个账户最多保存 ${MAX_RECORDS_PER_USER} 条复盘记录`,'record_limit_reached');
@@ -1345,14 +1392,19 @@ async function api(req, res, url) {
     if(row.period!==currentPeriodFor(row.type))return error(res,400,currentPeriodMessage(row.type),'period_locked');
     const decoded=recordOut(row),data=decoded.data,normalizedSnapshot=normalizeTemplateSnapshot(data.templateSnapshot,row.type);
     const stage=normalizedSnapshot?null:normalizeStage(setting(user.id,'stage',defaultStage()));
-    const snapshot=normalizedSnapshot||{version:1,review:stage.reviewTemplates[row.type],action:stage.actionTemplate};
+    const snapshot=normalizedSnapshot||{version:1,review:{...stage.reviewTemplates[row.type],...(row.type==='daily'?{financeEnabled:false}:{})},action:stage.actionTemplate};
     const required=reviewQuestions(row.type,snapshot.review).filter(question=>question.required).map(question=>question.id);
     const earliest=verificationMinimum(row.type,todayDate());
     const missing=required.some(k=>!Array.isArray(data.answers?.[k])||!data.answers[k].some(v=>typeof v==='string'&&v.trim()))||!String(data.action||'').trim()||(row.type==='daily'&&!String(data.ifCondition||'').trim())||!String(data.ifThen||'').trim()||!validIsoDate(data.verifyDate)||data.verifyDate<earliest||(row.type==='decision'&&!decoded.title.trim()); if(missing)return error(res,400,`请先完成所有必填项，并确认预期验证日期不早于 ${earliest}`);
+    if(row.type==='daily'&&snapshot.review.financeEnabled&&financeDraftPending(data.financeDraft))return error(res,400,'请先确认入账或清空尚未保存的花销','finance_draft_pending');
     data.templateSnapshot=snapshot;
-    const stamp=now(),storedData=encryptData(data,dataScope('record',user.id,id,'data'));
-    if(accountRecordBytes(user.id)-Buffer.byteLength(row.data)+Buffer.byteLength(storedData)>MAX_ACCOUNT_CONTENT_BYTES)return error(res,413,'账户复盘内容已达到存储上限','account_storage_limit');
-    withActivity(user.id,'review_completed',{recordType:row.type,period:row.period},()=>db.prepare(`UPDATE records SET data=?,status='completed',version=version+1,completed_at=?,updated_at=? WHERE id=?`).run(storedData,stamp,stamp,id)); return json(res,200,{record:recordOut(db.prepare(`SELECT * FROM records WHERE id=?`).get(id))});
+    withActivity(user.id,'review_completed',{recordType:row.type,period:row.period},()=>{
+      if(row.type==='daily'&&snapshot.review.financeEnabled)data.financeSnapshot=financeLedger.snapshot(user.id,row.period);else delete data.financeSnapshot;
+      if(row.type==='daily'&&snapshot.review.financeEnabled&&Buffer.byteLength(JSON.stringify(data))>MAX_RECORD_DATA_BYTES)throw Object.assign(new Error('加入当日财务快照后复盘内容过大，请精简正文后再提交；已入账账目仍然保留'),{status:413,code:'record_too_large'});
+      const stamp=now(),storedData=encryptData(data,dataScope('record',user.id,id,'data'));
+      if(accountRecordBytes(user.id)-Buffer.byteLength(row.data)+Buffer.byteLength(storedData)>MAX_ACCOUNT_CONTENT_BYTES)throw Object.assign(new Error('账户复盘内容已达到存储上限'),{status:413,code:'account_storage_limit'});
+      return db.prepare(`UPDATE records SET data=?,status='completed',version=version+1,completed_at=?,updated_at=? WHERE id=? AND user_id=? AND status='draft'`).run(storedData,stamp,stamp,id,user.id);
+    });return json(res,200,{record:recordOut(db.prepare(`SELECT * FROM records WHERE id=?`).get(id))});
   }
   if (/^\/api\/records\/[^/]+\/verify$/.test(path) && method === 'POST') {
     const id=path.split('/')[3],body=await readJson(req),row=db.prepare(`SELECT * FROM records WHERE id=? AND user_id=?`).get(id,user.id);if(!row)return error(res,404,'记录不存在');if(row.status!=='completed')return error(res,409,'只有待验证记录可以提交结果');
@@ -1523,13 +1575,14 @@ const server = http.createServer(async (req,res) => {
   res.setHeader('X-Content-Type-Options','nosniff'); res.setHeader('X-Frame-Options','DENY'); res.setHeader('Referrer-Policy','same-origin');
   res.setHeader('Permissions-Policy','camera=(), microphone=(), geolocation=()');
   res.setHeader('Cross-Origin-Opener-Policy','same-origin');res.setHeader('Cross-Origin-Resource-Policy','same-origin');res.setHeader('X-Permitted-Cross-Domain-Policies','none');
-  res.setHeader('Content-Security-Policy',`default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data:; connect-src 'self'; object-src 'none'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'`);
+  const storageOrigins=financeReceipts.storageOrigins(sessionUser(req)?.id).join(' ');
+  res.setHeader('Content-Security-Policy',`default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: ${storageOrigins}; connect-src 'self' ${storageOrigins}; object-src 'none'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'`);
   if (req.method === 'OPTIONS') { res.writeHead(204); return res.end(); }
   try {
     const requestTarget=req.url||'/';if(!requestTarget.startsWith('/')||requestTarget.startsWith('//'))return error(res,400,'请求地址格式不正确');
     const url=new URL(requestTarget,'http://localhost');
     if (url.pathname === '/healthz') {
-      const schema=Number(db.prepare(`SELECT value FROM schema_meta WHERE key='schema_version'`).get()?.value||8);
+      const schema=Number(db.prepare(`SELECT value FROM schema_meta WHERE key='schema_version'`).get()?.value||9);
       return masterKey?json(res,200,{ok:true,schema,dataEncryption:'AES-256-GCM'}):json(res,503,{ok:false,schema,error:'data_key_unavailable'});
     }
     if (url.pathname.startsWith('/api/')) return await api(req,res,url);

@@ -7,6 +7,8 @@ import {DAILY_STEPS,dailyPrompts,dailyPromptOwner} from '../public/daily-flow.js
 import {EXTENDED_FLOW,extendedPrompts} from '../public/extended-flow.js';
 import {reviewQuestions} from '../public/review-schema.js';
 import {reviewIntroLayout,reviewIntroLines} from '../public/review-intros.js';
+import {mountDailyFinance} from '../public/finance-ui.js';
+import {DEFAULT_FINANCE_CATEGORIES} from '../public/finance-domain.js';
 
 const source=await readFile(new URL('../public/app.js',import.meta.url),'utf8');
 const html=await readFile(new URL('../public/index.html',import.meta.url),'utf8');
@@ -30,7 +32,7 @@ function record(type='daily',overrides={}){
   const periods={daily:'2026-11-12',weekly:'2026-W46',monthly:'2026-11',quarterly:'2026-11-01',yearly:'2026',decision:'2026-11-12'};
   return {id:`${type}-draft`,type,status:'draft',period:periods[type],version:3,title:'私人记录',data:{answers:{today:['事实'],wins:['事实']},metrics:[],action:'继续行动',ifCondition:'遇到阻碍',ifThen:'及时调整',journal:'私人日记',verifyDate:'2027-11-12'},...overrides};
 }
-function fixture({draft=record(),dirty=true,impl=async(path,options)=>path==='/api/records'?{record:{...options.body,version:4}}:{total:1},fetchImpl=null}={}){
+function fixture({draft=record(),dirty=true,financeEnabled=false,impl=async(path,options)=>path==='/api/records'?{record:{...options.body,version:4}}:{total:1},fetchImpl=null}={}){
   ui.dismissDialog($('#modal-root'));ui.renderMarkup($('#app'),'');
   const state={user:{id:'owner',username:'owner',displayName:'测试',role:'member'},stage:{sleepTarget:7,energyTarget:70,metrics:[]},records:draft.id?[structuredClone(draft)]:[],stats:{total:0},current:draft,saving:false,dirty,route:draft.type},calls=[],notices=[],renders=[];
   let functions,templates;
@@ -38,16 +40,27 @@ function fixture({draft=record(),dirty=true,impl=async(path,options)=>path==='/a
   const shell=content=>ui.renderMarkup($('#app'),`<main class="main" id="main-content">${content}</main>`);
   const context={$,$$,attachReviewWheel,state,request,shell,esc,renderMarkup:ui.renderMarkup,prepareDialogContainer:ui.prepareDialogContainer,showDialog:ui.showDialog,dismissDialog:ui.dismissDialog,cancelDailyTypewriter:()=>{},startDailyTypewriter:()=>{},setDailyImmersive:()=>{},DAILY_STEPS,dailyPrompts,dailyPromptOwner,EXTENDED_FLOW,extendedPrompts,reviewQuestions,reviewIntroLayout,dailyIntroLines:reviewIntroLines,defaultPeriod:type=>record(type).period,today:()=> '2026-11-12',quoteFor:()=> '回看事实，慢慢向前。',beijingTime:()=> '12:00',verificationMinimum:()=> '2026-11-12',dailyCalendarDateLabel:value=>value,templatesForRecord:()=>templates,verificationTimes:()=>'',verificationActualAt:r=>r.verified_at||'',currentTemplateSnapshot:()=>({review:templates.review,action:templates.action}),clone:structuredClone,reconcileReviewMetrics:metrics=>({metrics}),newRecord:()=>{throw new Error('unexpected new record')},dailyVerificationCalendar:value=>`<input type="hidden" data-simple="verifyDate" value="${esc(value)}"><div id="daily-verification-calendar" data-verify-month-value="2026-11"></div>`,renderDailyCalendar:()=>{},bindDailyFlow:()=>functions.showDailyPrompt(state.dailyPrompt),bindExtendedFlow:()=>functions.showExtendedPrompt(state.extendedPrompt),renderReviewFromCurrent:()=>{},focusDailyAnswer:()=>{},updateGauge:()=>{},deleteDraftRecord:()=>{},toast:(...args)=>notices.push(args),validateCurrent:()=>{functions.collectCurrent();return []},applyTheme:()=>{}};
   context.formatDate=value=>value;
+  context.mountDailyFinance=mountDailyFinance;
   if(fetchImpl){delete context.request;context.fetch=(path,options)=>{calls.push({path,...structuredClone(options)});return fetchImpl(path,options)}}
-  const names=[...renderers,'renderReview','collectCurrent','setReviewBusy','saveCurrent','completeCurrent','refreshData','dialogWriteTask','syncOverlayBackground','openModal','closeModal',...(fetchImpl?['request','sessionExpired']:[])];
+  const names=[...renderers,'financeUiOptions','renderReview','collectCurrent','setReviewBusy','saveCurrent','completeCurrent','refreshData','dialogWriteTask','syncOverlayBackground','openModal','closeModal',...(fetchImpl?['request','sessionExpired']:[])];
   functions=new Function(...Object.keys(context),`let modalReturnFocus=null;\n${constants}\n${names.map(owner).join('\n')}\nreturn {renderReview,showDailyPrompt,showExtendedPrompt,collectCurrent,saveCurrent,completeCurrent,dialogWriteTask,openModal,closeModal,review:DEFAULT_REVIEW_TEMPLATES,action:DEFAULT_ACTION_TEMPLATE};`)(...Object.values(context));
-  templates={review:functions.review[draft.type],action:functions.action};
+  templates={review:{...functions.review[draft.type],financeEnabled},action:functions.action};
   const render=(r=state.current,options={})=>{renders.push(r);return functions.renderReview(r.type,r.period,false,r,{dailySection:'journal',dailyPrompt:'journal',extendedPrompt:'verifyDate',dirty,...options})};
   render();
   return {state,calls,notices,renders,render,...functions};
 }
 const confirm=f=>{f.completeCurrent();$('#confirm-complete').click()};
 const jsonResponse=(data,status=200)=>new Response(JSON.stringify(data),{status,headers:{'Content-Type':'application/json'}});
+
+test('normal login reloads only when owned storage requires a new document CSP',async()=>{
+  for(const reloadForStorage of [false,true]){
+    let reloads=0;const boots=[],state={user:null},user={id:'owner'};
+    const context={$,$$,state,renderMarkup:ui.renderMarkup,dismissDialog:ui.dismissDialog,closeModal:()=>ui.dismissDialog($('#modal-root')),reviewNavigation:{clear(){}},cancelDailyTypewriter:()=>{},setDailyImmersive:()=>{},request:async()=>({user,...(reloadForStorage?{reloadForStorage:true}:{})}),boot:async account=>boots.push(account),window:{location:{reload:()=>{reloads++}}}};
+    const renderAuth=new Function(...Object.keys(context),owner('renderAuth')+';return renderAuth')(...Object.values(context));
+    renderAuth();$('#username').value='owner';$('#password').value='private-password';$('#auth-form').dispatchEvent(new win.Event('submit',{bubbles:true,cancelable:true}));await settle();
+    assert.equal(reloads,reloadForStorage?1:0);assert.deepEqual(boots,reloadForStorage?[]:[user]);
+  }
+});
 
 test('first save preserves all six mounted editors, prompt identity and exact record fields',async()=>{
   for(const type of ['daily','weekly','monthly','quarterly','yearly','decision']){
@@ -130,7 +143,7 @@ test('completion commits before stats, and both phases reject results for replac
 
 test('real stats 401 reauthenticates only after the completed record is committed and stays locked through login',async()=>{
   let finishStats;const draft=record(),completed={...draft,status:'completed',version:4};
-  const f=fixture({draft,dirty:false,fetchImpl:path=>path.endsWith('/complete')?Promise.resolve(jsonResponse({record:completed})):path==='/api/stats'?new Promise(resolve=>{finishStats=resolve}):Promise.resolve(jsonResponse({}))});
+  const f=fixture({draft,dirty:false,fetchImpl:path=>path.endsWith('/complete')?Promise.resolve(jsonResponse({record:completed})):path==='/api/stats'?new Promise(resolve=>{finishStats=resolve}):Promise.resolve(jsonResponse({reloadForStorage:true}))});
   confirm(f);await settle();assert.equal(f.state.current.status,'completed');assert.equal(f.state.records[0].status,'completed');assert.equal($('#confirm-complete'),null);assert.equal($('#daily-editor').dataset.dailyLocked,'true');assert.equal(f.state.saving,false);
   finishStats(jsonResponse({error:'unauthorized',message:'登录已失效'},401));await settle();assert.ok($('#reauth-form'));assert.equal(f.state.reauthOpen,true);assert.equal($('#modal-root').dataset.persistent,'1');assert.equal(f.state.current.status,'completed');assert.equal(f.state.records[0].status,'completed');assert.deepEqual(f.notices,[['复盘已完成并锁定']]);
   $('#reauth-password').value='private-password';$('#reauth-form').dispatchEvent(new win.Event('submit',{bubbles:true,cancelable:true}));await settle();assert.equal($('#reauth-form'),null);assert.equal(f.state.reauthOpen,false);assert.equal(f.state.current.status,'completed');assert.equal($('#daily-editor').dataset.dailyLocked,'true');assert.equal(f.calls.filter(call=>call.path.endsWith('/complete')).length,1);assert.equal(f.calls.some(call=>call.method==='PUT'),false);
@@ -165,6 +178,34 @@ test('a version conflict refresh retains dirty input and releases its own editor
   const conflict=Object.assign(new Error('其他设备已更新'),{code:'version_conflict'});
   const next=fixture({draft,impl:async(path,options)=>{if(options?.method==='PUT'&&put){put=false;throw conflict}if(path==='/api/me')return {user:refreshedUser,stage:{},theme:{}};if(path==='/api/records')return {records:[{...draft,version:8}]};return {total:1}}});
   $('[data-simple="action"]').value='尚未保存的行动';confirm(next);await settle();assert.equal(next.state.user,refreshedUser);assert.equal(next.state.dirty,true);assert.equal($('[data-simple="action"]').value,'尚未保存的行动');assert.equal($('[data-simple="action"]').disabled,false);assert.equal($('#confirm-complete').disabled,false);assert.equal(next.state.saving,false);assert.equal($('.modal').hasAttribute('data-review-lock-busy'),false);assert.deepEqual(next.notices,[['其他设备已更新','error']]);
+});
+
+test('the real daily ledger survives first save and same-account conflict refresh while preserving review work',async()=>{
+  const draft=record('daily',{id:null,version:0}),refreshedUser={id:'owner',username:'owner',displayName:'已刷新',role:'member'},entries=[];
+  let saves=0;
+  const conflict=Object.assign(new Error('其他设备已更新'),{code:'version_conflict'});
+  const f=fixture({draft,financeEnabled:true,impl:async(path,options)=>{
+    if(path==='/api/finance/storage')return {configured:false,version:0,targets:[]};
+    if(path.startsWith('/api/finance?'))return {entries:[...entries],categories:DEFAULT_FINANCE_CATEGORIES,nextCursor:null,summary:{incomeCents:0,expenseCents:entries.length*2300,refundCents:0,netExpenseCents:entries.length*2300,balanceCents:-entries.length*2300,count:entries.length},trend:[],categoryTotals:[],day:{date:draft.period,state:entries.length?'recorded':'unrecorded',version:0}};
+    if(path==='/api/finance/entries'){const entry={...options.body,amountCents:2300,version:1,deletedAt:null};entries.push(entry);return {entry}}
+    if(path==='/api/records'&&options?.method==='PUT'){if(++saves===2)throw conflict;return {record:{...options.body,id:'first-save',version:saves,updated_at:'2026-11-12'}}}
+    if(path==='/api/me')return {user:refreshedUser,stage:{},theme:{}};
+    if(path==='/api/records')return {records:[]};
+    if(path==='/api/stats')return {total:1};
+    throw new Error(path);
+  }});
+  await settle();f.showDailyPrompt('finance');
+  const editor=$('#daily-editor'),form=$('#daily-finance [data-finance-create]'),amount=form.elements.expression,purpose=form.elements.purpose;
+  amount.value='8+8+8-1';amount.dispatchEvent(new win.Event('input',{bubbles:true}));purpose.value='早餐';purpose.dispatchEvent(new win.Event('input',{bubbles:true}));
+  assert.equal(f.state.current.data.financeDraft.expression,'8+8+8-1');
+  assert.equal((await f.saveCurrent()).id,'first-save');assert.equal($('#daily-finance [name="expression"]'),amount);
+  await assert.rejects(f.saveCurrent(),error=>error===conflict);assert.equal(f.state.user,refreshedUser);
+  purpose.value='午餐';purpose.dispatchEvent(new win.Event('input',{bubbles:true}));assert.equal(f.state.current.data.financeDraft.purpose,'午餐');
+  $('[data-simple="action"]').value='尚未保存的行动';$('[data-simple="action"]').dispatchEvent(new win.Event('input',{bubbles:true}));
+  form.dispatchEvent(new win.Event('submit',{bubbles:true,cancelable:true}));await settle();
+  assert.equal(entries.length,1);assert.equal(entries[0].amountCents,2300);assert.equal(entries[0].purpose,'午餐');assert.equal(f.state.current.data.financeDraft.expression,'');assert.equal(f.state.dirty,true);
+  assert.equal($('#daily-editor'),editor);assert.equal(form.elements.expression,amount);assert.equal($('[data-simple="action"]').value,'尚未保存的行动');assert.equal(f.state.saving,false);
+  f.state.user={id:'another-account'};amount.value='99';amount.dispatchEvent(new win.Event('input',{bubbles:true}));form.dispatchEvent(new win.Event('submit',{bubbles:true,cancelable:true}));await settle();assert.equal(entries.length,1);assert.equal(f.state.current.data.financeDraft.expression,'');
 });
 
 test('accepted completion statistics update the header count without remounting the locked editor',async()=>{

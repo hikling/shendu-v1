@@ -1,5 +1,15 @@
 # Frontend State and Data
 
+## Finance workspace and daily entry
+
+Use the cross-layer [finance contract](../backend/finance.md) for API fields, errors and receipt/backup boundaries.
+
+`finance-ui.js` is shared by `mountFinancePage` and `mountDailyFinance`. `financeUiOptions` in app.js captures stable account ID/connected container (same-account accepted refreshes may replace the user object), passes stale-request predicate to request and uses recognized settings-write ownership so another finally cannot release finance pending state. Dispose workspace/daily controllers before shell/auth replaces their DOM. Draft callbacks cannot clear unrelated review dirty state; first save may replace the current record object without remounting widget inputs.
+
+New daily templates explicitly set financeEnabled; dailyPrompts places finance after energy only when true. Saved historical template snapshots lacking it retain false, including old drafts when collected again. financeDraft is bounded transient form data saved with the review; nonempty expression/purpose/note/receiptIds blocks next/final until confirmed/cleared. Confirm creates an independent ledger entry with stable retry ID. Deleting review draft cannot delete ledger. Readonly widget uses server financeSnapshot only, never live API. Existing six flows, title-focus exception and guarded navigation remain.
+
+Shared finance-domain.js parses decimal +/- to cents without eval and provides category suggestions and editable OCR-text drafts. Receipt-client lazy-loads locally packaged OCR, bounds decoded images and compressed variants, cancels/terminates worker and cleans object URLs; original images never upload. Cancellation during worker initialization keeps the initialization promise serialized and terminates its stale handle when ready. Finance forms stay mounted through typing/filter reload, validation failures retain inputs, receipt candidates require explicit confirmation and duplicate suggestions start unchecked. Thumbnail reads wait for viewport proximity and expose retry on failure. Full-image reads belong to their exact preview modal and also offer retry. Private image URLs must match configured HTTPS origin and receipt namespace, reject redirects, and are never persisted with credentials in localStorage. Normal login with configured storage reloads document for account CSP; reauthentication preserves unsaved editor, and storage changes explain when a document refresh is required.
+
 ## State
 
 `state` in `shendu/public/app.js` holds the user, stage, theme, records, stats, route, current record, dirty/saving flags, and menu and calendar month state. `boot()` calls `refreshData()` for `/api/me`, `/api/records`, and `/api/stats`, then opens `overview`. `applyTheme()` applies the fixed `DEFAULT_ACCENTS`, computes contrast and honors saved `reduceMotion`; old preset/color fields remain data-compatible but no longer select UI colors.

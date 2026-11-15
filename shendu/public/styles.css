@@ -762,6 +762,7 @@ body.reduce-motion .overview-record-card[aria-hidden="true"]{display:none}
 .daily-art-flow[data-daily-scene="journal"] .daily-scene-art{--scene-line:#a6b9af;--scene-spot:#a97657}
 .daily-art-flow[data-daily-scene="intro"] [data-daily-art="intro"],
 .daily-art-flow[data-daily-scene="sleep"] [data-daily-art="sleep"],
+.daily-art-flow[data-daily-scene="finance"] [data-daily-art="finance"],
 .daily-art-flow[data-daily-scene="energy"] [data-daily-art="energy"],
 .daily-art-flow[data-daily-scene="evidence"] [data-daily-art="evidence"],
 .daily-art-flow[data-daily-scene="reflection"] [data-daily-art="reflection"],

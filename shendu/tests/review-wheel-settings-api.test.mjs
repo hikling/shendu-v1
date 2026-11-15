@@ -60,7 +60,7 @@ after(async()=>{
 test('new owner and administrator-created member enable wheel navigation independently of reduced motion',async()=>{
   const ownerTheme=await theme(ownerCookie),member=await account(),memberTheme=await theme(member.cookie);
   for(const current of [ownerTheme,memberTheme]){assert.equal(current.reviewWheelNavigation,true);assert.equal(current.reduceMotion,false)}
-  assert.equal(db.prepare("SELECT value FROM schema_meta WHERE key='schema_version'").get().value,'8');
+  assert.equal(db.prepare("SELECT value FROM schema_meta WHERE key='schema_version'").get().value,'9');
 });
 
 test('legacy stored preferences without the wheel field read as enabled without rewriting the stored value',async()=>{
@@ -109,5 +109,5 @@ test('whole-site backup restores separate wheel values and old settings use the 
   const legacyRestored=await restore(seal(exported.text,clear));assert.equal(legacyRestored.status,200,legacyRestored.text);
   ownerCookie=await login('wheel_owner');disabled.cookie=await login(disabled.username);enabled.cookie=await login(enabled.username);
   assert.equal((await theme(disabled.cookie)).reviewWheelNavigation,true);assert.equal((await theme(disabled.cookie)).reduceMotion,true);assert.equal((await theme(enabled.cookie)).reviewWheelNavigation,true);
-  assert.equal(db.prepare("SELECT value FROM schema_meta WHERE key='schema_version'").get().value,'8');
+  assert.equal(db.prepare("SELECT value FROM schema_meta WHERE key='schema_version'").get().value,'9');
 });

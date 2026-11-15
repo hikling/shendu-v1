@@ -158,7 +158,7 @@ test('personal exports and restores record generated/imported operations, leavin
 test('whole-site backups preserve optional validated activity and restore atomically with old-file compatibility',async()=>{
   insertEvent({action:'draft_deleted',recordType:'weekly',periodValue:'2026-W01'});
   const exported=await api('/api/admin/site-backup/export',{method:'POST',auth:ownerCookie,body:{currentPassword:password,backupPassword:password}});assert.equal(exported.status,200,exported.text);const payload=decodeSite(exported.text),event=payload.activity.find(event=>event.user_id===userId);
-  assert.ok(event);assert.equal(payload.schemaVersion,8);assert.equal(db.prepare("SELECT value FROM schema_meta WHERE key='schema_version'").get().value,'8');assert.doesNotMatch(JSON.stringify(payload.activity),/PRIVATE|NEVER_LOG|SECRET/);
+  assert.ok(event);assert.equal(payload.schemaVersion,9);assert.equal(db.prepare("SELECT value FROM schema_meta WHERE key='schema_version'").get().value,'9');assert.doesNotMatch(JSON.stringify(payload.activity),/PRIVATE|NEVER_LOG|SECRET/);
   const before=db.prepare('SELECT * FROM activity_events ORDER BY id').all();
   for(const alter of [row=>{row.user_id=randomUUID()},row=>{row.action='fake_operation'},row=>{row.created_at='not-a-time'},row=>{row.period='PRIVATE_BODY'}]){
     const invalid=structuredClone(payload);alter(invalid.activity[0]);const inspected=await api('/api/admin/site-backup/inspect',{method:'POST',auth:ownerCookie,body:{encryptedBackup:encodeSite(exported.text,invalid),backupPassword:password}});assert.equal(inspected.status,400,inspected.text);assert.deepEqual(db.prepare('SELECT * FROM activity_events ORDER BY id').all(),before);
@@ -173,6 +173,6 @@ test('whole-site backups preserve optional validated activity and restore atomic
 
 test('startup adds an empty activity table to an old database without reconstructing old actions',async()=>{
   await stop();db.exec("DROP TABLE activity_events;UPDATE schema_meta SET value='7' WHERE key='schema_version'");await start();
-  assert.equal(db.prepare("SELECT value FROM schema_meta WHERE key='schema_version'").get().value,'8');assert.equal(db.prepare('SELECT count(*) AS n FROM activity_events').get().n,0);
+  assert.equal(db.prepare("SELECT value FROM schema_meta WHERE key='schema_version'").get().value,'9');assert.equal(db.prepare('SELECT count(*) AS n FROM activity_events').get().n,0);
   const login=await api('/api/auth/login',{method:'POST',auth:'',body:{username:'activity_owner',password}});ownerCookie=login.cookie;assert.equal(login.status,200);assert.equal(db.prepare('SELECT count(*) AS n FROM activity_events').get().n,1);
 });

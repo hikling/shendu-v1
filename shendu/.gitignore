@@ -17,3 +17,4 @@ backups/
 
 node_modules/
 public/ui/
+public/ocr/

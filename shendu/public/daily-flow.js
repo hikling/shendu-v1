@@ -1,4 +1,5 @@
-import {reviewQuestions,reviewDisabledFields} from './review-schema.js?v=1.0.0-custom1';
+import {reviewQuestions,reviewDisabledFields,reviewFinanceEnabled} from './review-schema.js?v=1.0.0-finance1';
+import {hasPendingFinanceDraft} from './finance-domain.js?v=1.0.0-finance1';
 
 export const DAILY_STEPS=[
   {id:'evidence',label:'今日证据',optional:true},
@@ -14,6 +15,7 @@ export function dailyPrompts(metricCount=3,template={}){
   const disabled=new Set(reviewDisabledFields(template));
   return [
     {id:'sleep',step:'evidence'},{id:'energy',step:'evidence'},
+    ...(reviewFinanceEnabled(template)?[{id:'finance',step:'evidence'}]:[]),
     ...Array.from({length:metricCount},(_,index)=>({id:`metric-${index}`,step:'evidence'})),
     {id:'risk',step:'evidence'},
     ...reviewQuestions('daily',template).map(question=>({...question,step:'reflection',kind:'answer'})),
@@ -37,6 +39,7 @@ function validDate(value){
 // Match the server's daily completion requirements; evidence and journal stay optional.
 export function dailyStepIssues(data={},step=null,today,template={}){
   const issues=[],add=(pane,field,reason='required')=>{if(!step||step===pane)issues.push({step:pane,field,reason})};
+  if(reviewFinanceEnabled(template)&&hasPendingFinanceDraft(data.financeDraft))add('evidence','finance','pending_finance');
   for(const question of reviewQuestions('daily',template)){
     const answers=data.answers?.[question.id];
     if(question.required&&(!Array.isArray(answers)||!answers.some(value=>String(value??'').trim())))add('reflection',question.id);

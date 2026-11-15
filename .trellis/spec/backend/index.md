@@ -19,3 +19,4 @@ Read these guides before changing `shendu/server.mjs` or `shendu/scripts/`.
 - [Runtime and data](./runtime-and-data.md)
 - [HTTP and security](./http-and-security.md)
 - [Testing and operations](./testing-and-operations.md)
+- [Finance ledger and receipts](./finance.md)
