@@ -1734,3 +1734,25 @@ Removed section glyphs, tinted bands, oversized counter columns and status color
 ### Status
 
 [OK] **Completed**
+
+
+## Session 75: 修复切题标题焦点边框
+<!-- trellis-session: v=2 fp=7aa992f04471195d -->
+
+**Date**: 2026-11-15
+**Task**: 修复切题标题焦点边框
+**Branch**: `main`
+
+### Summary
+
+仅静态复盘标题覆盖聚焦outline，保留六类切题焦点、按钮和输入焦点及过渡。语法检查和17项六类切题/动画回归通过。浏览器暂不可用，财务模块按用户要求另行规划、未实现。
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `40ee0fe` | fix: remove reading-focus outline from review headings |
+
+### Status
+
+[OK] **Completed**

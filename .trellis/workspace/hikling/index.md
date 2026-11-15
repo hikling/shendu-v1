@@ -8,7 +8,7 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 74
+- **Total Sessions**: 75
 - **Last Active**: 2026-11-15
 <!-- @@@/auto:current-status -->
 
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~1736 | Active |
+| `journal-1.md` | ~1758 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -29,6 +29,7 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 75 | 2026-11-15 | 修复切题标题焦点边框 | `40ee0fe` | `main` |
 | 74 | 2026-11-15 | 六类复盘统一切题过渡 | `6ee86af` | `main` |
 | 73 | 2026-11-13 | 复盘滚轮切题与滚动条优化 | `8c4884c` | `main` |
 | 72 | 2026-11-13 | 安全逻辑审查与发布整理 | `caf2887`, `05801153acec0a3989488f0d2c490b59c4cae786` | `main` |
