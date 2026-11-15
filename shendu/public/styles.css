@@ -798,6 +798,8 @@ body.reduce-motion .overview-record-card[aria-hidden="true"]{display:none}
 .daily-art-flow[data-review-transition-ready] :is(.daily-question-heading,.daily-scene-image){animation:none}
 .daily-art-flow[data-review-transition] :is(.daily-editor-content,.daily-intro-copy,.daily-scene-art){will-change:opacity,translate}
 .daily-question-heading h2{margin:0 0 20px;color:var(--daily-ink);font:900 clamp(40px,calc(var(--review-unit)*4.1),64px)/1.4 "SimSun","宋体","Songti SC","Noto Serif SC",serif;-webkit-text-stroke:.18px currentColor;letter-spacing:.025em;overflow-wrap:break-word;text-wrap:pretty}
+/* This static heading receives reading focus after a question change. */
+.daily-art-flow #daily-prompt-title:focus{outline:none}
 .daily-prompt-line{display:block}
 .daily-title-emphasis{color:var(--daily-emphasis)}
 .daily-question-heading>p{max-width:590px;margin:0;color:var(--ink-2);font-size:.88rem;font-weight:500;line-height:1.8;overflow-wrap:anywhere}
