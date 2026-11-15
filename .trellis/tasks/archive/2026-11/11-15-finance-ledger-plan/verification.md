@@ -20,12 +20,18 @@
 
 ## Local checks
 
-Final integration checks on2026-11-16: `npm run check` passed; `npm test` built the production resources and finished with **426 passed,0 failed,1 optional browser test skipped** (427 tests,47.36s). The27 finance DOM tests include manual batch/IME/clear, signed charts and stale-account guards. Publish evidence is added after GitHub verification.
+Final integration checks on2026-11-16: `npm run check` passed; `npm test` built the production resources and finished with **426 passed,0 failed,1 optional browser test skipped** (427 tests,47.36s). The27 finance DOM tests include manual batch/IME/clear, signed charts and stale-account guards.
 
 - Production dependency audit against the official npm registry: zero known vulnerabilities.
 - Handover packaging regression tests: 13 passed.
 - Isolated HTTP smoke: health schema9, HTML, finance modules, built component resources and every packaged OCR asset HEAD length passed.
 - Real local OCR runtime loads both packaged Chinese/English models with cache disabled and recognizes synthetic `23.00`; engine worker is terminated afterward.
+
+## GitHub and release verification
+
+Feature commit `ade16116fad46114beba6acf652e442cf68f5ab2` is on main; application tree `5f06e951b206467d154ce1eea5e3475f6f8a431d`. [Verify build43734198794](https://github.com/hikling/shendu-v1/actions/runs/43734198794) completed successfully: handover, native amd64/arm64 full checks/tests, Docker build/health/resource smoke, immutable release publication and public download/Compose reuse/encrypted-snapshot checks on both architectures.
+
+After validating the new release, the existing reviewed retention script removed only `deploy-6bc42050193eccd2e2efc08afa128c3c37fd7c8d`. Exactly four complete Releases remain: current `5f06e951…`, `90658e25…`, `250b9edd…`, `c512e1e3…`. All Git tags were preserved; no recurring cleanup workflow was added. This is a repository/package release, not a claim that the user's production host or S3 configuration was changed. Task-created local preview processes are stopped; disposable ignored fixture data remains separate from production.
 
 ## Acceptance limits
 
