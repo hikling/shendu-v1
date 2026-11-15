@@ -1712,3 +1712,25 @@ Removed section glyphs, tinted bands, oversized counter columns and status color
 ### Status
 
 [OK] **Completed**
+
+
+## Session 74: 六类复盘统一切题过渡
+<!-- trellis-session: v=2 fp=31659a488bae27ca -->
+
+**Date**: 2026-11-15
+**Task**: 六类复盘统一切题过渡
+**Branch**: `main`
+
+### Summary
+
+按钮与滚轮统一使用100ms淡出和220ms淡入，支持反向过渡、减少动态、连续操作及页面替换取消保护。354项应用测试、13项交接检查、独立复核及双平台构建发布下载验证通过；Releases保持最近四个。浏览器暂不可用，实际视觉验收未宣称完成。
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `6ee86af` | feat: smooth review question transitions for buttons and wheel |
+
+### Status
+
+[OK] **Completed**
