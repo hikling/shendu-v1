@@ -10,6 +10,8 @@ The Docker builder runs `npm ci` and `npm run build`, then the native-server run
 
 ## Lightweight GitHub-linked handover
 
+The UI builder stage must copy `public/finance-domain.js` before `npm run build`: `ui/finance-pie.jsx` imports its exact currency formatter. Copying `public/` only into the runtime stage does not make it available to the builder. A normal checkout build can hide this omission; validate the restricted builder inputs and the actual amd64/arm64 Docker CI builds before claiming a deployable release.
+
 GitHub `hikling/shendu-v1` main is the canonical source and documentation delivery. Root `scripts/package-handover.py` generates only a short repository/document-link `README.md`, `VERSION.json` with the source commit/application tree, and `HANDOVER-MANIFEST.json`, under the single `shendu-v1-handover/` prefix. ZIP must be smaller than 20 KiB. Never embed application source, assets, original artwork, tests, specs, full handbook, history or runtime files; keep all development files accessible in GitHub. There is no source-archive mode.
 
 Build from committed metadata in a clean tracked checkout with output outside the repository; source changes must be synchronized to GitHub before delivery. Python 3.11+ is a development-tool dependency; production does not require it. Git is needed to build, while `--verify <zip>` works without Git and requires the adjacent `.zip.sha256`. Verification enforces the exact three generated members, safe paths, size bounds, metadata consistency and file SHA-256 values. Validate links against the fixed public repository. These checks detect corruption; establish authenticity through the trusted GitHub repository.

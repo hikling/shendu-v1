@@ -4,6 +4,7 @@ COPY package.json package-lock.json ./
 RUN --mount=type=cache,target=/root/.npm npm ci --no-audit --no-fund
 COPY components.json jsconfig.json vite.config.js ./
 COPY ui ./ui
+COPY public/finance-domain.js ./public/finance-domain.js
 COPY scripts/ui-licenses.mjs ./scripts/ui-licenses.mjs
 COPY scripts/prepare-ocr.mjs ./scripts/prepare-ocr.mjs
 RUN npm run build

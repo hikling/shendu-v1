@@ -42,3 +42,9 @@ These are recorded as contextual audit dispositions, not a claimed green audit o
 ## Remote publication pending
 
 The pre-sync `git fetch origin main` was not executed: automatic approval review returned the same HTTP503 service error. No remote update, release publication or retention cleanup is claimed for this task. Finish local commit preparation; once approval service access is restored, fetch main, resolve any intervening changes, push the reviewed commit, wait for both architectures and public-download checks, then retain the latest four complete Releases without deleting tags. Keep this task active until that work is complete.
+
+## Publication recovery — 2026-11-16
+
+Automatic access resumed. Fetch and push confirmed `65aa520` was already on main. Run `43822759523` passed application tests and handover on GitHub, but both Docker builds failed because `ui/finance-pie.jsx` imports `public/finance-domain.js`, which had not been copied into the UI builder stage. Runtime-stage public assets do not satisfy builder imports. This prevented publishing the checksum file and caused the server updater's 404; the old container kept running.
+
+Added the specific shared domain file to Docker's builder inputs. Reproduced the missing-file failure with only the original builder inputs, then built the same isolated directory successfully after adding the file. `npm run check` and diff whitespace validation passed. No application, account, storage, UI or updater behavior changed in this repair. Native Docker builds and public-download checks will be verified in the new GitHub run before declaring the release ready.
