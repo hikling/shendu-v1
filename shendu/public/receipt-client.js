@@ -112,6 +112,7 @@ async function uploadVariants(compressed,{request,isCurrent,signal,config}){
   assertCurrent(isCurrent,signal);
   const variants=Object.fromEntries(['image','thumb'].map(name=>[name,{bytes:compressed[name].bytes,type:compressed[name].type,sha256:compressed[name].sha256}]));
   const ticket=await request('/api/finance/receipts/prepare',{method:'POST',body:{id:crypto.randomUUID(),hash:compressed.hash,variants}},isCurrent);assertCurrent(isCurrent,signal);
+  if(typeof ticket.receiptId!=='string'||!ticket.receiptId)throw new Error('凭证保存响应不完整，请重试');
   if(ticket.ready)return {id:ticket.receiptId,duplicate:ticket.duplicate===true};
   for(const name of ['image','thumb']){
     assertCurrent(isCurrent,signal);const upload=ticket.uploads?.[name],target=storageTarget(upload?.url,config);
@@ -122,7 +123,9 @@ async function uploadVariants(compressed,{request,isCurrent,signal,config}){
     }catch(caught){if(signal?.aborted)throw cancelled();throw caught.name==='AbortError'?new Error('图片上传超时，请稍后重试'):caught}
     finally{clearTimeout(deadline);signal?.removeEventListener('abort',stop)}
   }
-  assertCurrent(isCurrent,signal);await request(`/api/finance/receipts/${encodeURIComponent(ticket.receiptId)}/complete`,{method:'POST',body:{}},isCurrent);assertCurrent(isCurrent,signal);return {id:ticket.receiptId,duplicate:false};
+  assertCurrent(isCurrent,signal);const completed=await request(`/api/finance/receipts/${encodeURIComponent(ticket.receiptId)}/complete`,{method:'POST',body:{}},isCurrent);assertCurrent(isCurrent,signal);
+  if(!completed?.receipt?.ready)throw new Error('图片尚未通过存储校验，请重试');
+  return {id:ticket.receiptId,duplicate:false};
 }
 
 function storageTarget(raw,config){
@@ -156,13 +159,13 @@ export async function processReceiptFiles(files,{request,isCurrent=()=>true,onPr
       if(configured){
         onProgress({stage:'uploading',message:`正在保存第${index+1}/${list.length}张压缩凭证`,index,total:list.length});
         try{const stored=await uploadVariants(compressed,{request,isCurrent:current,signal:owner.signal,config:configured});receiptId=stored.id;duplicate=stored.duplicate;receiptIds.push(receiptId);if(duplicate)imageWarning.push('这张截图已保存过，请核对是否重复记账。')}
-        catch(caught){assertCurrent(current,owner.signal);imageWarning.push(caught.message||'凭证图片保存失败，请重试。')}
+        catch(caught){assertCurrent(current,owner.signal);throw Object.assign(new Error(`第 ${index+1} 张截图未能保存，本批次尚未入账。请先测试图片存储，并检查网页上传的跨域权限后重试。`),{code:'receipt_upload_failed',cause:caught})}
       }
       const parsed=parseReceiptText(text,{date,categories}),rows=parsed.length?parsed:[{date,expression:'',purpose:'',kind:'expense',categoryId:'uncategorized',confidence:0,warnings:['未识别到金额，请手动填写。']}];
       for(const row of rows)candidates.push({...row,duplicate,receiptIds:receiptId?[receiptId]:[],warnings:[...(row.warnings||[]),...imageWarning]});
       warnings.push(...imageWarning);onProgress({stage:'processed',message:`已处理${index+1}/${list.length}张截图`,index:index+1,total:list.length});
     }
-    return {candidates,receiptIds:[...new Set(receiptIds)],warnings:[...new Set(warnings)]};
+    return {candidates,receiptIds:[...new Set(receiptIds)],warnings:[...new Set(warnings)],imageStatus:configured?'stored':'not_stored'};
   }finally{signal?.removeEventListener('abort',abort);if(activeBatch===owner)activeBatch=null;ocrProgress=()=>{}}
 }
 

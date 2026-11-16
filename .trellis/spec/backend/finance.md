@@ -11,7 +11,7 @@ Read this before changing finance persistence, daily finance completion, receipt
 - `GET /api/finance?month=YYYY-MM` or `date=YYYY-MM-DD`; optional `q`, `kind`, `category`, `cursor`, `deleted=1`.
 - `POST /api/finance/entries`; `PUT /api/finance/entries/:id`; `DELETE /api/finance/entries/:id`; `POST /api/finance/entries/:id/restore`.
 - `POST /api/finance/categories`; `PUT /api/finance/categories/:id`; `POST /api/finance/day`.
-- `GET|PUT /api/finance/storage`; `POST /api/finance/receipts/prepare`; `POST /api/finance/receipts/:id/complete`; `POST /api/finance/receipts/read`.
+- `GET|PUT|DELETE /api/finance/storage`; `POST /api/finance/storage/test`; `POST /api/finance/receipts/prepare`; `POST /api/finance/receipts/:id/complete`; `POST /api/finance/receipts/read`.
 - Browser `mountFinancePage(container,options)` and `mountDailyFinance(container,options)` return a disposable controller. `processReceiptFiles(files,options)` returns editable candidates, receipt IDs and warnings; it never writes ledger entries.
 - Shared `parseFinanceLines(text,{categories,kind='expense'})` in `public/finance-domain.js` returns `{rows:[{line,expression,purpose,amountCents,categoryId}],errors:[{line,message}],totalCents}`. It is a pure preview parser; explicit confirmation still uses the existing entry endpoint per row.
 
@@ -91,3 +91,42 @@ Required assertions: `finance-api.test.mjs` checks positive versus net totals, f
 5. Cases: 吃饭/聚餐/团建 map to餐饮, 修鞋 maps to修鞋, and unknown income稿酬 maps to稿酬. Historical explicit IDs stay intact. Unknown-purpose categories are ordinary encrypted categories, not public/shared records.
 6. Tests: domain synonyms/pure labels, HTTP account isolation/encryption/retry/reuse, failed receipt/refund and forced-insert rollback, full-name encrypted backup/restore, and real UI multiline/detail/OCR payloads.
 7. Wrong: create categories as the user types or POST a UI placeholder uncategorized for an automatic unknown purpose. Correct: send empty categoryId for automatic assignment and let the confirmed-entry transaction resolve it; freeze attempted rows during retries.
+
+
+## Receipt storage test, disconnect and upload failure contract
+
+### 1. Scope
+Storage testing/deletion, image association recovery, and disconnected backups. Keep private S3 images external; never silently turn failed configured uploads into normal image-free entry candidates.
+
+### 2. Signatures
+- GET /api/finance/storage returns configured,disconnected,receiptCount,version,safe config or null,owned reusable targets.
+- POST /api/finance/storage/test accepts the current unsaved PUT-shaped {config,reuseTargetId?,version?}; secret omission can reuse only the current account's saved secret. No configuration write.
+- DELETE /api/finance/storage requires numeric current {version}; returns the same safe storage shape. PUT retains its current version checks.
+- processReceiptFiles returns imageStatus stored|not_stored alongside candidates,receiptIds,warnings; configured upload/verification errors reject with receipt_upload_failed.
+
+### 3. Contracts
+The test uses a random small probe inside the actual receipt namespace, PUT/GET byte comparison/DELETE cleanup through pinned S3 requests, rate10/minute and existing bounded network concurrency. It does not claim browser CORS or actual receipt checksum support, does not save settings or log a successful usage action, and sanitizes provider errors. Revalidate the session and complete storage snapshot across awaits; cleanup still runs on failure or stale ownership.
+
+Deletion clears credentials and pending receipt indexes, never external image objects or ledger rows. Ready indexes remain paired with an encrypted tombstone {version,config:null,storageIdentity:hash|null}. Ready images pin the old storage location; reconnect requires that identity, while updated credentials are allowed. No-ready disconnect permits correcting the location. hasReadyReceipt remains an ownership/readiness check independent of whether storage is connected, so existing ledger editing and backups remain possible. Signed image reads require active storage.
+
+Backup validation accepts active or disconnected storage, validates the selected setting against the whole merged receipt graph before writes, and preserves private keys/namespace ownership. Replacing an existing setting increases its revision above both prior and incoming versions, including clearing from an old backup, preventing stale test/delete requests from matching a restored revision.
+
+### 4. Validation/error matrix
+- Missing/invalid/stale delete revision:409; no changes.
+- Invalid draft endpoint/config:400; only owned reusable targets accepted; unknown target404.
+- Revoked session401, changed settings409; no stale success.
+- Probe failure or cleanup failure409 with safe message; rate/concurrency429.
+- Reconnect wrong location with ready indexes409; receipt graph mismatch aborts restore.
+- Failed configured upload never returns candidates ready for confirmation. Recognition-only candidates require explicit UI acknowledgment before text-only entry.
+
+### 5. Cases
+Good: test draft corrected credentials before saving, then upload real screenshot and confirm entry. Existing entry without image uses 补传截图 and explicit 保存修改, preserving all amounts/fields.
+Base: disconnected account retains ready receipts and may edit ledger fields; viewing images resumes after reconnecting original location.
+Bad: infer image associations from purpose/amount, remove external photos on config deletion, echo upstream credential errors, or report test success as browser upload compatibility.
+
+### 6. Tests
+Receipt service tests cover draft non-persistence, tiny probe readback/cleanup, failure/redaction, rate/concurrency, revoked sessions and revision races, disconnect/reconnect and pinned identity, merged restore and monotonic revisions. Finance HTTP tests cover auth, version, CSP and encrypted tombstone roundtrip. Client tests cover upload/verification rejection and per-image IDs even with no OCR amount. UI tests cover unsaved test fields and result invalidation, deletion confirmation, recognition-only acknowledgment, supplemental upload preserving existing entry/version and failure/cancel/stale owners.
+
+### 7. Wrong versus correct
+Wrong: catch image-upload errors as a warning and allow ordinary confirmation of a receipt-free candidate; style only new entries; clear storage by dropping version/history.
+Correct: stop failed configured batches, explicitly distinguish text-only recognition, reuse the canonical detail variant for edit/refund, and retain versioned disconnected metadata without credentials.

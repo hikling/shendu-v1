@@ -57,6 +57,9 @@ export function createFinanceReceipts(deps){
   const rates=new Map(),networkOwners=new Set();let networkCount=0;
   const unpack=row=>({...row,data:decryptData(row.data,dataScope('finance-receipt',row.user_id,row.id,'data'))});
   const storage=userId=>setting(userId,configKey,null);
+  const storageIdentity=saved=>saved?.config?receiptStorageIdentity(saved.config):saved?.storageIdentity||null;
+  const readyCount=userId=>db.prepare('SELECT COUNT(*) n FROM finance_receipts WHERE user_id=? AND ready=1').get(userId).n;
+  const nextStorageVersion=(...versions)=>{const next=Math.max(0,...versions)+1;if(!Number.isSafeInteger(next))throw bad('存储版本超出范围，请联系管理员','finance_storage_version',409);return next};
   const namespace=userId=>{
     const user=db.prepare('SELECT username FROM users WHERE id=?').get(userId);
     if(!user)throw bad('账户不存在','finance_receipt_owner',404);
@@ -76,7 +79,23 @@ export function createFinanceReceipts(deps){
   };
   const safeStorage=userId=>{
     const saved=storage(userId),config=saved?.config;
-    return {configured:!!config,version:saved?.version||0,config:config?{endpoint:config.endpoint,region:config.region,bucket:config.bucket,directory:config.directory,pathStyle:config.pathStyle,accessKey:config.accessKey}:null,targets:deps.getS3Targets?.(userId)||[]};
+    return {configured:!!config,disconnected:!config&&Boolean(storageIdentity(saved)),receiptCount:readyCount(userId),version:saved?.version||0,config:config?{endpoint:config.endpoint,region:config.region,bucket:config.bucket,directory:config.directory,pathStyle:config.pathStyle,accessKey:config.accessKey}:null,targets:deps.getS3Targets?.(userId)||[]};
+  };
+  const draftConfig=(body,userId,prior)=>{
+    try{
+      let config;
+      if(body.reuseTargetId){config=deps.getS3TargetConfig?.(userId,body.reuseTargetId);if(!config)throw bad('所选存储目标不存在','finance_storage_target',404)}
+      else{const incoming={...body.config};if(incoming.secretKey===undefined&&prior?.config)incoming.secretKey=prior.config.secretKey;config=incoming}
+      return normalizeBackupConfig('s3',config);
+    }catch(caught){if(caught.status)throw caught;throw bad('图片存储配置无效，请核对 HTTPS 服务地址、存储桶、目录和访问密钥','finance_storage_invalid')}
+  };
+  const sameStorage=(req,user,prior)=>{
+    sessionCurrent(req,user);
+    if(stable(storage(user.id))!==stable(prior))throw bad('存储设置已更新，请刷新后重试','version_conflict',409);
+  };
+  const changeStorage=(userId,write)=>{
+    if(deps.withActivity)return deps.withActivity(userId,'preferences_updated',{},write);
+    db.exec('BEGIN');try{const result=write();db.exec('COMMIT');return result}catch(caught){db.exec('ROLLBACK');throw caught}
   };
   const requireStorage=userId=>{const config=storage(userId)?.config;if(!config)throw bad('请先配置凭证图片存储','finance_storage_required',409);return config};
   const owned=(userId,id)=>{if(!UUID.test(id))throw bad('图片不存在','finance_receipt_not_found',404);const row=db.prepare('SELECT * FROM finance_receipts WHERE id=? AND user_id=?').get(id,userId);if(!row)throw bad('图片不存在','finance_receipt_not_found',404);return unpack(row)};
@@ -91,12 +110,16 @@ export function createFinanceReceipts(deps){
     let stored=null;
     if(payload.storage!==null&&payload.storage!==undefined){
       if(!Number.isSafeInteger(payload.storage.version)||payload.storage.version<1)throw bad('备份中的图片存储版本无效');
-      stored={version:payload.storage.version,config:normalizeBackupConfig('s3',payload.storage.config)};
+      if(payload.storage.config===null){
+        const identity=payload.storage.storageIdentity;
+        if(identity!==null&&!HASH.test(String(identity||'')))throw bad('备份中的图片存储标识无效');
+        stored={version:payload.storage.version,config:null,storageIdentity:identity};
+      }else stored={version:payload.storage.version,config:normalizeBackupConfig('s3',payload.storage.config)};
     }
     const ids=new Set(),hashes=new Set(),receipts=[];
     for(const item of payload.receipts){
       if(!UUID.test(item?.id)||ids.has(item.id)||!HASH.test(item.hash)||hashes.has(item.hash)||![0,1].includes(item.ready)||!Number.isSafeInteger(item.version)||item.version<1||!validTime(item.createdAt)||!validTime(item.updatedAt))throw bad('备份中的图片索引无效');
-      if(!stored||item.data?.storageIdentity!==receiptStorageIdentity(stored.config))throw bad('备份中的图片存储关联不一致');
+      if(!storageIdentity(stored)||item.data?.storageIdentity!==storageIdentity(stored))throw bad('备份中的图片存储关联不一致');
       const variants=variantsFrom(item.data.variants),keys=item.data.keys;
       if(!keys||['image','thumb'].some(name=>typeof keys[name]!=='string'||!/^receipts\/[a-f0-9]{32}\/[a-f0-9-]{36}\/[a-f0-9-]{36}\/(?:image|thumb)\.(?:webp|jpg)$/.test(keys[name])||!keys[name].includes('/'+item.id+'/')||!keys[name].endsWith('/'+name+(variants[name].type==='image/webp'?'.webp':'.jpg'))))throw bad('备份中的图片路径无效');
       ids.add(item.id);hashes.add(item.hash);receipts.push({id:item.id,hash:item.hash,ready:Number(item.ready),version:item.version,createdAt:new Date(item.createdAt).toISOString(),updatedAt:new Date(item.updatedAt).toISOString(),data:{keys:{...keys},variants,storageIdentity:item.data.storageIdentity}});
@@ -109,20 +132,31 @@ export function createFinanceReceipts(deps){
   function importUser(userId,payload,{replace=false}={}){
     const value=validateImport(payload),prefix=`receipts/${namespace(userId)}/`,current=storage(userId);
     if(value.receipts.some(item=>!item.data.keys.image.startsWith(prefix)||!item.data.keys.thumb.startsWith(prefix)))throw bad('凭证图片不属于当前账户');
-    const existing=db.prepare('SELECT COUNT(*) n FROM finance_receipts WHERE user_id=?').get(userId).n;
-    if(current?.config&&value.storage?.config&&receiptStorageIdentity(current.config)!==receiptStorageIdentity(value.storage.config)&&existing&&!replace)throw bad('现有凭证与备份的存储位置不同，请先核对','finance_storage_conflict',409);
-    const added=value.receipts.filter(item=>!db.prepare('SELECT id FROM finance_receipts WHERE id=? AND user_id=?').get(item.id,userId)).length;
-    if(!replace&&existing+added>MAX_RECEIPTS)throw bad('合并后的凭证数量超过上限');
-    if(!replace&&current&&value.storage&&current.version===value.storage.version&&stable(current.config)!==stable(value.storage.config))throw bad('同版本的图片存储配置不一致');
-    if(replace)db.prepare('DELETE FROM finance_receipts WHERE user_id=?').run(userId);
-    if(value.storage&&(!current||replace||value.storage.version>current.version||(!existing&&value.receipts.length)))putSetting(userId,configKey,value.storage);
-    else if(replace&&!value.storage)putSetting(userId,configKey,null);
+    const existing=exportUser(userId).receipts;
+    if(!replace&&storageIdentity(current)&&storageIdentity(value.storage)&&storageIdentity(current)!==storageIdentity(value.storage)&&existing.length)throw bad('现有凭证与备份的存储位置不同，请先核对','finance_storage_conflict',409);
+    if(!replace&&current&&value.storage&&current.version===value.storage.version&&stable(current)!==stable(value.storage))throw bad('同版本的图片存储配置不一致');
+    const replaceStorage=value.storage&&(!current||replace||value.storage.version>current.version||(!existing.length&&value.receipts.length));
+    let nextStorage=replaceStorage?value.storage:replace&&!value.storage?null:current;
+    if(replace&&current){
+      const version=nextStorageVersion(current.version,nextStorage?.version||0);
+      nextStorage=nextStorage?{...nextStorage,version}:{version,config:null,storageIdentity:null};
+    }
+    const merged=new Map((replace?[]:existing).map(item=>[item.id,item]));
     for(const item of value.receipts){
-      const old=db.prepare('SELECT * FROM finance_receipts WHERE id=?').get(item.id);
-      if(old&&old.user_id!==userId)throw bad('备份中的凭证标识冲突');
-      if(old){const prior=unpack(old);if(old.version>item.version)continue;if(old.version===item.version){if(stable(prior.data)!==stable(item.data)||old.hash!==item.hash||old.ready!==item.ready)throw bad('备份中的同版本凭证不一致');continue}}
-      const duplicate=db.prepare('SELECT id FROM finance_receipts WHERE user_id=? AND hash=? AND id<>?').get(userId,item.hash,item.id);
-      if(duplicate)throw bad('备份中的凭证重复标识不一致');
+      const raw=db.prepare('SELECT user_id FROM finance_receipts WHERE id=?').get(item.id);
+      if(raw&&raw.user_id!==userId)throw bad('备份中的凭证标识冲突');
+      const old=merged.get(item.id);
+      if(old){if(old.version>item.version)continue;if(old.version===item.version){if(stable(old.data)!==stable(item.data)||old.hash!==item.hash||old.ready!==item.ready)throw bad('备份中的同版本凭证不一致');continue}}
+      merged.set(item.id,item);
+    }
+    // Validate the selected setting with retained local rows before the first write.
+    // A disconnected setting is still pinned to the original receipt namespace.
+    const checked=validateImport({version:1,storage:nextStorage,receipts:[...merged.values()]});
+    if(replace)db.prepare('DELETE FROM finance_receipts WHERE user_id=?').run(userId);
+    if(replaceStorage||replace&&!value.storage)putSetting(userId,configKey,nextStorage);
+    for(const item of checked.receipts){
+      const old=db.prepare('SELECT version FROM finance_receipts WHERE id=? AND user_id=?').get(item.id,userId);
+      if(old&&old.version>=item.version)continue;
       db.prepare('INSERT INTO finance_receipts(id,user_id,hash,ready,data,version,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?) ON CONFLICT(id) DO UPDATE SET ready=excluded.ready,data=excluded.data,version=excluded.version,updated_at=excluded.updated_at').run(item.id,userId,item.hash,item.ready,encryptData(item.data,dataScope('finance-receipt',userId,item.id,'data')),item.version,item.createdAt,item.updatedAt);
     }
   }
@@ -131,22 +165,50 @@ export function createFinanceReceipts(deps){
     const path=url.pathname;if(!path.startsWith('/api/finance/storage')&&!path.startsWith('/api/finance/receipts'))return false;
     try{
       if(path==='/api/finance/storage'&&req.method==='GET'){json(res,200,safeStorage(user.id));return true}
-      if(path==='/api/finance/storage'&&req.method==='PUT'){
+      if(path==='/api/finance/storage'&&req.method==='DELETE'){
+        const body=await readJson(req),prior=storage(user.id);sessionCurrent(req,user);
+        if(!Number.isSafeInteger(body.version)||body.version<0||body.version!==(prior?.version||0))throw bad('存储设置已更新，请刷新后重试','version_conflict',409);
+        const identity=readyCount(user.id)?storageIdentity(prior):null;
+        if(readyCount(user.id)&&!identity)throw bad('已有凭证的存储标识无效，请先恢复原配置','finance_storage_conflict',409);
+        const write=()=>{
+          db.prepare('DELETE FROM finance_receipts WHERE user_id=? AND ready=0').run(user.id);
+          putSetting(user.id,configKey,{version:nextStorageVersion(prior?.version||0),config:null,storageIdentity:identity});
+        };
+        changeStorage(user.id,write);json(res,200,safeStorage(user.id));return true;
+      }
+      if(path==='/api/finance/storage'&&req.method==='PUT'||path==='/api/finance/storage/test'&&req.method==='POST'){
         const body=await readJson(req),prior=storage(user.id);sessionCurrent(req,user);
         if(body.version!==undefined&&body.version!==(prior?.version||0))throw bad('存储设置已更新，请刷新后重试','version_conflict',409);
-        let config;
-        try{
-          if(body.reuseTargetId){config=deps.getS3TargetConfig?.(user.id,body.reuseTargetId);if(!config)throw bad('所选存储目标不存在','finance_storage_target',404)}
-          else{const incoming={...body.config};if(incoming.secretKey===undefined&&prior?.config)incoming.secretKey=prior.config.secretKey;config=normalizeBackupConfig('s3',incoming)}
-          config=normalizeBackupConfig('s3',config);
-        }catch(caught){if(caught.status)throw caught;throw bad('图片存储配置无效，请核对 HTTPS 服务地址、存储桶、目录和访问密钥','finance_storage_invalid')}
-        try{await assertPublicHttps(config.endpoint)}catch{throw bad('无法验证图片存储地址，请使用可访问的公网 HTTPS 服务地址','finance_storage_invalid')}
-        sessionCurrent(req,user);
-        if(prior?.config&&receiptStorageIdentity(prior.config)!==receiptStorageIdentity(config)&&db.prepare('SELECT id FROM finance_receipts WHERE user_id=? LIMIT 1').get(user.id))throw bad('已有凭证图片，不能直接更换存储桶或目录；可以更新访问密钥','finance_storage_in_use',409);
-        const latest=storage(user.id);if((latest?.version||0)!==(prior?.version||0))throw bad('存储设置已更新，请刷新后重试','version_conflict',409);
-        const write=()=>putSetting(user.id,configKey,{version:(prior?.version||0)+1,config});
-        if(deps.withActivity)deps.withActivity(user.id,'preferences_updated',{},write);else write();
-        json(res,200,safeStorage(user.id));return true;
+        const config=draftConfig(body,user.id,prior),testing=path.endsWith('/test');
+        if(testing)checkRate(user.id,'storage-test',10,60000);
+        try{await assertPublicHttps(config.endpoint)}catch{sameStorage(req,user,prior);throw bad('无法验证图片存储地址，请使用可访问的公网 HTTPS 服务地址','finance_storage_invalid')}
+        sameStorage(req,user,prior);
+        if(testing){
+          await network(user.id,async()=>{
+            const key=`receipts/${namespace(user.id)}/connection-check-${randomUUID()}.bin`,bytes=Buffer.from('shendu-receipt-storage-test:'+randomUUID());
+            let attempted=false,failed=null,cleanupFailed=false;
+            try{
+              sameStorage(req,user,prior);attempted=true;
+              await s3Request(config,key,'PUT',bytes);sameStorage(req,user,prior);
+              const read=await s3Request(config,key,'GET');sameStorage(req,user,prior);
+              if(!Buffer.isBuffer(read.body)||!read.body.equals(bytes))throw new Error('readback mismatch');
+            }catch(caught){failed=caught}
+            finally{if(attempted){try{await s3Request(config,key,'DELETE')}catch{cleanupFailed=true}}}
+            // Cleanup must finish even when a session/revision changes during a probe.
+            // Never return the provider error or signed/private URL to the browser.
+            sameStorage(req,user,prior);
+            if(failed||cleanupFailed)throw bad(cleanupFailed?'图片存储测试未完成，测试文件清理失败，请核对删除权限后重试。':'图片存储测试失败，请核对地址、存储桶、目录和访问密钥及读写权限。','finance_storage_test_failed',409);
+          });
+          sameStorage(req,user,prior);
+          json(res,200,{ok:true,message:'服务器读写和测试文件清理通过；网页跨域上传权限及图片 SHA-256 校验仍需实际上传验证。'});return true;
+        }
+        const identity=receiptStorageIdentity(config),previousIdentity=storageIdentity(prior);
+        if(readyCount(user.id)&&previousIdentity!==identity)throw bad('已有凭证图片，请重新连接原存储桶和目录；可以更新访问密钥','finance_storage_in_use',409);
+        const write=()=>{
+          if(previousIdentity!==identity)db.prepare('DELETE FROM finance_receipts WHERE user_id=? AND ready=0').run(user.id);
+          putSetting(user.id,configKey,{version:nextStorageVersion(prior?.version||0),config});
+        };
+        changeStorage(user.id,write);json(res,200,safeStorage(user.id));return true;
       }
       if(path==='/api/finance/receipts/prepare'&&req.method==='POST'){
         const body=await readJson(req);sessionCurrent(req,user);checkRate(user.id,'prepare-minute',30,60000);checkRate(user.id,'prepare-day',250,86400000);

@@ -284,3 +284,24 @@ test('automatic categories are account-owned, encrypted, idempotent, atomic and 
   const restored=await api('/api/data/import',{method:'POST',auth:a.cookie,body:{encryptedBackup:exported.text,password:backupPassword,mode:'replace',confirmation:'RESTORE'}});assert.equal(restored.status,200,restored.text);
   assert.equal((await ledger(a.cookie)).categories.find(row=>row.id===long.categoryId).name,longPurpose);
 });
+
+test('storage disconnect routes clear credentials and CSP without deleting ledger data, and survive encrypted backup restore',async()=>{
+  const a=await account(),b=await account(),entry=await create(a.cookie);
+  await api('/api/backup/password',{method:'POST',auth:a.cookie,body:{password:backupPassword}});
+  const original=await api('/api/backup/export',{method:'POST',auth:a.cookie,body:{}}),clear=clearBackup(original.text);
+  clear.entries.find(item=>item.kind==='finance').value.receipts.storage={version:1,config:{endpoint:'https://receipt-disconnect.example.test',bucket:'private-images',region:'auto',directory:'receipts',pathStyle:true,accessKey:'fixture-access',secretKey:'fixture-secret'}};
+  const imported=await api('/api/data/import',{method:'POST',auth:a.cookie,body:{encryptedBackup:sealBackup(original.text,clear),password:backupPassword,mode:'merge'}});assert.equal(imported.status,200,imported.text);
+  const read=await api('/api/finance/storage',{auth:a.cookie});assert.equal(read.value.configured,true);assert.ok(!read.text.includes('fixture-secret'));
+  assert.equal((await api('/api/finance/storage',{method:'DELETE',auth:'',body:{version:1}})).status,401);
+  assert.equal((await api('/api/finance/storage',{method:'DELETE',auth:a.cookie,body:{version:0}})).status,409);
+  assert.equal((await api('/api/finance/storage/test',{method:'POST',auth:a.cookie,body:{version:0,config:{}}})).status,409);
+  const removed=await api('/api/finance/storage',{method:'DELETE',auth:a.cookie,body:{version:1}});assert.equal(removed.status,200,removed.text);assert.equal(removed.value.configured,false);assert.equal(removed.value.version,2);
+  assert.doesNotMatch((await api('/api/me',{auth:a.cookie})).csp,/receipt-disconnect/);
+  assert.equal((await api('/api/finance/storage',{auth:b.cookie})).value.version,0);
+  assert.equal((await ledger(a.cookie)).entries.some(row=>row.id===entry.id),true);
+  const backup=await api('/api/backup/export',{method:'POST',auth:a.cookie,body:{}});assert.equal(backup.status,200,backup.text);
+  const storage=clearBackup(backup.text).entries.find(item=>item.kind==='finance').value.receipts.storage;assert.equal(storage.config,null);assert.equal(storage.version,2);
+  const restored=await api('/api/data/import',{method:'POST',auth:a.cookie,body:{encryptedBackup:backup.text,password:backupPassword,mode:'replace',confirmation:'RESTORE'}});assert.equal(restored.status,200,restored.text);
+  assert.equal((await api('/api/finance/storage',{auth:a.cookie})).value.configured,false);
+  assert.equal((await ledger(a.cookie)).entries.some(row=>row.id===entry.id),true);
+});

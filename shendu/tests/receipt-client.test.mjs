@@ -9,13 +9,13 @@ const screenshot=(width,height)=>{const bytes=png(width,height);return {type:'im
 const config={endpoint:'https://storage.example.com/api',bucket:'private',directory:'journal',pathStyle:true};
 const objectUrl=name=>`https://storage.example.com/api/private/journal/receipts/owner/id/random/${name}.webp?X-Amz-Signature=temporary`;
 
-async function browser({recognize=async()=>({data:{text:'商户：早餐店\n支付金额 ¥23.00'}}),encode,createWorker}={}){
+async function browser({recognize=async()=>({data:{text:'商户：早餐店\n支付金额 ¥23.00'}}),encode,createWorker,transfer}={}){
   const originals=new Map();const set=(name,value)=>{originals.set(name,Object.getOwnPropertyDescriptor(globalThis,name));Object.defineProperty(globalThis,name,{value,configurable:true,writable:true})};
   const canvases=[],bitmaps=[],workers=[],fetches=[];
   set('location',{origin:'https://shendu.test'});
   set('createImageBitmap',async()=>{const image={width:800,height:1600,closed:false,close(){this.closed=true}};bitmaps.push(image);return image});
   set('document',{createElement:()=>{const canvas={width:0,height:0,getContext:()=>({fillRect(){},drawImage(){}}),toBlob(callback,type,quality){callback(encode?encode({type,quality,canvas}):new Blob(['compressed-only'],{type}))}};canvases.push(canvas);return canvas}});
-  set('fetch',async(url,args)=>{fetches.push({url,args});return {ok:true}});
+  set('fetch',async(url,args)=>{fetches.push({url,args});return transfer?transfer(url,args):{ok:true}});
   set('__receiptOcrLibrary',{createWorker:async(...args)=>{const instance={recognize,terminate:async()=>{instance.terminated=true},args};workers.push(instance);return createWorker?await createWorker(instance):instance}});
   // Replace only the browser asset import. The tested processing/ownership code is unchanged.
   const source=(await readFile(new URL('../public/receipt-client.js',import.meta.url),'utf8')).replace(/'\.\/finance-domain\.js(?:\?[^']*)?'/,JSON.stringify(new URL('../public/finance-domain.js',import.meta.url).href)).replace("import('/ocr/tesseract.esm.min.js')","Promise.resolve({default:globalThis.__receiptOcrLibrary})");
@@ -55,7 +55,7 @@ test('unsupported WebP encoders fall back to JPEG; overlarge compressed output f
 test('unconfigured storage still recognizes locally using one lazy worker across sequential files',async()=>{
   const b=await browser();try{
     let transfers=0;const result=await b.client.processReceiptFiles([screenshot(),screenshot()],{request:async path=>{assert.equal(path,'/api/finance/storage');transfers++;return {configured:false}},date:'2026-11-15'});
-    assert.equal(result.candidates.length,2);assert.equal(result.candidates[0].expression,'23.00');assert.deepEqual(result.receiptIds,[]);assert.match(result.warnings[0],/不会长期保存/);assert.equal(transfers,1);assert.equal(b.fetches.length,0);assert.equal(b.workers.length,1);
+    assert.equal(result.imageStatus,'not_stored');assert.equal(result.candidates.length,2);assert.equal(result.candidates[0].expression,'23.00');assert.deepEqual(result.receiptIds,[]);assert.match(result.warnings[0],/不会长期保存/);assert.equal(transfers,1);assert.equal(b.fetches.length,0);assert.equal(b.workers.length,1);
     const [languages,oem,options]=b.workers[0].args;assert.deepEqual(languages,['chi_sim','eng']);assert.equal(oem,1);assert.equal(options.workerBlobURL,false);for(const name of ['workerPath','corePath','langPath'])assert.ok(options[name].startsWith('https://shendu.test/ocr/'));
   }finally{b.restore()}
 });
@@ -63,14 +63,14 @@ test('unconfigured storage still recognizes locally using one lazy worker across
 test('only compressed variants go directly to validated S3 URLs and complete after both successful PUTs',async()=>{
   const b=await browser();try{
     const calls=[];const result=await b.client.processReceiptFiles([screenshot()],{date:'2026-11-15',request:async(path,args)=>{calls.push({path,args});if(path.endsWith('/storage'))return {configured:true,config};if(path.endsWith('/prepare'))return {receiptId:'receipt-id',uploads:Object.fromEntries(['image','thumb'].map(name=>[name,{url:objectUrl(name),headers:{'Content-Type':'image/webp'}}]))};if(path.endsWith('/complete')){assert.equal(b.fetches.length,2);return {receipt:{ready:true}}}throw Error(path)}});
-    assert.deepEqual(result.receiptIds,['receipt-id']);assert.equal(calls.length,3);assert.ok(calls[1].args.body.variants.image.bytes<24);assert.equal(JSON.stringify(calls).includes('compressed-only'),false);
+    assert.equal(result.imageStatus,'stored');assert.deepEqual(result.receiptIds,['receipt-id']);assert.equal(calls.length,3);assert.ok(calls[1].args.body.variants.image.bytes<24);assert.equal(JSON.stringify(calls).includes('compressed-only'),false);
     for(const transfer of b.fetches){assert.equal(await transfer.args.body.text(),'compressed-only');assert.equal(transfer.args.credentials,'omit');assert.equal(transfer.args.redirect,'error');assert.match(transfer.url,/^https:\/\/storage\.example\.com\//)}
   }finally{b.restore()}
 });
 
 test('foreign or escaped upload targets fail visibly without leaking image bytes or ready IDs',async()=>{
   for(const url of ['https://other.example.com/receipts/image.webp','https://storage.example.com/api/private/elsewhere/image.webp','https://user:pass@storage.example.com/api/private/journal/receipts/image.webp']){
-    const b=await browser();try{const result=await b.client.processReceiptFiles([screenshot()],{request:async path=>path.endsWith('/storage')?{configured:true,config}:{receiptId:'bad',uploads:{image:{url}}}});assert.equal(b.fetches.length,0);assert.deepEqual(result.receiptIds,[]);assert.match(result.warnings.join(' '),/私有存储设置/)}finally{b.restore()}
+    const b=await browser();try{await assert.rejects(b.client.processReceiptFiles([screenshot()],{request:async path=>path.endsWith('/storage')?{configured:true,config}:{receiptId:'bad',uploads:{image:{url}}}}),{code:'receipt_upload_failed'});assert.equal(b.fetches.length,0)}finally{b.restore()}
   }
 });
 
@@ -113,4 +113,29 @@ test('bundled OCR manifest includes every selectable core and both pinned langua
   const names=new Set(manifest.files.map(item=>item.path));for(const language of ['eng','chi_sim'])assert.ok(names.has(`lang/${language}.traineddata.gz`));
   for(const variant of ['','-lstm','-simd','-simd-lstm','-relaxedsimd','-relaxedsimd-lstm'])for(const extension of ['wasm','wasm.js'])assert.ok(names.has(`core/tesseract-core${variant}.${extension}`));
   for(const file of manifest.files){const data=await readFile(new URL(file.path,root));assert.equal(data.byteLength,file.bytes,file.path);assert.equal(createHash('sha256').update(data).digest('hex'),file.sha256,file.path)}
+});
+
+
+test('configured upload or verification failure rejects without exposing image-free confirmation candidates',async()=>{
+  for(const failure of ['put','verify']){
+    const b=await browser({transfer:()=>({ok:failure!=='put',status:403})});try{
+      const calls=[];await assert.rejects(b.client.processReceiptFiles([screenshot()],{request:async path=>{
+        calls.push(path);if(path.endsWith('/storage'))return {configured:true,config};
+        if(path.endsWith('/prepare'))return {receiptId:'receipt-id',uploads:Object.fromEntries(['image','thumb'].map(name=>[name,{url:objectUrl(name),headers:{}}]))};
+        if(path.endsWith('/complete'))return {receipt:{ready:false}};
+        throw Error(path);
+      }}),error=>error.code==='receipt_upload_failed'&&/本批次尚未入账/.test(error.message));
+      assert.ok(!calls.some(path=>path.includes('/entries')));if(failure==='put')assert.ok(!calls.some(path=>path.endsWith('/complete')));
+    }finally{b.restore()}
+  }
+});
+
+test('each stored screenshot retains its receipt even when OCR has no amount',async()=>{
+  let index=0;const b=await browser({recognize:async()=>({data:{text:++index===1?'支付金额 ¥23.00':'没有金额'}})});try{
+    let receipt=0;const result=await b.client.processReceiptFiles([screenshot(),screenshot()],{date:'2026-11-16',request:async path=>{
+      if(path.endsWith('/storage'))return {configured:true,config};if(path.endsWith('/prepare'))return {receiptId:'stored-'+(++receipt),ready:true};throw Error(path);
+    }});
+    assert.equal(result.imageStatus,'stored');assert.equal(result.candidates.length,2);
+    assert.deepEqual(result.candidates.map(row=>row.receiptIds),[['stored-1'],['stored-2']]);assert.equal(result.candidates[1].expression,'');
+  }finally{b.restore()}
 });

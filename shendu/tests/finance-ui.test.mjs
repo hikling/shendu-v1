@@ -15,14 +15,19 @@ const ui=await import('../public/ui/shadcn.js');
 const $=(selector,root=document)=>root.querySelector(selector),$$=(selector,root=document)=>[...root.querySelectorAll(selector)],flush=async()=>{for(let i=0;i<5;i++)await new Promise(resolve=>setImmediate(resolve))};
 let controller;
 
-function fixture({daily=false,readonly=false,snapshot,draft,handler,receiptClient,initialEntries=[]}={}){
+function fixture({daily=false,readonly=false,snapshot,draft,handler,receiptClient,initialEntries=[],initialStorage}={}){
   ui.disposeUi($('#app'));ui.disposeUi($('#modal-root'));$('#app').replaceChildren();$('#modal-root').replaceChildren();
   const root=document.createElement('section');$('#app').append(root);let current=true,pending=false;
-  const calls=[],notices=[],drafts=[],dirty=[],ended=[];let entries=structuredClone(initialEntries),categories=DEFAULT_FINANCE_CATEGORIES.map(category=>({...category,version:0})),nextCursor=null;
+  const calls=[],notices=[],drafts=[],dirty=[],ended=[];let savedStorage=initialStorage||{configured:false,config:{},version:0,receiptCount:0,disconnected:false,targets:[{id:'storage-target',name:'自己的S3'}]};let entries=structuredClone(initialEntries),categories=DEFAULT_FINANCE_CATEGORIES.map(category=>({...category,version:0})),nextCursor=null;
   const result=(date)=>{const selected=entries.filter(row=>!date||row.date===date),active=selected.filter(row=>!row.deletedAt),totals=new Map();for(const row of active)if(row.kind==='expense')totals.set(row.categoryId,(totals.get(row.categoryId)||0)+row.amountCents);const expenseCents=active.filter(row=>row.kind==='expense').reduce((sum,row)=>sum+row.amountCents,0),refundCents=active.filter(row=>row.kind==='refund').reduce((sum,row)=>sum+row.amountCents,0);return {categories,entries:structuredClone(selected),nextCursor,summary:{incomeCents:0,expenseCents,refundCents,netExpenseCents:expenseCents-refundCents,balanceCents:refundCents-expenseCents,count:active.length},trend:[],categoryTotals:[],expenseCategoryTotals:[...totals].map(([categoryId,cents])=>({categoryId,name:categories.find(row=>row.id===categoryId)?.name||'待分类',cents})),day:{date:date||'2026-11-15',state:selected.length?'recorded':'unrecorded',version:0}}};
   const request=async(path,args={},guard=()=>true)=>{
     calls.push({path,args,guard});const intercepted=handler?.(path,args,guard);if(intercepted!==undefined)return await intercepted;
-    if(path==='/api/finance/storage')return {configured:false,config:{},version:0,targets:[{id:'storage-target',name:'自己的S3'}]};
+    if(path==='/api/finance/storage/test')return {ok:true};
+    if(path==='/api/finance/storage'){
+      if(args.method==='PUT'){const {secretKey,...config}=args.body.config;savedStorage={...savedStorage,configured:true,config,version:savedStorage.version+1,disconnected:false}}
+      if(args.method==='DELETE')savedStorage={...savedStorage,configured:false,config:null,version:savedStorage.version+1,disconnected:Boolean(savedStorage.receiptCount)};
+      return structuredClone(savedStorage);
+    }
     if(path.startsWith('/api/finance?'))return result(new URL(path,'https://shendu.test').searchParams.get('date'));
     if(path==='/api/finance/entries'&&args.method==='POST'){let categoryId=args.body.categoryId;if(!categoryId){const found=suggestFinanceCategory(args.body.purpose,categories,'expense');if(found!=='uncategorized')categoryId=found;else{let category=categories.find(row=>row.name===args.body.purpose);if(!category){category={id:globalThis.crypto.randomUUID(),name:args.body.purpose,keywords:[],active:true,version:1};categories.push(category)}categoryId=category.id}}const entry={...args.body,categoryId,amountCents:parseMoneyExpression(args.body.expression),version:1,createdAt:'2026-11-15T00:00:00Z',updatedAt:'2026-11-15T00:00:00Z',deletedAt:null};entries.unshift(entry);return {entry}}
     if(path==='/api/finance/day')return {day:args.body};
@@ -157,7 +162,7 @@ test('canceling a low-confidence preview creates no entries and duplicate candid
   const f=fixture({initialEntries:[{id:'prior',date:'2026-11-15',kind:'expense',expression:'8',amountCents:800,purpose:'早餐',categoryId:'food',version:1,receiptIds:[]}],receiptClient:{processReceiptFiles:async()=>({candidates:[{expression:'8',date:'2026-11-15',kind:'expense',purpose:'早餐',confidence:'low',warnings:['日期需要核对']},{expression:'12',kind:'expense',purpose:'午餐',confidence:'medium'}],warnings:[]})}});await flush();selectScreenshot(f);await flush();const form=$('#finance-import-form');assert.match(form.textContent,/请仔细核对/);assert.match(form.textContent,/疑似重复/);assert.equal(form.elements['select-0'].checked,false);assert.equal(form.elements['select-1'].checked,true);assert.match(form.textContent,/日期需要核对/);
   $('[data-close]',form).click(); // The app owns close handling; simulate the same successful close here.
   ui.renderMarkup($('#modal-root'),'');await flush();assert.equal(f.calls.filter(call=>call.path==='/api/finance/entries').length,0);assert.equal(f.pending(),false);
-  selectScreenshot(f);await flush();const next=$('#finance-import-form');next.elements['select-0'].checked=true;next.elements['select-1'].checked=false;submit(next);await flush();assert.equal(f.calls.filter(call=>call.path==='/api/finance/entries').length,1);assert.equal(f.calls.find(call=>call.path==='/api/finance/entries').args.body.expression,'8');
+  selectScreenshot(f);await flush();const next=$('#finance-import-form');next.elements['select-0'].checked=true;next.elements['select-1'].checked=false;next.elements['acknowledge-0'].checked=true;submit(next);await flush();assert.equal(f.calls.filter(call=>call.path==='/api/finance/entries').length,1);assert.equal(f.calls.find(call=>call.path==='/api/finance/entries').args.body.expression,'8');
 });
 
 test('thumbnail authorization waits for viewport proximity and failed thumbnails expose retry',async()=>{
@@ -311,4 +316,59 @@ test('detailed entry keeps automatic quick suggestions live and preserves explic
   assert.equal(f.calls.find(call=>call.path==='/api/finance/entries').args.body.categoryId,'transport');
   $('[data-entry-action="edit"][data-id="legacy"]',f.root).click();form=$('#finance-edit-form');assert.ok(form);assert.equal(form.elements.categoryId.value,'uncategorized');input(form,'expression','5');submit(form);await flush();
   assert.equal(f.calls.find(call=>call.path==='/api/finance/entries/legacy'&&call.args.method==='PUT').args.body.categoryId,'uncategorized');
+});
+
+
+const storedImageConfig={configured:true,version:4,receiptCount:2,disconnected:false,config:{endpoint:'https://private.example.com',region:'auto',bucket:'photos',directory:'receipts',accessKey:'access-id',pathStyle:true},targets:[]};
+function setFiles(field){Object.defineProperty(field,'files',{configurable:true,value:[new win.File(['image'],'receipt.png',{type:'image/png'})]});field.dispatchEvent(new win.Event('change',{bubbles:true}))}
+
+test('storage test sends unsaved form values without saving, blocks duplicate work, and invalidates a prior success after edits',async()=>{
+  let finish;const f=fixture({initialStorage:storedImageConfig,handler:(path,args)=>path==='/api/finance/storage/test'?new Promise(resolve=>{finish=resolve}):undefined});await flush();$('[data-finance-storage]',f.root).click();await flush();
+  const form=$('#finance-storage-form');assert.ok(form.closest('.finance-detail-dialog'));assert.equal(form.elements.secretKey.value,'');input(form,'endpoint','https://changed.example.com');input(form,'secretKey','new-private-secret');
+  $('[data-storage-test]',form).click();$('[data-storage-test]',form).dispatchEvent(new win.Event('click'));await flush();
+  const tests=f.calls.filter(call=>call.path==='/api/finance/storage/test');assert.equal(tests.length,1);assert.equal(tests[0].args.body.config.endpoint,'https://changed.example.com');assert.equal(tests[0].args.body.config.secretKey,'new-private-secret');assert.equal(tests[0].args.body.version,4);
+  assert.equal($('fieldset',form).disabled,true);assert.equal($('#modal-root').dataset.persistent,'1');assert.equal(f.calls.some(call=>call.args.method==='PUT'),false);
+  finish({ok:true});await flush();assert.equal($('fieldset',form).disabled,false);assert.match($('[data-storage-status]',form).textContent,/测试通过.*尚未保存.*跨域/);assert.equal(form.elements.secretKey.value,'new-private-secret');
+  input(form,'bucket','other');assert.doesNotMatch($('[data-storage-status]',form).textContent,/测试通过/);assert.equal($('[data-storage-status]',form).classList.contains('is-success'),false);
+});
+
+test('storage test failures keep edited credentials and configuration for correction and retry',async()=>{
+  const f=fixture({initialStorage:storedImageConfig,handler:path=>path==='/api/finance/storage/test'?Promise.reject(new Error('存储权限不足')):undefined});await flush();$('[data-finance-storage]',f.root).click();await flush();const form=$('#finance-storage-form');input(form,'secretKey','correctable-secret');$('[data-storage-test]',form).click();await flush();
+  assert.equal(form.elements.secretKey.value,'correctable-secret');assert.match($('[data-form-error]',form).textContent,/权限不足/);assert.match($('[data-storage-status]',form).textContent,/测试未通过/);assert.equal($('fieldset',form).disabled,false);assert.equal(f.calls.some(call=>call.args.method==='PUT'||call.args.method==='DELETE'),false);
+});
+
+test('a late storage-test result cannot modify a replacement modal',async()=>{
+  let finish,guard;const f=fixture({initialStorage:storedImageConfig,handler:(path,args,current)=>{if(path==='/api/finance/storage/test'){guard=current;return new Promise(resolve=>{finish=resolve})}}});await flush();$('[data-finance-storage]',f.root).click();await flush();const form=$('#finance-storage-form');$('[data-storage-test]',form).click();await flush();assert.equal(guard(),true);
+  ui.renderMarkup($('#modal-root'),'<section id="replacement"><input value="保留新的输入"></section>');assert.equal(guard(),false);finish({ok:true});await flush();assert.equal($('#replacement input').value,'保留新的输入');assert.doesNotMatch($('#replacement').textContent,/测试通过/);assert.equal(f.notices.length,0);
+});
+
+test('deleting storage requires confirmation, keeps external photos, and uses the saved version',async()=>{
+  const f=fixture({initialStorage:storedImageConfig});await flush();$('[data-finance-storage]',f.root).click();await flush();const form=$('#finance-storage-form');$('[data-storage-delete]',form).click();await flush();
+  const confirmation=$('[data-storage-delete-confirm]',form);assert.equal(confirmation.hidden,false);assert.match(confirmation.textContent,/不会删除账目或S3图片/);assert.equal(f.calls.some(call=>call.args.method==='DELETE'),false);
+  $('[data-storage-delete-cancel]',form).click();assert.equal(confirmation.hidden,true);assert.equal(form.elements.bucket.value,'photos');$('[data-storage-delete]',form).click();$('[data-storage-delete-apply]',form).click();await flush();
+  const deletion=f.calls.find(call=>call.path==='/api/finance/storage'&&call.args.method==='DELETE');assert.deepEqual(deletion.args.body,{version:4});assert.equal($('#finance-storage-form'),null);assert.match(f.notices.at(-1)[0],/账目和S3图片保留/);
+  $('[data-finance-storage]',f.root).click();await flush();assert.match($('#finance-storage-form').textContent,/配置已删除.*2 张凭证.*原存储位置/);assert.equal($('#finance-storage-form').elements.secretKey.value,'');
+});
+
+test('recognition-only confirmation explicitly acknowledges that the screenshot is not stored',async()=>{
+  const f=fixture({receiptClient:{processReceiptFiles:async()=>({candidates:[{expression:'6',purpose:'吃饭',kind:'expense',receiptIds:[]}],receiptIds:[],imageStatus:'not_stored',warnings:['尚未配置图片存储']})}});await flush();selectScreenshot(f);await flush();const form=$('#finance-import-form');assert.match(form.textContent,/截图未保存/);submit(form);await flush();assert.equal(f.calls.some(call=>call.path==='/api/finance/entries'),false);assert.match($('[data-form-error]',form).textContent,/未保存截图/);
+  change(form,'acknowledge-0',true);submit(form);await flush();assert.deepEqual(f.calls.find(call=>call.path==='/api/finance/entries').args.body.receiptIds,[]);
+});
+
+test('failed configured screenshot processing opens no normal confirmation and preserves the manual draft',async()=>{
+  const f=fixture({receiptClient:{processReceiptFiles:async()=>{throw Object.assign(new Error('图片未能保存，本批次尚未入账'),{code:'receipt_upload_failed'})}}});await flush();const quick=$('[data-finance-create]',f.root),field=input(quick,'text','7 原手填草稿');selectScreenshot(f);await flush();assert.equal($('#finance-import-form'),null);assert.equal(field.value,'7 原手填草稿');assert.match($('[data-finance-status]',f.root).textContent,/未能保存/);assert.equal(f.calls.some(call=>call.path==='/api/finance/entries'),false);
+});
+
+test('supplemental screenshots attach only when saving the existing entry and never replace OCR-sensitive fields',async()=>{
+  const entry={...photoEntry,id:'repair-entry',version:7,receiptIds:['old-photo']};const f=fixture({initialEntries:[entry],receiptClient:{loadReceiptUrls:async()=>({}),processReceiptFiles:async()=>({receiptIds:['new-photo'],imageStatus:'stored',candidates:[{expression:'999',purpose:'OCR误判'}]})}});await flush();$('[data-entry-action="edit"]',f.root).click();await flush();const form=$('#finance-edit-form');assert.ok(form.closest('.finance-detail-dialog'));input(form,'expression','28.2');input(form,'note','保留手改备注');setFiles($('[data-attach-files]',form));await flush();
+  assert.equal(form.elements.expression.value,'28.2');assert.equal(form.elements.purpose.value,'早餐');assert.equal(form.elements.note.value,'保留手改备注');assert.match($('[data-attach-status]',form).textContent,/保存修改/);assert.equal(f.calls.some(call=>call.args.method==='POST'||call.args.method==='PUT'),false);
+  submit(form);await flush();const edit=f.calls.find(call=>call.path==='/api/finance/entries/repair-entry');assert.equal(edit.args.method,'PUT');assert.equal(edit.args.body.version,7);assert.equal(edit.args.body.expression,'28.2');assert.equal(edit.args.body.purpose,'早餐');assert.deepEqual(edit.args.body.receiptIds,['old-photo','new-photo']);assert.equal(f.calls.some(call=>call.path==='/api/finance/entries'&&call.args.method==='POST'),false);
+});
+
+test('unconfigured supplement errors preserve existing receipts, amount and edit retry',async()=>{
+  const f=fixture({initialEntries:[{...photoEntry,receiptIds:['old-photo']}],receiptClient:{loadReceiptUrls:async()=>({}),processReceiptFiles:async()=>({receiptIds:[],imageStatus:'not_stored'})}});await flush();$('[data-entry-action="edit"]',f.root).click();await flush();const form=$('#finance-edit-form');input(form,'expression','12');setFiles($('[data-attach-files]',form));await flush();assert.match($('[data-form-error]',form).textContent,/截图尚未保存/);assert.equal(form.elements.expression.value,'12');assert.equal($('fieldset',form).disabled,false);submit(form);await flush();assert.deepEqual(f.calls.find(call=>call.path==='/api/finance/entries/photo-entry').args.body.receiptIds,['old-photo']);
+});
+
+test('canceling supplement releases its owner and ignores a delayed receipt result',async()=>{
+  let finish,signal;const f=fixture({initialEntries:[{...photoEntry,receiptIds:[]}],receiptClient:{processReceiptFiles:async(files,args)=>{signal=args.signal;return new Promise(resolve=>{finish=resolve})},disposeReceiptWorker(){}}});await flush();$('[data-entry-action="edit"]',f.root).click();await flush();const form=$('#finance-edit-form');setFiles($('[data-attach-files]',form));await flush();assert.equal(f.pending(),true);assert.equal($('[data-cancel-attach]').hidden,false);$('[data-cancel-attach]').click();await flush();assert.equal(signal.aborted,true);assert.equal(f.pending(),false);assert.match($('[data-attach-status]',form).textContent,/已取消/);finish({receiptIds:['stale-photo'],imageStatus:'stored'});await flush();submit(form);await flush();assert.deepEqual(f.calls.find(call=>call.path==='/api/finance/entries/photo-entry').args.body.receiptIds,[]);
 });
