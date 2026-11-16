@@ -25,4 +25,6 @@ The continuation's CUA access returned `Local browser access is unavailable for 
 
 ## Publication
 
-Pending final checks and main synchronization. Release cleanup must retain the latest four complete Releases and preserve Git tags.
+Feature commit `557faa5dc3ab9aa504a8f62ac18e2012b4e703ab` is on main; application tree `9a08119d2954a76f6e92c3647b0632b5d6fbac36`. [Verify build43790871112](https://github.com/hikling/shendu-v1/actions/runs/43790871112) passed the handover, native amd64/arm64 checks/tests, Docker image and resource checks, immutable release publication, and download/installation smoke for both architectures.
+
+After the new release passed, the reviewed retention script removed only the oldest `deploy-c512e1e38de62c4b459264e3f81fb12eb298b470` Release. Exactly four complete Releases remain: `9a08119d…`, `5f06e951…`, `90658e25…`, `250b9edd…`. Git tags were preserved. This confirms repository publication and downloadable packages; it does not claim the user's running production server was updated.
