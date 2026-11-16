@@ -1778,3 +1778,33 @@ Implemented the approved CNY ledger, daily finance prompt after energy, expressi
 ### Status
 
 [OK] **Completed**
+
+
+## Session 77: Simplify finance entry and layout
+<!-- trellis-session: v=2 fp=e0f93075c49e66cc -->
+
+**Date**: 2026-11-16
+**Task**: Simplify finance entry and layout
+**Branch**: `main`
+
+### Summary
+
+Shared multiline expenses, automatic totals/categories, compact finance selectors, lightweight month menu and preserved draft/retry behavior. Main published; latest four Releases retained.
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `557faa5dc3ab9aa504a8f62ac18e2012b4e703ab` | feat: simplify expense entry and finance layout |
+
+### Testing
+
+- [OK] Full application:447 passed,1 optional browser OCR skipped; final finance UI38 passed; handover13 passed; local HTTP smoke passed; GitHub43790871112 passed both architectures and downloads.
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- Desktop/mobile visual acceptance remains unverified because local browser access was unavailable.

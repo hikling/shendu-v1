@@ -8,7 +8,7 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 76
+- **Total Sessions**: 77
 - **Last Active**: 2026-11-16
 <!-- @@@/auto:current-status -->
 
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~1780 | Active |
+| `journal-1.md` | ~1810 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -29,6 +29,7 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 77 | 2026-11-16 | Simplify finance entry and layout | `557faa5dc3ab9aa504a8f62ac18e2012b4e703ab` | `main` |
 | 76 | 2026-11-16 | Finance ledger and private compressed receipts | `ade1611` | `main` |
 | 75 | 2026-11-15 | 修复切题标题焦点边框 | `40ee0fe` | `main` |
 | 74 | 2026-11-15 | 六类复盘统一切题过渡 | `6ee86af` | `main` |
