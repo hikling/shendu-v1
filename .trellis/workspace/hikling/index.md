@@ -8,8 +8,8 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 79
-- **Last Active**: 2026-11-16
+- **Total Sessions**: 80
+- **Last Active**: 2026-11-17
 <!-- @@@/auto:current-status -->
 
 ---
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~1855 | Active |
+| `journal-1.md` | ~1877 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -29,6 +29,7 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 80 | 2026-11-17 | Receipt saving and S3 controls completed locally, sync pending | `0148e9a` | `main` |
 | 79 | 2026-11-16 | Automatic finance categories, aligned detail form and visible receipts | `fe5f5ba` | `main` |
 | 78 | 2026-11-16 | Browser routes, finance pies and verified deployment recovery | `65aa520`, `7ce120d` | `main` |
 | 77 | 2026-11-16 | Simplify finance entry and layout | `557faa5dc3ab9aa504a8f62ac18e2012b4e703ab` | `main` |

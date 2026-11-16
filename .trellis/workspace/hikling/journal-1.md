@@ -1853,3 +1853,25 @@ Removed category manager and month label, recognized purpose keywords and create
 ### Status
 
 [OK] **Completed**
+
+
+## Session 80: Receipt saving and S3 controls completed locally, sync pending
+<!-- trellis-session: v=2 fp=ec2948394a5e087c -->
+
+**Date**: 2026-11-17
+**Task**: Receipt saving and S3 controls completed locally, sync pending
+**Branch**: `main`
+
+### Summary
+
+Local receipt failure/association repair, shared edit/refund form, supplemental upload, S3 unsaved test/delete/disconnected backups and monotonic versions implemented.488pass/1optional skip, handover13, build/check/resource smoke pass. Independent reviewer and GitHub fetch rejected because workspace credits exhausted; no remote sync/deployment claimed; task remains active.
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `0148e9a` | fix: preserve receipt uploads and manage image storage |
+
+### Status
+
+[OK] **Completed**
