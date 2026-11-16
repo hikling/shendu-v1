@@ -6,10 +6,11 @@ import {mountFinancePage,mountDailyFinance} from '../public/finance-ui.js';
 import {DEFAULT_FINANCE_CATEGORIES,parseMoneyExpression} from '../public/finance-domain.js';
 
 const dom=new JSDOM('<main id="app"></main><div id="modal-root"></div>',{url:'https://shendu.test',pretendToBeVisual:true}),win=dom.window;
-for(const key of ['window','document','HTMLElement','HTMLInputElement','HTMLTextAreaElement','HTMLSelectElement','HTMLButtonElement','HTMLFormElement','Element','Node','NodeFilter','Event','CustomEvent','KeyboardEvent','MouseEvent','MutationObserver','getComputedStyle','FormData'])globalThis[key]=win[key];
+for(const key of ['window','document','HTMLElement','HTMLInputElement','HTMLTextAreaElement','HTMLSelectElement','HTMLButtonElement','HTMLFormElement','Element','DocumentFragment','Node','NodeFilter','Event','CustomEvent','KeyboardEvent','MouseEvent','MutationObserver','getComputedStyle','FormData'])globalThis[key]=win[key];
 Object.defineProperty(globalThis,'navigator',{value:win.navigator,configurable:true});
 globalThis.requestAnimationFrame=win.requestAnimationFrame.bind(win);globalThis.cancelAnimationFrame=win.cancelAnimationFrame.bind(win);globalThis.ResizeObserver=class{observe(){}unobserve(){}disconnect(){}};
 win.HTMLElement.prototype.scrollIntoView=function(){};
+const originalBounds=win.HTMLElement.prototype.getBoundingClientRect;win.HTMLElement.prototype.getBoundingClientRect=function(){return this.classList.contains('recharts-responsive-container')?{width:300,height:230,top:0,left:0,right:300,bottom:230,x:0,y:0,toJSON(){return this}}:originalBounds.call(this)};
 const ui=await import('../public/ui/shadcn.js');
 const $=(selector,root=document)=>root.querySelector(selector),$$=(selector,root=document)=>[...root.querySelectorAll(selector)],flush=async()=>{for(let i=0;i<5;i++)await new Promise(resolve=>setImmediate(resolve))};
 let controller;
@@ -18,11 +19,11 @@ function fixture({daily=false,readonly=false,snapshot,draft,handler,receiptClien
   ui.disposeUi($('#app'));ui.disposeUi($('#modal-root'));$('#app').replaceChildren();$('#modal-root').replaceChildren();
   const root=document.createElement('section');$('#app').append(root);let current=true,pending=false;
   const calls=[],notices=[],drafts=[],dirty=[],ended=[];let entries=structuredClone(initialEntries),categories=DEFAULT_FINANCE_CATEGORIES.map(category=>({...category,version:0})),nextCursor=null;
-  const result=()=>({categories,entries:structuredClone(entries),nextCursor,summary:{incomeCents:0,expenseCents:entries.filter(entry=>!entry.deletedAt).reduce((sum,row)=>sum+row.amountCents,0),refundCents:0,netExpenseCents:entries.filter(entry=>!entry.deletedAt).reduce((sum,row)=>sum+row.amountCents,0),balanceCents:-entries.filter(entry=>!entry.deletedAt).reduce((sum,row)=>sum+row.amountCents,0),count:entries.filter(entry=>!entry.deletedAt).length},trend:[],categoryTotals:[],day:{date:'2026-11-15',state:entries.length?'recorded':'unrecorded',version:0}});
+  const result=(date)=>{const selected=entries.filter(row=>!date||row.date===date),active=selected.filter(row=>!row.deletedAt),totals=new Map();for(const row of active)if(row.kind==='expense')totals.set(row.categoryId,(totals.get(row.categoryId)||0)+row.amountCents);const expenseCents=active.filter(row=>row.kind==='expense').reduce((sum,row)=>sum+row.amountCents,0),refundCents=active.filter(row=>row.kind==='refund').reduce((sum,row)=>sum+row.amountCents,0);return {categories,entries:structuredClone(selected),nextCursor,summary:{incomeCents:0,expenseCents,refundCents,netExpenseCents:expenseCents-refundCents,balanceCents:refundCents-expenseCents,count:active.length},trend:[],categoryTotals:[],expenseCategoryTotals:[...totals].map(([categoryId,cents])=>({categoryId,name:categories.find(row=>row.id===categoryId)?.name||'待分类',cents})),day:{date:date||'2026-11-15',state:selected.length?'recorded':'unrecorded',version:0}}};
   const request=async(path,args={},guard=()=>true)=>{
     calls.push({path,args,guard});const intercepted=handler?.(path,args,guard);if(intercepted!==undefined)return await intercepted;
     if(path==='/api/finance/storage')return {configured:false,config:{},version:0,targets:[{id:'storage-target',name:'自己的S3'}]};
-    if(path.startsWith('/api/finance?'))return result();
+    if(path.startsWith('/api/finance?'))return result(new URL(path,'https://shendu.test').searchParams.get('date'));
     if(path==='/api/finance/entries'&&args.method==='POST'){const entry={...args.body,amountCents:parseMoneyExpression(args.body.expression),version:1,createdAt:'2026-11-15T00:00:00Z',updatedAt:'2026-11-15T00:00:00Z',deletedAt:null};entries.unshift(entry);return {entry}}
     if(path==='/api/finance/day')return {day:args.body};
     if(path==='/api/finance/categories'){const category={...args.body,version:1};categories.push(category);return {category}}
@@ -32,7 +33,7 @@ function fixture({daily=false,readonly=false,snapshot,draft,handler,receiptClien
     if(args.method==='PUT'){const entry=entries.find(row=>row.id===path.split('/').at(-1));Object.assign(entry,args.body,{version:entry.version+1,amountCents:parseMoneyExpression(args.body.expression)});return {entry}}
     throw new Error(`Unexpected ${path}`);
   };
-  const options={request,renderMarkup:ui.renderMarkup,today:()=> '2026-11-15',isCurrent:()=>current,toast:(...args)=>notices.push(args),setDirty:value=>dirty.push(value),onDraftChange:value=>drafts.push(value),beginWrite:()=>{if(pending)return null;pending=true;return {}},endWrite:token=>{pending=false;ended.push(token)},showMonthPicker:ui.showFinanceMonthPicker,openModal:(html,className='')=>ui.renderMarkup($('#modal-root'),`<section class="modal ${className}">${html}</section>`),closeModal:force=>{if($('#modal-root').dataset.persistent==='1'&&!force)return;ui.disposeUi($('#modal-root'));$('#modal-root').replaceChildren();$('#modal-root').dataset.persistent='0'},receiptClient};
+  const options={request,renderMarkup:ui.renderMarkup,today:()=> '2026-11-15',isCurrent:()=>current,toast:(...args)=>notices.push(args),setDirty:value=>dirty.push(value),onDraftChange:value=>drafts.push(value),beginWrite:()=>{if(pending)return null;pending=true;return {}},endWrite:token=>{pending=false;ended.push(token)},showMonthPicker:ui.showFinanceMonthPicker,showFinanceDayPicker:ui.showFinanceDayPicker,showFinancePie:ui.showFinancePie,openModal:(html,className='')=>ui.renderMarkup($('#modal-root'),`<section class="modal ${className}">${html}</section>`),closeModal:force=>{if($('#modal-root').dataset.persistent==='1'&&!force)return;ui.disposeUi($('#modal-root'));$('#modal-root').replaceChildren();$('#modal-root').dataset.persistent='0'},receiptClient};
   controller=daily?mountDailyFinance(root,{...options,date:'2026-11-15',readonly,snapshot,draft}):mountFinancePage(root,options);
   return {root,calls,notices,drafts,dirty,ended,request,result,setEntries:value=>{entries=value},setCategories:value=>{categories=value},setCursor:value=>{nextCursor=value},setCurrent:value=>{current=value},pending:()=>pending};
 }
@@ -41,30 +42,26 @@ function change(form,name,value){const field=form.elements[name];if(field.type==
 function openBatch(root){$('[data-finance-detail]',root).click();$('[data-manual-batch]').click();return $('#finance-import-form')}
 function submit(form){form.dispatchEvent(new win.Event('submit',{bubbles:true,cancelable:true}))}
 
-test('refund-only month retains a negative trend and category with explicit signed accessible amounts',async()=>{
-  const refund={id:'refund',date:'2026-11-15',kind:'refund',expression:'30',amountCents:3000,purpose:'上月购物退款',categoryId:'shopping',refundOf:'last-month-expense',version:1,receiptIds:[]};
-  const f=fixture({handler:path=>path.startsWith('/api/finance?')?{categories:DEFAULT_FINANCE_CATEGORIES,entries:[refund],summary:{incomeCents:0,expenseCents:0,refundCents:3000,netExpenseCents:-3000,balanceCents:3000,count:1},trend:[{date:'2026-11-15',expenseCents:-3000,incomeCents:0}],categoryTotals:[{categoryId:'shopping',name:'购物',cents:-3000}]}:undefined});await flush();
-  assert.match($('.finance-stat-expense',f.root).textContent,/-30\.00/);const trend=$('[data-finance-trend]',f.root),day=$('.finance-trend-day',trend);assert.ok(day.classList.contains('is-refund'));assert.equal(day.getAttribute('aria-label'),'2026-11-15 净支出 −¥30.00');assert.equal($('.finance-trend-bar',day).style.getPropertyValue('--finance-bar'),'125px');assert.equal($('.finance-chart-empty',trend),null);
-  assert.match($('.finance-chart-legend',trend).textContent,/负数表示退款多于支出/);const details=$('details',trend);assert.match($('summary',details).textContent,/查看每日净支出金额/);details.open=true;assert.equal($('dd',details).textContent,'−¥30.00');
-  const categories=$('[data-finance-categories]',f.root),category=$('.finance-category-meter',categories);assert.ok(category.classList.contains('is-refund'));assert.match(category.textContent,/购物（退款净额）/);assert.equal($('strong',category).textContent,'−¥30.00');assert.equal($('.finance-meter-track>span',category).style.width,'100%');assert.equal($('.finance-chart-empty',categories),null);assert.match($('.finance-insight .finance-section-title',f.root).textContent,/每日净支出/);
+test('refund-only month and day retain signed net values without inventing negative pie slices',async()=>{
+  const refund={id:'refund',date:'2026-11-15',kind:'refund',amountCents:3000,categoryId:'shopping',receiptIds:[]};
+  const f=fixture({handler:path=>path.startsWith('/api/finance?')?{categories:DEFAULT_FINANCE_CATEGORIES,entries:[refund],summary:{expenseCents:0,refundCents:3000,netExpenseCents:-3000,count:1},expenseCategoryTotals:[],trend:[]}:undefined});await flush();
+  assert.match($('.finance-stat-expense',f.root).textContent,/-30\.00/);assert.equal($('[data-finance-trend]',f.root),null);assert.equal($('[data-finance-categories]',f.root),null);
+  for(const selector of ['[data-finance-month-pie]','[data-finance-day-pie]']){const chart=$(selector,f.root);assert.match(chart.textContent,/没有支出/);assert.match(chart.textContent,/退款.*¥30\.00.*净支出.*−¥30\.00/);assert.equal($('[data-slot="chart"]',chart),null)}
 });
 
-test('mixed net expenses scale by absolute cents, keep zero bars empty, and preserve mounted input on refresh',async()=>{
-  let result={categories:DEFAULT_FINANCE_CATEGORIES,entries:[],summary:{incomeCents:0,expenseCents:1000,refundCents:4000,netExpenseCents:-3000,balanceCents:3000,count:2},trend:[{date:'2026-11-13',expenseCents:1000},{date:'2026-11-14',expenseCents:-4000},{date:'2026-11-15',expenseCents:0}],categoryTotals:[{categoryId:'transport',name:'交通',cents:1000},{categoryId:'shopping',name:'购物',cents:0},{categoryId:'food',name:'餐饮',cents:-4000}]};
-  const f=fixture({handler:path=>path.startsWith('/api/finance?')?result:undefined});await flush();const form=$('[data-finance-create]',f.root),draft=input(form,'text','8+8 早餐');
-  const days=$$('.finance-trend-day',f.root);assert.deepEqual(days.map(day=>$('.finance-trend-bar',day).style.getPropertyValue('--finance-bar')),['31.25px','125px','0px']);assert.equal(days[0].classList.contains('is-refund'),false);assert.equal(days[1].classList.contains('is-refund'),true);assert.equal(days[2].classList.contains('is-refund'),false);assert.equal(days[0].getAttribute('aria-label'),'2026-11-13 净支出 +¥10.00');assert.equal(days[2].getAttribute('aria-label'),'2026-11-15 净支出 ¥0.00');
-  assert.deepEqual($$('.finance-trend-values dd',f.root).map(node=>node.textContent),['+¥10.00','−¥40.00','¥0.00']);const categories=$$('.finance-category-meter',f.root);assert.equal(categories.length,2);assert.deepEqual(categories.map(category=>$('strong',category).textContent),['+¥10.00','−¥40.00']);assert.deepEqual(categories.map(category=>$('.finance-meter-track>span',category).style.width),['20%','80%']);
-  result={...result,trend:[{date:'2026-11-16',expenseCents:-500}],categoryTotals:[{categoryId:'food',name:'餐饮',cents:-500}]};$('[data-finance-refresh]',f.root).click();await flush();assert.equal($('[data-finance-create]',f.root),form);assert.equal(form.elements.text,draft);assert.equal(draft.value,'8+8 早餐');assert.equal($('.finance-category-meter strong',f.root).textContent,'−¥5.00');assert.equal(f.calls.some(call=>call.args.method==='POST'),false);
-});
-
-test('fully offset expense and refund totals show an honest zero-net chart state',async()=>{
-  const f=fixture({handler:path=>path.startsWith('/api/finance?')?{entries:[],summary:{expenseCents:800,refundCents:800,netExpenseCents:0,count:2},trend:[{date:'2026-11-15',expenseCents:0}],categoryTotals:[{categoryId:'food',cents:0}]}:undefined});await flush();assert.equal($('.finance-trend-day',f.root),null);assert.equal($('.finance-category-meter',f.root),null);assert.match($('[data-finance-trend]',f.root).textContent,/暂无净支出变化.*相抵/);assert.match($('[data-finance-categories]',f.root).textContent,/暂无分类净支出.*相抵/);
+test('month and day use independent full-period positive categories and retain the mounted entry on refresh',async()=>{
+  const monthly={categories:DEFAULT_FINANCE_CATEGORIES,entries:[],summary:{expenseCents:3000,refundCents:4000,netExpenseCents:-1000,count:4},expenseCategoryTotals:[{categoryId:'food',name:'餐饮',cents:2000},{categoryId:'transport',name:'交通',cents:1000}],trend:[]};
+  let daily={...monthly,summary:{expenseCents:800,refundCents:800,netExpenseCents:0},expenseCategoryTotals:[{categoryId:'food',name:'餐饮',cents:800}]};
+  const f=fixture({handler:path=>path.startsWith('/api/finance?')?(path.includes('date=')?daily:monthly):undefined});await flush();
+  const form=$('[data-finance-create]',f.root),field=input(form,'text','8+8 早餐'),month=$('[data-finance-month-pie]',f.root),day=$('[data-finance-day-pie]',f.root);
+  assert.match(month.textContent,/¥30\.00/);assert.match(month.textContent,/餐饮.*¥20\.00.*66\.7%/);assert.match(day.textContent,/¥8\.00.*100%/);assert.match(day.textContent,/退款.*¥8\.00.*净支出.*¥0\.00/);assert.ok($('[data-slot="chart"]',month));
+  daily={...daily,summary:{expenseCents:500,refundCents:0,netExpenseCents:500},expenseCategoryTotals:[{categoryId:'transport',name:'交通',cents:500}]};$('[data-finance-refresh]',f.root).click();await flush();assert.equal(form.elements.text,field);assert.equal(field.value,'8+8 早餐');assert.match(day.textContent,/交通.*¥5\.00.*100%/);assert.equal(f.calls.some(call=>call.args.method==='POST'),false);
 });
 
 for(const daily of [false,true])test(`shared ${daily?'daily':'finance'} textarea previews each line and confirms only explicit entries`,async()=>{
   const f=fixture({daily});await flush();const form=$('[data-finance-create]',f.root),field=input(form,'text','60 打车\n50 吃饭');
   assert.equal(field.tagName,'TEXTAREA');assert.equal($('[data-finance-calculation]',form).textContent,'2 笔待入账 · 合计 ¥110.00');assert.deepEqual($$('[data-line-category]',form).map(select=>select.value),['transport','food']);assert.equal(f.calls.filter(call=>call.args.method==='POST').length,0);
-  const category=$$('[data-line-category]',form)[1];assert.equal(category.dataset.slot,'native-select');assert.equal($('[role="radiogroup"]',form),null);category.value='shopping';category.dispatchEvent(new win.Event('change',{bubbles:true}));
+  const category=$$('[data-line-category]',form)[1];assert.equal(category.getAttribute('aria-hidden'),'true');assert.ok($('.sd-finance-select [data-slot="select-trigger"]',form));assert.equal($('[role="radiogroup"]',form),null);category.value='shopping';category.dispatchEvent(new win.Event('change',{bubbles:true}));
   submit(form);submit(form);await flush();const writes=f.calls.filter(call=>call.path==='/api/finance/entries');assert.equal(writes.length,2);assert.deepEqual(writes.map(call=>[call.args.body.expression,call.args.body.purpose,call.args.body.categoryId]),[['60','打车','transport'],['50','吃饭','shopping']]);assert.ok(writes.every(call=>call.args.body.source===(daily?'daily':'finance')));assert.notEqual(writes[0].args.body.id,writes[1].args.body.id);
   assert.equal(form.elements.text,field);assert.equal(field.value,'');assert.match($('[data-finance-entries]',f.root).textContent,/打车/);assert.equal(controller.hasPendingDraft(),false);
 });
@@ -214,10 +211,10 @@ test('an obsolete account surface cannot open a manual batch dialog or mutate an
 });
 
 test('IME composition never searches unfinished text, and clear restores the list without replacing the draft',async()=>{
-  const f=fixture();await flush();const form=$('[data-finance-create]',f.root),draft=input(form,'text','12 午餐'),search=$('input[name="q"]',f.root),filters=$('[data-finance-filters]',f.root),clear=$('[data-finance-clear-search]',f.root),loads=()=>f.calls.filter(call=>call.path.startsWith('/api/finance?')).length;
+  const f=fixture();await flush();const form=$('[data-finance-create]',f.root),draft=input(form,'text','12 午餐'),search=$('input[name="q"]',f.root),filters=$('[data-finance-filters]',f.root),clear=$('[data-finance-clear-search]',f.root),loads=()=>f.calls.filter(call=>call.path.startsWith('/api/finance?month=')).length;
   const initial=loads();search.value='w';search.dispatchEvent(new win.Event('input',{bubbles:true}));search.dispatchEvent(new win.Event('compositionstart',{bubbles:true}));search.value='午';search.dispatchEvent(new win.InputEvent('input',{bubbles:true,isComposing:true}));submit(filters);await new Promise(resolve=>setTimeout(resolve,250));await flush();assert.equal(loads(),initial);
-  search.value='午餐';search.dispatchEvent(new win.Event('compositionend',{bubbles:true}));search.dispatchEvent(new win.InputEvent('input',{bubbles:true,isComposing:false}));await new Promise(resolve=>setTimeout(resolve,250));await flush();assert.equal(loads(),initial+1);assert.ok(f.calls.at(-1).path.includes('q=%E5%8D%88%E9%A4%90'));assert.equal(clear.hidden,false);
-  clear.click();await flush();assert.equal(loads(),initial+2);assert.equal(search.value,'');assert.equal(clear.hidden,true);assert.equal(document.activeElement,search);assert.equal($('[data-finance-create]',f.root),form);assert.equal(form.elements.text,draft);assert.equal(draft.value,'12 午餐');assert.equal(f.calls.at(-1).path.includes('q='),false);await new Promise(resolve=>setTimeout(resolve,250));assert.equal(loads(),initial+2);
+  search.value='午餐';search.dispatchEvent(new win.Event('compositionend',{bubbles:true}));search.dispatchEvent(new win.InputEvent('input',{bubbles:true,isComposing:false}));await new Promise(resolve=>setTimeout(resolve,250));await flush();assert.equal(loads(),initial+1);assert.ok(f.calls.filter(call=>call.path.startsWith('/api/finance?month=')).at(-1).path.includes('q=%E5%8D%88%E9%A4%90'));assert.equal(clear.hidden,false);
+  clear.click();await flush();assert.equal(loads(),initial+2);assert.equal(search.value,'');assert.equal(clear.hidden,true);assert.equal(document.activeElement,search);assert.equal($('[data-finance-create]',f.root),form);assert.equal(form.elements.text,draft);assert.equal(draft.value,'12 午餐');assert.equal(f.calls.filter(call=>call.path.startsWith('/api/finance?month=')).at(-1).path.includes('q='),false);await new Promise(resolve=>setTimeout(resolve,250));assert.equal(loads(),initial+2);
 });
 
 test('partial textarea confirmation removes committed lines and retries only the remaining stable IDs',async()=>{
@@ -246,7 +243,7 @@ test('secondary detail retains exact expressions, income and transfers with comp
 });
 
 test('actual month controls load only accepted month changes and disable during entry writes',async()=>{
-  let finish;const f=fixture({handler:(path,args)=>path==='/api/finance/entries'?new Promise(resolve=>{finish=resolve}):undefined});await flush();const host=$('[data-finance-period]',f.root),next=$('[aria-label="下个月"]',host),trigger=$('[data-slot="dropdown-menu-trigger"]',host),form=$('[data-finance-create]',f.root),field=input(form,'text','8 早餐'),loads=()=>f.calls.filter(call=>call.path.startsWith('/api/finance?')).length;
+  let finish;const f=fixture({handler:(path,args)=>path==='/api/finance/entries'?new Promise(resolve=>{finish=resolve}):undefined});await flush();const host=$('[data-finance-period]',f.root),next=$('[aria-label="下个月"]',host),trigger=$('[data-slot="dropdown-menu-trigger"]',host),form=$('[data-finance-create]',f.root),field=input(form,'text','8 早餐'),loads=()=>f.calls.filter(call=>call.path.startsWith('/api/finance?month=')).length;
   assert.equal(typeof ui.showFinanceMonthPicker,'function');const initial=loads();trigger.dispatchEvent(new win.KeyboardEvent('keydown',{key:'ArrowDown',bubbles:true}));await flush();assert.ok($('.finance-period-menu'));assert.equal(loads(),initial);$('[aria-label="下一年"]').click();await flush();assert.equal(loads(),initial);$('[aria-label="2027年1月"]').click();await flush();assert.equal(loads(),initial+1);assert.ok(f.calls.some(call=>call.path.includes('month=2027-01')));assert.match($('.finance-writing>.finance-section-title',f.root).textContent,/记入 2026-11-15/);assert.equal($('[aria-label="下个月"]',host),next);assert.equal(form.elements.text,field);assert.equal(field.value,'8 早餐');
   submit(form);await flush();assert.equal(next.disabled,true);next.click();await flush();assert.equal(loads(),initial+1);assert.equal(f.calls.find(call=>call.path==='/api/finance/entries').args.body.date,'2026-11-15');finish({entry:{}});await flush();assert.equal(next.disabled,false);assert.equal(loads(),initial+2);f.setCurrent(false);next.click();await flush();assert.equal(loads(),initial+2);
 });
@@ -258,3 +255,34 @@ test('finance hidden controls override the component button display and recover 
 
 test.afterEach(()=>{controller?.dispose();ui.disposeUi($('#app'));ui.disposeUi($('#modal-root'));$('#app').replaceChildren();$('#modal-root').replaceChildren()});
 test.after(()=>dom.window.close());
+
+test('pie groups only more than six categories, preserves every amount and escapes category text',async()=>{
+  const totals=Array.from({length:8},(_,index)=>({categoryId:`category-${index}`,name:index===0?'<img src=x onerror=alert(1)>':`分类${index}`,cents:(8-index)*100})),six=ui.financePieData(totals.slice(0,6)),eight=ui.financePieData(totals);
+  assert.equal(six.slices.length,6);assert.equal(six.remainder.length,0);assert.equal(eight.slices.length,6);assert.equal(eight.remainder.length,3);assert.equal(eight.slices.reduce((sum,row)=>sum+row.cents,0),3600);
+  const f=fixture({handler:path=>path.startsWith('/api/finance?')?{entries:[],summary:{expenseCents:3600,refundCents:0,netExpenseCents:3600},expenseCategoryTotals:totals}:undefined});await flush();
+  const host=$('[data-finance-month-pie]',f.root),all=$$('.finance-pie-legend li',host);assert.equal(all.length,9);assert.ok(host.textContent.includes('<img src=x onerror=alert(1)>'));assert.equal($('img',host),null);assert.match($('.finance-pie-breakdown summary',host).textContent,/3 个分类/);assert.ok($('svg.recharts-surface',host));assert.ok($$('.recharts-pie-sector',host).length>0,'real Recharts pie sectors are rendered rather than CSS placeholders');
+});
+
+test('the same category keeps its pie color across monthly and daily ranks, renamed labels and grouped breakdowns',()=>{
+  const defaults=ui.financePieData(DEFAULT_FINANCE_CATEGORIES.map(category=>({categoryId:category.id,name:category.name,cents:100})));
+  assert.equal(new Set(defaults.categories.map(row=>row.fill)).size,DEFAULT_FINANCE_CATEGORIES.length,'default categories retain distinct colors even when their ranking changes');
+  const monthly=ui.financePieData([{categoryId:'food',name:'餐饮',cents:100},{categoryId:'transport',name:'交通',cents:900},{categoryId:'custom-stationery',name:'文具',cents:50}]);
+  const daily=ui.financePieData([{categoryId:'custom-stationery',name:'办公用品',cents:700},{categoryId:'food',name:'餐饮',cents:500},{categoryId:'transport',name:'交通',cents:1}]);
+  for(const row of monthly.categories)assert.equal(daily.categories.find(item=>item.categoryId===row.categoryId).fill,row.fill);
+  const grouped=ui.financePieData([...monthly.categories,...Array.from({length:5},(_,index)=>({categoryId:`extra-${index}`,name:`分类${index}`,cents:1000+index}))]);
+  assert.equal(grouped.remainder.find(row=>row.categoryId==='food').fill,monthly.categories.find(row=>row.categoryId==='food').fill);
+  assert.equal(grouped.slices.at(-1).fill,ui.financePieData(Array.from({length:7},(_,index)=>({categoryId:`other-${index}`,name:'其他',cents:index+1}))).slices.at(-1).fill);
+});
+
+test('date selection requests only that complete day and ignores a late previous-day response',async()=>{
+  let releaseOld;const f=fixture({handler:path=>path==='/api/finance?date=2026-11-15'?new Promise(resolve=>{releaseOld=resolve}):path==='/api/finance?date=2026-11-14'?{summary:{expenseCents:1700,refundCents:0,netExpenseCents:1700},expenseCategoryTotals:[{categoryId:'food',name:'餐饮',cents:1700}]}:undefined});await flush();
+  const field=input($('[data-finance-create]',f.root),'text','6 还没入账'),picker=$('[data-finance-day-picker]',f.root),trigger=$('button',picker),before=f.calls.length;trigger.click();await flush();const day=$('[aria-label="2026-11-14"]');assert.ok(day);assert.equal(f.calls.length,before,'opening the calendar never loads data');day.click();await flush();
+  const chart=$('[data-finance-day-pie]',f.root);assert.match(chart.textContent,/餐饮.*¥17\.00/);assert.ok(trigger.getAttribute('aria-label').includes('2026-11-14'));assert.equal(f.calls.filter(call=>call.path==='/api/finance?date=2026-11-14').length,1);
+  releaseOld({summary:{expenseCents:99900,refundCents:0,netExpenseCents:99900},expenseCategoryTotals:[{categoryId:'shopping',name:'旧日期',cents:99900}]});await flush();assert.doesNotMatch(chart.textContent,/旧日期|999\.00/);assert.equal($('[data-finance-create]',f.root).elements.text,field);assert.equal(field.value,'6 还没入账');assert.equal(f.calls.some(call=>call.args.method==='POST'),false);
+});
+
+test('historical months default to latest spending date or actual month end, and day failures retry without writes',async()=>{
+  let failDay=true;const f=fixture({handler:path=>path.startsWith('/api/finance?month=2026-10')?{entries:[],summary:{expenseCents:1000},expenseCategoryTotals:[{categoryId:'food',name:'餐饮',cents:1000}],trend:[{date:'2026-10-03',spendingCents:1000},{date:'2026-10-29',spendingCents:0}]}:path==='/api/finance?date=2026-10-03'&&failDay?Promise.reject(new Error('当天离线')):undefined});await flush();
+  const month=$('[data-finance-period]',f.root);$('[aria-label="上个月"]',month).click();await flush();assert.ok($('button',[...$$('[data-finance-day-picker]',f.root)][0]).getAttribute('aria-label').includes('2026-10-03'));assert.match($('[data-finance-day-pie]',f.root).textContent,/当天离线/);const retry=$('[data-finance-day-retry]',f.root);assert.equal(retry.hidden,false);failDay=false;retry.click();await flush();assert.equal(retry.hidden,true);assert.match($('[data-finance-day-pie]',f.root).textContent,/没有支出/);
+  $('[aria-label="上个月"]',month).click();await flush();assert.ok($('button',$('[data-finance-day-picker]',f.root)).getAttribute('aria-label').includes('2026-09-30'));assert.ok(f.calls.some(call=>call.path==='/api/finance?date=2026-09-30'));assert.equal(f.calls.some(call=>call.args.method==='POST'),false);
+});

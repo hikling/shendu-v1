@@ -78,7 +78,7 @@ test('full sign-out clears the previous account search and review origin',async(
   assert.ok(start>=0&&end>start,'locate actual logged-out renderer');
   const node={innerHTML:'',addEventListener(){}};
   runInNewContext(source.slice(start,end)+'\nrenderAuth();',{
-    state,reviewNavigation:navigation,$:()=>node,renderMarkup:(target,html)=>{target.innerHTML=html},
+    state,browserNavigation:{suspend(){}},reviewNavigation:navigation,$:()=>node,renderMarkup:(target,html)=>{target.innerHTML=html},
     cancelDailyTypewriter(){},setDailyImmersive(){},dismissDialog(){},closeModal(){}
   });
   assert.equal(state.user,null);

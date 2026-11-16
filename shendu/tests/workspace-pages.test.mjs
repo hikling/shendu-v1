@@ -43,7 +43,7 @@ test('calendar is an ordinary workspace with one shared summary and preserves da
 test('settings entry points retain the unsaved guard instead of opening another settings overlay',()=>{
   const f=fixture();f.state.dirty=true;f.openSettingsTarget('stage');assert.equal(f.navigated.length,0);
   assert.ok(f.$('#discard-change'));f.$('[data-close]').click();assert.equal(f.state.dirty,true);assert.equal(f.navigated.length,0);
-  f.openSettingsTarget('stage');f.$('#discard-change').click();assert.equal(f.state.settingsReturn,'settings');assert.equal(f.state.dirty,false);assert.equal(f.navigated.at(-1),'stage-settings');
+  f.openSettingsTarget('stage');f.state.saving=true;f.$('#discard-change').click();assert.equal(f.state.dirty,true);assert.equal(f.navigated.length,0);f.state.saving=false;f.$('#discard-change').click();assert.equal(f.state.settingsReturn,'settings');assert.equal(f.state.dirty,false);assert.equal(f.navigated.at(-1),'stage-settings');
   f.openSettingsTarget('account');assert.equal(f.navigated.at(-1),'users');f.openSettingsTarget('guide');assert.equal(f.navigated.at(-1),'guide');f.dom.window.close();
 });
 

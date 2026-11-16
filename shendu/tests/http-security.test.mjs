@@ -158,3 +158,11 @@ test('revoking a session while an import body is uploading prevents restore', as
   assert.equal(rejected.status, 401); assert.equal(rejected.value.error, 'unauthorized');
   assert.equal((await api('/api/me')).status, 200);
 });
+
+
+test('browser deep links receive the app while API paths retain their own errors',async()=>{
+  for(const path of ['/finance','/history','/settings','/review/2b1e63b2-7b90-464f-a607-5624022d3d46','/review/new/daily?period=2026-11-16']){
+    const response=await fetch(direct+path);assert.equal(response.status,200,path);assert.match(response.headers.get('content-type'),/text\/html/);const html=await response.text();assert.match(html,/id="app"/);assert.match(html,/src="\/app\.js\?v=/);
+  }
+  const response=await fetch(direct+'/api/unknown');assert.equal(response.status,401);assert.match(response.headers.get('content-type'),/application\/json/);
+});

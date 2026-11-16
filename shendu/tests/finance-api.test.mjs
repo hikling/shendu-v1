@@ -44,7 +44,7 @@ test('finance exact cents, encrypted storage, account isolation and retry idempo
   const replay=await api('/api/finance/entries',{method:'POST',auth:a.cookie,body});assert.equal(replay.status,200,replay.text);assert.equal(replay.value.duplicate,true);assert.equal(replay.value.entry.version,1);assert.equal(db.prepare("SELECT count(*) AS n FROM activity_events WHERE user_id=? AND action='finance_entry_created'").get(a.id).n,events);
   assert.equal((await api('/api/finance/entries',{method:'POST',auth:a.cookie,body:{...body,expression:'24'}})).status,409);
   assert.equal((await api('/api/finance/entries/'+body.id,{method:'DELETE',auth:b.cookie,body:{version:1}})).status,404);
-  assert.equal((await ledger(b.cookie)).entries.length,0);
+  assert.equal((await ledger(b.cookie)).entries.length,0);assert.deepEqual((await ledger(b.cookie)).expenseCategoryTotals,[]);
   assert.equal((await api('/api/finance/entries',{method:'POST',auth:b.cookie,body})).status,201,'UUIDs cannot leak another account');
   for(const expression of ['0','-1','1.001','1/2','1e2','999999999999','process.exit()'])assert.equal((await api('/api/finance/entries',{method:'POST',auth:a.cookie,body:input({expression})})).status,400,expression);
   assert.equal(db.prepare("SELECT value FROM schema_meta WHERE key='schema_version'").get().value,'9');
@@ -70,7 +70,7 @@ test('refunds are owned, bounded and atomic; income and transfers have distinct 
   assert.equal((await api('/api/finance/entries/'+expense.id,{method:'DELETE',auth:a.cookie,body:{version:1}})).status,409);
   assert.equal((await api('/api/finance/entries/'+expense.id,{method:'PUT',auth:a.cookie,body:{...expense,expression:'39',version:1}})).status,409);
   const current=await ledger(a.cookie);assert.deepEqual(current.summary,{incomeCents:50000,expenseCents:10000,refundCents:4000,netExpenseCents:6000,balanceCents:44000,count:4});
-  assert.equal(current.categoryTotals.find(item=>item.categoryId==='food').cents,6000);
+  assert.equal(current.categoryTotals.find(item=>item.categoryId==='food').cents,6000);assert.deepEqual(current.expenseCategoryTotals,[{categoryId:'food',name:'餐饮',cents:10000}]);
   assert.equal((await api('/api/finance/entries/'+refund.id,{method:'DELETE',auth:a.cookie,body:{version:1}})).status,200);
   assert.equal((await api('/api/finance/entries/'+expense.id,{method:'DELETE',auth:a.cookie,body:{version:1}})).status,200);
   assert.equal((await api('/api/finance/entries/'+refund.id+'/restore',{method:'POST',auth:a.cookie,body:{version:2}})).status,400,'cannot restore a refund of deleted expense');
@@ -92,7 +92,7 @@ test('daily zero is explicit, and paging/search do not truncate monthly aggregat
   for(let i=0;i<55;i++)await create(a.cookie,{expression:'1',purpose:i===0?'唯一一笔':'餐饮'});
   const first=await ledger(a.cookie);assert.equal(first.entries.length,50);assert.equal(first.summary.expenseCents,5500);assert.ok(first.nextCursor);
   const second=await ledger(a.cookie,'&cursor='+first.nextCursor);assert.equal(second.entries.length,5);assert.equal(new Set([...first.entries,...second.entries].map(item=>item.id)).size,55);assert.equal(second.summary.expenseCents,5500);
-  const searched=await ledger(a.cookie,'&q='+encodeURIComponent('唯一'));assert.equal(searched.entries.length,1);assert.equal(searched.summary.expenseCents,5500);
+  const searched=await ledger(a.cookie,'&q='+encodeURIComponent('唯一'));assert.equal(searched.entries.length,1);assert.equal(searched.summary.expenseCents,5500);assert.deepEqual(first.expenseCategoryTotals,[{categoryId:'food',name:'餐饮',cents:5500}]);assert.deepEqual(second.expenseCategoryTotals,first.expenseCategoryTotals);assert.deepEqual(searched.expenseCategoryTotals,first.expenseCategoryTotals);const dayTotals=await api('/api/finance?date='+today+'&q=不存在&kind=income',{auth:a.cookie});assert.equal(dayTotals.value.entries.length,0);assert.deepEqual(dayTotals.value.expenseCategoryTotals,first.expenseCategoryTotals);assert.equal(dayTotals.value.trend[0].spendingCents,5500);
   assert.equal((await api('/api/finance/day',{method:'POST',auth:a.cookie,body:{date:today,state:'zero'}})).status,409);
   assert.equal((await api('/api/finance?date=2026-02-30',{auth:a.cookie})).status,400);
   assert.equal((await api('/api/finance?month='+month+'&cursor='+randomUUID(),{auth:a.cookie})).status,404);

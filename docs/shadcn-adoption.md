@@ -11,6 +11,7 @@
 | 验证日期 | Calendar（React DayPicker）、Button | 中文日期、六周高度、原日期字段、各类最早可选日期、历史只读 |
 | 阶段与日历 | Calendar、Progress、Button、Card | 原始记录身份、草稿／完成／验证状态、统计跳转和阶段设置 |
 | 历史复盘、行动验证 | Card、Badge、Button、Input、NativeSelect、Dialog、Textarea | 分类插画、原筛选、完整正文、验证规则和退出后返回来源 |
+| 财务收支与每日记账 | Select、DropdownMenu、Popover、Calendar、Chart、Button、Textarea | 原记账字段、单次选择事件、完整月／日支出统计、独立退款说明及未提交输入 |
 | 顶部账户与手机菜单 | DropdownMenu、Button | 相同入口及权限、方向键、Escape、关闭后焦点恢复 |
 | 确认、验证、登录过期弹窗 | Dialog | 持久登录保护、保存中禁止退出、父子弹窗焦点 |
 | 备份与管理员页面 | Card、Table、Button、Input、RadioGroup、Checkbox、Badge、Dialog | 原加密、预览、恢复、权限及确认流程 |
@@ -47,3 +48,7 @@ Sonner 在初始化业务界面前挂载，使其既有 polite live region 在�
 `npm run check` 检查原生脚本语法，`npm test` 先执行生产构建，再运行原有领域／安全测试及组件真实 DOM 回归。当前为 JavaScript 项目，没有独立 TypeScript 或 ESLint 配置；JSX 编译由 Vite 构建覆盖。DOM 测试覆盖字段／FormData、单次事件、保留隐藏答案、勾选框、菜单、日历、持久与嵌套弹窗、背景 inert、焦点恢复及登录清理；视觉、真实浏览器焦点和移动端边界另行验收。接口、记录、加密、权限和验证等待规则不因组件采用而改变。
 
 填写类单值 select 的可见界面为真实 shadcn/Radix RadioGroup 选项组。历史类型、年份、月份是明确例外，已恢复真实 shadcn NativeSelect 的紧凑布局，保留原生标签、值、禁用、焦点、表单和单次事件语义及一个装饰箭头。原生字段隐藏但持续挂载，维持 name/id/value/FormData、required、禁用、重置与单次 input/change；标签和错误聚焦转到可见选项。直接展示的选项多时自动换行；历史月份在未选年份时仍禁用。组件来源核对官方 new-york-v4 radio-group 源码；见[本轮验收](page-choice-qa/README.md)。
+
+## 财务与浏览器导航
+
+财务分类和收支类型使用真实shadcn Select，月份使用DropdownMenu，日图日期使用Popover + Calendar，两张月／日分类饼图使用Chart + Recharts Pie。旧命名字段隐藏保留给FormData及原业务事件；每次选择只走一个事件路径。Chart同时显示文字分类金额和百分比；退款单列，空态不伪造数据。页面地址及前进后退由browser-navigation.js负责，复用已有离开确认，组件库不另建路由。

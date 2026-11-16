@@ -108,14 +108,14 @@ export function createFinanceLedger({db,encryptData,decryptData,dataScope,now,re
       const decoded=rows.map(decodeEntry),active=decoded.filter(item=>!item.deletedAt),list=categories(user.id),needle=q.toLocaleLowerCase();
       let matching=decoded.filter(item=>(includeDeleted||!item.deletedAt)&&(!kind||item.kind===kind)&&(!category||item.categoryId===category)&&(!needle||`${item.purpose} ${item.note} ${list.find(value=>value.id===item.categoryId)?.name||''}`.toLocaleLowerCase().includes(needle)));
       if(cursor){const anchor=matching.findIndex(item=>item.id===cursor);if(anchor<0)throw problem('账目分页已变化，请重新加载','finance_cursor_not_found',404);matching=matching.slice(anchor+1)}
-      const entries=matching.slice(0,50),trendMap=new Map(),totals=new Map();
+      const entries=matching.slice(0,50),trendMap=new Map(),totals=new Map(),expenseTotals=new Map();
       for(const item of active){
-        const point=trendMap.get(item.date)||{date:item.date,expenseCents:0,incomeCents:0};
-        if(item.kind==='expense')point.expenseCents+=item.amountCents;if(item.kind==='refund')point.expenseCents-=item.amountCents;if(item.kind==='income')point.incomeCents+=item.amountCents;
+        const point=trendMap.get(item.date)||{date:item.date,expenseCents:0,incomeCents:0,spendingCents:0};
+        if(item.kind==='expense'){point.expenseCents+=item.amountCents;point.spendingCents+=item.amountCents;expenseTotals.set(item.categoryId,(expenseTotals.get(item.categoryId)||0)+item.amountCents)}if(item.kind==='refund')point.expenseCents-=item.amountCents;if(item.kind==='income')point.incomeCents+=item.amountCents;
         trendMap.set(item.date,point);
         if(item.kind==='expense'||item.kind==='refund')totals.set(item.categoryId,(totals.get(item.categoryId)||0)+(item.kind==='refund'?-1:1)*item.amountCents);
       }
-      json(res,200,{entries,categories:list,summary:summaryOf(active),trend:[...trendMap.values()].sort((a,b)=>a.date.localeCompare(b.date)),categoryTotals:[...totals].map(([categoryId,cents])=>({categoryId,name:list.find(value=>value.id===categoryId)?.name||'待分类',cents})).sort((a,b)=>b.cents-a.cents),nextCursor:matching.length>50?entries.at(-1).id:null,...(date?{day:dayState(user.id,date,active)}:{})});return true;
+      json(res,200,{entries,categories:list,summary:summaryOf(active),expenseCategoryTotals:[...expenseTotals].map(([categoryId,cents])=>({categoryId,name:list.find(value=>value.id===categoryId)?.name||'待分类',cents})).sort((a,b)=>b.cents-a.cents||a.categoryId.localeCompare(b.categoryId)),trend:[...trendMap.values()].sort((a,b)=>a.date.localeCompare(b.date)),categoryTotals:[...totals].map(([categoryId,cents])=>({categoryId,name:list.find(value=>value.id===categoryId)?.name||'待分类',cents})).sort((a,b)=>b.cents-a.cents),nextCursor:matching.length>50?entries.at(-1).id:null,...(date?{day:dayState(user.id,date,active)}:{})});return true;
     }
     if(path==='/api/finance/entries'&&method==='POST'){
       const body=await readJson(req);if(!UUID.test(String(body.id||'')))throw problem('账目编号无效');

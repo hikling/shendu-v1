@@ -25,7 +25,7 @@ const state={};
 const logins=[];let loginOk=true;
 const login=async(path,options)=>{logins.push({path,...options});return{ok:loginOk,json:async()=>({message:'登录失败'})}};
 const escape=value=>String(value).replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
-const controls=new Function('$','$$','state','prepareDialogContainer','showDialog','dismissDialog','cancelDailyTypewriter','setDailyImmersive','reviewNavigation','renderMarkup','esc','fetch','toast',`let modalReturnFocus=null;\n${names.map(owner).join('\n')}\nreturn {openModal,closeModal,renderAuth,sessionExpired};`)($,$$,state,ui.prepareDialogContainer,ui.showDialog,ui.dismissDialog,()=>{},()=>{},{clear(){}},ui.renderMarkup,escape,login,()=>{});
+const controls=new Function('$','$$','state','prepareDialogContainer','showDialog','dismissDialog','cancelDailyTypewriter','setDailyImmersive','reviewNavigation','renderMarkup','esc','fetch','toast',`const browserNavigation={suspend(){}};let modalReturnFocus=null;\n${names.map(owner).join('\n')}\nreturn {openModal,closeModal,renderAuth,sessionExpired};`)($,$$,state,ui.prepareDialogContainer,ui.showDialog,ui.dismissDialog,()=>{},()=>{},{clear(){}},ui.renderMarkup,escape,login,()=>{});
 const settle=()=>new Promise(resolve=>setTimeout(resolve,30));
 
 test('application overlay owner makes live review descendants inert without disabling either overlay or notifications',async()=>{

@@ -1,0 +1,10 @@
+.sd-finance-select{display:block;position:relative;width:100%;min-width:0;max-width:100%}
+.sd-finance-select .sd-choice-native{position:absolute!important;width:1px!important;min-width:0!important;max-width:1px!important;height:1px!important;min-height:0!important;padding:0!important;margin:-1px!important;border:0!important;overflow:hidden!important;clip-path:inset(50%);white-space:nowrap;opacity:0;pointer-events:none}
+.sd-finance-select>[data-slot="select-trigger"]{min-height:40px;min-width:0;width:100%;max-width:100%;border:1px solid var(--border,#d4dcd2);border-radius:8px;padding:8px 11px;background:var(--background,#fffefa);color:var(--foreground,#314b3b);box-shadow:none;font:500 14px/1.5 "Noto Sans SC","Microsoft YaHei",sans-serif;text-align:left}
+.sd-finance-select>[data-slot="select-trigger"]>span:first-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.sd-finance-select>[data-slot="select-trigger"]:focus-visible{outline:2px solid var(--ring,#176b67);outline-offset:2px}
+.finance-select-menu{min-width:var(--radix-select-trigger-width);max-width:min(360px,calc(100vw - 24px));max-height:var(--radix-select-content-available-height);padding:4px;border:1px solid var(--border,#d4dcd2);border-radius:10px;background:var(--popover,#fffefa);color:var(--popover-foreground,#314b3b);box-shadow:0 8px 24px #243d3418;font:400 14px/1.6 "Noto Sans SC","Microsoft YaHei",sans-serif}
+.finance-select-menu [data-slot="select-item"]{min-height:38px;white-space:normal;overflow-wrap:anywhere}
+.finance-select-menu [data-highlighted]{background:var(--accent,#e9efea);outline:none}
+.finance-select-menu [data-state="checked"]{font-weight:600}
+@media(max-width:820px){.sd-finance-select>[data-slot="select-trigger"]{font-size:16px;min-height:44px}}

@@ -41,7 +41,7 @@ components:
 
 ### Component and token architecture
 
-通用 UI 使用本地官方 shadcn/ui 源码与真实 React 组件，包括 Button、Input、Textarea、RadioGroup、Label、Checkbox、Card、Badge、Table、Alert、Skeleton、Progress、Dialog、DropdownMenu、Calendar 和 Sonner。填写类单选项用 RadioGroup 直接展示，隐藏的 NativeSelect 维持原字段值与表单契约；历史的类型、年份、月份则保留可见的紧凑 NativeSelect，不铺开选项。runtime.jsx 管理独立挂载和清理；app.js 保留路由、收集、保存、权限与离开保护。品牌、画布、插画、轮播与打字机仍使用专属构图，答案折叠保留原生 details。
+通用 UI 使用本地官方 shadcn/ui 源码与真实 React 组件，包括 Button、Input、Textarea、RadioGroup、Select、Label、Checkbox、Card、Badge、Table、Alert、Skeleton、Progress、Dialog、DropdownMenu、Popover、Calendar、Chart 和 Sonner。填写类单选项用 RadioGroup 直接展示，隐藏的原生 select 维持原字段值与表单契约；历史的类型、年份、月份保留可见的紧凑 NativeSelect，财务分类和类型使用 Select。runtime.jsx 管理独立挂载和清理；app.js 保留路由、收集、保存、权限与离开保护。品牌、画布、插画、轮播与打字机仍使用专属构图，答案折叠保留原生 details。
 
 `ui/styles.css` 只引入 Tailwind theme/utilities，不引入 Preflight。`.sd-surface` 将 background/card/popover、foreground、border、ring 等组件语义映射到现有纸色、墨色、线条与固定品牌强调色，`--ui-muted` 独立于旧正文 muted token；六类画布继续使用各自类别变量。`compat.css` 处理真实挂载祖先与旧页面样式的衔接，`surfaces.css` 统一浮层、Tabs 与日历。组件默认样式不得覆盖已确认的红印章、宋体、六类色调和顶部纯文字交互。无远程字体、CDN 或运行时插画生成；组件资源由 Vite 本地构建。覆盖及边界见[组件接入说明](docs/shadcn-adoption.md)。
 
@@ -211,7 +211,7 @@ components:
 
 ## 2026-11-15 财务收支
 
-财务作为普通顶部导航工作区，最大宽度及内边距沿用全站。页头深墨宋体，右侧复用预算分罐插画；内容使用纸白面板、灰绿主色及暖金支出强调。月度收入/净支出/差额用对齐数字和轻分隔线，趋势与分类在桌面并列、手机堆叠，流水按天自然高度。字形、焦点、空态、重试和功能确认框复用已有约定，不加入装饰口号或炫目卡片。
+财务作为普通顶部导航工作区，最大宽度及内边距沿用全站。页头深墨宋体，右侧复用预算分罐插画；内容使用纸白面板、灰绿主色及暖金支出强调。月度收入/净支出/差额用对齐数字和轻分隔线，月度和每日分类饼图在桌面并列、手机堆叠，流水按天自然高度。字形、焦点、空态、重试和功能确认框复用已有约定，不加入装饰口号或炫目卡片。
 
 每日的花销题紧随精力，沿用沉浸网格与插画，与财务页共用逐行大文本框：每行「金额或算式 用途」，原位显示笔数、合计及分类预览。文本框在输入和读取账本时保持挂载；分类在每行末端使用紧凑下拉，可手动校正。确认入账为主动作，详细录入与截图记账置于次要入口；详细录入保留日期、收入、退款、不计收支和备注，不挤占速记面板。未确认内容可随每日草稿保存。
 
@@ -224,3 +224,9 @@ components:
 六类复盘共享短暂的题目过渡，按钮和滚轮进入同一入口。内容区与整组插画先用100ms淡出、向离开方向移动8px，再切换原有题目；目标内容用220ms淡入并从16px外归位，曲线为cubic-bezier(.2,.7,.2,1)，上一题反向。只动画opacity与独立translate，保留插画旋转和现有网格；背景、头部和页脚不参与淡出。
 
 复用已挂载的真实输入节点，过渡中不复制表单或插画、不累计切题队列。退场阶段短暂阻止旧内容编辑，切换前核对原账户、记录、画布及保存/弹窗状态；离开、保存、弹窗和程序化错误定位会取消旧效果。原有标题和图片入场动画在共享控制器接管后停用，避免叠播。开启账户或系统减少动态效果、或浏览器不支持动画时，直接显示目标页；必填错误仍立即在原题出现。
+
+### 财务组件与页面地址
+
+财务页面复用已交付的shadcn/ui：分类与类型使用Select，月份使用DropdownMenu与Button，日图日期使用Popover内的Calendar，分类图使用Chart与Recharts Pie。月份栏去掉整体胶囊边框，使用清楚的月份文字与SVG箭头；明细筛选集中于轻分隔工具栏。所有颜色和字体继续映射原纸色、墨色及品牌token，图例同时列出金额和占比，退款独立说明。
+
+主页面有各自URL，普通页面采用 `/history`、`/finance` 等路径，保存的复盘采用 `/review/<UUID>`。只在真正页面进入时产生历史，切题、打开弹窗和浏览月份不产生页面历史；保留未保存内容和进行中操作的离开保护。

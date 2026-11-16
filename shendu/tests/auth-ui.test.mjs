@@ -24,7 +24,7 @@ function fixture(impl=async()=>({user:{username:'owner'}}),fetchImpl=async()=>({
   const state={user:null,reauthOpen:false},calls=[],boots=[],notices=[];
   const request=(path,options)=>{calls.push({path,...options});return impl(path,options)};
   const names=['syncOverlayBackground','openModal','closeModal','renderAuth','sessionExpired'];
-  const functions=new Function('$','$$','state','request','fetch','boot','renderMarkup','prepareDialogContainer','showDialog','dismissDialog','cancelDailyTypewriter','setDailyImmersive','reviewNavigation','esc','toast',`let modalReturnFocus=null;\n${names.map(owner).join('\n')}\nreturn {renderAuth,sessionExpired,openModal,closeModal};`)($,$$,state,request,fetchImpl,async user=>boots.push(user),ui.renderMarkup,ui.prepareDialogContainer,ui.showDialog,ui.dismissDialog,()=>{},()=>{},{clear(){}},esc,(...args)=>notices.push(args));
+  const functions=new Function('$','$$','state','request','fetch','boot','renderMarkup','prepareDialogContainer','showDialog','dismissDialog','cancelDailyTypewriter','setDailyImmersive','reviewNavigation','esc','toast',`const browserNavigation={suspend(){}};let modalReturnFocus=null;\n${names.map(owner).join('\n')}\nreturn {renderAuth,sessionExpired,openModal,closeModal};`)($,$$,state,request,fetchImpl,async user=>boots.push(user),ui.renderMarkup,ui.prepareDialogContainer,ui.showDialog,ui.dismissDialog,()=>{},()=>{},{clear(){}},esc,(...args)=>notices.push(args));
   return {state,calls,boots,notices,...functions};
 }
 function submit(id){$(id).dispatchEvent(new win.Event('submit',{bubbles:true,cancelable:true}));}

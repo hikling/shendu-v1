@@ -3,18 +3,27 @@ import assert from 'node:assert/strict';
 import {JSDOM} from 'jsdom';
 
 const dom=new JSDOM('<!doctype html><html><body><main id="root"></main></body></html>',{url:'http://localhost',pretendToBeVisual:true}),win=dom.window;
-for(const name of ['window','document','HTMLElement','HTMLInputElement','HTMLButtonElement','HTMLSelectElement','HTMLFormElement','Node','Event','CustomEvent','KeyboardEvent','MutationObserver','getComputedStyle'])Object.defineProperty(globalThis,name,{value:name==='getComputedStyle'?win.getComputedStyle.bind(win):win[name],configurable:true});
+for(const name of ['window','document','HTMLElement','HTMLInputElement','HTMLButtonElement','HTMLSelectElement','HTMLFormElement','Element','DocumentFragment','Node','NodeFilter','Event','CustomEvent','KeyboardEvent','MutationObserver','getComputedStyle'])Object.defineProperty(globalThis,name,{value:name==='getComputedStyle'?win.getComputedStyle.bind(win):win[name],configurable:true});
 Object.defineProperty(globalThis,'navigator',{value:win.navigator,configurable:true});
 globalThis.ResizeObserver=class{observe(){}unobserve(){}disconnect(){}};
 globalThis.requestAnimationFrame=win.requestAnimationFrame.bind(win);globalThis.cancelAnimationFrame=win.cancelAnimationFrame.bind(win);
 const {renderMarkup,enhanceUi,disposeUi}=await import('../public/ui/shadcn.js');
 const root=document.querySelector('#root'),settle=()=>new Promise(resolve=>setTimeout(resolve,20));
+win.HTMLElement.prototype.scrollIntoView=function(){};
 const $=s=>root.querySelector(s),$$=s=>[...root.querySelectorAll(s)];
 after(()=>{disposeUi(root);win.close()});
 
-test('finance compact selectors retain real dropdowns, form values and change ownership without changing review choices',async()=>{
-  renderMarkup(root,'<section class="finance-page"><form><label>分类<select name="category" data-finance-compact><option value="">自动分类</option><option value="food">餐饮</option></select></label><label>类型<select name="kind" data-finance-compact><option value="expense">支出</option><option value="income">收入</option></select></label></form></section>');
-  const select=$('select[name="category"]');assert.equal($('[role="radiogroup"]'),null);assert.equal(select.tabIndex,0);assert.equal(select.labels.length,1);let changed=0;select.addEventListener('change',()=>changed++);select.value='food';select.dispatchEvent(new win.Event('change',{bubbles:true}));await settle();assert.equal(changed,1);assert.equal(new win.FormData($('form')).get('category'),'food');enhanceUi(root);assert.equal($('select[name="category"]'),select);
+test('finance compact shadcn Select retains one native form value, real selection events and reset without changing review choices',async()=>{
+  renderMarkup(root,'<section class="finance-page"><form><fieldset><label>分类<select name="category" data-finance-compact><option value="">自动分类</option><option value="food">餐饮</option></select></label><label>类型<select name="kind" data-finance-compact><option value="expense">支出</option><option value="income">收入</option></select></label></fieldset></form></section>');
+  const select=$('select[name="category"]'),trigger=$('[data-ui-select-for="category"]');assert.equal($('[role="radiogroup"]'),null);assert.equal(select.tabIndex,-1);assert.equal(select.labels.length,1);assert.equal(trigger.getAttribute('role'),'combobox');assert.equal(trigger.getAttribute('aria-label'),'分类');
+  let changed=0,inputs=0;select.addEventListener('change',()=>changed++);select.addEventListener('input',()=>inputs++);
+  trigger.focus();trigger.dispatchEvent(new win.KeyboardEvent('keydown',{key:'ArrowDown',bubbles:true,cancelable:true}));await settle();
+  assert.ok(document.querySelector('[role="listbox"]'));document.querySelector('[role="option"][data-state="unchecked"]').click();await settle();
+  assert.equal(select.value,'food');assert.equal(changed,1);assert.equal(inputs,1);assert.equal(new win.FormData($('form')).get('category'),'food');assert.equal(document.activeElement,trigger);
+  enhanceUi(root);assert.equal($('select[name="category"]'),select);assert.equal($('[data-ui-select-for="category"]'),trigger);
+  $('form').reset();await settle();assert.equal(select.value,'');assert.match(trigger.textContent,/自动分类/);
+  select.disabled=true;await settle();assert.equal(trigger.disabled,true);select.disabled=false;await settle();assert.equal(trigger.disabled,false);
+  const fieldset=$('fieldset');fieldset.disabled=true;await settle();assert.equal(trigger.disabled,true);fieldset.disabled=false;await settle();assert.equal(trigger.disabled,false);
 });
 
 test('history filters stay compact native selects with labels, values, disabled months and one change path',async()=>{

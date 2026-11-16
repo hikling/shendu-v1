@@ -10,7 +10,7 @@
     "start": "node server.mjs",
     "predev": "npm run build",
     "dev": "node --watch server.mjs",
-    "check": "node --check server.mjs && node --check public/app.js && node --check public/review-intros.js && node --check public/overview-reel.js && node --check public/record-art.js && node --check public/review-navigation.js && node --check public/review-wheel.js && node --check public/review-transition.js && node --check public/review-schema.js && node --check public/review-metrics.js && node --check public/backup-schedule.js && node --check public/daily-flow.js && node --check public/daily-calendar.js && node --check public/extended-flow.js && node --check public/verification-policy.js && node --check ui/lunar-calendar.js && node --check scripts/admin-cli.mjs && node --check scripts/backup-safety.mjs && node --check finance-ledger.mjs && node --check finance-receipts.mjs && node --check public/finance-domain.js && node --check public/finance-ui.js && node --check public/receipt-client.js && node --check scripts/prepare-ocr.mjs",
+    "check": "node --check server.mjs && node --check public/app.js && node --check public/browser-navigation.js && node --check public/review-intros.js && node --check public/overview-reel.js && node --check public/record-art.js && node --check public/review-navigation.js && node --check public/review-wheel.js && node --check public/review-transition.js && node --check public/review-schema.js && node --check public/review-metrics.js && node --check public/backup-schedule.js && node --check public/daily-flow.js && node --check public/daily-calendar.js && node --check public/extended-flow.js && node --check public/verification-policy.js && node --check ui/lunar-calendar.js && node --check scripts/admin-cli.mjs && node --check scripts/backup-safety.mjs && node --check finance-ledger.mjs && node --check finance-receipts.mjs && node --check public/finance-domain.js && node --check public/finance-ui.js && node --check public/receipt-client.js && node --check scripts/prepare-ocr.mjs",
     "pretest": "npm run build",
     "test": "node --test tests/*.test.mjs",
     "smoke:ui": "node scripts/smoke-ui.mjs"
@@ -30,6 +30,7 @@
     "react": "19.3.1",
     "react-day-picker": "10.0.2",
     "react-dom": "19.3.1",
+    "recharts": "3.10.1",
     "sonner": "2.0.8",
     "tailwind-merge": "3.7.0",
     "tesseract.js": "7.0.0"

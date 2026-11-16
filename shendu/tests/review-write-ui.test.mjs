@@ -13,7 +13,7 @@ import {DEFAULT_FINANCE_CATEGORIES} from '../public/finance-domain.js';
 const source=await readFile(new URL('../public/app.js',import.meta.url),'utf8');
 const html=await readFile(new URL('../public/index.html',import.meta.url),'utf8');
 const dom=new JSDOM(html,{url:'http://localhost',pretendToBeVisual:true}),win=dom.window;
-for(const name of ['window','document','HTMLElement','HTMLInputElement','HTMLTextAreaElement','HTMLSelectElement','HTMLButtonElement','HTMLFormElement','Element','Node','NodeFilter','Event','CustomEvent','KeyboardEvent','MouseEvent','MutationObserver','getComputedStyle','FormData'])globalThis[name]=win[name];
+for(const name of ['window','document','HTMLElement','HTMLInputElement','HTMLTextAreaElement','HTMLSelectElement','HTMLButtonElement','HTMLFormElement','Element','DocumentFragment','Node','NodeFilter','Event','CustomEvent','KeyboardEvent','MouseEvent','MutationObserver','getComputedStyle','FormData'])globalThis[name]=win[name];
 Object.defineProperty(globalThis,'navigator',{value:win.navigator,configurable:true});
 globalThis.requestAnimationFrame=win.requestAnimationFrame.bind(win);globalThis.cancelAnimationFrame=win.cancelAnimationFrame.bind(win);
 globalThis.ResizeObserver=class{observe(){}unobserve(){}disconnect(){}};
@@ -34,28 +34,35 @@ function record(type='daily',overrides={}){
 }
 function fixture({draft=record(),dirty=true,financeEnabled=false,impl=async(path,options)=>path==='/api/records'?{record:{...options.body,version:4}}:{total:1},fetchImpl=null}={}){
   ui.dismissDialog($('#modal-root'));ui.renderMarkup($('#app'),'');
-  const state={user:{id:'owner',username:'owner',displayName:'测试',role:'member'},stage:{sleepTarget:7,energyTarget:70,metrics:[]},records:draft.id?[structuredClone(draft)]:[],stats:{total:0},current:draft,saving:false,dirty,route:draft.type},calls=[],notices=[],renders=[];
+  const state={user:{id:'owner',username:'owner',displayName:'测试',role:'member'},stage:{sleepTarget:7,energyTarget:70,metrics:[]},records:draft.id?[structuredClone(draft)]:[],stats:{total:0},current:draft,saving:false,dirty,route:draft.type},calls=[],notices=[],renders=[],routes=[];
   let functions,templates;
   const request=(path,options)=>{calls.push({path,...structuredClone(options)});return impl(path,options)};
   const shell=content=>ui.renderMarkup($('#app'),`<main class="main" id="main-content">${content}</main>`);
-  const context={$,$$,attachReviewWheel,state,request,shell,esc,renderMarkup:ui.renderMarkup,prepareDialogContainer:ui.prepareDialogContainer,showDialog:ui.showDialog,dismissDialog:ui.dismissDialog,cancelDailyTypewriter:()=>{},startDailyTypewriter:()=>{},setDailyImmersive:()=>{},DAILY_STEPS,dailyPrompts,dailyPromptOwner,EXTENDED_FLOW,extendedPrompts,reviewQuestions,reviewIntroLayout,dailyIntroLines:reviewIntroLines,defaultPeriod:type=>record(type).period,today:()=> '2026-11-12',quoteFor:()=> '回看事实，慢慢向前。',beijingTime:()=> '12:00',verificationMinimum:()=> '2026-11-12',dailyCalendarDateLabel:value=>value,templatesForRecord:()=>templates,verificationTimes:()=>'',verificationActualAt:r=>r.verified_at||'',currentTemplateSnapshot:()=>({review:templates.review,action:templates.action}),clone:structuredClone,reconcileReviewMetrics:metrics=>({metrics}),newRecord:()=>{throw new Error('unexpected new record')},dailyVerificationCalendar:value=>`<input type="hidden" data-simple="verifyDate" value="${esc(value)}"><div id="daily-verification-calendar" data-verify-month-value="2026-11"></div>`,renderDailyCalendar:()=>{},bindDailyFlow:()=>functions.showDailyPrompt(state.dailyPrompt),bindExtendedFlow:()=>functions.showExtendedPrompt(state.extendedPrompt),renderReviewFromCurrent:()=>{},focusDailyAnswer:()=>{},updateGauge:()=>{},deleteDraftRecord:()=>{},toast:(...args)=>notices.push(args),validateCurrent:()=>{functions.collectCurrent();return []},applyTheme:()=>{}};
+  const context={browserNavigation:{commit:(...args)=>routes.push(args)},$,$$,attachReviewWheel,state,request,shell,esc,renderMarkup:ui.renderMarkup,prepareDialogContainer:ui.prepareDialogContainer,showDialog:ui.showDialog,dismissDialog:ui.dismissDialog,cancelDailyTypewriter:()=>{},startDailyTypewriter:()=>{},setDailyImmersive:()=>{},DAILY_STEPS,dailyPrompts,dailyPromptOwner,EXTENDED_FLOW,extendedPrompts,reviewQuestions,reviewIntroLayout,dailyIntroLines:reviewIntroLines,defaultPeriod:type=>record(type).period,today:()=> '2026-11-12',quoteFor:()=> '回看事实，慢慢向前。',beijingTime:()=> '12:00',verificationMinimum:()=> '2026-11-12',dailyCalendarDateLabel:value=>value,templatesForRecord:()=>templates,verificationTimes:()=>'',verificationActualAt:r=>r.verified_at||'',currentTemplateSnapshot:()=>({review:templates.review,action:templates.action}),clone:structuredClone,reconcileReviewMetrics:metrics=>({metrics}),newRecord:()=>{throw new Error('unexpected new record')},dailyVerificationCalendar:value=>`<input type="hidden" data-simple="verifyDate" value="${esc(value)}"><div id="daily-verification-calendar" data-verify-month-value="2026-11"></div>`,renderDailyCalendar:()=>{},bindDailyFlow:()=>functions.showDailyPrompt(state.dailyPrompt),bindExtendedFlow:()=>functions.showExtendedPrompt(state.extendedPrompt),renderReviewFromCurrent:()=>{},focusDailyAnswer:()=>{},updateGauge:()=>{},deleteDraftRecord:()=>{},toast:(...args)=>notices.push(args),validateCurrent:()=>{functions.collectCurrent();return []},applyTheme:()=>{}};
   context.formatDate=value=>value;
-  context.mountDailyFinance=mountDailyFinance;context.showFinanceMonthPicker=ui.showFinanceMonthPicker;
+  context.mountDailyFinance=mountDailyFinance;context.showFinanceMonthPicker=ui.showFinanceMonthPicker;context.showFinanceDayPicker=ui.showFinanceDayPicker;context.showFinancePie=ui.showFinancePie;
   if(fetchImpl){delete context.request;context.fetch=(path,options)=>{calls.push({path,...structuredClone(options)});return fetchImpl(path,options)}}
   const names=[...renderers,'financeUiOptions','renderReview','collectCurrent','setReviewBusy','saveCurrent','completeCurrent','refreshData','dialogWriteTask','syncOverlayBackground','openModal','closeModal',...(fetchImpl?['request','sessionExpired']:[])];
-  functions=new Function(...Object.keys(context),`let modalReturnFocus=null;\n${constants}\n${names.map(owner).join('\n')}\nreturn {renderReview,showDailyPrompt,showExtendedPrompt,collectCurrent,saveCurrent,completeCurrent,dialogWriteTask,openModal,closeModal,review:DEFAULT_REVIEW_TEMPLATES,action:DEFAULT_ACTION_TEMPLATE};`)(...Object.values(context));
+  functions=new Function(...Object.keys(context),`let modalReturnFocus=null;\n${constants}\n${names.map(owner).join('\n')}\nreturn {financeUiOptions,renderReview,showDailyPrompt,showExtendedPrompt,collectCurrent,saveCurrent,completeCurrent,dialogWriteTask,openModal,closeModal,review:DEFAULT_REVIEW_TEMPLATES,action:DEFAULT_ACTION_TEMPLATE};`)(...Object.values(context));
   templates={review:{...functions.review[draft.type],financeEnabled},action:functions.action};
   const render=(r=state.current,options={})=>{renders.push(r);return functions.renderReview(r.type,r.period,false,r,{dailySection:'journal',dailyPrompt:'journal',extendedPrompt:'verifyDate',dirty,...options})};
   render();
-  return {state,calls,notices,renders,render,...functions};
+  return {state,calls,notices,renders,routes,render,...functions};
 }
 const confirm=f=>{f.completeCurrent();$('#confirm-complete').click()};
 const jsonResponse=(data,status=200)=>new Response(JSON.stringify(data),{status,headers:{'Content-Type':'application/json'}});
 
+test('real app finance options expose the exact chart and day-picker interfaces consumed by the workspace',()=>{
+  const f=fixture(),options=f.financeUiOptions($('#daily-editor'));
+  assert.equal(typeof options.showFinancePie,'function');assert.equal(options.showFinancePie,ui.showFinancePie);
+  assert.equal(typeof options.showFinanceDayPicker,'function');assert.equal(options.showFinanceDayPicker,ui.showFinanceDayPicker);
+  assert.equal(options.showMonthPicker,ui.showFinanceMonthPicker);
+});
+
 test('normal login reloads only when owned storage requires a new document CSP',async()=>{
   for(const reloadForStorage of [false,true]){
     let reloads=0;const boots=[],state={user:null},user={id:'owner'};
-    const context={$,$$,state,renderMarkup:ui.renderMarkup,dismissDialog:ui.dismissDialog,closeModal:()=>ui.dismissDialog($('#modal-root')),reviewNavigation:{clear(){}},cancelDailyTypewriter:()=>{},setDailyImmersive:()=>{},request:async()=>({user,...(reloadForStorage?{reloadForStorage:true}:{})}),boot:async account=>boots.push(account),window:{location:{reload:()=>{reloads++}}}};
+    const context={browserNavigation:{suspend(){}},$,$$,state,renderMarkup:ui.renderMarkup,dismissDialog:ui.dismissDialog,closeModal:()=>ui.dismissDialog($('#modal-root')),reviewNavigation:{clear(){}},cancelDailyTypewriter:()=>{},setDailyImmersive:()=>{},request:async()=>({user,...(reloadForStorage?{reloadForStorage:true}:{})}),boot:async account=>boots.push(account),window:{location:{reload:()=>{reloads++}}}};
     const renderAuth=new Function(...Object.keys(context),owner('renderAuth')+';return renderAuth')(...Object.values(context));
     renderAuth();$('#username').value='owner';$('#password').value='private-password';$('#auth-form').dispatchEvent(new win.Event('submit',{bubbles:true,cancelable:true}));await settle();
     assert.equal(reloads,reloadForStorage?1:0);assert.deepEqual(boots,reloadForStorage?[]:[user]);
@@ -65,7 +72,7 @@ test('normal login reloads only when owned storage requires a new document CSP',
 test('first save preserves all six mounted editors, prompt identity and exact record fields',async()=>{
   for(const type of ['daily','weekly','monthly','quarterly','yearly','decision']){
     const draft=record(type,{id:null,version:0}),f=fixture({draft,impl:async(_path,{body})=>({record:{...body,id:'first-save',version:1,updated_at:'2026-11-12'}})}),editor=$('#daily-editor'),input=$('[data-simple="action"]'),prompt=f.state.dailyPrompt||f.state.extendedPrompt;
-    input.value='刚输入的行动';const saved=await f.saveCurrent();assert.equal(saved.id,'first-save');assert.equal(saved.data.action,'刚输入的行动');assert.equal(saved.type,type);assert.equal(saved.period,draft.period);assert.equal(saved.data.journal,type==='daily'?'私人日记':'私人日记');assert.equal($('#daily-editor'),editor);assert.equal($('[data-simple="action"]'),input);assert.equal(f.state.dailyPrompt||f.state.extendedPrompt,prompt);assert.equal(f.state.records[0],saved);assert.equal(f.state.dirty,false);assert.equal(f.state.saving,false);assert.equal(input.disabled,false);
+    input.value='刚输入的行动';const saved=await f.saveCurrent();assert.equal(saved.id,'first-save');assert.deepEqual(f.routes.at(-1),[{route:'review',id:'first-save'},{replace:true}]);assert.equal(saved.data.action,'刚输入的行动');assert.equal(saved.type,type);assert.equal(saved.period,draft.period);assert.equal(saved.data.journal,type==='daily'?'私人日记':'私人日记');assert.equal($('#daily-editor'),editor);assert.equal($('[data-simple="action"]'),input);assert.equal(f.state.dailyPrompt||f.state.extendedPrompt,prompt);assert.equal(f.state.records[0],saved);assert.equal(f.state.dirty,false);assert.equal(f.state.saving,false);assert.equal(input.disabled,false);
   }
 });
 
@@ -198,7 +205,7 @@ test('the real daily ledger survives first save and same-account conflict refres
   const editor=$('#daily-editor'),form=$('#daily-finance [data-finance-create]'),amount=form.elements.text;
   amount.value='8+8+8-1 早餐';amount.dispatchEvent(new win.Event('input',{bubbles:true}));
   assert.equal(f.state.current.data.financeDraft.text,'8+8+8-1 早餐');
-  assert.equal((await f.saveCurrent()).id,'first-save');assert.equal($('#daily-finance [name="text"]'),amount);
+  assert.equal((await f.saveCurrent()).id,'first-save');assert.deepEqual(f.routes.at(-1),[{route:'review',id:'first-save'},{replace:true}]);assert.equal($('#daily-finance [name="text"]'),amount);
   await assert.rejects(f.saveCurrent(),error=>error===conflict);assert.equal(f.state.user,refreshedUser);
   amount.value='8+8+8-1 午餐';amount.dispatchEvent(new win.Event('input',{bubbles:true}));assert.equal(f.state.current.data.financeDraft.text,'8+8+8-1 午餐');
   $('[data-simple="action"]').value='尚未保存的行动';$('[data-simple="action"]').dispatchEvent(new win.Event('input',{bubbles:true}));

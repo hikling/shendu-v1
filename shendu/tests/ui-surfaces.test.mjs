@@ -6,7 +6,7 @@ import {verificationMinimum} from '../public/verification-policy.js';
 
 const dom=new JSDOM('<!doctype html><body><button id="origin">打开</button><div id="surface"></div><div id="calendar"></div></body>',{url:'http://localhost'});
 const win=dom.window;
-for(const name of ['window','document','HTMLElement','HTMLInputElement','HTMLTextAreaElement','HTMLSelectElement','HTMLButtonElement','HTMLFormElement','Element','Node','NodeFilter','Event','CustomEvent','KeyboardEvent','MouseEvent','MutationObserver','getComputedStyle','FormData'])globalThis[name]=win[name];
+for(const name of ['window','document','HTMLElement','HTMLInputElement','HTMLTextAreaElement','HTMLSelectElement','HTMLButtonElement','HTMLFormElement','Element','DocumentFragment','Node','NodeFilter','Event','CustomEvent','KeyboardEvent','MouseEvent','MutationObserver','getComputedStyle','FormData'])globalThis[name]=win[name];
 Object.defineProperty(globalThis,'navigator',{value:win.navigator,configurable:true});
 globalThis.requestAnimationFrame=callback=>setTimeout(callback,0);globalThis.cancelAnimationFrame=clearTimeout;
 globalThis.ResizeObserver=class{observe(){}unobserve(){}disconnect(){}};
@@ -43,9 +43,22 @@ test('finance month menu closes without selecting and prevents unsupported year 
   await open();assert.equal(document.querySelector('[aria-label="上一年"]').getAttribute('aria-disabled'),'true');
   control.setDisabled(true);await settle();assert.equal(document.querySelector('.finance-period-menu'),null);control.setDisabled(false);
   control.setValue('9999-12');assert.equal(next.disabled,true);next.click();assert.deepEqual(changes,[]);
-  control.setValue('0000-01');assert.ok(trigger.textContent.includes('9999年12月'));
+  control.setValue('0000-01');assert.ok(trigger.textContent.replace(/\s/g,'').includes('9999年12月'));
   await open();document.querySelector('.finance-period-today').click();await settle();assert.deepEqual(changes,['2026-11']);
   control.dispose();
+});
+
+test('finance daily Calendar selects only the requested month and keeps dismissal, stale and disabled paths read-only',async()=>{
+  let alive=true;const changes=[],control=ui.showFinanceDayPicker(calendar,{month:'2028-02',value:'2028-02-28',today:'2028-02-16',isCurrent:()=>alive,onChange:value=>changes.push(value)});
+  const trigger=calendar.querySelector('button'),open=async()=>{trigger.click();await settle()};
+  await open();const popup=document.querySelector('.finance-day-menu');assert.ok(popup.querySelector('[data-slot="calendar"]'));assert.deepEqual(changes,[]);
+  assert.equal(popup.querySelectorAll('[data-slot="calendar"] button[data-day]').length,29);
+  popup.querySelector('button[aria-label="2028-02-29"]').click();await settle();assert.deepEqual(changes,['2028-02-29']);assert.equal(document.activeElement,trigger);assert.equal(document.querySelector('.finance-day-menu'),null);
+  control.setMonth('2026-11');control.setValue('2026-11-15');assert.deepEqual(changes,['2028-02-29']);assert.match(trigger.textContent,/11月15日/);
+  control.setValue('2026-12-15');assert.match(trigger.textContent,/11月15日/);
+  await open();document.querySelector('.finance-day-menu').dispatchEvent(new KeyboardEvent('keydown',{key:'Escape',bubbles:true,cancelable:true}));await settle();assert.deepEqual(changes,['2028-02-29']);assert.equal(document.activeElement,trigger);
+  control.setDisabled(true);await open();assert.equal(document.querySelector('.finance-day-menu'),null);control.setDisabled(false);
+  alive=false;await open();assert.equal(document.querySelector('.finance-day-menu'),null);control.dispose();assert.equal(calendar.children.length,0);
 });
 
 test('real Dialog enhances opaque form fields and disposes nested roots before replacement',async()=>{

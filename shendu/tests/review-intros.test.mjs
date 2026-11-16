@@ -11,7 +11,7 @@ function entryFixture({picker=createReviewIntroPicker({random:()=>.5}),records=[
   assert.ok(start>=0&&end>start&&quoteStart>=0&&quoteEnd>quoteStart);
   const state={route:'overview',current:null,records,dirty:false},opened=[];
   let pending;
-  const bindings=new Function('createReviewNavigator','reviewIntros','state','window','document','TYPES','attemptNavigate','renderReview','navigate','requestAnimationFrame',`${source.slice(start,end)}\n${source.slice(quoteStart,quoteEnd)}\nreturn {enterReview,quoteFor};`)(
+  const bindings=new Function('createReviewNavigator','reviewIntros','state','window','document','TYPES','attemptNavigate','renderReview','navigate','requestAnimationFrame',`const browserNavigation={commit(){}};${source.slice(start,end)}\n${source.slice(quoteStart,quoteEnd)}\nreturn {enterReview,quoteFor};`)(
     createReviewNavigator,picker,state,{scrollY:0},{title:''},Object.fromEntries(Object.keys(REVIEW_INTROS).map(type=>[type,{label:type}])),
     next=>{if(state.dirty)pending=next;else next()},(...args)=>opened.push(args),()=>{},()=>{},
   );

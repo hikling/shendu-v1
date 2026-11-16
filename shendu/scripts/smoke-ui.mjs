@@ -29,7 +29,7 @@ for (const path of scripts) {
   }
 }
 assert.ok(bridgeFound, 'App must import the built component runtime');
-for(const path of ['/finance-domain.js','/finance-ui.js','/receipt-client.js','/daily-flow.js'])await resource(path,/javascript/);
+for(const path of ['/browser-navigation.js','/finance-domain.js','/finance-ui.js','/receipt-client.js','/daily-flow.js'])await resource(path,/javascript/);
 const ocr=JSON.parse(await resource('/ocr/manifest.json',/json|octet-stream/));
 assert.ok(ocr.files.some(file=>file.path==='worker.min.js'),'Local OCR worker must be packaged');
 assert.ok(ocr.files.some(file=>file.path==='lang/chi_sim.traineddata.gz'),'Local Chinese OCR data must be packaged');
@@ -39,4 +39,4 @@ for(const file of ocr.files){
   assert.equal(response.status,200,`Local OCR asset missing: ${file.path}`);
   assert.equal(Number(response.headers.get('content-length')),file.bytes,`Local OCR asset size differs: ${file.path}`);
 }
-console.log('Health, HTML, finance modules, local shadcn resources and packaged OCR assets passed.');
+console.log('Health, HTML, browser navigation, finance modules, local shadcn resources and packaged OCR assets passed.');

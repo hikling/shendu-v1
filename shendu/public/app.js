@@ -1,16 +1,17 @@
 import {backupScheduleLabel} from './backup-schedule.js?v=1.0.0-backups1';
 import {normalizeReviewMetricIds,reconcileReviewMetrics} from './review-metrics.js?v=1.0.0-custom1';
 import {reviewQuestions,reviewDisabledFields} from './review-schema.js?v=1.0.0-finance1';
-import {renderMarkup,disposeUi,prepareDialogContainer,initializeToasts,showDialog,dismissDialog,showMenu,showVerificationCalendar,showStageCalendar,showFinanceMonthPicker,showToast} from './ui/shadcn.js?v=1.0.0-finance2';
+import {renderMarkup,disposeUi,prepareDialogContainer,initializeToasts,showDialog,dismissDialog,showMenu,showVerificationCalendar,showStageCalendar,showFinanceMonthPicker,showFinanceDayPicker,showFinancePie,showToast} from './ui/shadcn.js?v=1.0.0-finance6';
 import {overviewRecordAppearances,overviewVerifiedRecords,overviewRecordExcerpt,overviewLoopMetrics,overviewRecordTitle,overviewDateParts} from './overview-reel.js?v=1.0.0-overview15';
 import {DAILY_STEPS,dailyStepIssues,dailyPrompts,dailyPromptIssues,dailyPromptNeighbor,dailyPromptOwner} from './daily-flow.js?v=1.0.0-finance2';
 import {dailyCalendarModel,dailyCalendarDateLabel} from './daily-calendar.js?v=1.0.0-art1';
 import {EXTENDED_FLOW,extendedPrompts,extendedPromptNeighbor,extendedPromptIssues,extendedReviewIssues} from './extended-flow.js?v=1.0.0-custom1';
 import {verificationMinimum} from './verification-policy.js?v=1.0.0-verification2';
+import {createBrowserNavigator} from './browser-navigation.js?v=1.0.0-routes1';
 import {createReviewNavigator} from './review-navigation.js?v=1.0.0-finance1';
 import {attachReviewWheel} from './review-wheel.js?v=1.0.0-wheel1';
 import {createReviewTransition} from './review-transition.js?v=1.0.0-transition1';
-import {mountFinancePage,mountDailyFinance} from './finance-ui.js?v=1.0.0-finance2';
+import {mountFinancePage,mountDailyFinance} from './finance-ui.js?v=1.0.0-finance6';
 import {RECORD_ART,recordArtAssignments} from './record-art.js?v=1.0.0-records1';
 import {createReviewIntroPicker,reviewIntroLines,reviewIntroLayout} from './review-intros.js?v=1.0.0-intros2';
 const $ = (s, root = document) => root.querySelector(s);
@@ -98,6 +99,7 @@ const reviewNavigation=createReviewNavigator({
   open:({type,period,forceNew=false,record=null})=>{
     if(!record&&!forceNew)record=state.records.find(item=>item.type===type&&item.period===period)||null;
     reviewIntros.enter(type,record?.id);
+    browserNavigation.commit(record?.id?{route:'review',id:record.id}:{route:'review',type,period});
     state.route=type;state.current=record;
     document.title=`${TYPES[type].label} · 慎独`;
     renderReview(type,period,forceNew,record);
@@ -143,6 +145,7 @@ function recordFor(type,period){return state.records.find(r=>r.type===type&&r.pe
 function newRecord(type,period){const data={answers:{},action:'',ifCondition:'',ifThen:'',verifyDate:'',journal:'',metrics:[],sleep:'',energy:'',risk:'',templateSnapshot:currentTemplateSnapshot(type)};return {id:null,type,period,title:'',data,status:'draft',version:0}}
 
 function renderAuth(info={}){
+  browserNavigation.suspend();delete state.bootOwner;
   $('#finance-workspace')?.financeController?.dispose();$('#daily-finance')?.financeController?.dispose();
   $('.daily-flow')?.reviewTransition?.cancel();
   cancelDailyTypewriter();setDailyImmersive(false);
@@ -673,7 +676,7 @@ async function saveCurrent(silent=false,completion=null){
   state.reviewWriteOwner=token;state.saving=true;setReviewBusy(true);
   try{
     const result=await request('/api/records',{method:'PUT',body:record},current);if(!current())return null;
-    record=result.record;state.current=record;const i=state.records.findIndex(r=>r.id===record.id);if(i>=0)state.records[i]=record;else state.records.push(record);state.dirty=false;
+    record=result.record;browserNavigation.commit({route:'review',id:record.id},{replace:true});state.current=record;const i=state.records.findIndex(r=>r.id===record.id);if(i>=0)state.records[i]=record;else state.records.push(record);state.dirty=false;
     $('.save-state')&&($('.save-state').textContent=`${beijingTime(record.updated_at)} 草稿已存入纸笺`);if(!silent)toast('草稿已保存');return record;
   }catch(e){
     if(current()){
@@ -1129,7 +1132,7 @@ function renderActivity(){
 }
 function financeUiOptions(container,extra={}){
   const accountId=state.user?.id,current=()=>Boolean(accountId)&&container.isConnected&&state.user?.id===accountId;
-  return {renderMarkup,today,toast,openModal,closeModal,showMonthPicker:showFinanceMonthPicker,...extra,
+  return {renderMarkup,today,toast,openModal,closeModal,showMonthPicker:showFinanceMonthPicker,showFinanceDayPicker,showFinancePie,...extra,
     request:(path,args={},guard=()=>true)=>request(path,args,()=>current()&&guard()),
     isCurrent:()=>current()&&(extra.isCurrent?.()??true),
     setDirty:value=>{if(current()&&(!extra.date||value))state.dirty=Boolean(value)},
@@ -1254,7 +1257,7 @@ function bindAccountSecurity(){
     if(pending||!current())return;
     if(state.dirty){toast('请先保存或放弃当前修改','error');return}
     busy(true);
-    try{await request('/api/auth/logout',{method:'POST'});if(current())await init()}
+    try{await request('/api/auth/logout',{method:'POST'});if(current()){browserNavigation.reset();await init()}}
     catch(error){if(current())toast(error.message,'error')}
     finally{finish()}
   });
@@ -1282,9 +1285,9 @@ function openModal(content,size='',persistent=false){
   setTimeout(()=>$('.modal input:not([type="hidden"]),.modal textarea,.modal button',root)?.focus(),0);
 }
 
-function closeModal(force=false){const root=$('#modal-root');if(!force&&(root.dataset.persistent==='1'||$('.modal[data-review-lock-busy]',root)))return;dismissDialog(root);root.dataset.persistent='0';syncOverlayBackground();if(modalReturnFocus?.isConnected)modalReturnFocus.focus({preventScroll:true});modalReturnFocus=null}
+function closeModal(force=false){const root=$('#modal-root');if(!force&&(root.dataset.persistent==='1'||$('.modal[data-review-lock-busy]',root)))return;const cancelled=root.navigationCancel;delete root.navigationCancel;dismissDialog(root);root.dataset.persistent='0';syncOverlayBackground();if(modalReturnFocus?.isConnected)modalReturnFocus.focus({preventScroll:true});modalReturnFocus=null;cancelled?.()}
 
-function attemptNavigate(next){if(state.saving){toast('正在保存，请稍后再切换页面。','info');return}if(!state.dirty){next();return}openModal(`<div class="modal-head"><div><h2>这页还有未保存内容</h2><p>可以继续填写，或放弃刚才的修改。</p></div></div><div class="modal-actions"><button class="btn btn-primary" data-close>继续填写</button><button class="btn btn-danger" id="discard-change">放弃修改</button></div>`);$('#discard-change').addEventListener('click',()=>{state.dirty=false;closeModal();next()})}
+function attemptNavigate(next,onCancel=()=>{}){if(state.saving||state.reauthOpen){toast('请先完成当前操作，再切换页面。','info');onCancel();return}if(!state.dirty){next();return}openModal(`<div class="modal-head"><div><h2>这页还有未保存内容</h2><p>可以继续填写，或放弃刚才的修改。</p></div></div><div class="modal-actions"><button class="btn btn-primary" data-close>继续填写</button><button class="btn btn-danger" id="discard-change">放弃修改</button></div>`);const root=$('#modal-root');root.navigationCancel=onCancel;$('#discard-change').addEventListener('click',()=>{if(state.saving||state.reauthOpen)return;delete root.navigationCancel;state.dirty=false;closeModal();next()})}
 
 function bindCalendar(){
  const card=$('#stage-calendar');if(!card)return;
@@ -1311,6 +1314,7 @@ function bindCommon(){
 
 function navigate(route){
  if(TYPES[route])return enterReview(route,defaultPeriod(route),route==='decision');
+ browserNavigation.commit({route});
  reviewNavigation.clear();state.route=route;state.navOpen=false;
  document.title=`${({overview:'概览',history:'历史复盘',actions:currentActionTemplate().pageTitle,finance:'财务收支',backup:'数据备份',users:'账户管理',settings:'设置',calendar:'阶段与日历','stage-settings':'阶段与内容设置',guide:'使用指南',activity:'使用日志'}[route]||'慎独')} · 慎独`;
  const render={overview:renderOverview,history:renderHistory,actions:renderActions,finance:renderFinance,backup:renderBackup,users:renderUsers,settings:renderSettings,calendar:renderCalendar,'stage-settings':renderStageSettings,guide:renderGuide,activity:renderActivity}[route];
@@ -1320,8 +1324,20 @@ function navigate(route){
 
 async function refreshStats(){state.stats=await request('/api/stats')}
 async function refreshData(isCurrent=()=>true){const account=state.user,current=()=>state.user===account&&isCurrent();const [me,rec,stats]=await Promise.all([request('/api/me',{},current),request('/api/records',{},current),request('/api/stats',{},current)]);if(!current())return false;state.user=me.user;state.stage=me.stage;state.theme=me.theme;state.records=rec.records;state.stats=stats;applyTheme(state.theme);return true}
-async function boot(user){cancelDailyTypewriter();setDailyImmersive(false);state.user=user;renderMarkup($('#app'),`<main class="connection-screen"><section class="connection-card" role="status"><div class="connection-brand"><span class="seal header-seal" aria-hidden="true">慎</span><span class="brand-cn header-wordmark">慎獨</span></div><div class="connection-art" aria-hidden="true"><img src="/assets/records/daily-01-morning-window.webp" alt="" width="640" height="640" draggable="false"></div><h1>正在翻开你的记录</h1><p>正在读取复盘与阶段资料。</p><div class="connection-loading" aria-hidden="true"><span></span><span></span><span></span></div></section></main>`);try{await refreshData();navigate('overview')}catch(e){if(e.status===401)return init();renderMarkup($('#app'),`<main class="connection-screen"><section class="connection-card"><div class="connection-brand"><span class="seal header-seal" aria-hidden="true">慎</span><span class="brand-cn header-wordmark">慎獨</span></div><div class="connection-art" aria-hidden="true"><img src="/assets/records/daily-28-night-lamp.webp" alt="" width="640" height="640" draggable="false"></div><h1>暂时无法打开复盘室</h1><p>${esc(e.message)}</p><button class="btn btn-primary" id="retry">重试</button></section></main>`);$('#retry').addEventListener('click',()=>boot(user))}}
+async function boot(user){browserNavigation.suspend();const owner=Symbol('boot');state.bootOwner=owner;const current=()=>state.bootOwner===owner&&state.user?.id===user.id;cancelDailyTypewriter();setDailyImmersive(false);state.user=user;renderMarkup($('#app'),`<main class="connection-screen"><section class="connection-card" role="status"><div class="connection-brand"><span class="seal header-seal" aria-hidden="true">慎</span><span class="brand-cn header-wordmark">慎獨</span></div><div class="connection-art" aria-hidden="true"><img src="/assets/records/daily-01-morning-window.webp" alt="" width="640" height="640" draggable="false"></div><h1>正在翻开你的记录</h1><p>正在读取复盘与阶段资料。</p><div class="connection-loading" aria-hidden="true"><span></span><span></span><span></span></div></section></main>`);try{if(!await refreshData(current)||!current())return;state.dirty=false;browserNavigation.start()}catch(e){if(!current())return;if(e.status===401)return init();renderMarkup($('#app'),`<main class="connection-screen"><section class="connection-card"><div class="connection-brand"><span class="seal header-seal" aria-hidden="true">慎</span><span class="brand-cn header-wordmark">慎獨</span></div><div class="connection-art" aria-hidden="true"><img src="/assets/records/daily-28-night-lamp.webp" alt="" width="640" height="640" draggable="false"></div><h1>暂时无法打开复盘室</h1><p>${esc(e.message)}</p><button class="btn btn-primary" id="retry">重试</button></section></main>`);$('#retry').addEventListener('click',()=>boot(user))}}
 async function init(){cancelDailyTypewriter();setDailyImmersive(false);try{const info=await request('/api/auth/state');if(info.user)await boot(info.user);else renderAuth(info)}catch(e){renderMarkup($('#app'),`<main class="connection-screen"><section class="connection-card"><div class="connection-brand"><span class="seal header-seal" aria-hidden="true">慎</span><span class="brand-cn header-wordmark">慎獨</span></div><div class="connection-art" aria-hidden="true"><img src="/assets/records/daily-01-morning-window.webp" alt="" width="640" height="640" draggable="false"></div><h1>服务器连接失败</h1><p>请确认服务已经启动，然后再试一次。</p><button class="btn btn-primary" id="reconnect">重新连接</button></section></main>`);$('#reconnect').addEventListener('click',()=>location.reload())}}
+
+function restoreBrowserRoute(target){
+  if(target.route==='review'){
+    const record=target.id?state.records.find(item=>item.id===target.id):null;
+    if(target.id&&!record){navigate('history');toast('这份复盘暂时无法打开，请在历史记录中查看。','info');return {route:'history'}}
+    enterReview(record?.type||target.type,record?.period||target.period,!record&&target.type==='decision',record);
+    return state.current?.id?{route:'review',id:state.current.id}:{route:'review',type:state.current.type,period:state.current.period};
+  }
+  navigate(target.route);return target;
+}
+
+const browserNavigation=createBrowserNavigator({window,guard:(next,cancel)=>attemptNavigate(next,cancel),restore:restoreBrowserRoute});
 
 window.addEventListener('beforeunload',e=>{if(state.dirty){e.preventDefault();e.returnValue=''}});
 function saveShortcut(event){if((event.ctrlKey||event.metaKey)&&event.key.toLowerCase()==='s'&&TYPES[state.route]&&state.current?.status==='draft'&&state.current.period===defaultPeriod(state.current.type)){event.preventDefault();saveCurrent().catch(()=>{})}}
