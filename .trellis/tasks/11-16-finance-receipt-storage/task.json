@@ -21,6 +21,6 @@
   "children": [],
   "parent": null,
   "relatedFiles": [],
-  "notes": "Local implementation, root review and full tests complete; GitHub sync/release checks pending because automatic approval reported workspace credits exhausted. Independent reviewer also blocked. See verification.md.",
+  "notes": "Local implementation and tests completed; synchronized to main; GitHub43904546307 and both public downloads passed. Four Releases retained, all tags preserved. Browser/provider and earlier independent review limits recorded.",
   "meta": {}
 }
