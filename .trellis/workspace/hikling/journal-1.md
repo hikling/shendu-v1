@@ -1808,3 +1808,26 @@ Shared multiline expenses, automatic totals/categories, compact finance selector
 ### Next Steps
 
 - Desktop/mobile visual acceptance remains unverified because local browser access was unavailable.
+
+
+## Session 78: Browser routes, finance pies and verified deployment recovery
+<!-- trellis-session: v=2 fp=6e6460796034f4ea -->
+
+**Date**: 2026-11-16
+**Task**: Browser routes, finance pies and verified deployment recovery
+**Branch**: `main`
+
+### Summary
+
+Reused supplied shadcn components for finance filters, date controls and monthly/daily pies; added browser URLs and guarded history. Fixed missing finance domain in Docker builder after CI failure. Application 463 pass/1 optional skip, handover13, isolated builder reproduction and syntax pass; GitHub43827261103 all jobs green including amd64/arm64 public download/start/snapshot. Production dependency audit0. Retained latest4 Releases preserving tags. Final mobile visual checks remain limited by previous browser credits block.
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `65aa520` | feat: add browser routes and finance category pies |
+| `7ce120d` | fix: include finance domain in Docker UI build |
+
+### Status
+
+[OK] **Completed**
