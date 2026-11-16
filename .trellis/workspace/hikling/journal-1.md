@@ -1831,3 +1831,25 @@ Reused supplied shadcn components for finance filters, date controls and monthly
 ### Status
 
 [OK] **Completed**
+
+
+## Session 79: Automatic finance categories, aligned detail form and visible receipts
+<!-- trellis-session: v=2 fp=3032b85ba0c754f9 -->
+
+**Date**: 2026-11-16
+**Task**: Automatic finance categories, aligned detail form and visible receipts
+**Branch**: `main`
+
+### Summary
+
+Removed category manager and month label, recognized purpose keywords and created unknown-purpose categories on confirmed entry only, random UUID privacy and encrypted transactional rollback; aligned shadcn detail fields, explicit screenshot count/view and upload-vs-confirm status.470 tests:469pass/1opt-in skip, handover13pass, build/check/HTTP smoke passed. GitHub43846149670 all jobs success with both public downloads; retain4 Releases preserve tags. Browser desktop/mobile appearance remains unverified because no browser tools.
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `fe5f5ba` | feat: automate finance categories and clarify receipt viewing |
+
+### Status
+
+[OK] **Completed**
