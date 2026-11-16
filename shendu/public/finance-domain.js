@@ -1,9 +1,9 @@
 export const FINANCE_KINDS=Object.freeze({expense:'支出',income:'收入',refund:'退款',transfer:'不计收支'});
 
 export const DEFAULT_FINANCE_CATEGORIES=Object.freeze([
-  {id:'food',name:'餐饮',keywords:['早餐','午餐','晚餐','吃饭','餐厅','外卖','咖啡','奶茶','水果','超市食品']},
-  {id:'transport',name:'交通',keywords:['打车','滴滴','地铁','公交','高铁','火车','机票','加油','停车','通行费']},
-  {id:'shopping',name:'购物',keywords:['购物','日用品','淘宝','京东','衣服','鞋','数码','拼多多']},
+  {id:'food',name:'餐饮',keywords:['早餐','早饭','午餐','午饭','晚餐','晚饭','吃饭','聚餐','团建','餐厅','餐饮','饭店','外卖','夜宵','宵夜','火锅','烧烤','自助餐','小吃','零食','饮料','咖啡','奶茶','水果','超市食品']},
+  {id:'transport',name:'交通',keywords:['打车','滴滴','出租车','网约车','地铁','公交','高铁','火车','机票','加油','停车','通行费','过路费','车票']},
+  {id:'shopping',name:'购物',keywords:['购物','日用品','淘宝','京东','衣服','买鞋','数码','拼多多','纸巾','洗衣液','洗发水','护肤','化妆品','生活用品']},
   {id:'housing',name:'居住',keywords:['房租','房贷','水费','电费','燃气','物业','宽带','话费']},
   {id:'health',name:'医疗',keywords:['医院','药店','看病','挂号','体检','医疗','买药']},
   {id:'learning',name:'学习',keywords:['学费','课程','教材','买书','书店','考试','培训']},
@@ -83,10 +83,16 @@ export function suggestFinanceCategory(purpose,categories=DEFAULT_FINANCE_CATEGO
   if(exact)return exact.id;
   let best=null,score=0;
   for(const category of active){
-    const words=[category.name,...(Array.isArray(category.keywords)?category.keywords:[])];
+    const words=[category.name,...(Array.isArray(category.keywords)?category.keywords:[]),...(DEFAULT_FINANCE_CATEGORIES.find(item=>item.id===category.id)?.keywords||[])];
     for(const word of words){const keyword=String(word).trim().toLowerCase();if(keyword&&text.includes(keyword)&&keyword.length>score){best=category.id;score=keyword.length}}
   }
   return best||(kind==='income'&&active.some(category=>category.id==='other-income')?'other-income':'uncategorized');
+}
+
+// Preview only: an unrecognized purpose becomes a category on confirmed entry.
+export function financeCategoryLabel(purpose,categories=DEFAULT_FINANCE_CATEGORIES,kind='expense'){
+  const categoryId=suggestFinanceCategory(purpose,categories,String(purpose??'').trim()?'expense':kind);
+  return categoryId==='uncategorized'?(String(purpose??'').trim().slice(0,160)||'待填写用途'):categories.find(category=>category.id===categoryId)?.name||String(purpose??'').trim().slice(0,160);
 }
 
 function receiptDate(text,fallback){

@@ -1,0 +1,9 @@
+# Verification
+
+Scope: remove category-management UI and month label; keyword and full-purpose fallback classification; supplied shadcn detail form styling; visible screenshot count/view state. No live server command or production data access.
+
+Root checks: domain and API targeted tests passed including unknown purposes, default synonyms, full-name encrypted backup restore, account isolation/idempotency/reuse and forced insertion rollback. Handover13passed. Root resource cache revisionfinance7 covers app, bridge/styles, finance module/domain and receipt client. UI implementer44finance UI tests passed. Final full-scope checker results will be recorded separately.
+
+Browser: no browser-control tool is currently exposed in this session, and prior browser-credit failure has not been resolved. No alternate browser automation was used. Real desktop/mobile appearance, manual focus feel and a real S3 provider remain unverified this round; DOM behavior and private-image error/retry paths have automated coverage.
+
+Final independent review fixed automatic classification changing during an edit, legacy explicit-category preservation, transfer of automatic/manual quick-entry category intent to detailed entry, and stale automatic-option labels. Automatic fallback IDs use random UUIDs, reused by exact decrypted name per account, so plaintext IDs cannot expose hashed private purposes. Built-in synonyms are retained by category ID even for stored keyword overrides. The full final suite passed:470 discovered,469 passed,0 failed,1 existing opt-in Chrome OCR skip. Production build, npm run check and git diff --check passed. Isolated HTTP smoke verified health, HTML, versioned JS/CSS, finance/navigation modules and packaged OCR resources; its disposable server was stopped.

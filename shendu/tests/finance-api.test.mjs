@@ -255,3 +255,32 @@ test('whole-site backup restores financial rows atomically and older site files 
   login=await api('/api/auth/login',{method:'POST',auth:'',body:{username:a.username,password}});assert.equal(login.status,200,login.text);a.cookie=login.cookie;assert.equal((await ledger(a.cookie)).summary.expenseCents,5500);
   login=await api('/api/auth/login',{method:'POST',auth:'',body:{username:'finance_owner',password}});assert.equal(login.status,200,login.text);ownerCookie=login.cookie;
 });
+
+test('automatic categories are account-owned, encrypted, idempotent, atomic and backup-compatible',async()=>{
+  const a=await account(),b=await account();
+  for(const purpose of ['吃饭','聚餐','团建'])assert.equal((await create(a.cookie,{purpose,categoryId:''})).categoryId,'food');
+  const body=input({purpose:'修鞋',categoryId:''}),first=await api('/api/finance/entries',{method:'POST',auth:a.cookie,body});assert.equal(first.status,201,first.text);
+  const categoryId=first.value.entry.categoryId;
+  assert.equal((await ledger(a.cookie)).categories.find(row=>row.id===categoryId).name,'修鞋');
+  assert.equal((await ledger(b.cookie)).categories.some(row=>row.id===categoryId),false);
+  const stored=db.prepare('SELECT data FROM finance_categories WHERE user_id=? AND id=?').get(a.id,categoryId);assert.match(stored.data,/^sd1\./);assert.doesNotMatch(stored.data,/修鞋/);
+  const repeated=await api('/api/finance/entries',{method:'POST',auth:a.cookie,body});assert.equal(repeated.status,200,repeated.text);assert.equal(repeated.value.duplicate,true);
+  const second=await create(a.cookie,{purpose:'修鞋',categoryId:''});assert.equal(second.categoryId,categoryId);
+  assert.equal((await ledger(a.cookie)).categories.filter(row=>row.name==='修鞋').length,1);
+  const other=await create(b.cookie,{purpose:'修鞋',categoryId:''});assert.notEqual(other.categoryId,categoryId,'private category identities must not correlate names across accounts');
+  const longPurpose='待识别用途'.repeat(30),long=await create(a.cookie,{purpose:longPurpose,categoryId:''});
+  assert.equal((await ledger(a.cookie)).categories.find(row=>row.id===long.categoryId).name,longPurpose);
+  for(const extra of [{purpose:'未确认项目',receiptIds:[randomUUID()]},{purpose:'无效退款',kind:'refund',refundOf:randomUUID()}]){
+    const failed=await api('/api/finance/entries',{method:'POST',auth:a.cookie,body:input({...extra,categoryId:''})});assert.equal(failed.status,400,failed.text);
+    assert.equal((await ledger(a.cookie)).categories.some(row=>row.name===extra.purpose),false);
+  }
+  const rollbackBody=input({purpose:'事务失败不得留下分类',categoryId:''});
+  db.exec(`CREATE TRIGGER fail_auto_entry BEFORE INSERT ON finance_entries WHEN NEW.id='${rollbackBody.id}' BEGIN SELECT RAISE(ABORT,'test entry failure'); END`);
+  try{const failed=await api('/api/finance/entries',{method:'POST',auth:a.cookie,body:rollbackBody});assert.equal(failed.status,500);assert.equal((await ledger(a.cookie)).categories.some(row=>row.name===rollbackBody.purpose),false,'category must roll back with failed entry');}finally{db.exec('DROP TRIGGER fail_auto_entry')}
+  const changed=await api('/api/finance/entries/'+second.id,{method:'PUT',auth:a.cookie,body:{...second,purpose:'修伞',categoryId:'',version:second.version}});assert.equal(changed.status,200,changed.text);
+  assert.equal((await ledger(a.cookie)).categories.find(row=>row.id===changed.value.entry.categoryId).name,'修伞');
+  await api('/api/backup/password',{method:'POST',auth:a.cookie,body:{password:backupPassword}});
+  const exported=await api('/api/backup/export',{method:'POST',auth:a.cookie,body:{}});assert.equal(exported.status,200,exported.text);
+  const restored=await api('/api/data/import',{method:'POST',auth:a.cookie,body:{encryptedBackup:exported.text,password:backupPassword,mode:'replace',confirmation:'RESTORE'}});assert.equal(restored.status,200,restored.text);
+  assert.equal((await ledger(a.cookie)).categories.find(row=>row.id===long.categoryId).name,longPurpose);
+});

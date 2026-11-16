@@ -2,7 +2,7 @@ import {createHash,randomUUID} from 'node:crypto';
 import {DEFAULT_FINANCE_CATEGORIES,FINANCE_KINDS,parseMoneyExpression,suggestFinanceCategory} from './public/finance-domain.js';
 
 const UUID=/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-const MAX_AMOUNT=99_999_999_999,MAX_ENTRIES=50000,MAX_CATEGORIES=100,MAX_FINANCE_BYTES=32*1024*1024;
+const MAX_AMOUNT=99_999_999_999,MAX_ENTRIES=50000,MAX_CATEGORIES=MAX_ENTRIES+DEFAULT_FINANCE_CATEGORIES.length,MAX_FINANCE_BYTES=32*1024*1024;
 const problem=(message,code='finance_invalid',status=400)=>Object.assign(new Error(message),{status,code});
 const plain=value=>Boolean(value)&&typeof value==='object'&&!Array.isArray(value);
 const text=(value,max)=>typeof value==='string'?value.trim().slice(0,max):'';
@@ -46,12 +46,20 @@ export function createFinanceLedger({db,encryptData,decryptData,dataScope,now,re
     for(const row of stored)result.set(row.id,{id:row.id,...decryptData(row.data,dataScope('finance-category',userId,row.id)),version:row.version,createdAt:row.created_at,updatedAt:row.updated_at});
     return [...result.values()];
   };
-  const entryData=(value,userId,{allowArchived=false,providedCategories=null}={})=>{
+  const automaticCategory=(purpose,list,kind,fallbackId=randomUUID())=>{
+    const named=list.find(item=>item.name===purpose);
+    if(named)return named;
+    const suggested=suggestFinanceCategory(purpose,list,purpose?'expense':kind);
+    if(suggested!=='uncategorized'||!purpose)return list.find(item=>item.id===suggested);
+    return {id:fallbackId,name:purpose.trim().slice(0,160),keywords:[],active:true};
+  };
+  const entryData=(value,userId,{allowArchived=false,providedCategories=null,allowAutomatic=false}={})=>{
     if(!plain(value)||!validDate(value.date)||!Object.hasOwn(FINANCE_KINDS,value.kind)||typeof value.expression!=='string'||value.expression.length>200)throw problem('请填写有效日期、收支类型和金额');
     let amountCents;try{amountCents=parseMoneyExpression(value.expression)}catch{throw problem('金额只支持最多两位小数的数字和加减运算','finance_amount_invalid')}
     if(!Number.isSafeInteger(amountCents)||amountCents<=0||amountCents>MAX_AMOUNT)throw problem('金额必须大于零且不超过金额上限','finance_amount_invalid');
-    const list=providedCategories||categories(userId),purpose=text(value.purpose,160),categoryId=text(value.categoryId,100)||suggestFinanceCategory(purpose,list,value.kind)||'uncategorized';
-    const category=list.find(item=>item.id===categoryId);
+    const list=providedCategories||categories(userId),purpose=text(value.purpose,160);
+    const category=allowAutomatic&&!text(value.categoryId,100)?automaticCategory(purpose,list,value.kind):list.find(item=>item.id===(text(value.categoryId,100)||suggestFinanceCategory(purpose,list,value.kind)||'uncategorized'));
+    const categoryId=category?.id;
     if(!category||(!allowArchived&&!category.active))throw problem('请选择有效的花销类别','finance_category_invalid');
     if(!purpose)throw problem('请填写这笔账的用途','finance_purpose_required');
     if(value.receiptIds!==undefined&&(!Array.isArray(value.receiptIds)||value.receiptIds.length>10||value.receiptIds.some(id=>typeof id!=='string'||!UUID.test(id))))throw problem('凭证关联无效','finance_receipt_invalid');
@@ -74,6 +82,16 @@ export function createFinanceLedger({db,encryptData,decryptData,dataScope,now,re
     }
   };
   const writeEntry=(userId,id,value,row=null,deletedAt=null,createHash=null)=>{
+    // Both this category and the entry belong to the caller's activity transaction.
+    // Validation failures and failed receipts must never leave orphan categories.
+    const list=categories(userId);
+    if(!list.some(item=>item.id===value.categoryId)){
+      const category=automaticCategory(value.purpose,list,value.kind,value.categoryId);
+      if(!category||category.id!==value.categoryId)throw problem('自动分类已变化，请重试','finance_category_changed',409);
+      if(list.length>=MAX_CATEGORIES)throw problem('分类数量已达到上限','finance_category_limit',413);
+      const time=now();
+      db.prepare('INSERT INTO finance_categories(user_id,id,data,version,created_at,updated_at) VALUES(?,?,?,?,?,?)').run(userId,category.id,encryptData({name:category.name,keywords:[],active:true},dataScope('finance-category',userId,category.id)),1,time,time);
+    }
     const time=now(),revision=row?row.version+1:1,data=encryptData(value,dataScope('finance-entry',userId,id));
     const storedBytes=db.prepare('SELECT COALESCE(SUM(length(CAST(data AS BLOB))),0) AS n FROM finance_entries WHERE user_id=?').get(userId).n;
     if(storedBytes-Buffer.byteLength(row?.data||'')+Buffer.byteLength(data)>MAX_FINANCE_BYTES)throw problem('账目内容超过账户存储上限','finance_storage_limit',413);
@@ -119,7 +137,7 @@ export function createFinanceLedger({db,encryptData,decryptData,dataScope,now,re
     }
     if(path==='/api/finance/entries'&&method==='POST'){
       const body=await readJson(req);if(!UUID.test(String(body.id||'')))throw problem('账目编号无效');
-      const existing=find(user.id,body.id),value=entryData(body,user.id,{allowArchived:Boolean(existing)}),hash=digest(value);
+      const existing=find(user.id,body.id),value=entryData(body,user.id,{allowArchived:Boolean(existing),allowAutomatic:true}),hash=digest(value);
       if(existing){if(existing.create_hash!==hash)throw problem('这笔账的编号已被使用，请刷新后再试','finance_id_conflict',409);json(res,200,{entry:decodeEntry(existing),duplicate:true});return true}
       if(db.prepare('SELECT COUNT(*) AS n FROM finance_entries WHERE user_id=?').get(user.id).n>=MAX_ENTRIES)throw problem('账目数量已达到上限','finance_entry_limit',413);
       if(!verifyReceipts(user.id,value.receiptIds))throw problem('凭证尚未上传或不属于当前账户','finance_receipt_invalid');
@@ -134,7 +152,7 @@ export function createFinanceLedger({db,encryptData,decryptData,dataScope,now,re
       const restoring=method==='POST',deleting=method==='DELETE';
       if(restoring&&!row.deleted_at)throw problem('这笔账无需恢复','finance_not_deleted',409);
       if(!restoring&&row.deleted_at)throw problem('这笔账已删除，请先恢复','finance_deleted',409);
-      const value=method==='PUT'?entryData(body,user.id,{allowArchived:body.categoryId===previous.categoryId}):entryData(previous,user.id,{allowArchived:true});
+      const value=method==='PUT'?entryData(body,user.id,{allowArchived:body.categoryId===previous.categoryId,allowAutomatic:true}):entryData(previous,user.id,{allowArchived:true});
       if(!verifyReceipts(user.id,value.receiptIds))throw problem('凭证尚未上传或不属于当前账户','finance_receipt_invalid');
       const entry=transact(user.id,deleting?'finance_entry_deleted':restoring?'finance_entry_restored':'finance_entry_updated',value.date,()=>{assertRefunds(user.id,value,id,deleting);return writeEntry(user.id,id,value,row,deleting?now():null)});
       json(res,200,{entry});return true;
@@ -144,7 +162,7 @@ export function createFinanceLedger({db,encryptData,decryptData,dataScope,now,re
       if(method==='POST'&&(!UUID.test(String(id||''))||previous))throw problem('分类编号无效或已存在');
       if(method==='PUT'&&!previous)throw problem('分类不存在','finance_category_not_found',404);
       if(previous){if(!Number.isSafeInteger(body.version)||body.version<0)throw problem('分类版本无效','finance_version_invalid');if(body.version!==previous.version)throw problem('分类已更新，请刷新后再试','version_conflict',409)}
-      if(method==='POST'&&list.length>=MAX_CATEGORIES)throw problem('最多保存100个分类');
+      if(method==='POST'&&list.length>=MAX_CATEGORIES)throw problem('分类数量已达到上限','finance_category_limit',413);
       const name=text(body.name,30),keywords=Array.isArray(body.keywords)?[...new Set(body.keywords.map(value=>text(value,30)).filter(Boolean))].slice(0,30):[];
       if(!name||list.some(item=>item.id!==id&&item.name===name))throw problem('分类名称不能为空或重复');
       const value={name,keywords,active:body.active!==false};if(id==='uncategorized'&&!value.active)throw problem('待分类不能停用');
@@ -169,7 +187,7 @@ export function createFinanceLedger({db,encryptData,decryptData,dataScope,now,re
     const ids=new Set(),categoryIds=new Set(),dates=new Set(),list=DEFAULT_FINANCE_CATEGORIES.map(item=>({...item,active:true}));
     const clean={version:1,entries:[],categories:[],days:[]};
     for(const item of value.categories){
-      if(!plain(item)||(!UUID.test(String(item.id||''))&&!baseIds.has(item.id))||categoryIds.has(item.id)||!version(item.version)||!stamp(item.createdAt)||!stamp(item.updatedAt)||typeof item.name!=='string'||!item.name.trim()||item.name.length>30||!Array.isArray(item.keywords)||item.keywords.length>30||item.keywords.some(key=>typeof key!=='string'||!key.trim()||key.length>30)||typeof item.active!=='boolean')throw problem('备份中的财务分类无效','finance_backup_invalid');
+      if(!plain(item)||(!UUID.test(String(item.id||''))&&!baseIds.has(item.id))||categoryIds.has(item.id)||!version(item.version)||!stamp(item.createdAt)||!stamp(item.updatedAt)||typeof item.name!=='string'||!item.name.trim()||item.name.length>160||!Array.isArray(item.keywords)||item.keywords.length>30||item.keywords.some(key=>typeof key!=='string'||!key.trim()||key.length>30)||typeof item.active!=='boolean')throw problem('备份中的财务分类无效','finance_backup_invalid');
       categoryIds.add(item.id);const normalized={id:item.id,name:item.name,keywords:[...new Set(item.keywords)],active:item.active,version:item.version,createdAt:stamp(item.createdAt),updatedAt:stamp(item.updatedAt)};
       if(normalized.id==='uncategorized'&&!normalized.active)throw problem('备份中的待分类无效','finance_backup_invalid');
       clean.categories.push(normalized);const index=list.findIndex(category=>category.id===item.id);if(index<0)list.push(normalized);else list[index]=normalized;

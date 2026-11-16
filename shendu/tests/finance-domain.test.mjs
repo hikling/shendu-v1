@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {parseMoneyExpression,parseFinanceLines,hasPendingFinanceDraft,formatFinanceMoney,suggestFinanceCategory,DEFAULT_FINANCE_CATEGORIES,parseReceiptText} from '../public/finance-domain.js';
+import {parseMoneyExpression,parseFinanceLines,hasPendingFinanceDraft,formatFinanceMoney,suggestFinanceCategory,financeCategoryLabel,DEFAULT_FINANCE_CATEGORIES,parseReceiptText} from '../public/finance-domain.js';
 import {normalizeFinanceDraft,financeDraftPending} from '../finance-ledger.mjs';
 
 test('decimal calculations use exact integer cents and never evaluate code',()=>{
@@ -15,6 +15,17 @@ test('classification respects custom names, archived categories and unknown purp
   assert.equal(suggestFinanceCategory('星巴克咖啡',categories),'custom');assert.equal(suggestFinanceCategory('咖啡',categories),'custom');
   assert.equal(suggestFinanceCategory('不明用途',categories),'uncategorized');assert.equal(suggestFinanceCategory('',categories,'income'),'other-income');
   assert.equal(suggestFinanceCategory('星巴克',categories.map(category=>category.id==='custom'?{...category,active:false}:category)),'uncategorized');
+});
+
+test('automatic category labels recognize meal synonyms and retain an unknown full purpose without writing',()=>{
+  for(const purpose of ['吃饭','周末聚餐','部门团建','火锅','夜宵','烧烤'])assert.equal(financeCategoryLabel(purpose),'餐饮',purpose);
+  const customized=DEFAULT_FINANCE_CATEGORIES.map(category=>category.id==='food'?{...category,name:'伙食',keywords:['早餐']}:category);
+  assert.equal(financeCategoryLabel('聚餐',customized),'伙食','updated synonyms also apply to stored built-in overrides');
+  for(const [purpose,name] of [['地铁车票','交通'],['买鞋','购物'],['水费','居住'],['体检','医疗'],['培训','学习'],['电影','娱乐'],['礼金','人情']])assert.equal(financeCategoryLabel(purpose),name);
+  assert.equal(financeCategoryLabel(' 修鞋 '),'修鞋');assert.equal(financeCategoryLabel('稿酬',DEFAULT_FINANCE_CATEGORIES,'income'),'稿酬');
+  assert.equal(financeCategoryLabel('工资',DEFAULT_FINANCE_CATEGORIES,'income'),'工资');assert.equal(financeCategoryLabel(''),'待填写用途');
+  const categories=JSON.stringify(DEFAULT_FINANCE_CATEGORIES);financeCategoryLabel('未知用途');assert.equal(JSON.stringify(DEFAULT_FINANCE_CATEGORIES),categories);
+  assert.equal(financeCategoryLabel('甲'.repeat(160)),'甲'.repeat(160));
 });
 
 test('line entry shares exact cents, preserves expressions and physical line numbers, and suggests categories',()=>{

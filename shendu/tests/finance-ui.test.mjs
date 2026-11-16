@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {JSDOM} from 'jsdom';
 import {readFileSync} from 'node:fs';
 import {mountFinancePage,mountDailyFinance} from '../public/finance-ui.js';
-import {DEFAULT_FINANCE_CATEGORIES,parseMoneyExpression} from '../public/finance-domain.js';
+import {DEFAULT_FINANCE_CATEGORIES,parseMoneyExpression,suggestFinanceCategory} from '../public/finance-domain.js';
 
 const dom=new JSDOM('<main id="app"></main><div id="modal-root"></div>',{url:'https://shendu.test',pretendToBeVisual:true}),win=dom.window;
 for(const key of ['window','document','HTMLElement','HTMLInputElement','HTMLTextAreaElement','HTMLSelectElement','HTMLButtonElement','HTMLFormElement','Element','DocumentFragment','Node','NodeFilter','Event','CustomEvent','KeyboardEvent','MouseEvent','MutationObserver','getComputedStyle','FormData'])globalThis[key]=win[key];
@@ -24,7 +24,7 @@ function fixture({daily=false,readonly=false,snapshot,draft,handler,receiptClien
     calls.push({path,args,guard});const intercepted=handler?.(path,args,guard);if(intercepted!==undefined)return await intercepted;
     if(path==='/api/finance/storage')return {configured:false,config:{},version:0,targets:[{id:'storage-target',name:'自己的S3'}]};
     if(path.startsWith('/api/finance?'))return result(new URL(path,'https://shendu.test').searchParams.get('date'));
-    if(path==='/api/finance/entries'&&args.method==='POST'){const entry={...args.body,amountCents:parseMoneyExpression(args.body.expression),version:1,createdAt:'2026-11-15T00:00:00Z',updatedAt:'2026-11-15T00:00:00Z',deletedAt:null};entries.unshift(entry);return {entry}}
+    if(path==='/api/finance/entries'&&args.method==='POST'){let categoryId=args.body.categoryId;if(!categoryId){const found=suggestFinanceCategory(args.body.purpose,categories,'expense');if(found!=='uncategorized')categoryId=found;else{let category=categories.find(row=>row.name===args.body.purpose);if(!category){category={id:globalThis.crypto.randomUUID(),name:args.body.purpose,keywords:[],active:true,version:1};categories.push(category)}categoryId=category.id}}const entry={...args.body,categoryId,amountCents:parseMoneyExpression(args.body.expression),version:1,createdAt:'2026-11-15T00:00:00Z',updatedAt:'2026-11-15T00:00:00Z',deletedAt:null};entries.unshift(entry);return {entry}}
     if(path==='/api/finance/day')return {day:args.body};
     if(path==='/api/finance/categories'){const category={...args.body,version:1};categories.push(category);return {category}}
     if(path.startsWith('/api/finance/categories/')){const category={...args.body,id:decodeURIComponent(path.split('/').at(-1))};categories=categories.map(row=>row.id===category.id?category:row);return {category}}
@@ -91,7 +91,7 @@ test('refreshed account categories update automatic suggestions while preserving
 test('a category refresh after an uncertain create keeps the original retry identity and payload',async()=>{
   let failed=false;const f=fixture({handler:(path,args)=>{if(path==='/api/finance/entries'&&!failed){failed=true;return Promise.reject(new Error('响应中断，请重试'))}}});await flush();const form=$('[data-finance-create]',f.root);input(form,'text','10 文具');submit(form);await flush();
   f.setCategories([...DEFAULT_FINANCE_CATEGORIES,{id:'stationery',name:'文具',keywords:['文具'],active:true}]);$('[data-finance-refresh]',f.root).click();await flush();submit(form);await flush();
-  const writes=f.calls.filter(call=>call.path==='/api/finance/entries');assert.equal(writes.length,2);assert.deepEqual(writes[1].args.body,writes[0].args.body);assert.equal(writes[0].args.body.categoryId,'uncategorized');assert.equal(form.elements.text.value,'');
+  const writes=f.calls.filter(call=>call.path==='/api/finance/entries');assert.equal(writes.length,2);assert.deepEqual(writes[1].args.body,writes[0].args.body);assert.equal(writes[0].args.body.categoryId,'');assert.equal(form.elements.text.value,'');
 });
 
 test('filters and pagination refresh only the ledger while preserving unsaved form nodes and search focus',async()=>{
@@ -122,8 +122,8 @@ test('delete and restore keep the selected version and truthful deleted state',a
   const deletion=f.calls.find(call=>call.args.method==='DELETE');assert.deepEqual(deletion.args.body,{version:3});assert.ok($('.finance-entry.is-deleted',f.root));$('[data-entry-action="restore"]',f.root).click();await flush();const restoration=f.calls.find(call=>call.path.endsWith('/restore'));assert.deepEqual(restoration.args.body,{version:4});assert.equal($('.finance-entry.is-deleted',f.root),null);
 });
 
-test('built-in category edits retain version zero and failed storage save preserves inputs for retry',async()=>{
-  let failStorage=true;const f=fixture({handler:(path,args)=>{if(path==='/api/finance/storage'&&args.method==='PUT'&&failStorage){failStorage=false;return Promise.reject(new Error('存储暂不可达'))}}});await flush();$('[data-manage-categories]',f.root).click();$('[data-edit-category="food"]').click();let form=$('#finance-category-form');input(form,'name','吃饭');submit(form);await flush();assert.equal(f.calls.find(call=>call.path==='/api/finance/categories/food').args.body.version,0);
+test('category management is removed and failed storage save preserves inputs for retry',async()=>{
+  let failStorage=true;const f=fixture({handler:(path,args)=>{if(path==='/api/finance/storage'&&args.method==='PUT'&&failStorage){failStorage=false;return Promise.reject(new Error('存储暂不可达'))}}});await flush();assert.equal($('[data-manage-categories]',f.root),null);assert.doesNotMatch(f.root.textContent,/查看月份/);let form;
   $('[data-finance-storage]',f.root).click();await flush();form=$('#finance-storage-form');input(form,'endpoint','https://storage.example.com');input(form,'bucket','private-receipts');input(form,'secretKey','never-log-this');submit(form);await flush();assert.equal(form.elements.secretKey.value,'never-log-this');assert.match($('[data-form-error]',form).textContent,/存储/);assert.equal($('fieldset',form).disabled,false);submit(form);await flush();assert.equal(f.calls.filter(call=>call.path==='/api/finance/storage'&&call.args.method==='PUT').length,2);
 });
 
@@ -285,4 +285,30 @@ test('historical months default to latest spending date or actual month end, and
   let failDay=true;const f=fixture({handler:path=>path.startsWith('/api/finance?month=2026-10')?{entries:[],summary:{expenseCents:1000},expenseCategoryTotals:[{categoryId:'food',name:'餐饮',cents:1000}],trend:[{date:'2026-10-03',spendingCents:1000},{date:'2026-10-29',spendingCents:0}]}:path==='/api/finance?date=2026-10-03'&&failDay?Promise.reject(new Error('当天离线')):undefined});await flush();
   const month=$('[data-finance-period]',f.root);$('[aria-label="上个月"]',month).click();await flush();assert.ok($('button',[...$$('[data-finance-day-picker]',f.root)][0]).getAttribute('aria-label').includes('2026-10-03'));assert.match($('[data-finance-day-pie]',f.root).textContent,/当天离线/);const retry=$('[data-finance-day-retry]',f.root);assert.equal(retry.hidden,false);failDay=false;retry.click();await flush();assert.equal(retry.hidden,true);assert.match($('[data-finance-day-pie]',f.root).textContent,/没有支出/);
   $('[aria-label="上个月"]',month).click();await flush();assert.ok($('button',$('[data-finance-day-picker]',f.root)).getAttribute('aria-label').includes('2026-09-30'));assert.ok(f.calls.some(call=>call.path==='/api/finance?date=2026-09-30'));assert.equal(f.calls.some(call=>call.args.method==='POST'),false);
+});
+
+
+test('unknown quick-entry purposes show their own classification and save automatically without category writes',async()=>{
+  const f=fixture();await flush();const form=$('[data-finance-create]',f.root);input(form,'text','60 修鞋');
+  assert.match($('[data-finance-line-preview]',form).textContent,/自动分类：修鞋/);assert.equal(f.calls.some(call=>call.args.method==='POST'),false);
+  submit(form);await flush();const write=f.calls.find(call=>call.path==='/api/finance/entries');assert.equal(write.args.body.categoryId,'');assert.equal(write.args.body.purpose,'修鞋');assert.match($('[data-finance-entries]',f.root).textContent,/修鞋/);assert.equal(f.calls.some(call=>call.path.includes('/categories')),false);
+});
+
+test('detailed and multi-entry auto labels use unknown purposes while manual choices remain explicit',async()=>{
+  const f=fixture();await flush();$('[data-finance-detail]',f.root).click();let form=$('#finance-detail-form');assert.ok(form.closest('.finance-detail-dialog'));input(form,'expression','30');input(form,'purpose','修鞋');assert.equal(form.elements.categoryId.value,'');assert.match($('[data-category-hint]',form).textContent,/修鞋/);submit(form);await flush();assert.equal(f.calls.find(call=>call.path==='/api/finance/entries').args.body.categoryId,'');
+  form=openBatch(f.root);input(form,'expression-0','80');input(form,'purpose-0','稿酬');change(form,'kind-0','income');assert.equal(form.elements['category-0'].value,'');assert.match($('[data-import-category-hint]',form).textContent,/稿酬/);input(form,'expression-1','6');input(form,'purpose-1','早餐');change(form,'category-1','shopping');submit(form);await flush();const writes=f.calls.filter(call=>call.path==='/api/finance/entries');assert.equal(writes[1].args.body.categoryId,'');assert.equal(writes[2].args.body.categoryId,'shopping');
+});
+
+test('ledger receipt count links open the private image and upload explicitly awaits confirmation',async()=>{
+  const reads=[];const f=fixture({initialEntries:[photoEntry],receiptClient:{loadReceiptUrls:async(ids,variant)=>{reads.push({ids,variant});return {[ids[0]]:'https://private.example.com/photo.webp'}},processReceiptFiles:async()=>({candidates:[{expression:'5',purpose:'吃饭',kind:'expense',receiptIds:['new-photo']}],receiptIds:['new-photo'],warnings:[]})}});await flush();const link=$('.finance-receipt-link',f.root);assert.equal(link.textContent,'查看截图 · 2 张');link.click();await flush();assert.ok($('[data-finance-image-view]'));assert.deepEqual(reads.find(read=>read.variant==='image').ids,['receipt-a']);
+  ui.disposeUi($('#modal-root'));$('#modal-root').replaceChildren();selectScreenshot(f);await flush();assert.match($('[data-finance-status]',f.root).textContent,/尚未入账/);assert.match($('#finance-import-form').textContent,/已附 1 张压缩截图/);assert.equal(f.calls.some(call=>call.path==='/api/finance/entries'),false);submit($('#finance-import-form'));await flush();assert.deepEqual(f.calls.find(call=>call.path==='/api/finance/entries').args.body.receiptIds,['new-photo']);assert.ok($('[data-receipt-open="new-photo"]',f.root));
+});
+
+test('detailed entry keeps automatic quick suggestions live and preserves explicit legacy categories on edits',async()=>{
+  const f=fixture({initialEntries:[{id:'legacy',date:'2026-11-15',kind:'expense',expression:'4',amountCents:400,purpose:'旧用途',categoryId:'uncategorized',receiptIds:[],version:1}]});await flush();
+  const quick=$('[data-finance-create]',f.root);input(quick,'text','60 早餐');$('[data-finance-detail]',f.root).click();let form=$('#finance-detail-form');
+  assert.equal(form.elements.categoryId.value,'food');input(form,'purpose','打车');assert.equal(form.elements.categoryId.value,'transport');submit(form);await flush();
+  assert.equal(f.calls.find(call=>call.path==='/api/finance/entries').args.body.categoryId,'transport');
+  $('[data-entry-action="edit"][data-id="legacy"]',f.root).click();form=$('#finance-edit-form');assert.ok(form);assert.equal(form.elements.categoryId.value,'uncategorized');input(form,'expression','5');submit(form);await flush();
+  assert.equal(f.calls.find(call=>call.path==='/api/finance/entries/legacy'&&call.args.method==='PUT').args.body.categoryId,'uncategorized');
 });
