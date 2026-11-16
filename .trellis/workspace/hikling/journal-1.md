@@ -1875,3 +1875,25 @@ Local receipt failure/association repair, shared edit/refund form, supplemental 
 ### Status
 
 [OK] **Completed**
+
+
+## Session 81: Receipt storage fixes synchronized and release verified
+<!-- trellis-session: v=2 fp=cb3c3a24c3290afc -->
+
+**Date**: 2026-11-17
+**Task**: Receipt storage fixes synchronized and release verified
+**Branch**: `main`
+
+### Summary
+
+Resumed automatic sync and pushed receipt upload/S3 controls to main. GitHub43904546307 all jobs passed including native amd64/arm64 and public download/start/snapshot. Four complete Releases retained, oldest removed with all tags preserved. Existing local488pass/1optional skip and handover13pass. Browser/provider and earlier independent-review credit limits remain documented. No production server deployment executed.
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `0148e9a` | fix: preserve receipt uploads and manage image storage |
+
+### Status
+
+[OK] **Completed**
