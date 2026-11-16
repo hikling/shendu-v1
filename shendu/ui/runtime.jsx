@@ -209,8 +209,9 @@ function componentFor(node) {
     // History filters retain their compact native dropdowns by explicit product
     // choice. Other single selects keep the directly visible RadioGroup.
     const historyFilter=node.matches('#history-type,#history-year,#history-month')&&node.closest('.history-page');
+    const financeCompact=node.hasAttribute('data-finance-compact')&&node.closest('.finance-page,.finance-daily,.finance-dialog,.finance-import-row');
     // Multiple selects retain their native multi-value list contract.
-    if(node.multiple||historyFilter)return <NativeSelect {...props} defaultValue={selected} {...raw(node)}/>;
+    if(node.multiple||historyFilter||financeCompact)return <NativeSelect {...props} defaultValue={selected} {...raw(node)}/>;
     if(!props['aria-label']&&!props['aria-labelledby'])props['aria-label']=selectLabel(node);
     const options=[...node.options].map(option=>({value:option.value,label:option.label,disabled:option.disabled||option.parentElement?.disabled===true}));
     return <NativeChoices nativeProps={props} initial={selected} options={options} html={node.innerHTML}/>;

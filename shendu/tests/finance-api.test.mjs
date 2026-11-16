@@ -112,6 +112,38 @@ test('daily completion captures server ledger snapshot, blocks pending input and
   const oldCompleted=await api('/api/records/'+old.value.record.id+'/complete',{method:'POST',auth:b.cookie});assert.equal(oldCompleted.status,200,oldCompleted.text);assert.equal(oldCompleted.value.record.data.financeSnapshot,undefined);
 });
 
+test('legacy and multiline finance drafts survive save and read, and unconfirmed text prevents completion without ledger writes',async()=>{
+  const a=await account(),me=await api('/api/me',{auth:a.cookie}),receipt=randomUUID();
+  const data={answers:{today:['记录真实发生的事']},action:'执行具体行动',ifCondition:'遇到阻碍',ifThen:'先做第一步',verifyDate:today,templateSnapshot:{version:1,review:me.value.stage.reviewTemplates.daily,action:me.value.stage.actionTemplate}};
+  const legacy={expression:' 8+8-1 ',purpose:' 早餐 ',categoryId:' food ',note:' 原有备注 ',receiptIds:[receipt]};
+  let saved=await api('/api/records',{method:'PUT',auth:a.cookie,body:{type:'daily',period:today,data:{...data,financeDraft:legacy}}});assert.equal(saved.status,200,saved.text);
+  const expectedLegacy={text:'',expression:'8+8-1',purpose:'早餐',categoryId:'food',note:'原有备注',receiptIds:[receipt]};
+  assert.deepEqual(saved.value.record.data.financeDraft,expectedLegacy);
+  let read=await api('/api/records/'+saved.value.record.id,{auth:a.cookie});assert.deepEqual(read.value.record.data.financeDraft,expectedLegacy);
+  let blocked=await api('/api/records/'+saved.value.record.id+'/complete',{method:'POST',auth:a.cookie});assert.equal(blocked.status,400,blocked.text);assert.equal(blocked.value.error,'finance_draft_pending');
+  const text='\n60 打车\n50 吃饭\n';
+  saved=await api('/api/records',{method:'PUT',auth:a.cookie,body:{id:saved.value.record.id,version:saved.value.record.version,type:'daily',period:today,data:{...data,financeDraft:{text}}}});assert.equal(saved.status,200,saved.text);
+  read=await api('/api/records/'+saved.value.record.id,{auth:a.cookie});assert.equal(read.value.record.data.financeDraft.text,text);assert.equal(read.value.record.data.financeDraft.expression,'');assert.equal(read.value.record.data.financeDraft.purpose,'');
+  blocked=await api('/api/records/'+saved.value.record.id+'/complete',{method:'POST',auth:a.cookie});assert.equal(blocked.status,400,blocked.text);assert.equal(blocked.value.error,'finance_draft_pending');
+  read=await api('/api/records/'+saved.value.record.id,{auth:a.cookie});assert.equal(read.value.record.status,'draft');assert.equal(read.value.record.version,saved.value.record.version);assert.equal(read.value.record.data.financeSnapshot,undefined);
+  assert.equal((await ledger(a.cookie)).entries.length,0,'draft save and blocked completion never confirm entries');
+  assert.equal(db.prepare("SELECT count(*) n FROM activity_events WHERE user_id=? AND action='finance_entry_created'").get(a.id).n,0);
+  saved=await api('/api/records',{method:'PUT',auth:a.cookie,body:{id:saved.value.record.id,version:saved.value.record.version,type:'daily',period:today,data:{...data,financeDraft:{text:' \n\t '}}}});assert.equal(saved.status,200,saved.text);
+  const completed=await api('/api/records/'+saved.value.record.id+'/complete',{method:'POST',auth:a.cookie});assert.equal(completed.status,200,completed.text);assert.equal(completed.value.record.data.financeSnapshot.expenseCents,0);
+});
+
+test('encrypted personal backup restores multiline draft text without silently confirming entries',async()=>{
+  const a=await account(),me=await api('/api/me',{auth:a.cookie}),text='60 打车\n50 吃饭\n8+8-1 早餐';
+  const data={answers:{today:['仍待确认的花销']},action:'具体行动',ifCondition:'遇到阻碍',ifThen:'先做一步',verifyDate:today,templateSnapshot:{version:1,review:me.value.stage.reviewTemplates.daily,action:me.value.stage.actionTemplate},financeDraft:{text,note:'保留备注'}};
+  const saved=await api('/api/records',{method:'PUT',auth:a.cookie,body:{type:'daily',period:today,data}});assert.equal(saved.status,200,saved.text);
+  await api('/api/backup/password',{method:'POST',auth:a.cookie,body:{password:backupPassword}});
+  const exported=await api('/api/backup/export',{method:'POST',auth:a.cookie,body:{}});assert.equal(exported.status,200,exported.text);
+  const edited=await api('/api/records',{method:'PUT',auth:a.cookie,body:{id:saved.value.record.id,version:saved.value.record.version,type:'daily',period:today,data:{...data,financeDraft:{text:'1 临时修改'}}}});assert.equal(edited.status,200,edited.text);
+  const imported=await api('/api/data/import',{method:'POST',auth:a.cookie,body:{encryptedBackup:exported.text,password:backupPassword,mode:'replace',confirmation:'RESTORE'}});assert.equal(imported.status,200,imported.text);
+  const restored=await api('/api/records/'+saved.value.record.id,{auth:a.cookie});assert.equal(restored.status,200,restored.text);assert.equal(restored.value.record.data.financeDraft.text,text);assert.equal(restored.value.record.data.financeDraft.note,'保留备注');
+  const completed=await api('/api/records/'+saved.value.record.id+'/complete',{method:'POST',auth:a.cookie});assert.equal(completed.status,400,completed.text);assert.equal(completed.value.error,'finance_draft_pending');assert.equal((await ledger(a.cookie)).entries.length,0);
+});
+
 test('personal backups preserve ledger tombstones, reject corrupt graph atomically, and old backups preserve new finances',async()=>{
   const a=await account();await api('/api/backup/password',{method:'POST',auth:a.cookie,body:{password:backupPassword}});
   const old=await api('/api/backup/export',{method:'POST',auth:a.cookie,body:{}});assert.equal(old.status,200,old.text);assert.equal(clearBackup(old.text).entries.some(item=>item.kind==='finance'),false);

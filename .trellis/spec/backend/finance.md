@@ -13,6 +13,7 @@ Read this before changing finance persistence, daily finance completion, receipt
 - `POST /api/finance/categories`; `PUT /api/finance/categories/:id`; `POST /api/finance/day`.
 - `GET|PUT /api/finance/storage`; `POST /api/finance/receipts/prepare`; `POST /api/finance/receipts/:id/complete`; `POST /api/finance/receipts/read`.
 - Browser `mountFinancePage(container,options)` and `mountDailyFinance(container,options)` return a disposable controller. `processReceiptFiles(files,options)` returns editable candidates, receipt IDs and warnings; it never writes ledger entries.
+- Shared `parseFinanceLines(text,{categories,kind='expense'})` in `public/finance-domain.js` returns `{rows:[{line,expression,purpose,amountCents,categoryId}],errors:[{line,message}],totalCents}`. It is a pure preview parser; explicit confirmation still uses the existing entry endpoint per row.
 
 ## 3. Contracts
 
@@ -22,7 +23,9 @@ The ledger response contains `{entries,categories,summary,trend,categoryTotals,n
 
 Refunds can make a day or category's net expense negative. Charts must retain those rows with signed values and distinguish refund magnitude from positive spending; never clamp a negative number to a small positive bar or silently drop refund-only categories. Manual multi-entry and OCR candidates share explicit-confirmation/retry semantics; adding/removing rows preserves other mounted inputs and successfully committed rows are never re-created on a partial retry. Chinese search defers requests through IME composition and has a clear action.
 
-New daily templates set `financeEnabled:true`; a saved snapshot missing this flag remains disabled. Finance goes after energy. Bounded `financeDraft` preserves pending form input; it must be confirmed or cleared before advancing/completing. The server ignores supplied `financeSnapshot`, captures its own snapshot during completion and checks finance-enabled daily record size after insertion. Locked reading must not fetch today's ledger.
+Quick text accepts up to6000 characters and30 nonempty lines. Each line contains a restricted decimal +/- expression, whitespace and purpose (at most160 characters); amount characters may be normalized from fullwidth, but purpose remains plain text. Blank lines are ignored, invalid lines retain their physical line number, and only valid positive amounts contribute to the preview total. Errors block confirmation of the batch. This adds no ledger API or database schema; each submitted row still receives all normal server validation.
+
+New daily templates set `financeEnabled:true`; a saved snapshot missing this flag remains disabled. Finance goes after energy. Bounded `financeDraft` now includes `text` (maximum6000 characters) alongside legacy `expression`, `purpose`, `categoryId`, `note` and `receiptIds`; normalization must preserve old drafts and backups. Nonempty text/expression/purpose/note or receipt IDs is pending input and must be confirmed or cleared before advancing/completing. The server ignores supplied `financeSnapshot`, captures its own snapshot during completion and checks finance-enabled daily record size after insertion. Locked reading must not fetch today's ledger.
 
 Receipt prepare accepts `{id,hash,variants:{image:{bytes,type,sha256},thumb:{bytes,type,sha256}}}`. Originals never leave the device. Compressed image is at most2MiB, thumbnail96KiB; supported types are WebP/JPEG. A ticket signs exact type, byte length and base64 `x-amz-checksum-sha256` for a random account-scoped key. Browser sends the signed Blob without assigning the forbidden Content-Length header. Completion requires checksum-enabled HEAD, exact content length/type and actual SHA256 response; metadata alone is insufficient. Reads accept at most50 owned ready IDs and `variant:'thumb'|'image'`, returning five-minute URLs.
 
@@ -47,7 +50,7 @@ Personal/site backups include ledger tombstones, day state, categories, encrypte
 
 ## 5. Good / base / bad cases
 
-Good: `8+8+8-1` and “早餐” produces2300 cents, suggests food, and respects the final manually selected category. Repeating the same create ID does not duplicate the entry. An active refund cannot exceed the owning expense's remaining amount.
+Good: `8+8+8-1` and “早餐” produces2300 cents, suggests food, and respects the final manually selected category. `60 打车\n50 吃饭` produces two preview rows,11000 cents and transport/food suggestions without writing. Repeating the same create ID does not duplicate the entry. An active refund cannot exceed the owning expense's remaining amount.
 
 Base: no S3 config still permits manual entry/local OCR with an explicit no-stored-image warning. A saved review from before finance retains its old prompt order.
 
@@ -55,10 +58,11 @@ Bad: trust image metadata as a digest, auto-create OCR candidates, infer account
 
 ## 6. Tests required
 
-- `finance-domain.test.mjs`: exact cents, restricted expressions, category suggestions and editable OCR candidates.
+- `finance-domain.test.mjs`: exact cents, restricted expressions, multiline totals/categories, fullwidth amounts, physical error lines, size/row limits, pending text and editable OCR candidates.
 - `finance-api.test.mjs`: real HTTP isolation/encryption, retries/versions/refunds/zero, independent ledger lifecycle, completion snapshot/size rollback, personal/site restore and merged-graph validation.
 - `finance-receipts.test.mjs`: signing, checksum HEAD, ownership, config/session races, safe endpoints and backup associations.
-- `finance-ui.test.mjs`, `review-write-ui.test.mjs`, `review-wheel-flow.test.mjs`: real component-island forms, explicit confirmation, failures/retries, stale modal/account guards, conflict refresh, old/daily flow input identity and existing wheel validation.
+- `finance-ui.test.mjs`, `review-write-ui.test.mjs`, `review-wheel-flow.test.mjs`: real component-island forms, explicit confirmation, multiline partial success/retry identity, legacy draft metadata, pending-text save/navigation, stale modal/account guards, conflict refresh, old/daily flow input identity and existing wheel validation.
+- `ui-choice-controls.test.mjs`, `ui-surfaces.test.mjs`: compact finance NativeSelect values/events without changing review choices, mounted period controls, browse-without-callback, one callback per real selection and stale/disabled ownership.
 - `receipt-client.test.mjs`: actual browser-client paths with bounded image fixtures, cancellation/worker initialization, local resources, direct compressed PUTs, duplicate confirmation and validated private reads.
 - `receipt-ocr-runtime.test.mjs`: load both packaged models and recognize synthetic23.00. Optional browser smoke is not a replacement for desktop/narrow visual and real-provider checks.
 - Build and Docker smoke must include both server modules, all finance browser modules and local OCR manifest resources; production needs no cloud OCR credential.

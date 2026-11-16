@@ -17,7 +17,7 @@ export const DEFAULT_FINANCE_CATEGORIES=Object.freeze([
 const MAX_CENTS=99_999_999_999;
 
 export function hasPendingFinanceDraft(draft){
-  return Boolean(draft&&typeof draft==='object'&&(['expression','purpose','note'].some(key=>String(draft[key]??'').trim())||(Array.isArray(draft.receiptIds)&&draft.receiptIds.length)));
+  return Boolean(draft&&typeof draft==='object'&&(['text','expression','purpose','note'].some(key=>String(draft[key]??'').trim())||(Array.isArray(draft.receiptIds)&&draft.receiptIds.length)));
 }
 
 // Deliberately only decimal addition/subtraction: user text is never executable code.
@@ -40,6 +40,34 @@ export function parseMoneyExpression(value){
   }
   if(index===1&&(tokens[0]==='+'||tokens[0]==='-'))throw new Error('金额算式不完整');
   return total;
+}
+
+// Normalize only amount characters; purpose text and the legacy cents parser stay intact.
+export function parseFinanceLines(value,{categories=DEFAULT_FINANCE_CATEGORIES,kind='expense'}={}){
+  const rows=[],errors=[];
+  if(typeof value!=='string')return {rows,errors:[{line:1,message:'请输入逐行花销'}],totalCents:0};
+  if(value.length>6000)return {rows,errors:[{line:1,message:'花销输入最多6000个字符'}],totalCents:0};
+  let count=0,totalCents=0;
+  for(const [index,raw] of value.split(/\r\n?|\n/).entries()){
+    const text=raw.trim(),line=index+1;
+    if(!text)continue;
+    if(++count>30){errors.push({line,message:'一次最多输入30笔，请分批确认入账'});continue}
+    // Greedy amount prefix keeps spaced expressions together rather than accepting
+    // an unfinished operator or an extra number as part of the purpose.
+    const match=/^([0-9０-９.．+＋−－\s-]+)\s+(\S[\s\S]*)$/.exec(text);
+    if(!match){errors.push({line,message:'请按“金额 用途”填写，例如 60 打车'});continue}
+    const expression=match[1].trim().replace(/[０-９]/g,digit=>String(digit.charCodeAt(0)-0xff10)).replace(/．/g,'.').replace(/＋/g,'+').replace(/[−－]/g,'-'),purpose=match[2].trim();
+    let amountCents;
+    try{
+      amountCents=parseMoneyExpression(expression);
+      if(/^[+＋−－*/×÷=\-]/.test(purpose))throw new Error('金额只支持数字、两位小数和加减，例如 8+8+8-1');
+      if(amountCents<=0)throw new Error('金额必须大于零');
+      if(purpose.length>160)throw new Error('每笔用途最多160个字符');
+    }catch(error){errors.push({line,message:error.message});continue}
+    rows.push({line,expression,purpose,amountCents,categoryId:suggestFinanceCategory(purpose,categories,kind)});
+    totalCents+=amountCents;
+  }
+  return {rows,errors,totalCents};
 }
 
 export function formatFinanceMoney(cents){

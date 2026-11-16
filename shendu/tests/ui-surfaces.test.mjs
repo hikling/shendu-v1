@@ -16,6 +16,38 @@ const surface=document.getElementById('surface'),calendar=document.getElementByI
 const notifications=document.createElement('div');notifications.id='notifications';document.body.append(notifications);ui.initializeToasts(notifications);
 const settle=()=>new Promise(resolve=>setTimeout(resolve,30));
 
+test('finance month menu browses without committing, keeps controls mounted and commits once per real change',async()=>{
+  const changes=[];let alive=true;
+  const control=ui.showFinanceMonthPicker(calendar,{value:'2026-11',today:'2026-11-16',isCurrent:()=>alive,onChange:month=>changes.push(month)});
+  const trigger=calendar.querySelector('[aria-haspopup="menu"]'),next=calendar.querySelector('[aria-label="下个月"]');
+  trigger.focus();trigger.dispatchEvent(new KeyboardEvent('keydown',{key:'ArrowDown',bubbles:true,cancelable:true}));await settle();
+  assert.ok(document.querySelector('.finance-period-menu'));assert.deepEqual(changes,[]);
+  document.querySelector('[aria-label="下一年"]').click();await settle();assert.deepEqual(changes,[]);assert.ok(document.querySelector('[aria-label="2027年2月"]'));assert.equal(calendar.querySelector('[aria-haspopup="menu"]'),trigger);
+  document.querySelector('[aria-label="2027年2月"]').click();await settle();assert.deepEqual(changes,['2027-02']);assert.equal(document.querySelector('.finance-period-menu'),null);assert.equal(document.activeElement,trigger);
+  next.click();await settle();assert.deepEqual(changes,['2027-02','2027-03']);assert.equal(calendar.querySelector('[aria-label="下个月"]'),next);
+  control.setValue('2026-12');assert.deepEqual(changes,['2027-02','2027-03']);next.click();await settle();assert.equal(changes.at(-1),'2027-01');
+  control.setDisabled(true);next.click();assert.equal(changes.length,3);control.setDisabled(false);alive=false;next.click();trigger.dispatchEvent(new KeyboardEvent('keydown',{key:'ArrowDown',bubbles:true,cancelable:true}));await settle();assert.equal(changes.length,3);assert.equal(document.querySelector('.finance-period-menu'),null);
+  control.dispose();assert.equal(calendar.children.length,0);
+});
+
+test('finance month menu closes without selecting and prevents unsupported year boundaries',async()=>{
+  const changes=[],control=ui.showFinanceMonthPicker(calendar,{value:'2026-11',today:'2026-11-16',onChange:value=>changes.push(value)});
+  const trigger=calendar.querySelector('[aria-haspopup="menu"]'),previous=calendar.querySelector('[aria-label="上个月"]'),next=calendar.querySelector('[aria-label="下个月"]');
+  const open=async()=>{trigger.focus();trigger.dispatchEvent(new KeyboardEvent('keydown',{key:'ArrowDown',bubbles:true,cancelable:true}));await settle()};
+  await open();document.querySelector('[aria-label="2026年11月"]').click();await settle();
+  assert.deepEqual(changes,[]);assert.equal(document.querySelector('.finance-period-menu'),null);assert.equal(document.activeElement,trigger);
+  await open();document.querySelector('[aria-label="上一年"]').click();await settle();
+  document.querySelector('.finance-period-menu').dispatchEvent(new KeyboardEvent('keydown',{key:'Escape',bubbles:true,cancelable:true}));await settle();
+  assert.deepEqual(changes,[]);assert.equal(document.querySelector('.finance-period-menu'),null);assert.equal(document.activeElement,trigger);
+  control.setValue('0001-01');assert.equal(previous.disabled,true);previous.click();assert.deepEqual(changes,[]);
+  await open();assert.equal(document.querySelector('[aria-label="上一年"]').getAttribute('aria-disabled'),'true');
+  control.setDisabled(true);await settle();assert.equal(document.querySelector('.finance-period-menu'),null);control.setDisabled(false);
+  control.setValue('9999-12');assert.equal(next.disabled,true);next.click();assert.deepEqual(changes,[]);
+  control.setValue('0000-01');assert.ok(trigger.textContent.includes('9999年12月'));
+  await open();document.querySelector('.finance-period-today').click();await settle();assert.deepEqual(changes,['2026-11']);
+  control.dispose();
+});
+
 test('real Dialog enhances opaque form fields and disposes nested roots before replacement',async()=>{
   const origin=document.getElementById('origin');origin.focus();let closed=0;
   const options={html:'<div class="modal-head"><h2>测试弹窗</h2><p>说明</p></div><form><label for="answer">回答</label><input id="answer" name="answer" value="原答案"></form>',title:'测试弹窗',description:'说明',returnFocus:origin,onClose:()=>closed++};

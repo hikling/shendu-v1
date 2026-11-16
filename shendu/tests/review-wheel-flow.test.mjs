@@ -37,7 +37,7 @@ function fixture(type='daily',locked=false,{financeEnabled=false}={}){
   let functions,templates,time=0;const writes=[],financeCalls=[],financeEntries=[];
   const financeSummary=()=>({incomeCents:0,expenseCents:financeEntries.reduce((sum,entry)=>sum+entry.amountCents,0),refundCents:0,netExpenseCents:financeEntries.reduce((sum,entry)=>sum+entry.amountCents,0),balanceCents:0,count:financeEntries.length});
   const request=async(path,args={})=>{financeCalls.push({path,...args});if(path==='/api/finance/storage')return {configured:false,config:{},version:0,targets:[]};if(path==='/api/finance/entries'){const entry={...args.body,amountCents:2300,version:1,deletedAt:null};financeEntries.push(entry);return {entry}};if(path.startsWith('/api/finance?'))return {entries:[...financeEntries],categories:DEFAULT_FINANCE_CATEGORIES,summary:financeSummary(),trend:[],categoryTotals:[],nextCursor:null,day:{date:period,state:financeEntries.length?'recorded':'unrecorded',version:0}};throw new Error(`Unexpected finance API ${path}`)};
-  const context={$,$$,state,esc,createReviewTransition,mountDailyFinance,request,toast:()=>{},financeUiOptions:(container,extra={})=>({...extra,request,renderMarkup:ui.renderMarkup,today:()=> '2026-11-13',isCurrent:()=>container.isConnected&&state.user.id==='owner'&&(extra.isCurrent?.()??true),setDirty:value=>{if(value)state.dirty=true},beginWrite:()=>{if(state.saving)return null;state.saving=true;return {}},endWrite:()=>{state.saving=false}}),renderMarkup:ui.renderMarkup,topbar:()=>'',bindCommon:()=>{},prepareDialogContainer:ui.prepareDialogContainer,showDialog:ui.showDialog,dismissDialog:ui.dismissDialog,attachReviewWheel:(root,options)=>attachReviewWheel(root,{...options,now:()=>time}),DAILY_STEPS,dailyPrompts,dailyPromptOwner,dailyPromptIssues,dailyPromptNeighbor,EXTENDED_FLOW,extendedPrompts,extendedPromptIssues,extendedPromptNeighbor,reviewQuestions,reviewIntroLayout,dailyIntroLines:reviewIntroLines,
+  const context={$,$$,state,esc,createReviewTransition,mountDailyFinance,showFinanceMonthPicker:ui.showFinanceMonthPicker,request,toast:()=>{},financeUiOptions:(container,extra={})=>({...extra,request,renderMarkup:ui.renderMarkup,today:()=> '2026-11-13',isCurrent:()=>container.isConnected&&state.user.id==='owner'&&(extra.isCurrent?.()??true),setDirty:value=>{if(value)state.dirty=true},beginWrite:()=>{if(state.saving)return null;state.saving=true;return {}},endWrite:()=>{state.saving=false}}),renderMarkup:ui.renderMarkup,topbar:()=>'',bindCommon:()=>{},prepareDialogContainer:ui.prepareDialogContainer,showDialog:ui.showDialog,dismissDialog:ui.dismissDialog,attachReviewWheel:(root,options)=>attachReviewWheel(root,{...options,now:()=>time}),DAILY_STEPS,dailyPrompts,dailyPromptOwner,dailyPromptIssues,dailyPromptNeighbor,EXTENDED_FLOW,extendedPrompts,extendedPromptIssues,extendedPromptNeighbor,reviewQuestions,reviewIntroLayout,dailyIntroLines:reviewIntroLines,
     defaultPeriod:()=>period,today:()=> '2026-11-13',quoteFor:()=> '回看事实，慢慢向前。',beijingTime:()=> '12:00',verificationMinimum:()=> '2026-11-13',dailyCalendarDateLabel:value=>value,verificationTimes:()=>'',verificationActualAt:r=>r.verified_at||'',formatDate:value=>value,clone:structuredClone,
     templatesForRecord:()=>templates,currentTemplateSnapshot:()=>({review:templates.review,action:templates.action}),reconcileReviewMetrics:metrics=>({metrics}),newRecord:()=>{throw new Error('new record unexpected')},
     dailyVerificationCalendar:value=>`<input type="hidden" data-simple="verifyDate" value="${esc(value)}"><div id="daily-verification-calendar" data-verify-month-value="2026-11"></div>`,renderDailyCalendar:()=>{},bindDailyCalendar:()=>{},reviewNavigation:{exit:()=>{}},cancelDailyTypewriter:()=>{},startDailyTypewriter:()=>{},setDailyImmersive:()=>{},focusDailyAnswer:()=>{},updateGauge:()=>{},renderReviewFromCurrent:()=>{},saveCurrent:()=>writes.push('save'),completeCurrent:()=>writes.push('complete'),deleteDraftRecord:()=>writes.push('delete')};
@@ -168,18 +168,18 @@ test('daily expense step uses the real widget, holds unconfirmed input and creat
   for(let i=0;i<12;i++)await Promise.resolve();
   f.start();$('[data-daily-next]').click();assert.equal(f.prompt(),'energy');f.wheel();assert.equal(f.prompt(),'finance');
   assert.equal(f.canvas.dataset.dailyScene,'finance');
-  const amount=$('#daily-finance [name="expression"]'),purpose=$('#daily-finance [name="purpose"]');
-  assert.ok(amount);amount.value='8+8+8-1';amount.dispatchEvent(new win.Event('input',{bubbles:true}));purpose.value='早餐';purpose.dispatchEvent(new win.Event('input',{bubbles:true}));
-  assert.equal(f.state.current.data.financeDraft.expression,'8+8+8-1');
+  const amount=$('#daily-finance [name="text"]');
+  assert.ok(amount);amount.value='8+8+8-1 早餐';amount.dispatchEvent(new win.Event('input',{bubbles:true}));
+  assert.equal(f.state.current.data.financeDraft.text,'8+8+8-1 早餐');
   $('[data-daily-next]').click();assert.equal(f.prompt(),'finance');assert.equal(amount.getAttribute('aria-invalid'),'true');
   assert.equal(f.financeCalls.filter(call=>call.method==='POST').length,0);
-  f.collect();assert.equal(f.state.current.data.templateSnapshot.review.financeEnabled,true);assert.equal(f.state.current.data.financeDraft.purpose,'早餐');
+  f.collect();assert.equal(f.state.current.data.templateSnapshot.review.financeEnabled,true);assert.equal(f.state.current.data.financeDraft.text,'8+8+8-1 早餐');
   const form=amount.closest('form');form.dispatchEvent(new win.Event('submit',{bubbles:true,cancelable:true}));
   for(let i=0;i<30;i++)await Promise.resolve();
   assert.equal(f.financeEntries.length,1);assert.equal(f.financeEntries[0].amountCents,2300);assert.equal(f.financeEntries[0].categoryId,'food');
-  assert.equal(f.state.current.data.financeDraft.expression,'');assert.equal(f.state.dirty,true);assert.equal(f.state.saving,false);
-  assert.equal($('#daily-finance [name="expression"]'),amount);$('[data-daily-next]').click();assert.notEqual(f.prompt(),'finance');
-  f.wheel(-1);assert.equal(f.prompt(),'finance');assert.equal(f.financeEntries.length,1);assert.equal($('#daily-finance [name="expression"]'),amount);
+  assert.equal(f.state.current.data.financeDraft.text,'');assert.equal(f.state.dirty,true);assert.equal(f.state.saving,false);
+  assert.equal($('#daily-finance [name="text"]'),amount);$('[data-daily-next]').click();assert.notEqual(f.prompt(),'finance');
+  f.wheel(-1);assert.equal(f.prompt(),'finance');assert.equal(f.financeEntries.length,1);assert.equal($('#daily-finance [name="text"]'),amount);
 });
 
 test.afterEach(()=>{$('#daily-finance')?.financeController?.dispose();$('.daily-flow')?.reviewTransition?.cancel();ui.dismissDialog($('#modal-root'));ui.disposeUi($('#app'));$('#app').replaceChildren()});

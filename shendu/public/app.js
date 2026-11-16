@@ -1,16 +1,16 @@
 import {backupScheduleLabel} from './backup-schedule.js?v=1.0.0-backups1';
 import {normalizeReviewMetricIds,reconcileReviewMetrics} from './review-metrics.js?v=1.0.0-custom1';
 import {reviewQuestions,reviewDisabledFields} from './review-schema.js?v=1.0.0-finance1';
-import {renderMarkup,disposeUi,prepareDialogContainer,initializeToasts,showDialog,dismissDialog,showMenu,showVerificationCalendar,showStageCalendar,showToast} from './ui/shadcn.js?v=1.0.0-draftend1';
+import {renderMarkup,disposeUi,prepareDialogContainer,initializeToasts,showDialog,dismissDialog,showMenu,showVerificationCalendar,showStageCalendar,showFinanceMonthPicker,showToast} from './ui/shadcn.js?v=1.0.0-finance2';
 import {overviewRecordAppearances,overviewVerifiedRecords,overviewRecordExcerpt,overviewLoopMetrics,overviewRecordTitle,overviewDateParts} from './overview-reel.js?v=1.0.0-overview15';
-import {DAILY_STEPS,dailyStepIssues,dailyPrompts,dailyPromptIssues,dailyPromptNeighbor,dailyPromptOwner} from './daily-flow.js?v=1.0.0-finance1';
+import {DAILY_STEPS,dailyStepIssues,dailyPrompts,dailyPromptIssues,dailyPromptNeighbor,dailyPromptOwner} from './daily-flow.js?v=1.0.0-finance2';
 import {dailyCalendarModel,dailyCalendarDateLabel} from './daily-calendar.js?v=1.0.0-art1';
 import {EXTENDED_FLOW,extendedPrompts,extendedPromptNeighbor,extendedPromptIssues,extendedReviewIssues} from './extended-flow.js?v=1.0.0-custom1';
 import {verificationMinimum} from './verification-policy.js?v=1.0.0-verification2';
 import {createReviewNavigator} from './review-navigation.js?v=1.0.0-finance1';
 import {attachReviewWheel} from './review-wheel.js?v=1.0.0-wheel1';
 import {createReviewTransition} from './review-transition.js?v=1.0.0-transition1';
-import {mountFinancePage,mountDailyFinance} from './finance-ui.js?v=1.0.0-finance1';
+import {mountFinancePage,mountDailyFinance} from './finance-ui.js?v=1.0.0-finance2';
 import {RECORD_ART,recordArtAssignments} from './record-art.js?v=1.0.0-records1';
 import {createReviewIntroPicker,reviewIntroLines,reviewIntroLayout} from './review-intros.js?v=1.0.0-intros2';
 const $ = (s, root = document) => root.querySelector(s);
@@ -376,7 +376,7 @@ function dailyJournal(data,locked){return `<section class="card section-card fol
 function reviewAfterword(locked,data,actionTemplate){return `${locked&&state.current.status==='completed'?`<section class="card section-card review-completion"><h2>复盘已完成并锁定</h2><p class="help">原记录已保存。你可以回看历史，或前往行动验证查看待验证计划。</p><div class="review-completion-actions"><button type="button" class="btn btn-primary" data-nav="history">查看历史复盘</button><button type="button" class="btn btn-ghost" data-nav="actions">前往行动验证</button></div></section>`:''}${state.current.status==='verified'?verificationRead(state.current):''}`}
 
 // Each local scene is a pointer-inert illustration and a small static paper composition.
-function dailySceneArt(){return `<div class="daily-scene-art" aria-hidden="true"><span class="daily-scene-corner"></span><span class="daily-scene-signet"></span><span class="daily-scene-rule"></span>${['intro','sleep','energy','evidence','reflection','action','calendar','journal'].map(scene=>`<img class="daily-scene-image" data-daily-art="${scene}" src="/assets/daily/${scene}.webp?v=1.0.0-overview26" alt="" width="1254" height="1254" draggable="false">`).join('')}<img class="daily-scene-image" data-daily-art="finance" src="/assets/finance/ledger.webp?v=1.0.0-finance1" alt="" width="640" height="640" draggable="false"></div>`}
+function dailySceneArt(){return `<div class="daily-scene-art" aria-hidden="true"><span class="daily-scene-corner"></span><span class="daily-scene-signet"></span><span class="daily-scene-rule"></span>${['intro','sleep','energy','evidence','reflection','action','calendar','journal'].map(scene=>`<img class="daily-scene-image" data-daily-art="${scene}" src="/assets/daily/${scene}.webp?v=1.0.0-overview26" alt="" width="1254" height="1254" draggable="false">`).join('')}<img class="daily-scene-image" data-daily-art="finance" src="/assets/finance/ledger.webp?v=1.0.0-finance2" alt="" width="640" height="640" draggable="false"></div>`}
 function dailyIntroLines(quote){return reviewIntroLines(quote)}
 function dailyReviewHtml(period,locked,data,templates){
   const panes=[dailyEvidence(data,locked,templates.review),dailyReflection(data,locked,templates.review),dailyActionFields(data,locked,templates.review),dailyJournal(data,locked)];
@@ -516,7 +516,7 @@ function showDailyIssues(issues){
   showDailyPrompt(issues[0].field);
   const error=$('#daily-flow-error');error.textContent=`请填写：${issues.map(dailyIssueLabel).join('、')}`;error.hidden=false;
   let first;
-  for(const issue of issues){const field=$(issue.field==='finance'?'#daily-finance [name="expression"]':reviewQuestions('daily',templatesForRecord(state.current).review).some(item=>item.id===issue.field)?`[data-answer="${issue.field}"]`:issue.field==='verifyDate'?'[data-verify-day][tabindex="0"]':`[data-simple="${issue.field}"]`);if(field){field.setAttribute('aria-invalid','true');const ids=new Set((field.getAttribute('aria-describedby')||'').split(' ').filter(Boolean));ids.add('daily-flow-error');field.setAttribute('aria-describedby',[...ids].join(' '));first ||= field}}
+  for(const issue of issues){const field=$(issue.field==='finance'?'#daily-finance [name="text"]':reviewQuestions('daily',templatesForRecord(state.current).review).some(item=>item.id===issue.field)?`[data-answer="${issue.field}"]`:issue.field==='verifyDate'?'[data-verify-day][tabindex="0"]':`[data-simple="${issue.field}"]`);if(field){field.setAttribute('aria-invalid','true');const ids=new Set((field.getAttribute('aria-describedby')||'').split(' ').filter(Boolean));ids.add('daily-flow-error');field.setAttribute('aria-describedby',[...ids].join(' '));first ||= field}}
   openDailyAnswer(first);first?.focus();first?.scrollIntoView({block:'center',behavior:'auto'});
 }
 function bindDailyFlow(){
@@ -1129,7 +1129,7 @@ function renderActivity(){
 }
 function financeUiOptions(container,extra={}){
   const accountId=state.user?.id,current=()=>Boolean(accountId)&&container.isConnected&&state.user?.id===accountId;
-  return {renderMarkup,today,toast,openModal,closeModal,...extra,
+  return {renderMarkup,today,toast,openModal,closeModal,showMonthPicker:showFinanceMonthPicker,...extra,
     request:(path,args={},guard=()=>true)=>request(path,args,()=>current()&&guard()),
     isCurrent:()=>current()&&(extra.isCurrent?.()??true),
     setDirty:value=>{if(current()&&(!extra.date||value))state.dirty=Boolean(value)},

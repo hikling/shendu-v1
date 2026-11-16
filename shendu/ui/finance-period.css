@@ -1,0 +1,13 @@
+.finance-period-control{display:inline-flex;align-items:center;border:1px solid #cbd5cc;border-radius:12px;background:#fffefa;padding:3px;gap:2px;max-width:100%;color:#244b43}
+.finance-period-control .finance-period-arrow{width:34px;min-height:36px;padding:0;background:transparent;border:0;box-shadow:none;font-size:23px;color:inherit;border-radius:8px}
+.finance-period-trigger{display:flex;align-items:center;justify-content:space-between;gap:18px;min-height:36px;min-width:145px;padding:7px 12px;background:transparent;border:0;box-shadow:none;border-radius:8px;color:inherit;font-size:14px;font-weight:600}
+.finance-period-control button:focus-visible{outline:2px solid #176b67;outline-offset:2px}
+.finance-period-menu{width:272px;max-width:calc(100vw - 24px);padding:12px;border:1px solid #d3dbd1;border-radius:16px;background:#fffefa;box-shadow:0 10px 35px #243d3420;color:#28473b}
+.finance-period-year{display:grid;grid-template-columns:36px 1fr 36px;align-items:center;text-align:center;margin-bottom:10px;font-size:15px;font-weight:600}
+.finance-period-year>[role="menuitem"]{justify-content:center;font-size:23px;min-height:36px;border-radius:8px;padding:0}
+.finance-period-months{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}
+.finance-period-months>[role="menuitem"]{min-height:38px;justify-content:center;border-radius:8px;font-size:14px;padding:7px}
+.finance-period-menu [role="menuitem"][data-highlighted]{background:#e9efea;color:#244b43;outline:none}
+.finance-period-months>[aria-current="date"]{background:#176b67;color:#fff}
+.finance-period-months>[aria-current="date"][data-highlighted]{background:#125851;color:#fff}
+.finance-period-menu .finance-period-today{justify-content:center;min-height:36px;padding:7px;border-top:1px solid #e5e9df;border-radius:0;margin-top:10px;font-size:13px;color:#176b67}

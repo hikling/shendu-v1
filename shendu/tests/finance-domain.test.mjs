@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {parseMoneyExpression,formatFinanceMoney,suggestFinanceCategory,DEFAULT_FINANCE_CATEGORIES,parseReceiptText} from '../public/finance-domain.js';
+import {parseMoneyExpression,parseFinanceLines,hasPendingFinanceDraft,formatFinanceMoney,suggestFinanceCategory,DEFAULT_FINANCE_CATEGORIES,parseReceiptText} from '../public/finance-domain.js';
+import {normalizeFinanceDraft,financeDraftPending} from '../finance-ledger.mjs';
 
 test('decimal calculations use exact integer cents and never evaluate code',()=>{
   for(const [expression,cents] of [['8+8+8-1',2300],['0.1+0.2',30],[' 12.50 + 6 - 0.01 ',1849],['-1+2',100],['0',0],['1＋2－0.5',250]])assert.equal(parseMoneyExpression(expression),cents,expression);
@@ -14,6 +15,63 @@ test('classification respects custom names, archived categories and unknown purp
   assert.equal(suggestFinanceCategory('星巴克咖啡',categories),'custom');assert.equal(suggestFinanceCategory('咖啡',categories),'custom');
   assert.equal(suggestFinanceCategory('不明用途',categories),'uncategorized');assert.equal(suggestFinanceCategory('',categories,'income'),'other-income');
   assert.equal(suggestFinanceCategory('星巴克',categories.map(category=>category.id==='custom'?{...category,active:false}:category)),'uncategorized');
+});
+
+test('line entry shares exact cents, preserves expressions and physical line numbers, and suggests categories',()=>{
+  const parsed=parseFinanceLines('\n60 打车\r\n\t \n50 吃饭\r8 + 8 + 8 - 1 早餐\n0.1+0.2 便利店');
+  assert.deepEqual(parsed.errors,[]);
+  assert.deepEqual(parsed.rows,[
+    {line:2,expression:'60',purpose:'打车',amountCents:6000,categoryId:'transport'},
+    {line:4,expression:'50',purpose:'吃饭',amountCents:5000,categoryId:'food'},
+    {line:5,expression:'8 + 8 + 8 - 1',purpose:'早餐',amountCents:2300,categoryId:'food'},
+    {line:6,expression:'0.1+0.2',purpose:'便利店',amountCents:30,categoryId:'uncategorized'}
+  ]);
+  assert.equal(parsed.totalCents,13330);
+  assert.deepEqual(parseFinanceLines(' \n\t'),{rows:[],errors:[],totalCents:0});
+  assert.equal(parseFinanceLines('8 早餐\n8 早餐').rows.length,2,'identical amounts remain separate entries');
+  assert.equal(parseFinanceLines('60 7号线地铁').rows[0].purpose,'7号线地铁');
+});
+
+test('line entry normalizes only safe fullwidth amount characters and respects current account categories',()=>{
+  const categories=[...DEFAULT_FINANCE_CATEGORIES,{id:'custom',name:'咖啡',keywords:['星巴克'],active:true}];
+  const parsed=parseFinanceLines('１２．５０ ＋ ６ − ０．０１　星巴克 Ａ店',{categories});
+  assert.deepEqual(parsed,{rows:[{line:1,expression:'12.50 + 6 - 0.01',purpose:'星巴克 Ａ店',amountCents:1849,categoryId:'custom'}],errors:[],totalCents:1849});
+  assert.equal(parseMoneyExpression(parsed.rows[0].expression),parsed.rows[0].amountCents,'normalized expression is accepted by the existing ledger API');
+  assert.equal(parseFinanceLines('50 零散报酬',{kind:'income'}).rows[0].categoryId,'other-income');
+  assert.equal(parseFinanceLines('50 星巴克',{categories:categories.map(item=>item.id==='custom'?{...item,active:false}:item)}).rows[0].categoryId,'uncategorized');
+});
+
+test('line errors retain valid rows and reject missing purposes, invalid arithmetic and nonpositive amounts',()=>{
+  const invalid=['60','打车60','60打车','1.001 早餐','1. 早餐','1--2 早餐','1 + 早餐','1 2 早餐','1*2 早餐','1 * 2 早餐','1 / 2 早餐','1e3 早餐','globalThis.x=1 早餐','0 早餐','-1 早餐','9999999999999999 早餐','1 '+ 'a'.repeat(161)];
+  const parsed=parseFinanceLines(['60 打车','',...invalid,'50 吃饭'].join('\n'));
+  assert.equal(parsed.rows.length,2);assert.equal(parsed.totalCents,11000);
+  assert.deepEqual(parsed.errors.map(item=>item.line),invalid.map((_,index)=>index+3));
+  assert.ok(parsed.errors.every(item=>typeof item.message==='string'&&item.message));
+  assert.equal(parseFinanceLines('1'.repeat(201)+' 早餐').errors.length,1);
+});
+
+test('line entry enforces text and nonempty line limits without silently truncating entries',()=>{
+  const thirty=Array.from({length:30},()=> '1 早餐').join('\n\n'),accepted=parseFinanceLines(thirty);
+  assert.equal(accepted.rows.length,30);assert.equal(accepted.totalCents,3000);assert.deepEqual(accepted.errors,[]);
+  const overflow=parseFinanceLines(thirty+'\n\n2 打车\n3 吃饭');
+  assert.equal(overflow.rows.length,30);assert.equal(overflow.totalCents,3000);assert.deepEqual(overflow.errors.map(item=>item.line),[61,62]);
+  const atLimit='1 早餐'+' '.repeat(5996);assert.equal(parseFinanceLines(atLimit).rows.length,1);
+  assert.deepEqual(parseFinanceLines(atLimit+' ').rows,[]);assert.equal(parseFinanceLines(atLimit+' ').errors.length,1);
+  for(const value of [null,undefined,{},1])assert.equal(parseFinanceLines(value).errors.length,1);
+});
+
+test('bounded multiline drafts preserve legacy metadata and both browser and server pending rules',()=>{
+  const receipt='a585b786-6b68-4327-a8b5-660d14b57440',legacy={expression:' 8+8-1 ',purpose:' 早餐 ',categoryId:' food ',note:' 核对备注 ',receiptIds:[receipt,receipt,'invalid']};
+  assert.deepEqual(normalizeFinanceDraft(legacy),{text:'',expression:'8+8-1',purpose:'早餐',categoryId:'food',note:'核对备注',receiptIds:[receipt]});
+  const text='\n60 打车\n50 吃饭\n',draft=normalizeFinanceDraft({...legacy,text});
+  assert.equal(draft.text,text);assert.equal(draft.note,'核对备注');assert.deepEqual(draft.receiptIds,[receipt]);
+  assert.equal(normalizeFinanceDraft({text:'x'.repeat(6001)}).text.length,6000);
+  for(const pending of [hasPendingFinanceDraft,financeDraftPending]){
+    assert.equal(pending({text}),true);assert.equal(pending({text:'尚未填写金额'}),true);
+    for(const key of ['expression','purpose','note'])assert.equal(pending({[key]:'旧草稿'}),true);
+    assert.equal(pending({receiptIds:[receipt]}),true);
+    for(const empty of [null,{},{text:' \n\t',categoryId:'food'}])assert.equal(pending(empty),false);
+  }
 });
 
 test('receipt OCR produces editable drafts with warnings, excludes balances and keeps repeated amounts',()=>{

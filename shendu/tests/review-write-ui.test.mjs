@@ -40,7 +40,7 @@ function fixture({draft=record(),dirty=true,financeEnabled=false,impl=async(path
   const shell=content=>ui.renderMarkup($('#app'),`<main class="main" id="main-content">${content}</main>`);
   const context={$,$$,attachReviewWheel,state,request,shell,esc,renderMarkup:ui.renderMarkup,prepareDialogContainer:ui.prepareDialogContainer,showDialog:ui.showDialog,dismissDialog:ui.dismissDialog,cancelDailyTypewriter:()=>{},startDailyTypewriter:()=>{},setDailyImmersive:()=>{},DAILY_STEPS,dailyPrompts,dailyPromptOwner,EXTENDED_FLOW,extendedPrompts,reviewQuestions,reviewIntroLayout,dailyIntroLines:reviewIntroLines,defaultPeriod:type=>record(type).period,today:()=> '2026-11-12',quoteFor:()=> '回看事实，慢慢向前。',beijingTime:()=> '12:00',verificationMinimum:()=> '2026-11-12',dailyCalendarDateLabel:value=>value,templatesForRecord:()=>templates,verificationTimes:()=>'',verificationActualAt:r=>r.verified_at||'',currentTemplateSnapshot:()=>({review:templates.review,action:templates.action}),clone:structuredClone,reconcileReviewMetrics:metrics=>({metrics}),newRecord:()=>{throw new Error('unexpected new record')},dailyVerificationCalendar:value=>`<input type="hidden" data-simple="verifyDate" value="${esc(value)}"><div id="daily-verification-calendar" data-verify-month-value="2026-11"></div>`,renderDailyCalendar:()=>{},bindDailyFlow:()=>functions.showDailyPrompt(state.dailyPrompt),bindExtendedFlow:()=>functions.showExtendedPrompt(state.extendedPrompt),renderReviewFromCurrent:()=>{},focusDailyAnswer:()=>{},updateGauge:()=>{},deleteDraftRecord:()=>{},toast:(...args)=>notices.push(args),validateCurrent:()=>{functions.collectCurrent();return []},applyTheme:()=>{}};
   context.formatDate=value=>value;
-  context.mountDailyFinance=mountDailyFinance;
+  context.mountDailyFinance=mountDailyFinance;context.showFinanceMonthPicker=ui.showFinanceMonthPicker;
   if(fetchImpl){delete context.request;context.fetch=(path,options)=>{calls.push({path,...structuredClone(options)});return fetchImpl(path,options)}}
   const names=[...renderers,'financeUiOptions','renderReview','collectCurrent','setReviewBusy','saveCurrent','completeCurrent','refreshData','dialogWriteTask','syncOverlayBackground','openModal','closeModal',...(fetchImpl?['request','sessionExpired']:[])];
   functions=new Function(...Object.keys(context),`let modalReturnFocus=null;\n${constants}\n${names.map(owner).join('\n')}\nreturn {renderReview,showDailyPrompt,showExtendedPrompt,collectCurrent,saveCurrent,completeCurrent,dialogWriteTask,openModal,closeModal,review:DEFAULT_REVIEW_TEMPLATES,action:DEFAULT_ACTION_TEMPLATE};`)(...Object.values(context));
@@ -195,17 +195,17 @@ test('the real daily ledger survives first save and same-account conflict refres
     throw new Error(path);
   }});
   await settle();f.showDailyPrompt('finance');
-  const editor=$('#daily-editor'),form=$('#daily-finance [data-finance-create]'),amount=form.elements.expression,purpose=form.elements.purpose;
-  amount.value='8+8+8-1';amount.dispatchEvent(new win.Event('input',{bubbles:true}));purpose.value='早餐';purpose.dispatchEvent(new win.Event('input',{bubbles:true}));
-  assert.equal(f.state.current.data.financeDraft.expression,'8+8+8-1');
-  assert.equal((await f.saveCurrent()).id,'first-save');assert.equal($('#daily-finance [name="expression"]'),amount);
+  const editor=$('#daily-editor'),form=$('#daily-finance [data-finance-create]'),amount=form.elements.text;
+  amount.value='8+8+8-1 早餐';amount.dispatchEvent(new win.Event('input',{bubbles:true}));
+  assert.equal(f.state.current.data.financeDraft.text,'8+8+8-1 早餐');
+  assert.equal((await f.saveCurrent()).id,'first-save');assert.equal($('#daily-finance [name="text"]'),amount);
   await assert.rejects(f.saveCurrent(),error=>error===conflict);assert.equal(f.state.user,refreshedUser);
-  purpose.value='午餐';purpose.dispatchEvent(new win.Event('input',{bubbles:true}));assert.equal(f.state.current.data.financeDraft.purpose,'午餐');
+  amount.value='8+8+8-1 午餐';amount.dispatchEvent(new win.Event('input',{bubbles:true}));assert.equal(f.state.current.data.financeDraft.text,'8+8+8-1 午餐');
   $('[data-simple="action"]').value='尚未保存的行动';$('[data-simple="action"]').dispatchEvent(new win.Event('input',{bubbles:true}));
   form.dispatchEvent(new win.Event('submit',{bubbles:true,cancelable:true}));await settle();
-  assert.equal(entries.length,1);assert.equal(entries[0].amountCents,2300);assert.equal(entries[0].purpose,'午餐');assert.equal(f.state.current.data.financeDraft.expression,'');assert.equal(f.state.dirty,true);
-  assert.equal($('#daily-editor'),editor);assert.equal(form.elements.expression,amount);assert.equal($('[data-simple="action"]').value,'尚未保存的行动');assert.equal(f.state.saving,false);
-  f.state.user={id:'another-account'};amount.value='99';amount.dispatchEvent(new win.Event('input',{bubbles:true}));form.dispatchEvent(new win.Event('submit',{bubbles:true,cancelable:true}));await settle();assert.equal(entries.length,1);assert.equal(f.state.current.data.financeDraft.expression,'');
+  assert.equal(entries.length,1);assert.equal(entries[0].amountCents,2300);assert.equal(entries[0].purpose,'午餐');assert.equal(f.state.current.data.financeDraft.text,'');assert.equal(f.state.dirty,true);
+  assert.equal($('#daily-editor'),editor);assert.equal(form.elements.text,amount);assert.equal($('[data-simple="action"]').value,'尚未保存的行动');assert.equal(f.state.saving,false);
+  f.state.user={id:'another-account'};amount.value='99 其他账户不得提交';amount.dispatchEvent(new win.Event('input',{bubbles:true}));form.dispatchEvent(new win.Event('submit',{bubbles:true,cancelable:true}));await settle();assert.equal(entries.length,1);assert.equal(f.state.current.data.financeDraft.text,'');
 });
 
 test('accepted completion statistics update the header count without remounting the locked editor',async()=>{

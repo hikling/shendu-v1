@@ -12,6 +12,11 @@ const root=document.querySelector('#root'),settle=()=>new Promise(resolve=>setTi
 const $=s=>root.querySelector(s),$$=s=>[...root.querySelectorAll(s)];
 after(()=>{disposeUi(root);win.close()});
 
+test('finance compact selectors retain real dropdowns, form values and change ownership without changing review choices',async()=>{
+  renderMarkup(root,'<section class="finance-page"><form><label>分类<select name="category" data-finance-compact><option value="">自动分类</option><option value="food">餐饮</option></select></label><label>类型<select name="kind" data-finance-compact><option value="expense">支出</option><option value="income">收入</option></select></label></form></section>');
+  const select=$('select[name="category"]');assert.equal($('[role="radiogroup"]'),null);assert.equal(select.tabIndex,0);assert.equal(select.labels.length,1);let changed=0;select.addEventListener('change',()=>changed++);select.value='food';select.dispatchEvent(new win.Event('change',{bubbles:true}));await settle();assert.equal(changed,1);assert.equal(new win.FormData($('form')).get('category'),'food');enhanceUi(root);assert.equal($('select[name="category"]'),select);
+});
+
 test('history filters stay compact native selects with labels, values, disabled months and one change path',async()=>{
   renderMarkup(root,'<section class="history-page"><form><label>复盘类型<select id="history-type" name="type"><option value="all">全部类型</option><option value="daily" selected>每日复盘</option></select><span class="select-chevron" aria-hidden="true"></span></label><label>年份<select id="history-year" name="year"><option value="all">全部年份</option><option value="2026" selected>2026 年</option></select><span class="select-chevron" aria-hidden="true"></span></label><label>月份<select id="history-month" name="month" disabled><option value="all">先选年份</option><option value="11">11 月</option></select><span class="select-chevron" aria-hidden="true"></span></label></form></section>');
   assert.equal($$('[data-slot="native-select-wrapper"]').length,3);

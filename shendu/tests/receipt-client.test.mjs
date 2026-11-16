@@ -18,7 +18,7 @@ async function browser({recognize=async()=>({data:{text:'商户：早餐店\n支
   set('fetch',async(url,args)=>{fetches.push({url,args});return {ok:true}});
   set('__receiptOcrLibrary',{createWorker:async(...args)=>{const instance={recognize,terminate:async()=>{instance.terminated=true},args};workers.push(instance);return createWorker?await createWorker(instance):instance}});
   // Replace only the browser asset import. The tested processing/ownership code is unchanged.
-  const source=(await readFile(new URL('../public/receipt-client.js',import.meta.url),'utf8')).replace("'./finance-domain.js?v=1.0.0-finance1'",JSON.stringify(new URL('../public/finance-domain.js',import.meta.url).href)).replace("import('/ocr/tesseract.esm.min.js')","Promise.resolve({default:globalThis.__receiptOcrLibrary})");
+  const source=(await readFile(new URL('../public/receipt-client.js',import.meta.url),'utf8')).replace(/'\.\/finance-domain\.js(?:\?[^']*)?'/,JSON.stringify(new URL('../public/finance-domain.js',import.meta.url).href)).replace("import('/ocr/tesseract.esm.min.js')","Promise.resolve({default:globalThis.__receiptOcrLibrary})");
   const client=await import('data:text/javascript;base64,'+Buffer.from(source+'\n// '+Math.random()).toString('base64'));
   return {client,workers,canvases,bitmaps,fetches,restore(){client.disposeReceiptWorker();for(const [name,descriptor]of originals)if(descriptor)Object.defineProperty(globalThis,name,descriptor);else delete globalThis[name]}};
 }

@@ -15,11 +15,11 @@ const baseIds=new Set(DEFAULT_FINANCE_CATEGORIES.map(item=>item.id));
 
 export function normalizeFinanceDraft(value){
   if(!plain(value))return null;
-  const draft={expression:text(value.expression,200),purpose:text(value.purpose,160),categoryId:text(value.categoryId,100),note:text(value.note,1000),receiptIds:[]};
+  const draft={text:typeof value.text==='string'?value.text.slice(0,6000):'',expression:text(value.expression,200),purpose:text(value.purpose,160),categoryId:text(value.categoryId,100),note:text(value.note,1000),receiptIds:[]};
   if(Array.isArray(value.receiptIds))draft.receiptIds=[...new Set(value.receiptIds.filter(id=>typeof id==='string'&&UUID.test(id)))].slice(0,10);
   return draft;
 }
-export const financeDraftPending=value=>Boolean(value&&(text(value.expression,200)||text(value.purpose,160)||text(value.note,1000)||(Array.isArray(value.receiptIds)&&value.receiptIds.length)));
+export const financeDraftPending=value=>Boolean(value&&(text(value.text,6000)||text(value.expression,200)||text(value.purpose,160)||text(value.note,1000)||(Array.isArray(value.receiptIds)&&value.receiptIds.length)));
 
 export function createFinanceLedger({db,encryptData,decryptData,dataScope,now,readJson,json,today,withActivity,verifyReceipts=()=>true}){
   db.exec(`
