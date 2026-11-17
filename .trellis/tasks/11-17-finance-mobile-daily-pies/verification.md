@@ -7,4 +7,6 @@
 - New behavioral tests cover day/month entry scope, independent ledger/chart dates, full-month stats, pagination cursor, unsaved native field identity and stale day response rejected after switching to month. Existing tests cover pending writes, dates/Calendar and request ownership.
 - Actual iOS Safari was not tested on a physical iPhone. Scoped date/grid sizing and WebKit value rules address the screenshot's intrinsic date width, but narrow Chrome acceptance is not native Safari evidence.
 - Read-only public-site check before publishing still reported finance15 assets; this change uses finance16 for app/UI/CSS/categorizer/receipt client. A server update and page reload are needed to load it.
-- GitHub release validation pending.
+- GitHub main work commit `da8f1eaa90ed387b602e380ae37bbd43028ffd42`, application tree `a8edf4cef0b31a11782f59ffde4ab443c209861e`. [Run44079681544](https://github.com/hikling/shendu-v1/actions/runs/44079681544) passed all six jobs: handover, amd64/arm64 verification, publish and both download smoke checks.
+- Release retention plan/apply verified four complete releases remain, including this app tree. Removed only release447971778 (`deploy-eff391597c0342c5d47dca9d6a5219f556fa50f0`); all Git tags retained.
+- Test preview server and isolated browser closed; no live server deployment performed.

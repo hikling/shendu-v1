@@ -30,3 +30,5 @@ Reviewed the complete frontend/shared-domain change against the task artifacts a
 - Root reports browser acceptance at **1280/390/320px** with actual production assets/app overlay and synthetic import data: all fields contained, no horizontal overflow, `买面条` hint is 餐饮, visible nonzero populated charts and bright fills. Native Safari remains unverified as above.
 - Root reports motion/large-total browser acceptance: normal reveal is present, both reduced-motion settings disable it, the maximum supported total fits the ring center at320px, and no script exceptions occurred.
 - Root owns the final complete `npm test` and GitHub release gates; this report does not replace those results.
+
+Root final gate: npm test passed525 total /524 passed /1 optional OCR skip /0 failures; run44079681544 six release jobs all succeeded. Actual physical iOS Safari remains unverified.
