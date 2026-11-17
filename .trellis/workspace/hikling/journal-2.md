@@ -97,3 +97,26 @@ Contained mobile import date fields; expanded classification; separate day/month
 ### Status
 
 [OK] **Completed**
+
+
+## Session 90: Income entry and screenshot-matched expense recording
+<!-- trellis-session: v=2 fp=a655403b8c3d7050 -->
+
+**Date**: 2026-11-18
+**Task**: Income entry and screenshot-matched expense recording
+**Branch**: `main`
+
+### Summary
+
+Income-only creation preserves expense drafts; typed expense plans require stored receipts, unique amount auto-match and manual ambiguity resolution. Fixed Select popup overlay pointer issue; preserved legacy pictures/immutable uncertain retry payloads. Full suite538pass/1optional skip; final UI/matcher74pass; browser1280/390/320 accepted; GitHub six release jobs green; kept four complete Releases and all tags.
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `13ef4a8` | feat: match expense receipts and separate income entry |
+| `7ab84dd` | docs: record receipt matching release validation |
+
+### Status
+
+[OK] **Completed**
