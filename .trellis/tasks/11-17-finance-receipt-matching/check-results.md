@@ -22,3 +22,5 @@ No unresolved implementation blocker. Final integration review and checks were c
 - Full suite:539 total,538 passed,0 failed,1 optional browser OCR smoke skipped. Final finance UI/matcher suite74/74 and syntax/diff checks passed after final labels/status updates.
 - Desktop1280 and mobile390/320 synthetic browser flows: income enforces kind and preserves plan; text/upload create no premature expense; unique auto and unknown manual match work; missing mapping blocks; inline preview decodes a synthetic stand-in image; correct per-row IDs POST only after confirmation; no horizontal overflow or script errors. Actual menu pointer reachability verified.
 - Tests use synthetic records/images, not live customer/provider data. No physical iPhone Safari or new live R2 upload acceptance in this task; existing provider/client tests remain green.
+
+Final publishing gate: GitHub run44125803981 all six jobs succeeded on the final app tree; handover Python13/13 passed; exactly four complete releases remain and Git tags are intact.
