@@ -1897,3 +1897,25 @@ Resumed automatic sync and pushed receipt upload/S3 controls to main. GitHub4390
 ### Status
 
 [OK] **Completed**
+
+
+## Session 82: R2 receipt content verification and safe upload stages
+<!-- trellis-session: v=2 fp=b5f9dac4baa8280f -->
+
+**Date**: 2026-11-17
+**Task**: R2 receipt content verification and safe upload stages
+**Branch**: `main`
+
+### Summary
+
+Added native R2 HEAD+bounded actual-byte SHA256 readback without image disk cache, preserved strict ordinary S3 checksum proof, safe prepare/image/thumb/complete error stages. Official exact-origin CORS guidance provided.497 tests:496pass/1optional skip; focused38, handover13, build/check/resource smoke pass. GitHub43985375825 all jobs passed including both public downloads/start/snapshot. Retain4 complete Releases preserve tags. No real user R2 credentials or browser/provider acceptance; original production failing step unconfirmed.
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `a4c4242` | fix: support R2 receipt verification and staged upload errors |
+
+### Status
+
+[OK] **Completed**
