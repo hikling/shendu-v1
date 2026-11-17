@@ -187,6 +187,82 @@ test('receipt prepare is idempotent, disallows PNG/oversize and requires both va
   }finally{f.close()}
 });
 
+test('failed pending upload reuses identical tickets and rotates both paths when recompression changes',async()=>{
+  const f=fixture();try{
+    await f.configure();const first=await f.prepare(),id=first.value.receiptId;
+    assert.equal(first.value.uploadVersion,1);
+    f.wrongHead=true;assert.equal((await f.route(`/api/finance/receipts/${id}/complete`)).status,409);
+    const original=f.service.exportUser(f.owner.id).receipts[0],retry=await f.prepare();
+    assert.equal(retry.value.uploadVersion,1);assert.equal(retry.value.receiptId,id);
+    assert.deepEqual(f.service.exportUser(f.owner.id).receipts[0],original);
+    for(const name of ['image','thumb'])assert.equal(new URL(retry.value.uploads[name].url).pathname,new URL(first.value.uploads[name].url).pathname);
+    const changed={...variants,image:{type:'image/jpeg',bytes:22000,sha256:hash('recompressed image')}};
+    const next=await f.prepare(f.owner,{variants:changed});assert.equal(next.status,200);assert.equal(next.value.receiptId,id);assert.equal(next.value.uploadVersion,2);
+    const row=f.service.exportUser(f.owner.id).receipts[0];
+    assert.equal(row.hash,original.hash);assert.equal(row.ready,0);assert.equal(row.version,2);assert.equal(row.createdAt,original.createdAt);assert.deepEqual(row.data.variants,changed);
+    for(const name of ['image','thumb']){assert.notEqual(row.data.keys[name],original.data.keys[name]);assert.ok(row.data.keys[name].includes(`/${id}/`))}
+    assert.equal(f.db.prepare('SELECT COUNT(*) n FROM finance_receipts').get().n,1);
+    assert.doesNotMatch(f.db.prepare('SELECT data FROM finance_receipts WHERE id=?').get(id).data,/receipts\/|variants|recompressed/);
+    const beforeCalls=f.calls.length;
+    for(const uploadVersion of [undefined,null,0,-1,1,'2',2.5,Number.MAX_SAFE_INTEGER+1,3]){
+      const response=await f.route(`/api/finance/receipts/${id}/complete`,{body:uploadVersion===undefined?{}:{uploadVersion}});
+      assert.equal(response.status,409);assert.equal(response.value.error,'finance_receipt_stale_upload');assert.equal(f.calls.length,beforeCalls);assert.equal(f.service.hasReadyReceipt(f.owner.id,id),false);
+    }
+    f.requestHook=(_config,key,method)=>{assert.equal(method,'HEAD');const v=key.includes('/thumb.')?changed.thumb:changed.image;return {headers:{'content-length':v.bytes,'content-type':v.type,'x-amz-meta-sha256':v.sha256,'x-amz-checksum-sha256':checksum(v.sha256)}}};
+    assert.equal((await f.route(`/api/finance/receipts/${id}/complete`,{body:{uploadVersion:2}})).status,200);
+    const saved=f.service.exportUser(f.owner.id).receipts[0];assert.equal(saved.ready,1);
+    const replay=await f.prepare();assert.equal(replay.value.ready,true);assert.equal(replay.value.receiptId,id);assert.deepEqual(replay.value.uploads,{});
+    assert.deepEqual(f.service.exportUser(f.owner.id).receipts[0],saved,'ready image must ignore recompression changes');
+    assert.equal((await f.route(`/api/finance/receipts/${id}/complete`,{body:{uploadVersion:1}})).status,200,'ready completion stays idempotent');
+    assert.equal(f.calls.length,beforeCalls+2);
+  }finally{f.close()}
+});
+
+test('retired R2 PUT tickets cannot overwrite the retried objects or complete their newer attempt',async()=>{
+  const f=fixture();try{
+    const id=await prepareR2(f),old=f.service.exportUser(f.owner.id).receipts[0],objects=new Map();
+    const bodies={image:Buffer.alloc(1500,3),thumb:Buffer.alloc(90,4)},changed=Object.fromEntries(['image','thumb'].map(name=>[name,{type:'image/jpeg',bytes:bodies[name].length,sha256:hash(bodies[name])}]));
+    const next=await f.prepare(f.owner,{variants:changed});assert.equal(next.value.uploadVersion,2);
+    const current=f.service.exportUser(f.owner.id).receipts[0];
+    for(const name of ['image','thumb'])objects.set(old.data.keys[name],{variant:r2Variants[name],body:name==='image'?r2Image:r2Thumb});
+    f.requestHook=(_config,key,method)=>{const object=objects.get(key);if(!object)throw Error('not uploaded');const v=object.variant;return method==='HEAD'?{headers:{'content-length':v.bytes,'content-type':v.type,'x-amz-meta-sha256':v.sha256}}:{body:object.body}};
+    assert.equal((await f.route(`/api/finance/receipts/${id}/complete`,{body:{uploadVersion:1}})).value.error,'finance_receipt_stale_upload');assert.equal(f.calls.length,0);
+    assert.equal((await f.route(`/api/finance/receipts/${id}/complete`,{body:{uploadVersion:2}})).value.error,'finance_receipt_incomplete');
+    for(const name of ['image','thumb'])objects.set(current.data.keys[name],{variant:changed[name],body:bodies[name]});
+    const done=await f.route(`/api/finance/receipts/${id}/complete`,{body:{uploadVersion:2}});assert.equal(done.status,200);assert.equal(f.service.hasReadyReceipt(f.owner.id,id),true);
+    assert.equal(objects.size,4,'retired objects are not deleted by retry');
+    const restored=f.service.validateImport(f.service.exportUser(f.owner.id));assert.equal(restored.receipts[0].id,id);assert.deepEqual(restored.receipts[0].data.keys,current.data.keys);
+  }finally{f.close()}
+});
+
+test('recompression during asynchronous verification invalidates the older completion on success and failure',async()=>{
+  for(const fails of [false,true]){
+    const f=fixture();let release,pending;try{
+      await f.configure();const first=await f.prepare(),id=first.value.receiptId;let enter;
+      const entered=new Promise(resolve=>{enter=resolve}),hold=new Promise(resolve=>{release=resolve});
+      f.requestHook=async()=>{enter();await hold;if(fails)throw Error('private provider failure');const v=variants.image;return {headers:{'content-length':v.bytes,'content-type':v.type,'x-amz-meta-sha256':v.sha256,'x-amz-checksum-sha256':checksum(v.sha256)}}};
+      pending=f.route(`/api/finance/receipts/${id}/complete`,{body:{uploadVersion:1}});await entered;
+      const changed={...variants,thumb:{...variants.thumb,sha256:hash('new thumb')}};
+      assert.equal((await f.prepare(f.owner,{variants:changed})).value.uploadVersion,2);
+      release();const response=await pending;assert.equal(response.status,409);assert.equal(response.value.error,'version_conflict');assert.equal(f.service.hasReadyReceipt(f.owner.id,id),false);assert.equal(f.calls.length,1);
+      assert.doesNotMatch(JSON.stringify(response.value),/private provider/);
+    }finally{release?.();if(pending)await pending;f.close()}
+  }
+});
+
+test('prepare checks the full storage snapshot after DNS and keeps real UUID collisions isolated',async()=>{
+  const f=fixture();let release,pending;try{
+    await f.configure();await f.configure(f.other);const first=await f.prepare(),id=first.value.receiptId;
+    for(const [user,body] of [[f.other,{id}],[f.owner,{id,hash:hash('other original')}]] ){
+      const response=await f.prepare(user,body);assert.equal(response.status,409);assert.equal(response.value.error,'finance_receipt_id_conflict');
+    }
+    const snapshot=f.service.exportUser(f.owner.id),before=JSON.stringify(snapshot.receipts);
+    f.dnsWait=new Promise(resolve=>{release=resolve});pending=f.prepare(f.owner,{variants:{...variants,image:{...variants.image,bytes:22001}}});await new Promise(resolve=>setImmediate(resolve));
+    f.service.importUser(f.owner.id,snapshot,{replace:true});release();
+    assert.equal((await pending).value.error,'version_conflict');assert.equal(JSON.stringify(f.service.exportUser(f.owner.id).receipts),before);assert.equal(f.calls.length,0);
+  }finally{release?.();if(pending)await pending;f.close()}
+});
+
 test('foreign receipts and old sessions cannot receive URLs or complete writes after asynchronous validation',async()=>{
   const f=fixture();try{
     await f.configure();await f.configure(f.other);const prepared=await f.prepare(),id=prepared.value.receiptId;

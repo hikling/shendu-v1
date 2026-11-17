@@ -103,6 +103,10 @@ export function createFinanceReceipts(deps){
     db.exec('BEGIN');try{const result=write();db.exec('COMMIT');return result}catch(caught){db.exec('ROLLBACK');throw caught}
   };
   const requireStorage=userId=>{const config=storage(userId)?.config;if(!config)throw bad('请先配置凭证图片存储','finance_storage_required',409);return config};
+  const uploadData=(userId,id,variants,config)=>{
+    const base=`receipts/${namespace(userId)}/${id}/${randomUUID()}`;
+    return {keys:Object.fromEntries(['image','thumb'].map(name=>[name,`${base}/${name}${variants[name].type==='image/webp'?'.webp':'.jpg'}`])),variants,storageIdentity:receiptStorageIdentity(config)};
+  };
   const owned=(userId,id)=>{if(!UUID.test(id))throw bad('图片不存在','finance_receipt_not_found',404);const row=db.prepare('SELECT * FROM finance_receipts WHERE id=? AND user_id=?').get(id,userId);if(!row)throw bad('图片不存在','finance_receipt_not_found',404);return unpack(row)};
   const hasReadyReceipt=(userId,id)=>!!db.prepare('SELECT id FROM finance_receipts WHERE id=? AND user_id=? AND ready=1').get(id,userId);
   const storageOrigins=userId=>{
@@ -218,27 +222,40 @@ export function createFinanceReceipts(deps){
       if(path==='/api/finance/receipts/prepare'&&req.method==='POST'){
         const body=await readJson(req);sessionCurrent(req,user);checkRate(user.id,'prepare-minute',30,60000);checkRate(user.id,'prepare-day',250,86400000);
         if(!UUID.test(body.id)||!HASH.test(String(body.hash||'')))throw bad('图片标识不正确');
-        const variants=variantsFrom(body.variants),config=requireStorage(user.id);await assertPublicHttps(config.endpoint);sessionCurrent(req,user);
-        if(receiptStorageIdentity(requireStorage(user.id))!==receiptStorageIdentity(config))throw bad('图片存储设置已变化，请重新上传','finance_storage_conflict',409);
+        const variants=variantsFrom(body.variants),config=requireStorage(user.id),prior=storage(user.id);
+        try{await assertPublicHttps(config.endpoint)}catch(caught){sameStorage(req,user,prior);throw caught}
+        sameStorage(req,user,prior);
         let row=db.prepare('SELECT * FROM finance_receipts WHERE user_id=? AND hash=?').get(user.id,body.hash);
         const sameId=db.prepare('SELECT * FROM finance_receipts WHERE id=?').get(body.id);
-        if(sameId&&sameId.user_id!==user.id)throw bad('图片标识不可用','finance_receipt_conflict',409);
-        if(sameId&&sameId.hash!==body.hash)throw bad('相同图片标识对应不同内容','finance_receipt_conflict',409);
-        if(row){row=unpack(row);if(row.ready){json(res,200,{receiptId:row.id,ready:true,duplicate:true,uploads:{}});return true}if(stable(row.data.variants)!==stable(variants))throw bad('同一图片的压缩结果已改变，请重试原上传','finance_receipt_conflict',409)}
+        if(sameId&&(sameId.user_id!==user.id||sameId.hash!==body.hash))throw bad('图片标识不可用，请重新选择截图','finance_receipt_id_conflict',409);
+        if(row){
+          const encrypted=row.data;row=unpack(row);
+          if(row.ready){json(res,200,{receiptId:row.id,ready:true,duplicate:true,uploads:{}});return true}
+          if(row.data.storageIdentity!==receiptStorageIdentity(config))throw bad('图片存储位置已变化，请检查设置','finance_storage_conflict',409);
+          if(stable(row.data.variants)!==stable(variants)){
+            const version=row.version+1;if(!Number.isSafeInteger(version))throw bad('图片上传版本超出范围','finance_receipt_stale_upload',409);
+            // Retired PUT tickets must never write to a newer attempt's objects.
+            const data=uploadData(user.id,row.id,variants,config);
+            const changed=db.prepare('UPDATE finance_receipts SET data=?,version=?,updated_at=? WHERE id=? AND user_id=? AND hash=? AND ready=0 AND version=? AND data=?').run(encryptData(data,dataScope('finance-receipt',user.id,row.id,'data')),version,now(),row.id,user.id,row.hash,row.version,encrypted);
+            if(changed.changes!==1)throw bad('图片资料已更新，请重新上传','version_conflict',409);
+            row={...row,data,version};
+          }
+        }
         else{
           if(db.prepare('SELECT COUNT(*) n FROM finance_receipts WHERE user_id=?').get(user.id).n>=MAX_RECEIPTS)throw bad('凭证图片数量已达上限，请先整理','finance_receipt_quota',413);
-          const stamp=now(),base=`receipts/${namespace(user.id)}/${body.id}/${randomUUID()}`,keys=Object.fromEntries(['image','thumb'].map(name=>[name,`${base}/${name}${variants[name].type==='image/webp'?'.webp':'.jpg'}`])),data={keys,variants,storageIdentity:receiptStorageIdentity(config)};
-          db.prepare('INSERT INTO finance_receipts(id,user_id,hash,data,created_at,updated_at) VALUES(?,?,?,?,?,?)').run(body.id,user.id,body.hash,encryptData(data,dataScope('finance-receipt',user.id,body.id,'data')),stamp,stamp);row={id:body.id,hash:body.hash,data};
+          const stamp=now(),data=uploadData(user.id,body.id,variants,config);
+          db.prepare('INSERT INTO finance_receipts(id,user_id,hash,data,created_at,updated_at) VALUES(?,?,?,?,?,?)').run(body.id,user.id,body.hash,encryptData(data,dataScope('finance-receipt',user.id,body.id,'data')),stamp,stamp);row={id:body.id,hash:body.hash,data,version:1};
         }
         if(row.data.storageIdentity!==receiptStorageIdentity(config))throw bad('图片存储位置已变化，请检查设置','finance_storage_conflict',409);
         const uploads=Object.fromEntries(['image','thumb'].map(name=>[name,presignReceipt(config,row.data.keys[name],{method:'PUT',variant:row.data.variants[name]})]));
-        json(res,200,{receiptId:row.id,ready:false,uploads});return true;
+        json(res,200,{receiptId:row.id,ready:false,uploadVersion:row.version,uploads});return true;
       }
       const completed=/^\/api\/finance\/receipts\/([^/]+)\/complete$/.exec(path);
       if(completed&&req.method==='POST'){
-        await readJson(req);sessionCurrent(req,user);checkRate(user.id,'complete',120,60000);
+        const body=await readJson(req);sessionCurrent(req,user);checkRate(user.id,'complete',120,60000);
         const row=owned(user.id,completed[1]);
         if(row.ready){json(res,200,{receipt:{id:row.id,hash:row.hash,ready:true}});return true}
+        if(body.uploadVersion===undefined?row.version!==1:!Number.isSafeInteger(body.uploadVersion)||body.uploadVersion<1||body.uploadVersion!==row.version)throw bad('本次上传授权已失效，请重新选择截图','finance_receipt_stale_upload',409);
         const config=requireStorage(user.id),storageSnapshot=stable(storage(user.id));if(row.data.storageIdentity!==receiptStorageIdentity(config))throw bad('图片存储关联不一致');
         const checkCurrent=()=>{
           sessionCurrent(req,user);
@@ -260,7 +277,8 @@ export function createFinanceReceipts(deps){
           }}catch{checkCurrent();throw bad('图片尚未上传完整或 SHA-256 校验失败，请重新上传后重试','finance_receipt_incomplete',409)}
         });
         checkCurrent();
-        db.prepare('UPDATE finance_receipts SET ready=1,version=version+1,updated_at=? WHERE id=? AND user_id=? AND ready=0').run(now(),row.id,user.id);
+        const changed=db.prepare('UPDATE finance_receipts SET ready=1,version=version+1,updated_at=? WHERE id=? AND user_id=? AND hash=? AND ready=0 AND version=?').run(now(),row.id,user.id,row.hash,row.version);
+        if(changed.changes!==1)throw bad('图片资料已更新，请重试','version_conflict',409);
         json(res,200,{receipt:{id:row.id,hash:row.hash,ready:true}});return true;
       }
       if(path==='/api/finance/receipts/read'&&req.method==='POST'){

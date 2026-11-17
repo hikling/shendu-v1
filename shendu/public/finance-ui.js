@@ -145,7 +145,7 @@ function createWorkspace(container,options,daily){
       try{await write(form,async current=>{
         const active=()=>current()&&!owner.signal.aborted;
         try{
-          message.textContent='正在保存补传截图…';receiptModule=options.receiptClient||await import('./receipt-client.js?v=1.0.0-finance9');if(!active())return;
+          message.textContent='正在保存补传截图…';receiptModule=options.receiptClient||await import('./receipt-client.js?v=1.0.0-finance10');if(!active())return;
           const task=receiptModule.processReceiptFiles(files,{request,isCurrent:active,signal:owner.signal,categories,date:form.elements.date.value,upload:true,onProgress:progress=>{if(active())message.textContent=typeof progress==='string'?progress:progress?.message||'正在保存截图…'}});
           const result=await Promise.race([task,new Promise((_,reject)=>{onAbort=()=>reject(new DOMException('已取消截图处理','AbortError'));owner.signal.addEventListener('abort',onAbort,{once:true});if(owner.signal.aborted)onAbort()})]);if(!active())return;
           const uploaded=[...new Set(result.receiptIds||[])];if(!uploaded.length||result.imageStatus==='not_stored')throw new Error('截图尚未保存，未关联到账目。请先在图片存储设置中配置并测试S3，再重新补传。');
@@ -223,7 +223,7 @@ function createWorkspace(container,options,daily){
   async function hydrateThumbnails(ids,current=alive){
     const images=()=>$$('[data-receipt-thumb]',container).filter(image=>ids.includes(image.dataset.receiptThumb));
     const failed=image=>{image.hidden=true;const button=image.closest('button'),label=$('span',button);label.hidden=false;label.textContent='重试';button.title='截图暂未读取，点击重新获取';button.setAttribute('aria-label','截图暂未读取，点击重新获取')};
-    try{const {loadReceiptUrls}=options.receiptClient||await import('./receipt-client.js?v=1.0.0-finance9');if(!current())return;const urls=await loadReceiptUrls(ids,'thumb',{request,isCurrent:current});if(!current())return;for(const image of images()){const url=safeImageUrl(urls[image.dataset.receiptThumb]);if(url){image.addEventListener('error',()=>{if(current())failed(image)},{once:true});image.src=url;image.hidden=false;$('span',image.closest('button')).hidden=true}else failed(image)}}catch{if(current())for(const image of images())failed(image)}
+    try{const {loadReceiptUrls}=options.receiptClient||await import('./receipt-client.js?v=1.0.0-finance10');if(!current())return;const urls=await loadReceiptUrls(ids,'thumb',{request,isCurrent:current});if(!current())return;for(const image of images()){const url=safeImageUrl(urls[image.dataset.receiptThumb]);if(url){image.addEventListener('error',()=>{if(current())failed(image)},{once:true});image.src=url;image.hidden=false;$('span',image.closest('button')).hidden=true}else failed(image)}}catch{if(current())for(const image of images())failed(image)}
   }
   async function viewReceipt(receiptId){
     if(!alive())return;
@@ -239,7 +239,7 @@ function createWorkspace(container,options,daily){
       render(host,'<img alt="账目压缩截图" hidden>');const image=$('img',host);
       const failed=error=>{if(!accepted()||!image.isConnected)return;image.hidden=true;message.hidden=false;message.textContent=error?.message||'截图加载失败，可能是授权已过期或网络暂时不可用。请重新读取。';retry.hidden=false;retry.disabled=false};
       image.addEventListener('error',()=>failed(),{once:true});image.addEventListener('load',()=>{if(accepted()&&image.isConnected){message.hidden=true;image.hidden=false}},{once:true});
-      try{const {loadReceiptUrls}=options.receiptClient||await import('./receipt-client.js?v=1.0.0-finance9');if(!accepted())return;const urls=await loadReceiptUrls([receiptId],'image',{request,isCurrent:accepted});if(!accepted())return;const url=safeImageUrl(urls[receiptId]);if(!url)throw new Error('这张截图暂时无法读取，请检查凭证存储后重试。');message.textContent='正在载入截图…';image.src=url;image.hidden=false}
+      try{const {loadReceiptUrls}=options.receiptClient||await import('./receipt-client.js?v=1.0.0-finance10');if(!accepted())return;const urls=await loadReceiptUrls([receiptId],'image',{request,isCurrent:accepted});if(!accepted())return;const url=safeImageUrl(urls[receiptId]);if(!url)throw new Error('这张截图暂时无法读取，请检查凭证存储后重试。');message.textContent='正在载入截图…';image.src=url;image.hidden=false}
       catch(error){failed(error)}finally{if(accepted()){loading=false;retry.disabled=false}}
     }
     retry.addEventListener('click',loadImage);await loadImage();
@@ -305,7 +305,7 @@ function createWorkspace(container,options,daily){
     try{await write(anchor,async current=>{
       const active=()=>current()&&!owner.signal.aborted;
       try{
-        status('正在本地读取截图…');receiptModule=options.receiptClient||await import('./receipt-client.js?v=1.0.0-finance9');if(!active())return;
+        status('正在本地读取截图…');receiptModule=options.receiptClient||await import('./receipt-client.js?v=1.0.0-finance10');if(!active())return;
         const task=receiptModule.processReceiptFiles(files,{request,isCurrent:active,signal:owner.signal,categories,date:day,upload:true,onProgress:progress=>{if(active())status(typeof progress==='string'?progress:progress?.message||'正在本地识别截图…')}});
         const result=await Promise.race([task,new Promise((_,reject)=>{onAbort=()=>reject(new DOMException('已取消图片处理','AbortError'));owner.signal.addEventListener('abort',onAbort,{once:true});if(owner.signal.aborted)onAbort()})]);if(!active())return;
         const candidates=result.candidates?.length?result.candidates:[{date:day,expression:'',purpose:'',kind:'expense',categoryId:'',receiptIds:result.receiptIds||[],confidence:0}];

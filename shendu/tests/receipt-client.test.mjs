@@ -164,3 +164,48 @@ test('browser fetch failure advises CORS or network without claiming an exact pr
     });
   }finally{b.restore()}
 });
+
+test('completion echoes the current pending upload ticket revision and supports an older first-attempt server',async()=>{
+  for(const uploadVersion of [undefined,3]){
+    const b=await browser();try{
+      let completed=false;await b.client.processReceiptFiles([screenshot()],{request:async(path,args)=>{
+        if(path.endsWith('/storage'))return {configured:true,config};
+        if(path.endsWith('/prepare'))return {receiptId:'receipt-id',uploadVersion,uploads:Object.fromEntries(['image','thumb'].map(name=>[name,{url:objectUrl(name),headers:{}}]))};
+        if(path.endsWith('/complete')){assert.deepEqual(args.body,uploadVersion===undefined?{}:{uploadVersion});completed=true;return {receipt:{ready:true}}}throw Error(path);
+      }});assert.equal(completed,true);
+    }finally{b.restore()}
+  }
+});
+
+test('prepare 409 preserves safe server reasons instead of falsely blaming saved configuration',async()=>{
+  for(const [reason,copy] of [['finance_receipt_conflict',/旧上传状态/],['finance_storage_required',/尚未配置/],['finance_storage_conflict',/设置已变化/],['finance_receipt_id_conflict',/编号发生冲突/],['finance_receipt_stale_upload',/新的重试替代/]]){
+    const b=await browser();try{
+      await assert.rejects(b.client.processReceiptFiles([screenshot()],{request:async path=>{
+        if(path.endsWith('/storage'))return {configured:true,config};throw Object.assign(new Error('PRIVATE_SECRET signed-url'),{code:reason,status:409});
+      }}),error=>{assert.equal(error.receiptReason,reason);assert.equal(error.receiptStage,'prepare');assert.match(error.message,copy);assert.doesNotMatch(error.message,/PRIVATE_SECRET|signed-url/);return true});
+    }finally{b.restore()}
+  }
+});
+
+test('malformed upload revisions stop before sending either image or completion',async()=>{
+  for(const uploadVersion of [null,0,-1,1.5,'2',Number.MAX_SAFE_INTEGER+1]){
+    const b=await browser();try{
+      let completes=0;
+      await assert.rejects(b.client.processReceiptFiles([screenshot()],{request:async path=>{
+        if(path.endsWith('/storage'))return {configured:true,config};
+        if(path.endsWith('/prepare'))return {receiptId:'receipt-id',uploadVersion,uploads:{image:{url:objectUrl('image')}}};
+        completes++;throw Error(path);
+      }}),error=>error.code==='receipt_upload_failed'&&error.receiptReason==='finance_receipt_stale_upload');
+      assert.equal(b.fetches.length,0);assert.equal(completes,0);
+    }finally{b.restore()}
+  }
+});
+
+test('unknown provider reasons use safe stage fallback without exposing a reason or private text',async()=>{
+  const b=await browser();try{
+    await assert.rejects(b.client.processReceiptFiles([screenshot()],{request:async path=>{
+      if(path.endsWith('/storage'))return {configured:true,config};
+      throw Object.assign(new Error('PRIVATE_KEY https://private.example.test/?signature=secret'),{status:409,code:'PRIVATE_PROVIDER_CODE'});
+    }}),error=>{assert.equal(error.receiptReason,undefined);assert.equal(error.receiptStage,'prepare');assert.match(error.message,/申请上传授权失败（409）/);assert.doesNotMatch(error.message,/PRIVATE|private\.example|signature=secret/);return true});
+  }finally{b.restore()}
+});
