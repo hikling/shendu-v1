@@ -1919,3 +1919,26 @@ Added native R2 HEAD+bounded actual-byte SHA256 readback without image disk cach
 ### Status
 
 [OK] **Completed**
+
+
+## Session 83: Repair pending receipt retries and verify release
+<!-- trellis-session: v=2 fp=567a677bac2eb70f -->
+
+**Date**: 2026-11-17
+**Task**: Repair pending receipt retries and verify release
+**Branch**: `main`
+
+### Summary
+
+Fixed repeated screenshot prepare409 by rotating both pending object keys with CAS, forwarding uploadVersion and rejecting retired completion before network. Preserved ready photos and R2 actual-byte/S3 checksum verification. Local 504 pass/1 optional browser skip, independent46 pass, handover13 and isolated HTTP smoke. GitHub run43992498513 six jobs success. Retained latest4 Releases, preserved tags. Real user R2/browser upload still requires server update.
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `ab50264` | fix: allow safe retries of failed receipt uploads |
+| `02633b6` | docs: record verified receipt retry release |
+
+### Status
+
+[OK] **Completed**
