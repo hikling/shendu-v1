@@ -1942,3 +1942,26 @@ Fixed repeated screenshot prepare409 by rotating both pending object keys with C
 ### Status
 
 [OK] **Completed**
+
+
+## Session 84: Mobile menu activation and review art visibility
+<!-- trellis-session: v=2 fp=a3d180db124bded6 -->
+
+**Date**: 2026-11-17
+**Task**: Mobile menu activation and review art visibility
+**Branch**: `main`
+
+### Summary
+
+Only mobile hamburger opts into click activation; retained Radix keyboard/focus/dismissal and desktop pointer behavior. Hid all six review art wrappers at <=820px and removed their grid row; desktop CSS outside mobile blocks identical. Full507 pass/1 optional browser skip, independent39 pass, handover13, build/syntax/isolated HTTP smoke pass. GitHub run43997554307 six jobs success; retained4 Releases and all tags. Browser unavailable; real phone appearance/tap acceptance not claimed.
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `9a457be` | fix: restore mobile menu taps and hide mobile review art |
+| `f704e22` | docs: record verified mobile interface release |
+
+### Status
+
+[OK] **Completed**
