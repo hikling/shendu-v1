@@ -14,7 +14,7 @@ test('classification respects custom names, archived categories and unknown purp
   const categories=[...DEFAULT_FINANCE_CATEGORIES,{id:'custom',name:'咖啡',keywords:['星巴克'],active:true}];
   assert.equal(suggestFinanceCategory('星巴克咖啡',categories),'custom');assert.equal(suggestFinanceCategory('咖啡',categories),'custom');
   assert.equal(suggestFinanceCategory('不明用途',categories),'uncategorized');assert.equal(suggestFinanceCategory('',categories,'income'),'other-income');
-  assert.equal(suggestFinanceCategory('星巴克',categories.map(category=>category.id==='custom'?{...category,active:false}:category)),'uncategorized');
+  assert.equal(suggestFinanceCategory('星巴克',categories.map(category=>category.id==='custom'?{...category,active:false}:category)),'food','inactive custom rules fall back to the recognized dining merchant');
 });
 
 test('automatic category labels recognize meal synonyms and retain an unknown full purpose without writing',()=>{
@@ -59,7 +59,7 @@ test('everyday purposes recognize groceries, purchases and a wider range of livi
   for(const [expected,purposes] of Object.entries(cases)){
     for(const purpose of purposes)assert.equal(suggestFinanceCategory(purpose),expected,purpose);
   }
-  for(const purpose of ['便利店','星巴克','修鞋','修伞','甲店','车间材料','卡套定制'])assert.equal(suggestFinanceCategory(purpose),'uncategorized',purpose);
+  for(const purpose of ['便利店','修鞋','修伞','甲店','车间材料','卡套定制'])assert.equal(suggestFinanceCategory(purpose),'uncategorized',purpose);
 });
 
 test('specific purposes beat general shopping channels while custom and inactive categories retain their rules',()=>{
@@ -112,13 +112,57 @@ test('purpose-only categories do not hide recognized built-ins during future aut
   assert.equal(JSON.stringify(categories),original,'inference never rewrites old category objects');
 });
 
+test('screenshot noodles and colloquial purchases share broad daily recognition across input modes',()=>{
+  const cases={
+    food:['买面条','买点吃的','吃点东西','早餐店买油条','馄饨','公司饭团','买调料','喝豆浆','炒饭','买桶装水','买冰淇淋','瑞幸咖啡','星巴克'],
+    shopping:['买东西','买点东西','购买东西','买些东西','买点小东西','日常采购','天猫买东西','在网上买点东西','去超市买点东西','买雨伞','买收纳盒','手机配件','买猫砂','买面条机','买面包机','买水果刀'],
+    transport:['租车费','飞机票','轮渡船票','补胎','换机油','邮寄快递费'],
+    housing:['交水电煤','暖气费','宽带续费','手机充值','住旅馆','水管维修'],
+    health:['感冒药','医用棉签','挂号费','牙套','验血','康复治疗'],
+    learning:['买课','教辅资料','英语课','字帖','家教补课','论文打印'],
+    entertainment:['音乐节','桌游','腾讯视频会员','瑜伽','滑雪','足浴'],
+    social:['乔迁红包','满月酒','慈善捐款','礼品','人情费'],
+    salary:['工资到账','月薪','全勤奖','销售提成'],
+    'other-income':['稿费','劳务费','报销款','政府补贴','奖学金','二手出售']
+  };
+  const legacy=[...DEFAULT_FINANCE_CATEGORIES,...['买面条','买东西','买点东西','买点吃的','超市买面条'].map((name,index)=>({id:`old-purpose-${index}`,name,keywords:[],active:true}))],before=JSON.stringify(legacy);
+  for(const [expected,purposes] of Object.entries(cases)){
+    for(const purpose of purposes){
+      assert.equal(suggestFinanceCategory(purpose),expected,purpose);
+      assert.equal(suggestFinanceCategory(purpose,legacy),expected,`old fallback: ${purpose}`);
+      assert.equal(financeCategoryLabel(purpose,legacy),DEFAULT_FINANCE_CATEGORIES.find(category=>category.id===expected).name,purpose);
+    }
+  }
+  const lines=parseFinanceLines('8 买面条\n30 买点东西\n4 买点吃的',{categories:legacy});
+  assert.deepEqual(lines.errors,[]);assert.deepEqual(lines.rows.map(row=>row.categoryId),['food','shopping','food']);assert.equal(lines.totalCents,4200);
+  const receipt=parseReceiptText('商品说明：买面条\n支付金额 ¥8.00',{categories:legacy});
+  assert.equal(receipt[0].categoryId,'food');assert.equal(receipt[0].purpose,'买面条');assert.equal(receipt[0].expression,'8.00');
+  for(const [purpose,expected] of [['抖音商城买面条','food'],['购买东西买退烧药','health'],['天猫买字帖','learning'],['淘宝买面条机','shopping'],['超市买面条机','shopping']])assert.equal(suggestFinanceCategory(purpose,legacy),expected,purpose);
+  assert.equal(JSON.stringify(legacy),before,'expanded inference is pure and never rewrites the old category records');
+});
+
+test('OCR spacing and fullwidth glyphs affect matching only, with custom rules and unknown names preserved',()=>{
+  const purposes=[['买 面 条','food'],['买　东　西','shopping'],['买点 东西','shopping'],['ＫＴＶ','entertainment'],['CT 检查','health'],['买\u200b面条','food']];
+  for(const [purpose,expected] of purposes){
+    const legacy=[...DEFAULT_FINANCE_CATEGORIES,{id:'old',name:purpose,keywords:[],active:true}];
+    assert.equal(suggestFinanceCategory(purpose,legacy),expected,purpose);
+    const parsed=parseFinanceLines(`8 ${purpose}`,{categories:legacy});assert.equal(parsed.rows[0].categoryId,expected);assert.equal(parsed.rows[0].purpose,purpose,'normalizing for inference must not alter the entered purpose');
+  }
+  const specific={id:'own-noodles',name:'面食',keywords:['面条'],active:true};
+  assert.equal(suggestFinanceCategory('买面条',[...DEFAULT_FINANCE_CATEGORIES,specific]),specific.id,'equally specific configured custom rules win over a built-in word');
+  assert.equal(suggestFinanceCategory('买面条',[...DEFAULT_FINANCE_CATEGORIES,{...specific,active:false}]),'food');
+  assert.equal(suggestFinanceCategory('买面条',DEFAULT_FINANCE_CATEGORIES.map(category=>category.id==='food'?{...category,active:false}:category)),'uncategorized');
+  const unknown='修补 老式 装裱';assert.equal(financeCategoryLabel(unknown),unknown);assert.equal(suggestFinanceCategory(unknown),'uncategorized');
+  const old={id:'old-unknown',name:unknown,keywords:[],active:true};assert.equal(suggestFinanceCategory(unknown,[...DEFAULT_FINANCE_CATEGORIES,old]),old.id);
+});
+
 test('line entry normalizes only safe fullwidth amount characters and respects current account categories',()=>{
   const categories=[...DEFAULT_FINANCE_CATEGORIES,{id:'custom',name:'咖啡',keywords:['星巴克'],active:true}];
   const parsed=parseFinanceLines('１２．５０ ＋ ６ − ０．０１　星巴克 Ａ店',{categories});
   assert.deepEqual(parsed,{rows:[{line:1,expression:'12.50 + 6 - 0.01',purpose:'星巴克 Ａ店',amountCents:1849,categoryId:'custom'}],errors:[],totalCents:1849});
   assert.equal(parseMoneyExpression(parsed.rows[0].expression),parsed.rows[0].amountCents,'normalized expression is accepted by the existing ledger API');
   assert.equal(parseFinanceLines('50 零散报酬',{kind:'income'}).rows[0].categoryId,'other-income');
-  assert.equal(parseFinanceLines('50 星巴克',{categories:categories.map(item=>item.id==='custom'?{...item,active:false}:item)}).rows[0].categoryId,'uncategorized');
+  assert.equal(parseFinanceLines('50 星巴克',{categories:categories.map(item=>item.id==='custom'?{...item,active:false}:item)}).rows[0].categoryId,'food');
 });
 
 test('line errors retain valid rows and reject missing purposes, invalid arithmetic and nonpositive amounts',()=>{

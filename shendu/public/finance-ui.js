@@ -1,4 +1,4 @@
-import {parseMoneyExpression,parseFinanceLines,formatFinanceMoney,DEFAULT_FINANCE_CATEGORIES,FINANCE_KINDS,suggestFinanceCategory,financeCategoryLabel} from './finance-domain.js?v=1.0.0-finance15';
+import {parseMoneyExpression,parseFinanceLines,formatFinanceMoney,DEFAULT_FINANCE_CATEGORIES,FINANCE_KINDS,suggestFinanceCategory,financeCategoryLabel} from './finance-domain.js?v=1.0.0-finance16';
 
 const $=(selector,root)=>root.querySelector(selector),$$=(selector,root)=>[...root.querySelectorAll(selector)];
 const esc=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
@@ -19,15 +19,15 @@ function safeImageUrl(value){try{const url=new URL(value);return url.protocol===
 function createWorkspace(container,options,daily){
   let disposed=false,pending=false,loadOwner=null,storageOwner=null,data=null,storage=null,categories=[...DEFAULT_FINANCE_CATEGORIES],cursor=null;
   let importController=null,receiptModule=null,storageDialogOwner=null;
-  let entries=[],draft={...blank(),...(options.draft||{})},createId=id(),searchTimer,periodController=null,quickRows=[],refreshQuick=null,dayPicker=null,monthPie=null,dayPie=null,dayOwner=null,selectedDay='',chartMonth=null;
+  let entries=[],draft={...blank(),...(options.draft||{})},createId=id(),searchTimer,periodController=null,quickRows=[],refreshQuick=null,dayPicker=null,ledgerDayPicker=null,monthPie=null,dayPie=null,dayOwner=null,selectedDay='',chartMonth=null;
   if(!draft.text&&(draft.expression||draft.purpose))draft.text=`${draft.expression} ${draft.purpose}`.trim();
   const aborter=new AbortController();
-  const day=options.date||options.today(),filters={month:day.slice(0,7),q:'',kind:'',deleted:false};
+  const day=options.date||options.today(),filters={month:day.slice(0,7),range:'month',date:day,q:'',kind:'',deleted:false};
   const alive=()=>!disposed&&container.isConnected&&(options.isCurrent?.()??true);
   const render=(node,html)=>options.renderMarkup(node,html);
   const notify=(message,type='info')=>{if(alive())options.toast?.(message,type)};
   const request=(path,args={},guard=alive)=>options.request(path,args,guard);
-  const query=()=>{const params=new URLSearchParams(daily?{date:day}:{month:filters.month});for(const key of ['q','kind'])if(filters[key])params.set(key,filters[key]);if(filters.deleted)params.set('deleted','1');return params};
+  const query=()=>{const params=new URLSearchParams(daily?{date:day}:filters.range==='day'?{date:filters.date}:{month:filters.month});for(const key of ['q','kind'])if(filters[key])params.set(key,filters[key]);if(filters.deleted)params.set('deleted','1');return params};
   const changed=()=>{options.onDraftChange?.({...draft,receiptIds:[...(draft.receiptIds||[])]});options.setDirty?.(hasDraft(draft))};
   const status=(message,error=false)=>{const node=$('[data-finance-status]',container);if(node){node.textContent=message;node.classList.toggle('is-error',error)}};
   const noFormLoss=()=>{const form=$('[data-finance-create]',container);return form?.isConnected?form:null};
@@ -37,13 +37,13 @@ function createWorkspace(container,options,daily){
     if(pending||!alive()||!anchor?.isConnected)return false;
     const token=options.beginWrite?options.beginWrite():{};if(token===null||token===false)return false;
     pending=true;
-    periodController?.setDisabled?.(true);dayPicker?.setDisabled?.(true);
+    periodController?.setDisabled?.(true);dayPicker?.setDisabled?.(true);ledgerDayPicker?.setDisabled?.(true);const range=$('[name="range"]',container);if(range)range.disabled=true;
     const fieldset=$('fieldset',anchor),previousDisabled=fieldset?.disabled,modal=anchor.closest('.modal')?.parentElement,previousPersistent=modal?.dataset.persistent;
     if(fieldset)fieldset.disabled=true;if(modal)modal.dataset.persistent='1';anchor.setAttribute('aria-busy','true');
     const current=()=>alive()&&anchor.isConnected&&(token.isCurrent?.()??true);
     try{await operation(current);return current()}
     catch(error){if(current()){const errorNode=$('[data-form-error]',anchor);if(errorNode)errorNode.textContent=error.message||'未能保存，请重试。';else status(error.message||'未能保存，请重试。',true)}return false}
-    finally{pending=false;options.endWrite?.(token);if(alive()){periodController?.setDisabled?.(false);dayPicker?.setDisabled?.(false);}if(anchor.isConnected){anchor.removeAttribute('aria-busy');if(fieldset)fieldset.disabled=previousDisabled}if(modal?.isConnected&&anchor.isConnected&&modal.contains(anchor)){if(previousPersistent===undefined)delete modal.dataset.persistent;else modal.dataset.persistent=previousPersistent}}
+    finally{pending=false;options.endWrite?.(token);if(alive()){periodController?.setDisabled?.(false);dayPicker?.setDisabled?.(false);ledgerDayPicker?.setDisabled?.(false);if(range?.isConnected)range.disabled=false;}if(anchor.isConnected){anchor.removeAttribute('aria-busy');if(fieldset)fieldset.disabled=previousDisabled}if(modal?.isConnected&&anchor.isConnected&&modal.contains(anchor)){if(previousPersistent===undefined)delete modal.dataset.persistent;else modal.dataset.persistent=previousPersistent}}
   }
 
   function mountQuickEntry(host){
@@ -146,7 +146,7 @@ function createWorkspace(container,options,daily){
       try{await write(form,async current=>{
         const active=()=>current()&&!owner.signal.aborted;
         try{
-          message.textContent='正在保存补传截图…';receiptModule=options.receiptClient||await import('./receipt-client.js?v=1.0.0-finance15');if(!active())return;
+          message.textContent='正在保存补传截图…';receiptModule=options.receiptClient||await import('./receipt-client.js?v=1.0.0-finance16');if(!active())return;
           const task=receiptModule.processReceiptFiles(files,{request,isCurrent:active,signal:owner.signal,categories,date:form.elements.date.value,upload:true,onProgress:progress=>{if(active())message.textContent=typeof progress==='string'?progress:progress?.message||'正在保存截图…'}});
           const result=await Promise.race([task,new Promise((_,reject)=>{onAbort=()=>reject(new DOMException('已取消截图处理','AbortError'));owner.signal.addEventListener('abort',onAbort,{once:true});if(owner.signal.aborted)onAbort()})]);if(!active())return;
           const uploaded=[...new Set(result.receiptIds||[])];if(!uploaded.length||result.imageStatus==='not_stored')throw new Error('截图尚未保存，未关联到账目。请先在图片存储设置中配置并测试S3，再重新补传。');
@@ -206,10 +206,11 @@ function createWorkspace(container,options,daily){
   }
   async function load(append=false){
     if(!alive())return;const owner={};loadOwner=owner;const current=()=>alive()&&loadOwner===owner;
+    if(!append){cursor=null;const more=$('[data-finance-more]',container);if(more)more.hidden=true;}
     const params=query();if(append&&cursor)params.set('cursor',cursor);status(append?'正在读取更早的账目…':'正在整理账目…');
-    try{const result=await request(`/api/finance?${params}`,{},current);if(!current())return;data=result;categories=result.categories||categories;entries=append?[...entries,...(result.entries||[])]:result.entries||[];cursor=result.nextCursor||null;renderSummary();renderEntries();syncDailyChart();
+    try{const byDay=!daily&&filters.range==='day';const [result,monthly]=await Promise.all([request(`/api/finance?${params}`,{},current),byDay?request(`/api/finance?month=${encodeURIComponent(filters.month)}`,{},current):Promise.resolve(null)]);if(!current())return;data=monthly||result;categories=result.categories||categories;entries=append?[...entries,...(result.entries||[])]:result.entries||[];cursor=result.nextCursor||null;renderSummary();renderEntries();syncDailyChart();
       if(!noFormLoss()){const host=$('[data-finance-form]',container);mountQuickEntry(host)}else updateCategories();refreshQuick?.();
-      status(daily?'确认入账后，账目已保存；复盘仍可保留为草稿。':'统计覆盖所选整月；下方筛选只影响流水列表。');
+      status(daily?'确认入账后，账目已保存；复盘仍可保留为草稿。':`明细显示 ${byDay?filters.date:filters.month+' 整月'}；上方总计与月度饼图仍按整月计算。`);
     }catch(error){if(current()){status(error.message||'账目暂时未能读取。',true);if(!daily){monthPie?.setData({loading:false,error:'当月花销暂时未能读取，请刷新账本重试。'});dayPie?.setData({loading:false,error:'请先重新读取当月账本。'});dayOwner=null}const list=$('[data-finance-entries]',container);if(!data)render(list,'<div class="finance-empty"><h3>暂时没有翻开账本</h3><button class="btn" type="button" data-finance-retry>重新读取</button></div>')}}
   }
 
@@ -229,7 +230,7 @@ function createWorkspace(container,options,daily){
       render(host,`<img alt="${esc(title)}的${esc(kind)}凭证，第${index+1}张" hidden>`);const image=$('img',host);
       const failed=error=>{if(!accepted()||!image.isConnected)return;image.hidden=true;message.hidden=false;message.textContent=error?.message||'截图加载失败，可能是授权已过期或网络暂时不可用。请重新读取。';retry.hidden=false;retry.disabled=false};
       image.addEventListener('error',()=>failed(),{once:true});image.addEventListener('load',()=>{if(accepted()&&image.isConnected){message.hidden=true;image.hidden=false}},{once:true});
-      try{const {loadReceiptUrls}=options.receiptClient||await import('./receipt-client.js?v=1.0.0-finance15');if(!accepted())return;const urls=await loadReceiptUrls([receiptId],'image',{request,isCurrent:accepted});if(!accepted())return;const url=safeImageUrl(urls[receiptId]);if(!url)throw new Error('这张截图暂时无法读取，请检查凭证存储后重试。');message.textContent='正在载入截图…';image.src=url;image.hidden=false}
+      try{const {loadReceiptUrls}=options.receiptClient||await import('./receipt-client.js?v=1.0.0-finance16');if(!accepted())return;const urls=await loadReceiptUrls([receiptId],'image',{request,isCurrent:accepted});if(!accepted())return;const url=safeImageUrl(urls[receiptId]);if(!url)throw new Error('这张截图暂时无法读取，请检查凭证存储后重试。');message.textContent='正在载入截图…';image.src=url;image.hidden=false}
       catch(error){failed(error)}finally{if(accepted()){loading=false;retry.disabled=false}}
     }
     function changeImage(offset){
@@ -300,7 +301,7 @@ function createWorkspace(container,options,daily){
     try{await write(anchor,async current=>{
       const active=()=>current()&&!owner.signal.aborted;
       try{
-        status('正在本地读取截图…');receiptModule=options.receiptClient||await import('./receipt-client.js?v=1.0.0-finance15');if(!active())return;
+        status('正在本地读取截图…');receiptModule=options.receiptClient||await import('./receipt-client.js?v=1.0.0-finance16');if(!active())return;
         const task=receiptModule.processReceiptFiles(files,{request,isCurrent:active,signal:owner.signal,categories,date:day,upload:true,onProgress:progress=>{if(active())status(typeof progress==='string'?progress:progress?.message||'正在本地识别截图…')}});
         const result=await Promise.race([task,new Promise((_,reject)=>{onAbort=()=>reject(new DOMException('已取消图片处理','AbortError'));owner.signal.addEventListener('abort',onAbort,{once:true});if(owner.signal.aborted)onAbort()})]);if(!active())return;
         const candidates=result.candidates?.length?result.candidates:[{date:day,expression:'',purpose:'',kind:'expense',categoryId:'',receiptIds:result.receiptIds||[],confidence:0}];
@@ -326,22 +327,23 @@ function createWorkspace(container,options,daily){
   }
   function mount(){
     if(daily){render(container,`<div class="finance-daily"><div class="finance-day-summary" data-finance-summary><span>今日净支出</span><strong>—</strong><small>正在读取当天账目</small></div><div data-finance-form class="finance-entry-form"></div><div class="finance-daily-tools"><button class="btn btn-ghost" type="button" data-finance-detail>详细录入</button><button class="btn btn-ghost" type="button" data-import-receipts>截图记账</button><button class="btn btn-ghost" type="button" data-day-zero>今天没有花销</button><button class="link-button" type="button" data-finance-storage>图片存储设置</button></div><p class="help" data-storage-note></p><p class="finance-status" data-finance-status role="status" aria-live="polite"></p><button type="button" class="btn btn-ghost" data-cancel-import hidden>取消截图处理</button><div data-finance-entries></div><button class="btn btn-ghost" type="button" data-finance-more hidden>加载更早记录</button><input data-finance-files type="file" accept="image/png,image/jpeg,image/webp" multiple hidden></div>`)}
-    else render(container,`<section class="workspace-page finance-page" aria-labelledby="finance-page-title"><header class="finance-page-head"><div><h1 id="finance-page-title">财务收支</h1><p>把每一笔写清楚，让花销有迹可循。</p></div><div class="finance-hero-art" aria-hidden="true"><img src="/assets/finance/ledger.webp?v=1.0.0-finance2" alt="" width="640" height="640" draggable="false"></div></header><div class="finance-month-line"><div data-finance-period></div><button class="link-button" type="button" data-finance-refresh>刷新账本</button></div><div class="finance-summary" data-finance-summary></div><section class="finance-writing"><div class="finance-section-title"><h2>记下花销</h2><span>记入 ${esc(day)} · 人民币</span></div><div data-finance-form class="finance-entry-form"></div><div class="finance-daily-tools"><button class="btn btn-ghost" type="button" data-finance-detail>详细录入</button><button class="btn btn-ghost" type="button" data-import-receipts>截图记账</button></div></section><div class="finance-insights"><section class="finance-insight"><div class="finance-chart-heading"><h2>月度花销</h2><span>按分类看整月支出</span></div><div data-finance-month-pie></div></section><section class="finance-insight"><div class="finance-chart-heading"><h2>每日花销</h2><div data-finance-day-picker></div></div><div data-finance-day-pie></div><button type="button" class="link-button" data-finance-day-retry hidden>重新读取当天花销</button></section></div><section class="finance-ledger"><div class="finance-section-title"><h2>收支明细</h2><button class="link-button" type="button" data-finance-storage>图片存储设置</button></div><form class="finance-filters" data-finance-filters role="search"><label>搜索用途<span class="finance-search-field"><input name="q" type="search" maxlength="160" placeholder="搜索用途或备注"><button class="link-button" type="button" data-finance-clear-search aria-label="清空用途搜索" hidden>清空</button></span></label><label>收支类型<select data-finance-compact name="kind"><option value="">全部类型</option>${Object.entries(FINANCE_KINDS).map(([key,label])=>`<option value="${key}">${esc(label)}</option>`).join('')}</select></label><label class="finance-checkbox"><input name="deleted" type="checkbox">包含已删除</label></form><p class="help" data-storage-note></p><p class="finance-status" data-finance-status role="status" aria-live="polite"></p><button type="button" class="btn btn-ghost" data-cancel-import hidden>取消截图处理</button><div data-finance-entries></div><button class="btn btn-ghost finance-more" type="button" data-finance-more hidden>加载更早记录</button></section><input data-finance-files type="file" accept="image/png,image/jpeg,image/webp" multiple hidden></section>`);
+    else render(container,`<section class="workspace-page finance-page" aria-labelledby="finance-page-title"><header class="finance-page-head"><div><h1 id="finance-page-title">财务收支</h1><p>把每一笔写清楚，让花销有迹可循。</p></div><div class="finance-hero-art" aria-hidden="true"><img src="/assets/finance/ledger.webp?v=1.0.0-finance2" alt="" width="640" height="640" draggable="false"></div></header><div class="finance-month-line"><div data-finance-period></div><button class="link-button" type="button" data-finance-refresh>刷新账本</button></div><div class="finance-summary" data-finance-summary></div><section class="finance-writing"><div class="finance-section-title"><h2>记下花销</h2><span>记入 ${esc(day)} · 人民币</span></div><div data-finance-form class="finance-entry-form"></div><div class="finance-daily-tools"><button class="btn btn-ghost" type="button" data-finance-detail>详细录入</button><button class="btn btn-ghost" type="button" data-import-receipts>截图记账</button></div></section><div class="finance-insights"><section class="finance-insight"><div class="finance-chart-heading"><h2>月度花销</h2><span>按分类看整月支出</span></div><div data-finance-month-pie></div></section><section class="finance-insight"><div class="finance-chart-heading"><h2>每日花销</h2><div data-finance-day-picker></div></div><div data-finance-day-pie></div><button type="button" class="link-button" data-finance-day-retry hidden>重新读取当天花销</button></section></div><section class="finance-ledger"><div class="finance-section-title"><h2>收支明细</h2><button class="link-button" type="button" data-finance-storage>图片存储设置</button></div><form class="finance-filters" data-finance-filters role="search"><label>搜索用途<span class="finance-search-field"><input name="q" type="search" maxlength="160" placeholder="搜索用途或备注"><button class="link-button" type="button" data-finance-clear-search aria-label="清空用途搜索" hidden>清空</button></span></label><label>收支类型<select data-finance-compact name="kind"><option value="">全部类型</option>${Object.entries(FINANCE_KINDS).map(([key,label])=>`<option value="${key}">${esc(label)}</option>`).join('')}</select></label><label>显示范围<select data-finance-compact name="range"><option value="month">整月明细</option><option value="day">单日明细</option></select></label><label class="finance-checkbox"><input name="deleted" type="checkbox">包含已删除</label></form><div class="finance-ledger-date" data-finance-ledger-date-row hidden><span>明细日期</span><div data-finance-ledger-day-picker></div></div><p class="help" data-storage-note></p><p class="finance-status" data-finance-status role="status" aria-live="polite"></p><button type="button" class="btn btn-ghost" data-cancel-import hidden>取消截图处理</button><div data-finance-entries></div><button class="btn btn-ghost finance-more" type="button" data-finance-more hidden>加载更早记录</button></section><input data-finance-files type="file" accept="image/png,image/jpeg,image/webp" multiple hidden></section>`);
     container.addEventListener('click',onClick);
     $('[data-finance-files]',container).addEventListener('change',event=>{const files=[...event.target.files];event.target.value='';importFiles(files)});
     container.addEventListener('paste',onPaste);
-    const period=$('[data-finance-period]',container);if(period&&options.showMonthPicker)periodController=options.showMonthPicker(period,{value:filters.month,today:options.today(),isCurrent:alive,onChange:value=>{if(!alive()||pending||value===filters.month)return;filters.month=value;dayOwner=null;dayPicker?.setMonth?.(value);dayPicker?.setDisabled?.(true);dayPie?.setData({loading:true,error:'',totals:[]});monthPie?.setData({loading:true,error:'',totals:[]});load()}});
+    const period=$('[data-finance-period]',container);if(period&&options.showMonthPicker)periodController=options.showMonthPicker(period,{value:filters.month,today:options.today(),isCurrent:alive,onChange:value=>{if(!alive()||pending||value===filters.month)return;filters.month=value;if(!filters.date.startsWith(value+'-'))filters.date=defaultChartDay();ledgerDayPicker?.setMonth?.(value);ledgerDayPicker?.setValue?.(filters.date);dayOwner=null;dayPicker?.setMonth?.(value);dayPicker?.setDisabled?.(true);dayPie?.setData({loading:true,error:'',totals:[]});monthPie?.setData({loading:true,error:'',totals:[]});load()}});
     if(!daily){
       monthPie=options.showFinancePie?.($('[data-finance-month-pie]',container),{title:'月度花销',loading:true});
       dayPie=options.showFinancePie?.($('[data-finance-day-pie]',container),{title:'每日花销',loading:true});
       selectedDay=options.today();
       dayPicker=options.showFinanceDayPicker?.($('[data-finance-day-picker]',container),{value:selectedDay,month:filters.month,today:options.today(),isCurrent:alive,onChange:value=>{if(!alive()||pending||value===selectedDay||!value.startsWith(filters.month+'-'))return;selectedDay=value;loadDailyChart()}});
+      ledgerDayPicker=options.showFinanceDayPicker?.($('[data-finance-ledger-day-picker]',container),{value:filters.date,month:filters.month,today:options.today(),label:'明细日期',isCurrent:alive,onChange:value=>{if(!alive()||pending||filters.range!=='day'||value===filters.date||!value.startsWith(filters.month+'-'))return;filters.date=value;load()}});
       $('[data-finance-day-retry]',container)?.addEventListener('click',()=>{if(alive()&&!pending)loadDailyChart()});
     }
     const filterForm=$('[data-finance-filters]',container);let composingSearch=false;
     const applySearch=()=>{if(!filterForm||pending)return;filters.q=filterForm.elements.q.value;$('[data-finance-clear-search]',filterForm).hidden=!filters.q;clearTimeout(searchTimer);searchTimer=setTimeout(()=>load(),220)};
     filterForm?.addEventListener('submit',event=>{event.preventDefault();if(pending||composingSearch||event.isComposing)return;clearTimeout(searchTimer);filters.q=filterForm.elements.q.value;load()});
-    filterForm?.addEventListener('change',event=>{if(pending)return;const values=new FormData(filterForm);filters.kind=String(values.get('kind')||'');filters.deleted=values.get('deleted')==='on';if(event.target.name!=='q')load()});
+    filterForm?.addEventListener('change',event=>{if(pending)return;const values=new FormData(filterForm);filters.kind=String(values.get('kind')||'');filters.deleted=values.get('deleted')==='on';filters.range=values.get('range')==='day'?'day':'month';$('[data-finance-ledger-date-row]',container).hidden=filters.range!=='day';if(event.target.name!=='q')load()});
     filterForm?.addEventListener('compositionstart',event=>{if(event.target.name==='q'){composingSearch=true;clearTimeout(searchTimer)}});
     filterForm?.addEventListener('compositionend',event=>{if(event.target.name==='q'){composingSearch=false;applySearch()}});
     filterForm?.addEventListener('input',event=>{if(event.target.name!=='q'||pending)return;$('[data-finance-clear-search]',filterForm).hidden=!event.target.value;if(composingSearch||event.isComposing)return;applySearch()});
@@ -349,7 +351,7 @@ function createWorkspace(container,options,daily){
     mountQuickEntry($('[data-finance-form]',container));load();loadStorage();
   }
   function onPaste(event){const files=[...(event.clipboardData?.files||[])].filter(file=>file.type.startsWith('image/'));if(files.length&&!pending){event.preventDefault();importFiles(files)}}
-  mount();return {dispose(){disposed=true;periodController?.dispose?.();dayPicker?.dispose?.();monthPie?.dispose?.();dayPie?.dispose?.();dayOwner=null;loadOwner=null;storageOwner=null;aborter.abort();receiptModule?.disposeReceiptWorker?.();clearTimeout(searchTimer);container.removeEventListener('click',onClick);container.removeEventListener('paste',onPaste)},hasPendingDraft:()=>hasDraft(draft)};
+  mount();return {dispose(){disposed=true;periodController?.dispose?.();dayPicker?.dispose?.();ledgerDayPicker?.dispose?.();monthPie?.dispose?.();dayPie?.dispose?.();dayOwner=null;loadOwner=null;storageOwner=null;aborter.abort();receiptModule?.disposeReceiptWorker?.();clearTimeout(searchTimer);container.removeEventListener('click',onClick);container.removeEventListener('paste',onPaste)},hasPendingDraft:()=>hasDraft(draft)};
 }
 
 export function mountFinancePage(container,options){return createWorkspace(container,options,false)}

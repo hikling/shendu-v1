@@ -1,4 +1,4 @@
-import {parseReceiptText} from './finance-domain.js?v=1.0.0-finance15';
+import {parseReceiptText} from './finance-domain.js?v=1.0.0-finance16';
 
 export const RECEIPT_LIMITS=Object.freeze({files:20,fileBytes:20*1024*1024,pixels:32*1024*1024,imageBytes:2*1024*1024,thumbBytes:96*1024});
 let worker=null,workerPromise=null,workerGeneration=0,activeBatch=null,ocrProgress=()=>{};

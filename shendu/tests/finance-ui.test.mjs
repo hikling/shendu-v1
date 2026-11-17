@@ -325,6 +325,25 @@ test('historical months default to latest spending date or actual month end, and
 });
 
 
+test('ledger day/month scope keeps monthly totals, independent chart dates, paging and mounted drafts',async()=>{
+  const make=(id,date,amountCents)=>({id,date,kind:'expense',categoryId:'food',purpose:id,amountCents,expression:String(amountCents/100),receiptIds:[],version:1});
+  const f=fixture({initialEntries:[make('今天早餐','2026-11-15',800),make('昨天面条','2026-11-14',1200)]});await flush();
+  const form=$('[data-finance-create]',f.root),field=input(form,'text','30 尚未入账'),filters=$('[data-finance-filters]',f.root),summary=$('[data-finance-summary]',f.root);
+  assert.equal(filters.elements.range.value,'month');assert.equal($$('.finance-entry',f.root).length,2);
+  change(filters,'range','day');await flush();assert.equal($$('.finance-entry',f.root).length,1);assert.match($('[data-finance-entries]',f.root).textContent,/今天早餐/);assert.match(summary.textContent,/20\.00/);assert.match($('[data-finance-month-pie]',f.root).textContent,/20\.00/);
+  assert.equal($('[data-finance-ledger-date-row]',f.root).hidden,false);$('[aria-label^="选择明细日期"]',f.root).click();await flush();$('[aria-label="2026-11-14"]').click();await flush();
+  assert.match($('[data-finance-entries]',f.root).textContent,/昨天面条/);assert.doesNotMatch($('[data-finance-entries]',f.root).textContent,/今天早餐/);assert.match(summary.textContent,/20\.00/);assert.match($('[data-finance-day-pie]',f.root).textContent,/8\.00/,'ledger date does not change the independent daily chart');
+  f.setCursor('next-day-page');$('[data-finance-refresh]',f.root).click();await flush();$('[data-finance-more]',f.root).click();await flush();assert.ok(f.calls.some(call=>call.path.includes('date=2026-11-14')&&call.path.includes('cursor=next-day-page')));
+  change(filters,'range','month');await flush();assert.equal($$('.finance-entry',f.root).length,2);assert.equal($('[data-finance-ledger-date-row]',f.root).hidden,true);assert.equal(form.elements.text,field);assert.equal(field.value,'30 尚未入账');assert.equal(f.calls.some(call=>call.args.method==='POST'),false);
+});
+
+test('a stale day-list response cannot overwrite a newer month view or its pagination',async()=>{
+  let resolveDay;const f=fixture({handler:path=>path==='/api/finance?date=2026-11-15&kind=income'?new Promise(resolve=>{resolveDay=resolve}):undefined});await flush();const filters=$('[data-finance-filters]',f.root);
+  change(filters,'kind','income');await flush();change(filters,'range','day');await flush();assert.equal(typeof resolveDay,'function');change(filters,'range','month');await flush();
+  resolveDay({...f.result(),entries:[{id:'stale',date:'2026-11-15',kind:'income',purpose:'过期单日记录',amountCents:99900,categoryId:'salary',receiptIds:[]}],nextCursor:'stale-cursor'});await flush();
+  assert.doesNotMatch($('[data-finance-entries]',f.root).textContent,/过期单日记录/);assert.equal($('[data-finance-more]',f.root).hidden,true);assert.equal(filters.elements.range.value,'month');
+});
+
 test('unknown quick-entry purposes show their own classification and save automatically without category writes',async()=>{
   const f=fixture();await flush();const form=$('[data-finance-create]',f.root);input(form,'text','60 修鞋');
   assert.match($('[data-finance-line-preview]',form).textContent,/自动分类：修鞋/);assert.equal(f.calls.some(call=>call.args.method==='POST'),false);

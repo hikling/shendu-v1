@@ -48,7 +48,7 @@ function validDay(value){
   const date=calendarDate(value);return date&&civilValue(date)===value;
 }
 function lastDay(month){const date=calendarDate(`${month}-01`);date.setMonth(date.getMonth()+1,0);return civilValue(date)}
-function FinanceDayPicker({value,month,today,isCurrent=()=>true,onChange,controls}){
+function FinanceDayPicker({value,month,today,label='每日花销日期',isCurrent=()=>true,onChange,controls}){
   const [selected,setSelected]=React.useState(value),[visible,setVisible]=React.useState(month),[disabled,setDisabled]=React.useState(false),[open,setOpen]=React.useState(false),trigger=React.useRef(null);
   const current=()=>!disabled&&isCurrent(),dateLib=React.useMemo(()=>calendarDateLibrary(today),[today]);
   controls.setValue=next=>{if(!validDay(next)||next.slice(0,7)!==visible)return;flushSync(()=>setSelected(next))};
@@ -56,9 +56,9 @@ function FinanceDayPicker({value,month,today,isCurrent=()=>true,onChange,control
   controls.setDisabled=next=>flushSync(()=>{setDisabled(Boolean(next));if(next)setOpen(false)});
   const choose=date=>{if(!date||!current())return;const next=civilValue(date);if(next.slice(0,7)!==visible)return;setOpen(false);if(next===selected)return;setSelected(next);onChange(next)};
   return <Popover open={open} onOpenChange={next=>{if(!next||current())setOpen(next)}}>
-    <PopoverTrigger asChild><Button ref={trigger} variant="ghost" type="button" className="finance-day-trigger" disabled={disabled} aria-label={`选择每日花销日期，当前${selected}`}><CalendarDaysIcon size={16} aria-hidden="true"/><span>{Number(selected.slice(5,7))}月{Number(selected.slice(8))}日</span><ChevronDownIcon size={14} aria-hidden="true"/></Button></PopoverTrigger>
+    <PopoverTrigger asChild><Button ref={trigger} variant="ghost" type="button" className="finance-day-trigger" disabled={disabled} aria-label={`选择${label}，当前${selected}`}><CalendarDaysIcon size={16} aria-hidden="true"/><span>{Number(selected.slice(5,7))}月{Number(selected.slice(8))}日</span><ChevronDownIcon size={14} aria-hidden="true"/></Button></PopoverTrigger>
     <PopoverContent align="end" className="sd-surface finance-day-menu" onCloseAutoFocus={event=>{event.preventDefault();if(current()&&trigger.current?.isConnected)trigger.current.focus({preventScroll:true})}}>
-      <Calendar mode="single" required autoFocus month={calendarDate(`${visible}-01`)} selected={calendarDate(selected)} today={calendarDate(today)} dateLib={dateLib} locale={zhCN} weekStartsOn={1} fixedWeeks showOutsideDays={false} hideNavigation startMonth={calendarDate(`${visible}-01`)} endMonth={calendarDate(lastDay(visible))} disabled={date=>disabled||civilValue(date).slice(0,7)!==visible} onSelect={choose} labels={{labelDayButton:(date,modifiers)=>`${civilValue(date)}${modifiers.selected?'，已选择':''}`,labelGrid:()=>`${visible}每日花销日期`,labelWeekday:date=>`星期${'日一二三四五六'[date.getDay()]}`}} formatters={{formatCaption:date=>`${date.getFullYear()}年${date.getMonth()+1}月`,formatWeekdayName:date=>'一二三四五六日'[(date.getDay()+6)%7]}}/>
+      <Calendar mode="single" required autoFocus month={calendarDate(`${visible}-01`)} selected={calendarDate(selected)} today={calendarDate(today)} dateLib={dateLib} locale={zhCN} weekStartsOn={1} fixedWeeks showOutsideDays={false} hideNavigation startMonth={calendarDate(`${visible}-01`)} endMonth={calendarDate(lastDay(visible))} disabled={date=>disabled||civilValue(date).slice(0,7)!==visible} onSelect={choose} labels={{labelDayButton:(date,modifiers)=>`${civilValue(date)}${modifiers.selected?'，已选择':''}`,labelGrid:()=>`${visible}${label}`,labelWeekday:date=>`星期${'日一二三四五六'[date.getDay()]}`}} formatters={{formatCaption:date=>`${date.getFullYear()}年${date.getMonth()+1}月`,formatWeekdayName:date=>'一二三四五六日'[(date.getDay()+6)%7]}}/>
     </PopoverContent>
   </Popover>;
 }
