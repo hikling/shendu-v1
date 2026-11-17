@@ -11,7 +11,7 @@ import {createBrowserNavigator} from './browser-navigation.js?v=1.0.0-routes1';
 import {createReviewNavigator} from './review-navigation.js?v=1.0.0-finance1';
 import {attachReviewWheel} from './review-wheel.js?v=1.0.0-wheel1';
 import {createReviewTransition} from './review-transition.js?v=1.0.0-transition1';
-import {mountFinancePage,mountDailyFinance} from './finance-ui.js?v=1.0.0-finance12';
+import {mountFinancePage,mountDailyFinance} from './finance-ui.js?v=1.0.0-finance15';
 import {RECORD_ART,recordArtAssignments} from './record-art.js?v=1.0.0-records1';
 import {createReviewIntroPicker,reviewIntroLines,reviewIntroLayout} from './review-intros.js?v=1.0.0-intros2';
 const $ = (s, root = document) => root.querySelector(s);
@@ -1276,7 +1276,7 @@ function openModal(content,size='',persistent=false){
   root.dataset.persistent=persistent?'1':'0';
   const template=document.createElement('template');template.innerHTML=content;
   const title=$('.modal-head h2',template.content)?.textContent||'慎独',description=$('.modal-head p',template.content)?.textContent||'';
-  const customSurface=/\b(?:workspace-dialog|verification-dialog)\b/.test(size)||$('form:is(#backup-pass-form,#restore-password-form,#site-export-form,#site-inspect-form,#site-restore-form,#target-form,#delete-user-form,#user-form)',template.content);
+  const customSurface=/\b(?:workspace-dialog|verification-dialog|finance-image-dialog)\b/.test(size)||$('form:is(#backup-pass-form,#restore-password-form,#site-export-form,#site-inspect-form,#site-restore-form,#target-form,#delete-user-form,#user-form)',template.content);
   if(!customSurface){const head=$('.modal-head',template.content);if(head&&!$('.legacy-dialog-art',head)){const art=$('#apply-restore,#delete-target-confirm',template.content)?'daily-23-protect-time':$('#confirm-complete',template.content)?'daily-30-tomorrow-bag':'daily-14-journal-page';head.insertAdjacentHTML('beforeend',`<div class="legacy-dialog-art" aria-hidden="true"><img src="/assets/records/${art}.webp" alt="" width="640" height="640" draggable="false"></div>`)}content=template.innerHTML}
   showDialog(root,{html:content,className:customSurface?size:`legacy-dialog ${size}`,title,description,canClose:()=>root.dataset.persistent!=='1'&&!$('.modal[data-review-lock-busy]',root),onClose:()=>closeModal(),returnFocus:modalReturnFocus});
   syncOverlayBackground();

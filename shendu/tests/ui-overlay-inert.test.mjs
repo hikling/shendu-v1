@@ -28,6 +28,14 @@ const escape=value=>String(value).replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&l
 const controls=new Function('$','$$','state','prepareDialogContainer','showDialog','dismissDialog','cancelDailyTypewriter','setDailyImmersive','reviewNavigation','renderMarkup','esc','fetch','toast',`const browserNavigation={suspend(){}};let modalReturnFocus=null;\n${names.map(owner).join('\n')}\nreturn {openModal,closeModal,renderAuth,sessionExpired};`)($,$$,state,ui.prepareDialogContainer,ui.showDialog,ui.dismissDialog,()=>{},()=>{},{clear(){}},ui.renderMarkup,escape,login,()=>{});
 const settle=()=>new Promise(resolve=>setTimeout(resolve,30));
 
+test('contextual finance receipt preview owns its header without generic dialog artwork',async()=>{
+  ui.renderMarkup(app,'<button id="receipt-entry">查看截图</button>');const trigger=$('#receipt-entry');trigger.focus();
+  controls.openModal('<div class="modal-head"><div><h2>买菜</h2><p>餐饮 · 支出 · ¥5.60 · 2026-11-17</p></div></div><div data-finance-image-view></div><button data-close>关闭</button>','finance-image-dialog');await settle();
+  const modal=$('.modal.finance-image-dialog');assert.ok(modal);assert.equal(modal.classList.contains('legacy-dialog'),false);assert.equal($('.legacy-dialog-art',modal),null);assert.equal($('h2',modal).textContent,'买菜');assert.match(modal.textContent,/¥5\.60.*2026-11-17/);assert.equal(app.inert,true);
+  $('[data-close]',modal).click();await settle();assert.equal(app.inert,false);assert.equal(document.activeElement,trigger);
+  controls.openModal('<div class="modal-head"><h2>普通确认</h2></div><button data-close>关闭</button>');await settle();assert.ok($('.modal.legacy-dialog .legacy-dialog-art'));controls.closeModal(true);await settle();
+});
+
 test('application overlay owner makes live review descendants inert without disabling either overlay or notifications',async()=>{
   assert.equal(rail.parentElement,document.body,'legacy empty mount stays outside the inert application');
   app.innerHTML='<header><button id="rail-toggle">阶段与日历</button></header><main id="daily-editor"><p aria-live="polite">预期验证日期</p><div><span aria-live="polite">已保存</span><button id="underlying-save">保存草稿</button><button>完成并锁定</button></div></main>';

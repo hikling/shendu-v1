@@ -47,10 +47,10 @@ export function createFinanceLedger({db,encryptData,decryptData,dataScope,now,re
     return [...result.values()];
   };
   const automaticCategory=(purpose,list,kind,fallbackId=randomUUID())=>{
-    const named=list.find(item=>item.name===purpose);
-    if(named)return named;
     const suggested=suggestFinanceCategory(purpose,list,purpose?'expense':kind);
     if(suggested!=='uncategorized'||!purpose)return list.find(item=>item.id===suggested);
+    const named=list.find(item=>item.name===purpose);
+    if(named)return named;
     return {id:fallbackId,name:purpose.trim().slice(0,160),keywords:[],active:true};
   };
   const entryData=(value,userId,{allowArchived=false,providedCategories=null,allowAutomatic=false}={})=>{

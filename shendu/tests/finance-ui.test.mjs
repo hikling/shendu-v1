@@ -94,8 +94,8 @@ test('refreshed account categories update automatic suggestions while preserving
 });
 
 test('a category refresh after an uncertain create keeps the original retry identity and payload',async()=>{
-  let failed=false;const f=fixture({handler:(path,args)=>{if(path==='/api/finance/entries'&&!failed){failed=true;return Promise.reject(new Error('响应中断，请重试'))}}});await flush();const form=$('[data-finance-create]',f.root);input(form,'text','10 文具');submit(form);await flush();
-  f.setCategories([...DEFAULT_FINANCE_CATEGORIES,{id:'stationery',name:'文具',keywords:['文具'],active:true}]);$('[data-finance-refresh]',f.root).click();await flush();submit(form);await flush();
+  let failed=false;const f=fixture({handler:(path,args)=>{if(path==='/api/finance/entries'&&!failed){failed=true;return Promise.reject(new Error('响应中断，请重试'))}}});await flush();const form=$('[data-finance-create]',f.root);input(form,'text','10 装裱');submit(form);await flush();
+  f.setCategories([...DEFAULT_FINANCE_CATEGORIES,{id:'framing',name:'装裱',keywords:['装裱'],active:true}]);$('[data-finance-refresh]',f.root).click();await flush();submit(form);await flush();
   const writes=f.calls.filter(call=>call.path==='/api/finance/entries');assert.equal(writes.length,2);assert.deepEqual(writes[1].args.body,writes[0].args.body);assert.equal(writes[0].args.body.categoryId,'');assert.equal(form.elements.text.value,'');
 });
 
@@ -165,9 +165,11 @@ test('canceling a low-confidence preview creates no entries and duplicate candid
   selectScreenshot(f);await flush();const next=$('#finance-import-form');next.elements['select-0'].checked=true;next.elements['select-1'].checked=false;next.elements['acknowledge-0'].checked=true;submit(next);await flush();assert.equal(f.calls.filter(call=>call.path==='/api/finance/entries').length,1);assert.equal(f.calls.find(call=>call.path==='/api/finance/entries').args.body.expression,'8');
 });
 
-test('thumbnail authorization waits for viewport proximity and failed thumbnails expose retry',async()=>{
-  const previous=globalThis.IntersectionObserver;let callback,disconnected=0;const observed=[];globalThis.IntersectionObserver=class{constructor(fn,options){callback=fn;assert.equal(options.rootMargin,'240px')}observe(node){observed.push(node)}unobserve(){}disconnect(){disconnected++}};
-  const reads=[];try{const f=fixture({initialEntries:[{id:'photo-entry',date:'2026-11-15',kind:'expense',expression:'8',amountCents:800,purpose:'早餐',categoryId:'food',version:1,receiptIds:['receipt']}],receiptClient:{loadReceiptUrls:async(ids,variant)=>{reads.push({ids,variant});throw new Error('过期授权')}}});await flush();assert.equal(reads.length,0);assert.equal(observed.length,1);callback([{target:observed[0],isIntersecting:true}]);await flush();assert.equal(reads.length,1);assert.equal(reads[0].variant,'thumb');assert.match(observed[0].textContent,/重试/);assert.match(observed[0].getAttribute('aria-label'),/重新获取/);controller.dispose();assert.ok(disconnected)}finally{if(previous===undefined)delete globalThis.IntersectionObserver;else globalThis.IntersectionObserver=previous}
+for(const daily of [false,true])test(`receipt lists ${daily?'inside a daily review':'on the finance page'} contain no thumbnails or eager image authorization`,async()=>{
+  const reads=[];const f=fixture({daily,initialEntries:[{id:'photo-entry',date:'2026-11-15',kind:'expense',expression:'8',amountCents:800,purpose:'早餐',categoryId:'food',version:1,receiptIds:['receipt']}],receiptClient:{loadReceiptUrls:async(ids,variant)=>{reads.push({ids,variant});throw new Error('过期授权')}}});await flush();
+  assert.equal(reads.length,0);assert.equal($$('img,[data-receipt-thumb],.finance-receipt-thumb', $('[data-finance-entries]',f.root)).length,0);
+  const links=$$('[data-receipt-open]',f.root);assert.equal(links.length,1);assert.equal(links[0].textContent,'查看截图 · 1 张');
+  links[0].click();await flush();assert.deepEqual(reads,[{ids:['receipt'],variant:'image'}]);assert.match($('[data-finance-image-status]').textContent,/过期授权/);assert.equal($('[data-finance-image-retry]').hidden,false);
 });
 
 test('storage save explicitly explains the page refresh needed for changed image access permissions',async()=>{
@@ -176,8 +178,30 @@ test('storage save explicitly explains the page refresh needed for changed image
 
 const photoEntry={id:'photo-entry',date:'2026-11-15',kind:'expense',expression:'8',amountCents:800,purpose:'早餐',categoryId:'food',version:1,receiptIds:['receipt-a','receipt-b']};
 
+test('receipt preview uses the clicked entry metadata even when two entries share the same image',async()=>{
+  const other={...photoEntry,id:'other-entry',date:'2026-11-14',kind:'income',purpose:'稿酬 <img src=x onerror=bad()>',amountCents:12600,categoryId:'salary',receiptIds:['receipt-a']},reads=[];
+  const f=fixture({initialEntries:[photoEntry,other],receiptClient:{loadReceiptUrls:async(ids,variant)=>{reads.push({ids,variant});return {[ids[0]]:'https://private.example.com/shared.webp'}}}});await flush();
+  const row=$('[data-entry-id="other-entry"]',f.root);assert.equal($('.finance-entry-heading h3',row).textContent,other.purpose);assert.equal($$('.finance-entry-tag',row).length,2);assert.ok($('.finance-entry-footer .finance-entry-actions',row));
+  $('.finance-receipt-link',row).click();await flush();const modal=$('.finance-image-dialog');assert.equal($('.modal-head h2',modal).textContent,other.purpose);assert.equal($('.modal-head img',modal),null);assert.equal($('.finance-receipt-amount',modal).textContent,'+¥126.00');assert.equal($('time',modal).textContent,'2026-11-14');assert.equal($('time',modal).dateTime,'2026-11-14');assert.match($('.finance-receipt-details',modal).textContent,/收入.*工资/);assert.doesNotMatch(modal.textContent,/账目截图|原图未上传/);
+  assert.deepEqual(reads,[{ids:['receipt-a'],variant:'image'}]);assert.equal($('.finance-image-navigation',modal).hidden,true);
+  $('.finance-receipt-link',$('[data-entry-id="photo-entry"]',f.root)).click();await flush();assert.equal($('.modal-head h2',$('.finance-image-dialog')).textContent,'早餐');assert.equal($('.finance-receipt-amount').textContent,'−¥8.00');assert.equal($('time',$('.finance-image-dialog')).textContent,'2026-11-15');assert.equal(reads.length,2);
+});
+
+test('receipt gallery opens one image at a time and isolates rapid next/back requests and old image events',async()=>{
+  const reads=[];const f=fixture({initialEntries:[photoEntry],receiptClient:{loadReceiptUrls:async(ids,variant,options)=>{assert.equal(variant,'image');return new Promise((resolve,reject)=>reads.push({ids,resolve,reject,current:options.isCurrent}))}}});await flush();
+  $('.finance-receipt-link',f.root).click();await flush();const view=$('[data-finance-image-view]'),firstImage=$('img',view),previous=$('[data-finance-image-previous]'),next=$('[data-finance-image-next]');
+  assert.equal(reads.length,1);assert.deepEqual(reads[0].ids,['receipt-a']);assert.equal(previous.disabled,true);assert.equal(next.disabled,false);assert.equal($('[data-finance-image-position]').textContent,'1 / 2');
+  previous.dispatchEvent(new win.Event('click'));await flush();assert.equal(reads.length,1);
+  next.click();await flush();assert.deepEqual(reads[1].ids,['receipt-b']);assert.equal(reads[0].current(),false);assert.equal(previous.disabled,false);assert.equal(next.disabled,true);assert.equal($('[data-finance-image-position]').textContent,'2 / 2');
+  next.dispatchEvent(new win.Event('click'));await flush();assert.equal(reads.length,2);
+  previous.click();await flush();assert.deepEqual(reads[2].ids,['receipt-a']);assert.equal(reads[1].current(),false);assert.equal(reads[2].current(),true);
+  reads[0].resolve({'receipt-a':'https://private.example.com/stale-a.webp'});reads[1].reject(new Error('过时的下一张失败'));reads[2].resolve({'receipt-a':'https://private.example.com/final-a.webp'});await flush();
+  const active=$('img',view);assert.match(active.src,/final-a.webp/);assert.equal($('[data-finance-image-view]'),view);active.dispatchEvent(new win.Event('load'));firstImage.dispatchEvent(new win.Event('error'));assert.equal($('[data-finance-image-status]').hidden,true);assert.equal($('[data-finance-image-retry]').hidden,true);assert.doesNotMatch(view.textContent,/过时的/);
+  ui.renderMarkup($('#modal-root'),'');assert.equal(reads[2].current(),false);next.dispatchEvent(new win.Event('click'));await flush();assert.equal(reads.length,3);
+});
+
 test('full-image load failure offers a retry that obtains fresh authorization without replacing the modal',async()=>{
-  const reads=[];const f=fixture({initialEntries:[photoEntry],receiptClient:{loadReceiptUrls:async(ids,variant)=>{if(variant==='thumb')return {};reads.push(ids);return {[ids[0]]:`https://private.example.com/image.webp?signature=${reads.length}`}}}});await flush();
+  const reads=[];const f=fixture({initialEntries:[photoEntry],receiptClient:{loadReceiptUrls:async(ids,variant)=>{assert.equal(variant,'image');reads.push(ids);return {[ids[0]]:`https://private.example.com/image.webp?signature=${reads.length}`}}}});await flush();
   $('[data-receipt-open="receipt-a"]',f.root).click();await flush();const view=$('[data-finance-image-view]'),image=$('img',view),message=$('[data-finance-image-status]',view),retry=$('[data-finance-image-retry]');assert.equal(reads.length,1);assert.match(image.src,/signature=1/);
   image.dispatchEvent(new win.Event('error'));assert.equal(image.hidden,true);assert.equal(message.hidden,false);assert.match(message.textContent,/截图加载失败.*授权已过期/);assert.equal(retry.hidden,false);
   retry.click();await flush();assert.equal($('[data-finance-image-view]'),view);assert.equal(reads.length,2);const refreshed=$('img',view);assert.notEqual(refreshed,image);assert.match(refreshed.src,/signature=2/);refreshed.dispatchEvent(new win.Event('load'));assert.equal(message.hidden,true);assert.equal(refreshed.hidden,false);assert.equal(retry.hidden,true);
@@ -185,14 +209,14 @@ test('full-image load failure offers a retry that obtains fresh authorization wi
 });
 
 test('a late full-image authorization cannot replace a newer same-account reauthentication modal',async()=>{
-  let finish,guard;const f=fixture({initialEntries:[photoEntry],receiptClient:{loadReceiptUrls:async(ids,variant,options)=>{if(variant==='thumb')return {};guard=options.isCurrent;return new Promise(resolve=>{finish=resolve})}}});await flush();$('[data-receipt-open="receipt-a"]',f.root).click();await flush();assert.equal(guard(),true);
+  let finish,guard;const f=fixture({initialEntries:[photoEntry],receiptClient:{loadReceiptUrls:async(ids,variant,options)=>{assert.equal(variant,'image');guard=options.isCurrent;return new Promise(resolve=>{finish=resolve})}}});await flush();$('[data-receipt-open="receipt-a"]',f.root).click();await flush();assert.equal(guard(),true);
   ui.renderMarkup($('#modal-root'),'<section class="modal" id="replacement-reauth"><h2>重新登录</h2><input type="password" value="保持当前输入"></section>');$('#modal-root').dataset.persistent='1';assert.equal(guard(),false);
   finish({'receipt-a':'https://private.example.com/stale.webp'});await flush();assert.ok($('#replacement-reauth'));assert.equal($('input',$('#replacement-reauth')).value,'保持当前输入');assert.equal($('#modal-root').dataset.persistent,'1');assert.equal($('[data-finance-image-view]'),null);assert.equal(f.notices.length,0);
 });
 
 test('old image-read failures stay silent while the latest receipt keeps its own inline retry',async()=>{
-  const reads=[];const f=fixture({initialEntries:[photoEntry],receiptClient:{loadReceiptUrls:async(ids,variant,options)=>{if(variant==='thumb')return {};return new Promise((resolve,reject)=>reads.push({ids,resolve,reject,current:options.isCurrent}))}}});await flush();
-  $('[data-receipt-open="receipt-a"]',f.root).click();await flush();$('[data-receipt-open="receipt-b"]',f.root).click();await flush();assert.equal(reads[0].current(),false);assert.equal(reads[1].current(),true);const view=$('[data-finance-image-view]');
+  const reads=[];const f=fixture({initialEntries:[photoEntry],receiptClient:{loadReceiptUrls:async(ids,variant,options)=>{assert.equal(variant,'image');return new Promise((resolve,reject)=>reads.push({ids,resolve,reject,current:options.isCurrent}))}}});await flush();
+  $('[data-receipt-open="receipt-a"]',f.root).click();await flush();$('[data-finance-image-next]').click();await flush();assert.equal(reads[0].current(),false);assert.equal(reads[1].current(),true);const view=$('[data-finance-image-view]');
   reads[0].reject(new Error('旧截图错误不能出现'));reads[1].reject(new Error('图片授权暂时不可用'));await flush();assert.equal($('[data-finance-image-view]'),view);assert.match(view.textContent,/图片授权暂时不可用/);assert.doesNotMatch(view.textContent,/旧截图错误/);assert.equal($('[data-finance-image-retry]').hidden,false);assert.equal(f.notices.length,0);
   $('[data-finance-image-retry]').click();$('[data-finance-image-retry]').dispatchEvent(new win.Event('click'));await flush();assert.equal(reads.length,3);assert.deepEqual(reads[2].ids,['receipt-b']);reads[2].resolve({'receipt-b':'https://private.example.com/latest.webp'});await flush();assert.match($('img',view).src,/latest\.webp/);
 });
@@ -250,7 +274,7 @@ test('ledger shows the amount only on the right and preserves original expressio
 });
 
 test('secondary detail retains exact expressions, income and transfers with compact categories',async()=>{
-  const f=fixture();await flush();const filters=$('[data-finance-filters]',f.root);assert.equal(filters.elements.kind.dataset.slot,'native-select');assert.equal(filters.elements.category.dataset.slot,'native-select');assert.equal($('[role="radiogroup"]',filters),null);assert.equal($('input[type="month"]',f.root),null);assert.ok($('[data-finance-period]',f.root));
+  const f=fixture();await flush();const filters=$('[data-finance-filters]',f.root);assert.equal(filters.elements.kind.dataset.slot,'native-select');assert.equal(filters.elements.category,undefined);assert.doesNotMatch(filters.textContent,/账目分类|全部分类/);assert.equal($('[role="radiogroup"]',filters),null);assert.equal($('input[type="month"]',f.root),null);assert.ok($('[data-finance-period]',f.root));
   for(const kind of ['income','transfer']){$('[data-finance-detail]',f.root).click();const form=$('#finance-detail-form');change(form,'kind',kind);input(form,'expression','8+8+8-1');input(form,'purpose',kind==='income'?'工资':'账户间转入');assert.equal($('[data-finance-calculation]',form).textContent,'合计 ¥23.00');assert.equal(form.elements.categoryId.dataset.slot,'native-select');submit(form);await flush()}
   const writes=f.calls.filter(call=>call.path==='/api/finance/entries');assert.deepEqual(writes.map(call=>call.args.body.kind),['income','transfer']);assert.equal(writes[0].args.body.expression,'8+8+8-1');assert.equal(writes[0].args.body.categoryId,'salary');assert.equal($('#finance-detail-form'),null);
 });

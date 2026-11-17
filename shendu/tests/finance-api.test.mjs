@@ -86,6 +86,39 @@ test('custom categories archive rather than remove historic labels, with exact v
   assert.equal((await api('/api/finance/categories/uncategorized',{method:'PUT',auth:a.cookie,body:{version:0,name:'待分类',keywords:[],active:false}})).status,400);
 });
 
+test('expanded automatic purposes persist through the shared rules without rewriting manual or historical classifications',async()=>{
+  const a=await account();
+  for(const [purpose,expected] of [
+    ['买菜','food'],['买东西','shopping'],['网购买鸡蛋','food'],['买东西买药','health'],
+    ['京东买书','learning'],['共享单车','transport'],['天然气缴费','housing'],
+    ['演唱会','entertainment'],['压岁钱','social'],['年终奖','salary']
+  ])assert.equal((await create(a.cookie,{purpose,categoryId:''})).categoryId,expected,purpose);
+  const manual=await create(a.cookie,{purpose:'买菜',categoryId:'shopping'});
+  await create(a.cookie,{purpose:'买菜',categoryId:''});
+  const view=await ledger(a.cookie);
+  assert.equal(view.entries.find(entry=>entry.id===manual.id).categoryId,'shopping','new recognition must not rewrite an existing explicit choice');
+  assert.equal(view.categories.some(category=>category.name==='买菜'),false,'recognized purpose must not create a new purpose-named category');
+  const legacyCategory=randomUUID(),named=await api('/api/finance/categories',{method:'POST',auth:a.cookie,body:{id:legacyCategory,name:'买菜',keywords:[]}});
+  assert.equal(named.status,201,named.text);
+  const legacyEntry=await create(a.cookie,{purpose:'买菜',categoryId:legacyCategory});
+  assert.equal((await create(a.cookie,{purpose:'买菜',categoryId:''})).categoryId,'food','future automatic entries recognize the concrete purpose despite the old purpose-only category');
+  assert.equal((await create(a.cookie,{purpose:'买菜',categoryId:legacyCategory})).categoryId,legacyCategory,'explicitly selecting the old category remains valid');
+  const preserved=await ledger(a.cookie);
+  assert.equal(preserved.entries.find(entry=>entry.id===legacyEntry.id).categoryId,legacyCategory,'existing entries keep their exact saved ID');
+  assert.equal(preserved.categories.find(category=>category.id===legacyCategory).name,'买菜');
+  assert.equal(preserved.categories.find(category=>category.id===legacyCategory).version,1,'automatic inference does not mutate the old category');
+  const unknown=await create(a.cookie,{purpose:'修鞋',categoryId:''});
+  assert.equal((await create(a.cookie,{purpose:'修鞋',categoryId:''})).categoryId,unknown.categoryId,'unrecognized purpose reuses its previous purpose-only category');
+  for(const name of ['买东西','超市买菜']){
+    const category=await api('/api/finance/categories',{method:'POST',auth:a.cookie,body:{id:randomUUID(),name,keywords:[]}});
+    assert.equal(category.status,201,category.text);
+  }
+  for(const [purpose,expected] of [['买东西买药','health'],['网购买东西买药','health'],['超市买菜刀','shopping']])assert.equal((await create(a.cookie,{purpose,categoryId:''})).categoryId,expected,'a longer purpose-only category name must not mask '+purpose);
+  const configured=await api('/api/finance/categories/'+legacyCategory,{method:'PUT',auth:a.cookie,body:{version:1,name:'买菜',keywords:['有机菜篮'],active:true}});
+  assert.equal(configured.status,200,configured.text);
+  assert.equal((await create(a.cookie,{purpose:'买菜',categoryId:''})).categoryId,legacyCategory,'a configured exact custom category retains its rule');
+});
+
 test('daily zero is explicit, and paging/search do not truncate monthly aggregate',async()=>{
   const a=await account();let day=await api('/api/finance?date='+today,{auth:a.cookie});assert.equal(day.value.day.state,'unrecorded');
   assert.equal((await api('/api/finance/day',{method:'POST',auth:a.cookie,body:{date:today,state:'zero'}})).status,200);day=await api('/api/finance?date='+today,{auth:a.cookie});assert.equal(day.value.day.state,'zero');
