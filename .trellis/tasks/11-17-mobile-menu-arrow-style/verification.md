@@ -23,4 +23,8 @@ Browser access still reported unavailable. User explicitly chose “先完成代
 
 ## Publication
 
-Independent review passed; main/release verification pending.
+- Work commit `a98a63486867ee11d505b63d39bc614bf851316b` pushed to GitHub main; application tree `eff391597c0342c5d47dca9d6a5219f556fa50f0`.
+- GitHub Actions <https://github.com/hikling/shendu-v1/actions/runs/44001137563>: all six jobs completed successfully (native amd64/arm64 checks, handover, publication and both real public-download/container/Compose/UI/backup checks).
+- Complete Release `deploy-eff391597c0342c5d47dca9d6a5219f556fa50f0` published with both images and checksums.
+- Audited retention Plan/Apply verified exactly four Releases remain: current tree, `9a1fa025561a476579a4dff1f4baa0121c415438`, `9e8bb5568882d3e7546d57afb39afca60ca368fb`, `cbe2bcb8a636c6e83978c08cdefa8e7cee57649f`. Removed only obsolete Release `deploy-07df282547cbc7798eef0a245c5acedf3f630223`; no Git tags deleted.
+- Production website update and actual phone visual acceptance were not performed.
