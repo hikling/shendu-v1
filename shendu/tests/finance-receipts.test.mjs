@@ -4,12 +4,20 @@ import {DatabaseSync} from 'node:sqlite';
 import {randomUUID,createHash,createCipheriv,createDecipheriv,randomBytes,createHmac} from 'node:crypto';
 import {readFileSync} from 'node:fs';
 import {runInNewContext} from 'node:vm';
-import {createFinanceReceipts,presignReceipt,receiptObjectUrl,receiptStorageIdentity} from '../finance-receipts.mjs';
+import {createFinanceReceipts,presignReceipt,receiptObjectUrl,receiptStorageIdentity,isR2ReceiptStorage} from '../finance-receipts.mjs';
 
 const hash=value=>createHash('sha256').update(value).digest('hex');
 const checksum=value=>Buffer.from(value,'hex').toString('base64');
 const config={endpoint:'https://storage.example.test',bucket:'private-receipts',region:'test-region',directory:'shendu-images',pathStyle:true,accessKey:'fixture-access',secretKey:'fixture-secret'};
 const variants={image:{type:'image/webp',bytes:21000,sha256:hash('image')},thumb:{type:'image/webp',bytes:900,sha256:hash('thumb')}};
+const r2Config={...config,endpoint:'https://0123456789abcdef0123456789abcdef.r2.cloudflarestorage.com',region:'auto'};
+const r2Image=Buffer.alloc(1024*1024+19,7),r2Thumb=Buffer.alloc(900,9);
+const r2Variants={image:{type:'image/webp',bytes:r2Image.length,sha256:hash(r2Image)},thumb:{type:'image/webp',bytes:r2Thumb.length,sha256:hash(r2Thumb)}};
+function r2Object(key){const name=key.includes('/thumb.')?'thumb':'image',variant=r2Variants[name],body=name==='image'?r2Image:r2Thumb;return {name,variant,body,headers:{'content-length':variant.bytes,'content-type':variant.type,'x-amz-meta-sha256':variant.sha256}}}
+async function prepareR2(f){
+  assert.equal((await f.route('/api/finance/storage',{method:'PUT',body:{config:r2Config,version:0}})).status,200);
+  const prepared=await f.prepare(f.owner,{variants:r2Variants});assert.equal(prepared.status,200);return prepared.value.receiptId;
+}
 function fixture(){
   const db=new DatabaseSync(':memory:');db.exec('PRAGMA foreign_keys=ON; CREATE TABLE users(id TEXT PRIMARY KEY,username TEXT UNIQUE); CREATE TABLE user_settings(user_id TEXT,key TEXT,value TEXT,PRIMARY KEY(user_id,key));');
   const owner={id:randomUUID(),username:'receipt_owner'},other={id:randomUUID(),username:'receipt_other'};for(const user of [owner,other])db.prepare('INSERT INTO users VALUES(?,?)').run(user.id,user.username);
@@ -20,7 +28,7 @@ function fixture(){
   const setting=(id,key,fallback=null)=>{const row=db.prepare('SELECT value FROM user_settings WHERE user_id=? AND key=?').get(id,key);return row?decrypt(row.value,scope('setting',id,key)):fallback};
   const putSetting=(id,key,value)=>db.prepare('INSERT INTO user_settings VALUES(?,?,?) ON CONFLICT(user_id,key) DO UPDATE SET value=excluded.value').run(id,key,encrypt(value,scope('setting',id,key)));
   const normalize=(_kind,value)=>{const result={...value};const url=new URL(value.endpoint);if(url.protocol!=='https:'||url.hostname==='localhost'||url.username||url.password||!value.secretKey)throw new Error('invalid storage');return result};
-  const service=createFinanceReceipts({db,setting,putSetting,dataScope:scope,encryptData:encrypt,decryptData:decrypt,now:()=>new Date().toISOString(),readJson:async req=>req.body||{},json:(res,status,value)=>Object.assign(res,{status,value}),error:(res,status,message,error)=>Object.assign(res,{status,value:{message,error}}),assertPublicHttps:async endpoint=>{if(dnsWait)await dnsWait;return {url:new URL(endpoint)}},sessionUser:req=>valid?req.user:null,normalizeBackupConfig:normalize,getS3Targets:()=>[{id:'owned-target',name:'凭证存储'}],getS3TargetConfig:(id,target)=>id===owner.id&&target==='owned-target'?{...config}:null,withActivity:(id,action,metadata,write)=>{db.exec('BEGIN');try{const result=write();db.exec('COMMIT');activity.push({id,action});return result}catch(error){db.exec('ROLLBACK');throw error}},s3Request:async(c,key,method,body)=>{calls.push({key,method,config:{...c},body});if(networkWait)await networkWait;if(requestHook)return requestHook(c,key,method,body);if(key.includes('/connection-check-')){if(method==='PUT')probes.set(key,Buffer.from(body));if(method==='DELETE')probes.delete(key);return {body:probes.get(key),headers:{}};}const variant=key.includes('/thumb.')?variants.thumb:variants.image;return {headers:{'content-length':variant.bytes,'content-type':variant.type,'x-amz-meta-sha256':wrongHead?'bad':variant.sha256,...(headChecksum==='missing'?{}:{'x-amz-checksum-sha256':headChecksum==='valid'?checksum(variant.sha256):checksum(hash('different bytes'))})}}}});
+  const service=createFinanceReceipts({db,setting,putSetting,dataScope:scope,encryptData:encrypt,decryptData:decrypt,now:()=>new Date().toISOString(),readJson:async req=>req.body||{},json:(res,status,value)=>Object.assign(res,{status,value}),error:(res,status,message,error)=>Object.assign(res,{status,value:{message,error}}),assertPublicHttps:async endpoint=>{if(dnsWait)await dnsWait;return {url:new URL(endpoint)}},sessionUser:req=>valid?req.user:null,normalizeBackupConfig:normalize,getS3Targets:()=>[{id:'owned-target',name:'凭证存储'}],getS3TargetConfig:(id,target)=>id===owner.id&&target==='owned-target'?{...config}:null,withActivity:(id,action,metadata,write)=>{db.exec('BEGIN');try{const result=write();db.exec('COMMIT');activity.push({id,action});return result}catch(error){db.exec('ROLLBACK');throw error}},s3Request:async(c,key,method,body,options)=>{calls.push({key,method,config:{...c},body,options});if(networkWait)await networkWait;if(requestHook)return requestHook(c,key,method,body,options);if(key.includes('/connection-check-')){if(method==='PUT')probes.set(key,Buffer.from(body));if(method==='DELETE')probes.delete(key);return {body:probes.get(key),headers:{}};}const variant=key.includes('/thumb.')?variants.thumb:variants.image;return {headers:{'content-length':variant.bytes,'content-type':variant.type,'x-amz-meta-sha256':wrongHead?'bad':variant.sha256,...(headChecksum==='missing'?{}:{'x-amz-checksum-sha256':headChecksum==='valid'?checksum(variant.sha256):checksum(hash('different bytes'))})}}}});
   async function route(path,{method='POST',body={},user=owner}={}){const res={};await service.handle({method,body,user},res,new URL(path,'http://localhost'),user);return res}
   return {db,service,owner,other,calls,activity,probes,route,set requestHook(value){requestHook=value},set valid(value){valid=value},set wrongHead(value){wrongHead=value},set headChecksum(value){headChecksum=value},set dnsWait(value){dnsWait=value},set networkWait(value){networkWait=value},async configure(user=owner){return route('/api/finance/storage',{method:'PUT',body:{config,version:0},user})},async prepare(user=owner,body={}){return route('/api/finance/receipts/prepare',{user,body:{id:randomUUID(),hash:hash('original'),variants,...body}})},close(){db.close()}};
 }
@@ -38,6 +46,81 @@ test('presigned PUT binds exact object, MIME, byte length and digest without exp
   assert.equal(receiptObjectUrl({...config,pathStyle:false},'image.webp').host,'private-receipts.storage.example.test');
 });
 
+test('native R2 PUT signatures retain type, length and digest metadata without accepting endpoint lookalikes',()=>{
+  for(const endpoint of [r2Config.endpoint,'https://account.eu.r2.cloudflarestorage.com','https://account.fedramp.r2.cloudflarestorage.com']){
+    const storage={...r2Config,endpoint},ticket=presignReceipt(storage,'receipts/user/id/image.webp',{method:'PUT',variant:r2Variants.image,time:new Date('2026-11-17T01:02:03.000Z')}),url=new URL(ticket.url);
+    assert.equal(isR2ReceiptStorage(storage),true);assert.equal(url.searchParams.get('X-Amz-SignedHeaders'),'content-length;content-type;host;x-amz-meta-sha256');
+    assert.deepEqual(ticket.headers,{'Content-Type':'image/webp','x-amz-meta-sha256':r2Variants.image.sha256});assert.ok(!ticket.url.includes(storage.secretKey));assert.ok(!('Content-Length'in ticket.headers));
+  }
+  for(const endpoint of ['https://account.r2.cloudflarestorage.com.attacker.test','https://r2.cloudflarestorage.com','https://images.example.test','https://attacker.test/account.r2.cloudflarestorage.com','http://account.r2.cloudflarestorage.com','not a URL'])assert.equal(isR2ReceiptStorage({endpoint}),false,endpoint);
+  const ticket=presignReceipt(r2Config,'receipts/user/id/image.webp',{method:'PUT',variant:r2Variants.image,time:new Date('2026-11-17T01:02:03.000Z')}),url=new URL(ticket.url);
+  const params=[...url.searchParams].filter(([key])=>key!=='X-Amz-Signature').map(([key,value])=>[encodeURIComponent(key),encodeURIComponent(value)]).sort(([a],[b])=>a.localeCompare(b)).map(pair=>pair.join('=')).join('&');
+  const headers=`content-length:${r2Variants.image.bytes}\ncontent-type:image/webp\nhost:${url.host}\nx-amz-meta-sha256:${r2Variants.image.sha256}\n`;
+  const canonical=`PUT\n${url.pathname}\n${params}\n${headers}\n${url.searchParams.get('X-Amz-SignedHeaders')}\nUNSIGNED-PAYLOAD`,scope='20261117/auto/s3/aws4_request';
+  const hmac=(key,value)=>createHmac('sha256',key).update(value).digest(),signingKey=hmac(hmac(hmac(hmac('AWS4'+config.secretKey,'20261117'),'auto'),'s3'),'aws4_request');
+  assert.equal(url.searchParams.get('X-Amz-Signature'),createHmac('sha256',signingKey).update(`AWS4-HMAC-SHA256\n20261117T010203Z\n${scope}\n${hash(canonical)}`).digest('hex'));
+});
+
+test('R2 completion hashes bounded actual bytes including images larger than the default S3 read limit',async()=>{
+  const f=fixture();try{
+    const id=await prepareR2(f);
+    f.requestHook=(_config,key,method,_body,options)=>{const object=r2Object(key);assert.equal(f.service.hasReadyReceipt(f.owner.id,id),false);if(method==='HEAD')return {headers:object.headers};assert.equal(method,'GET');assert.equal(options.maxResponseBytes,object.body.length);return {body:object.body}};
+    const done=await f.route(`/api/finance/receipts/${id}/complete`);assert.equal(done.status,200,JSON.stringify(done.value));assert.equal(f.service.hasReadyReceipt(f.owner.id,id),true);
+    assert.deepEqual(f.calls.map(call=>call.method),['HEAD','GET','HEAD','GET']);
+    assert.deepEqual(f.calls.filter(call=>call.method==='GET').map(call=>call.options.maxResponseBytes),[r2Image.length,r2Thumb.length]);
+  }finally{f.close()}
+});
+
+test('R2 metadata cannot replace missing, corrupt or oversized actual object bytes',async()=>{
+  for(const problem of ['corrupt','missing','short','oversize','string']){
+    const f=fixture();try{
+      const id=await prepareR2(f);
+      f.requestHook=(_config,key,method)=>{const object=r2Object(key);if(method==='HEAD')return {headers:object.headers};return {body:problem==='missing'?undefined:problem==='string'?'fake':problem==='short'?object.body.subarray(1):problem==='oversize'?Buffer.concat([object.body,Buffer.from([0])]):Buffer.alloc(object.body.length,1)}};
+      const response=await f.route(`/api/finance/receipts/${id}/complete`);assert.equal(response.status,409,problem);assert.equal(response.value.error,'finance_receipt_incomplete');assert.equal(f.service.hasReadyReceipt(f.owner.id,id),false);
+    }finally{f.close()}
+  }
+});
+
+test('R2 HEAD metadata mismatch rejects before downloading any object content',async()=>{
+  for(const field of ['content-length','content-type','x-amz-meta-sha256']){
+    const f=fixture();try{
+      const id=await prepareR2(f);
+      f.requestHook=(_config,key,method)=>{assert.equal(method,'HEAD');const object=r2Object(key);return {headers:{...object.headers,[field]:field==='content-length'?object.body.length+1:field==='content-type'?'text/plain':hash('untrusted metadata')}}};
+      const response=await f.route(`/api/finance/receipts/${id}/complete`);
+      assert.equal(response.status,409,field);assert.equal(response.value.error,'finance_receipt_incomplete');
+      assert.deepEqual(f.calls.map(call=>call.method),['HEAD']);assert.equal(f.service.hasReadyReceipt(f.owner.id,id),false);
+    }finally{f.close()}
+  }
+});
+
+test('R2 GET success or failure cannot complete after logout, same-config restore or receipt revision change',async()=>{
+  for(const change of ['logout','restore','receipt'])for(const fails of [false,true]){
+    const f=fixture();let release,pending;
+    try{
+      const id=await prepareR2(f);let enter;
+      const entered=new Promise(resolve=>{enter=resolve}),hold=new Promise(resolve=>{release=resolve});
+      f.requestHook=async(_config,key,method)=>{
+        const object=r2Object(key);if(method==='HEAD')return {headers:object.headers};
+        assert.equal(method,'GET');enter();await hold;
+        if(fails)throw new Error('private upstream URL and credentials must not escape');
+        return {body:object.body};
+      };
+      pending=f.route(`/api/finance/receipts/${id}/complete`);await entered;
+      if(change==='logout')f.valid=false;
+      else if(change==='restore'){
+        const snapshot=f.service.exportUser(f.owner.id),priorVersion=snapshot.storage.version;
+        f.service.importUser(f.owner.id,snapshot,{replace:true});
+        assert.ok(f.service.exportUser(f.owner.id).storage.version>priorVersion);
+      }else f.db.prepare('UPDATE finance_receipts SET version=version+1 WHERE id=?').run(id);
+      release();const response=await pending;
+      assert.equal(response.status,change==='logout'?401:409,`${change}/${fails}`);
+      assert.equal(response.value.error,change==='logout'?'unauthorized':'version_conflict');
+      assert.equal(f.service.hasReadyReceipt(f.owner.id,id),false);assert.doesNotMatch(JSON.stringify(response.value),/private upstream/);
+      assert.deepEqual(f.calls.map(call=>call.method),['HEAD','GET']);
+    }finally{release?.();if(pending)await pending;f.close()}
+  }
+});
+
 test('private storage is safe to read, reuses only an owned target and rejects stale configuration',async()=>{
   const f=fixture();try{
     const configured=await f.route('/api/finance/storage',{method:'PUT',body:{reuseTargetId:'owned-target',version:0}});assert.equal(configured.status,200);assert.equal(configured.value.version,1);assert.ok(!JSON.stringify(configured.value).includes(config.secretKey));
@@ -53,7 +136,7 @@ test('receipt HEAD requests signed checksums and addresses the same encoded obje
   const implementation=source.slice(source.indexOf('const awsDate ='),source.indexOf('async function uploadWebdav('));
   let request;
   const send=runInNewContext(implementation+';s3Request',{
-    Buffer,URL,createHash,createHmac,
+    Buffer,URL,createHash,createHmac,isR2ReceiptStorage,
     assertPublicHttps:async endpoint=>({url:new URL(endpoint)}),
     pinnedHttpsRequest:async(validated,url,options)=>{request={url,options};return {ok:true,headers:{}}}
   });
@@ -63,6 +146,30 @@ test('receipt HEAD requests signed checksums and addresses the same encoded obje
   assert.equal(request.options.headers['x-amz-checksum-mode'],'ENABLED');
   assert.match(request.options.headers.Authorization,/SignedHeaders=[^,]*x-amz-checksum-mode/);
   assert.equal(request.options.body.length,0);
+});
+
+test('native R2 S3 requests omit checksum mode and forward bounded reads while ordinary defaults remain intact',async()=>{
+  const source=readFileSync(new URL('../server.mjs',import.meta.url),'utf8');
+  const implementation=source.slice(source.indexOf('const awsDate ='),source.indexOf('async function uploadWebdav('));
+  const calls=[];let dnsCalls=0;
+  const send=runInNewContext(implementation+';s3Request',{
+    Buffer,URL,createHash,createHmac,isR2ReceiptStorage,
+    assertPublicHttps:async endpoint=>{dnsCalls++;return {url:new URL(endpoint)}},
+    pinnedHttpsRequest:async(validated,url,options)=>{calls.push({url,options});return {ok:true,headers:{},body:Buffer.alloc(0)}}
+  });
+  await send(r2Config,'receipts/owner/image.webp','HEAD');
+  assert.equal(calls[0].options.headers['x-amz-checksum-mode'],undefined);
+  assert.doesNotMatch(calls[0].options.headers.Authorization,/x-amz-checksum-mode/);
+  assert.equal(calls[0].options.maxResponseBytes,1024*1024);
+  await send(r2Config,'receipts/owner/image.webp','GET',Buffer.alloc(0),{maxResponseBytes:r2Image.length});
+  assert.equal(calls[1].options.maxResponseBytes,r2Image.length);assert.equal(calls[1].options.body.length,0);
+  await send(r2Config,'receipts/owner/image.webp','GET',Buffer.alloc(0),{maxResponseBytes:2*1024*1024});
+  assert.equal(calls[2].options.maxResponseBytes,2*1024*1024);
+  await send(config,'receipts/owner/image.webp','HEAD');
+  assert.equal(calls[3].options.headers['x-amz-checksum-mode'],'ENABLED');assert.equal(calls[3].options.maxResponseBytes,1024*1024);
+  const priorDns=dnsCalls;
+  for(const limit of [0,-1,1.5,NaN,Infinity,2*1024*1024+1])await assert.rejects(send(r2Config,'receipts/owner/image.webp','GET',Buffer.alloc(0),{maxResponseBytes:limit}),/读取上限/);
+  assert.equal(dnsCalls,priorDns,'invalid limits cannot issue DNS or storage requests');
 });
 
 test('receipt prepare is idempotent, disallows PNG/oversize and requires both valid uploaded variants',async()=>{

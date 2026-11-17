@@ -12,6 +12,10 @@ const encode=value=>encodeURIComponent(value).replace(/[!'()*]/g,c=>'%'+c.charCo
 const stable=value=>JSON.stringify(value);
 const validTime=value=>typeof value==='string'&&Number.isFinite(Date.parse(value));
 
+export function isR2ReceiptStorage(config){
+  try{const url=new URL(config.endpoint);return url.protocol==='https:'&&url.hostname.endsWith('.r2.cloudflarestorage.com')}catch{return false}
+}
+
 export function receiptStorageIdentity(config){
   return sha(stable([config.endpoint,config.region,config.bucket,config.directory,config.pathStyle===true]));
 }
@@ -26,7 +30,8 @@ export function presignReceipt(config,key,{method='GET',variant,expires=300,time
   const headers={host:url.host};
   if(method==='PUT'){
     if(!variant||!TYPES.has(variant.type)||!Number.isSafeInteger(variant.bytes)||variant.bytes<1||!HASH.test(variant.sha256))throw bad('图片参数不正确');
-    headers['content-type']=variant.type;headers['content-length']=String(variant.bytes);headers['x-amz-meta-sha256']=variant.sha256;headers['x-amz-checksum-sha256']=checksum(variant.sha256);
+    headers['content-type']=variant.type;headers['content-length']=String(variant.bytes);headers['x-amz-meta-sha256']=variant.sha256;
+    if(!isR2ReceiptStorage(config))headers['x-amz-checksum-sha256']=checksum(variant.sha256);
   }
   const names=Object.keys(headers).sort(),signedHeaders=names.join(';');
   const params={'X-Amz-Algorithm':'AWS4-HMAC-SHA256','X-Amz-Credential':`${config.accessKey}/${scope}`,'X-Amz-Date':stamp,'X-Amz-Expires':String(expires),'X-Amz-SignedHeaders':signedHeaders};
@@ -37,7 +42,7 @@ export function presignReceipt(config,key,{method='GET',variant,expires=300,time
   const signingKey=hmac(hmac(hmac(hmac('AWS4'+config.secretKey,date),config.region),'s3'),'aws4_request');
   url.search=query+'&X-Amz-Signature='+createHmac('sha256',signingKey).update(sign).digest('hex');
   // Fetch supplies the signed Content-Length from the Blob; scripts cannot set it.
-  return {url:url.href,headers:method==='PUT'?{'Content-Type':variant.type,'x-amz-meta-sha256':variant.sha256,'x-amz-checksum-sha256':checksum(variant.sha256)}:{}};
+  return {url:url.href,headers:method==='PUT'?{'Content-Type':variant.type,'x-amz-meta-sha256':variant.sha256,...(!isR2ReceiptStorage(config)?{'x-amz-checksum-sha256':checksum(variant.sha256)}:{})}:{}};
 }
 
 function variantsFrom(value){
@@ -234,14 +239,27 @@ export function createFinanceReceipts(deps){
         await readJson(req);sessionCurrent(req,user);checkRate(user.id,'complete',120,60000);
         const row=owned(user.id,completed[1]);
         if(row.ready){json(res,200,{receipt:{id:row.id,hash:row.hash,ready:true}});return true}
-        const config=requireStorage(user.id);if(row.data.storageIdentity!==receiptStorageIdentity(config))throw bad('图片存储关联不一致');
+        const config=requireStorage(user.id),storageSnapshot=stable(storage(user.id));if(row.data.storageIdentity!==receiptStorageIdentity(config))throw bad('图片存储关联不一致');
+        const checkCurrent=()=>{
+          sessionCurrent(req,user);
+          const current=owned(user.id,row.id);
+          if(current.version!==row.version||stable(current.data)!==stable(row.data)||stable(storage(user.id))!==storageSnapshot)throw bad('图片资料或存储配置已更新，请重试','version_conflict',409);
+        };
         await network(user.id,async()=>{
           try{for(const name of ['image','thumb']){
             const result=await s3Request(config,row.data.keys[name],'HEAD'),headers=result.headers||{},v=row.data.variants[name];
-            if(Number(headers['content-length'])!==v.bytes||String(headers['content-type']||'').split(';')[0].trim()!==v.type||headers['x-amz-meta-sha256']!==v.sha256||headers['x-amz-checksum-sha256']!==checksum(v.sha256))throw new Error('receipt checksum mismatch');
-          }}catch{throw bad('图片尚未上传完整或校验失败；存储服务须支持 SHA-256 上传和读取校验，请核对后重试','finance_receipt_incomplete',409)}
+            checkCurrent();
+            if(Number(headers['content-length'])!==v.bytes||String(headers['content-type']||'').split(';')[0].trim()!==v.type||headers['x-amz-meta-sha256']!==v.sha256)throw new Error('receipt metadata mismatch');
+            if(isR2ReceiptStorage(config)){
+              // R2 does not provide the same single-part SHA-256 HEAD proof as S3.
+              // Hash the bounded actual object in memory; metadata is not proof.
+              const read=await s3Request(config,row.data.keys[name],'GET',Buffer.alloc(0),{maxResponseBytes:v.bytes});
+              checkCurrent();
+              if(!Buffer.isBuffer(read.body)||read.body.length!==v.bytes||sha(read.body)!==v.sha256)throw new Error('receipt content mismatch');
+            }else if(headers['x-amz-checksum-sha256']!==checksum(v.sha256))throw new Error('receipt checksum mismatch');
+          }}catch{checkCurrent();throw bad('图片尚未上传完整或 SHA-256 校验失败，请重新上传后重试','finance_receipt_incomplete',409)}
         });
-        sessionCurrent(req,user);const current=owned(user.id,row.id);if(current.version!==row.version||stable(current.data)!==stable(row.data)||receiptStorageIdentity(requireStorage(user.id))!==receiptStorageIdentity(config))throw bad('图片资料或存储配置已更新，请重试','version_conflict',409);
+        checkCurrent();
         db.prepare('UPDATE finance_receipts SET ready=1,version=version+1,updated_at=? WHERE id=? AND user_id=? AND ready=0').run(now(),row.id,user.id);
         json(res,200,{receipt:{id:row.id,hash:row.hash,ready:true}});return true;
       }

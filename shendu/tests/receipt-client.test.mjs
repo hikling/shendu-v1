@@ -139,3 +139,28 @@ test('each stored screenshot retains its receipt even when OCR has no amount',as
     assert.deepEqual(result.candidates.map(row=>row.receiptIds),[['stored-1'],['stored-2']]);assert.equal(result.candidates[1].expression,'');
   }finally{b.restore()}
 });
+
+test('receipt failure messages identify authorization, each variant upload and verification without leaking provider errors',async()=>{
+  for(const stage of ['prepare','upload-image','upload-thumb','complete']){
+    let transfers=0;const b=await browser({transfer:()=>({ok:!(stage==='upload-image'&&++transfers===1||stage==='upload-thumb'&&++transfers===2),status:403})});
+    try{
+      const raw='https://private.example.test/secret?X-Amz-Signature=PRIVATE_TOKEN';
+      await assert.rejects(b.client.processReceiptFiles([screenshot()],{request:async path=>{
+        if(path.endsWith('/storage'))return {configured:true,config};
+        if(path.endsWith('/prepare')){if(stage==='prepare')throw Object.assign(new Error(raw),{status:409});return {receiptId:'receipt-id',uploads:Object.fromEntries(['image','thumb'].map(name=>[name,{url:objectUrl(name),headers:{}}]))};}
+        if(path.endsWith('/complete'))throw Object.assign(new Error(raw),{status:409});throw Error(path);
+      }}),error=>{
+        assert.equal(error.receiptStage,stage);assert.equal(error.code,'receipt_upload_failed');assert.doesNotMatch(error.message,/PRIVATE_TOKEN|private\.example|X-Amz/);
+        assert.match(error.message,{prepare:/申请上传授权/, 'upload-image':/上传清晰图/, 'upload-thumb':/上传缩略图/,complete:/完整性校验/}[stage]);return true;
+      });
+    }finally{b.restore()}
+  }
+});
+
+test('browser fetch failure advises CORS or network without claiming an exact production cause',async()=>{
+  const b=await browser({transfer:()=>{throw new TypeError('Failed to fetch https://private.example.test/?signature=secret')}});try{
+    await assert.rejects(b.client.processReceiptFiles([screenshot()],{request:async path=>path.endsWith('/storage')?{configured:true,config}:{receiptId:'receipt-id',uploads:{image:{url:objectUrl('image'),headers:{}}}}}),error=>{
+      assert.equal(error.receiptStage,'upload-image');assert.match(error.message,/浏览器.*跨域规则.*网络/);assert.doesNotMatch(error.message,/private\.example|signature=secret/);return true;
+    });
+  }finally{b.restore()}
+});

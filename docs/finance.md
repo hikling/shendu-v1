@@ -45,7 +45,27 @@
 
 桶保持私有。慎独按账户生成短时授权，浏览器直接与S3传输压缩图，慎独主机不保存图片。长期密钥只在服务端加密保存，不发送给网页。账目、图片仅本人可读；使用日志不显示金额、用途和截图内容。
 
-存储须支持S3预签名PUT/GET、带SHA-256校验的上传，以及开启校验模式的HEAD读取，并配置CORS允许自己的网站，例如 `https://shendu.example.com`。允许PUT/GET/HEAD，请求头允许 `Content-Type`、`X-Amz-Meta-Sha256`、`X-Amz-Checksum-Sha256`。只返回自定义元数据、不能返回实际文件校验值的服务不会被视为上传成功。无需把桶公开。请在应用中填写密钥，不要发到聊天或公开代码。
+存储需支持S3预签名PUT/GET，并配置CORS允许自己的网站，例如 `https://shendu.example.com`。普通S3沿用SHA-256上传和HEAD返回校验值；Cloudflare R2原生接口改为HEAD检查后临时读回压缩图，核对实际内容的SHA-256。读回只用于入账前校验，不落盘保存，不能只凭自定义元数据判定成功。无需把桶公开。请在应用中填写密钥，不要发到聊天或公开代码。
+
+### Cloudflare R2
+
+服务地址使用R2控制台提供的S3接口 `https://<ACCOUNT_ID>.r2.cloudflarestorage.com`，地区填 `auto`，可启用路径式地址。预签名链接不能改用公开访问域名。依据[Cloudflare S3兼容性说明](https://developers.cloudflare.com/r2/api/s3/api/)及[预签名链接说明](https://developers.cloudflare.com/r2/api/s3/presigned-urls/)，程序仅对原生R2接口选择内容读回校验，其余S3服务保持原校验方式。
+
+在存储桶「设置 → CORS策略」添加下列规则，把示例域名替换为慎独实际访问地址（协议和域名必须一致，不含末尾斜杠）。服务器连接测试通过，不代表浏览器跨域上传已放行。[Cloudflare CORS说明](https://developers.cloudflare.com/r2/buckets/cors/)
+
+```json
+[
+  {
+    "AllowedOrigins": ["https://shendu.example.com"],
+    "AllowedMethods": ["GET", "PUT", "HEAD"],
+    "AllowedHeaders": ["Content-Type", "x-amz-meta-sha256", "x-amz-checksum-sha256"],
+    "ExposeHeaders": ["ETag"],
+    "MaxAgeSeconds": 3600
+  }
+]
+```
+
+上传失败提示会区分申请授权、上传清晰图、上传缩略图及服务端完整性校验。浏览器无法完成请求时，仍需检查CORS、网络和保存配置后的网页刷新；提示不能单独证明是哪一项配置有误。
 
 更改存储来源后，已打开网页的权限策略仍可能使用旧配置，按界面提示保存输入并重新打开。已有凭证时不能随意更换桶/目录，避免图片失联；迁移需先复制图片并保持关联。
 

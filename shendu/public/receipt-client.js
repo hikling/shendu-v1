@@ -109,23 +109,44 @@ async function recognize(blob,{isCurrent,signal,onProgress}){
 }
 
 async function uploadVariants(compressed,{request,isCurrent,signal,config}){
+  let stage='prepare';
+  try{
   assertCurrent(isCurrent,signal);
   const variants=Object.fromEntries(['image','thumb'].map(name=>[name,{bytes:compressed[name].bytes,type:compressed[name].type,sha256:compressed[name].sha256}]));
   const ticket=await request('/api/finance/receipts/prepare',{method:'POST',body:{id:crypto.randomUUID(),hash:compressed.hash,variants}},isCurrent);assertCurrent(isCurrent,signal);
   if(typeof ticket.receiptId!=='string'||!ticket.receiptId)throw new Error('凭证保存响应不完整，请重试');
   if(ticket.ready)return {id:ticket.receiptId,duplicate:ticket.duplicate===true};
   for(const name of ['image','thumb']){
+    stage=name==='image'?'upload-image':'upload-thumb';
     assertCurrent(isCurrent,signal);const upload=ticket.uploads?.[name],target=storageTarget(upload?.url,config);
     const transfer=new AbortController(),stop=()=>transfer.abort(),deadline=setTimeout(stop,60000);signal?.addEventListener('abort',stop,{once:true});
     try{
       const response=await fetch(target.href,{method:'PUT',headers:upload.headers,body:compressed[name].blob,mode:'cors',credentials:'omit',redirect:'error',signal:transfer.signal});
-      if(!response.ok)throw new Error(`图片上传失败（${response.status}），请核对存储权限与跨域设置`);
-    }catch(caught){if(signal?.aborted)throw cancelled();throw caught.name==='AbortError'?new Error('图片上传超时，请稍后重试'):caught}
+      if(!response.ok)throw Object.assign(new Error('存储服务拒绝上传'),{status:response.status});
+    }catch(caught){if(signal?.aborted)throw cancelled();throw caught.name==='AbortError'?Object.assign(new Error('图片上传超时'),{receiptTimeout:true}):caught}
     finally{clearTimeout(deadline);signal?.removeEventListener('abort',stop)}
   }
-  assertCurrent(isCurrent,signal);const completed=await request(`/api/finance/receipts/${encodeURIComponent(ticket.receiptId)}/complete`,{method:'POST',body:{}},isCurrent);assertCurrent(isCurrent,signal);
+  stage='complete';assertCurrent(isCurrent,signal);const completed=await request(`/api/finance/receipts/${encodeURIComponent(ticket.receiptId)}/complete`,{method:'POST',body:{}},isCurrent);assertCurrent(isCurrent,signal);
   if(!completed?.receipt?.ready)throw new Error('图片尚未通过存储校验，请重试');
   return {id:ticket.receiptId,duplicate:false};
+  }catch(caught){
+    assertCurrent(isCurrent,signal);
+    if(caught.name==='AbortError')throw caught;
+    throw Object.assign(new Error('凭证保存步骤失败'),{receiptStage:stage,status:Number.isInteger(caught.status)?caught.status:null,receiptTimeout:caught.receiptTimeout===true,cause:caught});
+  }
+}
+
+function receiptFailureMessage(error){
+  const stage=error.receiptStage,status=error.status,http=status?`（${status}）`:'';
+  if(status===401)return '登录已失效，请重新登录后重试。';
+  if(status===429)return '图片操作过于频繁，请稍候再试。';
+  if(error.cause?.receiptTargetMismatch)return '上传地址与已保存的图片存储配置不一致，请核对S3接口地址并刷新网页后重试。';
+  if(stage==='prepare')return `申请上传授权失败${http}，请核对已保存的图片存储配置；配置修改后先保存并刷新网页。`;
+  if(stage==='complete')return `图片已上传，但完整性校验未通过${http}，请检查存储兼容性；若刚修改配置，请刷新网页后重试。`;
+  const label=stage==='upload-thumb'?'上传缩略图':'上传清晰图';
+  if(error.receiptTimeout)return `${label}超时，请检查网络后重试。`;
+  if(status)return `${label}被存储服务拒绝${http}，请检查存储桶权限、密钥和上传参数。`;
+  return `${label}失败，浏览器未能完成请求。请检查存储桶跨域规则、网络连接，并在保存配置后刷新网页。`;
 }
 
 function storageTarget(raw,config){
@@ -136,7 +157,7 @@ function storageTarget(raw,config){
     const parts=[...expected.pathname.split('/').filter(Boolean).map(decodeURIComponent),...(config.pathStyle?[config.bucket]:[]),...String(config.directory||'').split('/').filter(Boolean),'receipts'];
     const prefix='/'+parts.map(part=>encodeURIComponent(part).replace(/[!'()*]/g,char=>'%'+char.charCodeAt(0).toString(16).toUpperCase())).join('/')+'/';
     if(target.protocol!=='https:'||target.origin!==expected.origin||target.username||target.password||target.hash||!target.pathname.startsWith(prefix))throw new Error();
-  }catch{throw new Error('图片地址与私有存储设置不一致，请重新读取设置')}
+  }catch{throw Object.assign(new Error('图片地址与私有存储设置不一致，请重新读取设置'),{receiptTargetMismatch:true})}
   return target;
 }
 
@@ -159,7 +180,7 @@ export async function processReceiptFiles(files,{request,isCurrent=()=>true,onPr
       if(configured){
         onProgress({stage:'uploading',message:`正在保存第${index+1}/${list.length}张压缩凭证`,index,total:list.length});
         try{const stored=await uploadVariants(compressed,{request,isCurrent:current,signal:owner.signal,config:configured});receiptId=stored.id;duplicate=stored.duplicate;receiptIds.push(receiptId);if(duplicate)imageWarning.push('这张截图已保存过，请核对是否重复记账。')}
-        catch(caught){assertCurrent(current,owner.signal);throw Object.assign(new Error(`第 ${index+1} 张截图未能保存，本批次尚未入账。请先测试图片存储，并检查网页上传的跨域权限后重试。`),{code:'receipt_upload_failed',cause:caught})}
+        catch(caught){assertCurrent(current,owner.signal);throw Object.assign(new Error(`第 ${index+1} 张截图未能保存，本批次尚未入账。${receiptFailureMessage(caught)}`),{code:'receipt_upload_failed',receiptStage:caught.receiptStage,status:caught.status,cause:caught})}
       }
       const parsed=parseReceiptText(text,{date,categories}),rows=parsed.length?parsed:[{date,expression:'',purpose:'',kind:'expense',categoryId:'uncategorized',confidence:0,warnings:['未识别到金额，请手动填写。']}];
       for(const row of rows)candidates.push({...row,duplicate,receiptIds:receiptId?[receiptId]:[],warnings:[...(row.warnings||[]),...imageWarning]});

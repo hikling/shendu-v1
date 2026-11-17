@@ -13,7 +13,7 @@ import { reviewQuestions, reviewDisabledFields } from './public/review-schema.js
 import { normalizeReviewMetricIds } from './public/review-metrics.js';
 import { normalizeBackupSchedule, backupScheduleDue, backupHistoryCutoff } from './public/backup-schedule.js';
 import { createFinanceLedger,normalizeFinanceDraft,financeDraftPending } from './finance-ledger.mjs';
-import { createFinanceReceipts } from './finance-receipts.mjs';
+import { createFinanceReceipts,isR2ReceiptStorage } from './finance-receipts.mjs';
 
 process.umask(0o077);
 const PORT = Number(process.env.SHENDU_PORT || 3000);
@@ -1144,7 +1144,8 @@ function pinnedHttpsRequest(validated,target,{method='GET',headers={},body=Buffe
   });
 }
 const awsDate = d => d.toISOString().replace(/[:-]|\.\d{3}/g, '');
-async function s3Request(config, key, method, body = Buffer.alloc(0)) {
+async function s3Request(config, key, method, body = Buffer.alloc(0), {maxResponseBytes=1024*1024}={}) {
+  if(!Number.isSafeInteger(maxResponseBytes)||maxResponseBytes<1||maxResponseBytes>2*1024*1024)throw new Error('S3 响应读取上限无效');
   const validated=await assertPublicHttps(config.endpoint),endpoint=validated.url,region=config.region||'auto';
   const objectPath = `${String(config.directory || 'shendu').replace(/^\/+|\/+$/g,'')}/${key}`;
   let hostname,pathname;
@@ -1154,7 +1155,7 @@ async function s3Request(config, key, method, body = Buffer.alloc(0)) {
   const host=`${hostname}${endpoint.port?`:${endpoint.port}`:''}`;
   const stamp = awsDate(new Date()), date = stamp.slice(0,8), payloadHash = createHash('sha256').update(body).digest('hex');
   const headers = { host, 'x-amz-content-sha256': payloadHash, 'x-amz-date': stamp, 'content-type': 'application/octet-stream' };
-  if(method==='HEAD')headers['x-amz-checksum-mode']='ENABLED';
+  if(method==='HEAD'&&!isR2ReceiptStorage(config))headers['x-amz-checksum-mode']='ENABLED';
   const signedHeaders = Object.keys(headers).sort().join(';');
   const canonicalHeaders = Object.keys(headers).sort().map(k => `${k}:${headers[k].trim()}\n`).join('');
   const canonicalRequest = `${method}\n${pathname}\n\n${canonicalHeaders}\n${signedHeaders}\n${payloadHash}`;
@@ -1165,7 +1166,7 @@ async function s3Request(config, key, method, body = Buffer.alloc(0)) {
   const signature = createHmac('sha256', signingKey).update(stringToSign).digest('hex');
   const authorization = `AWS4-HMAC-SHA256 Credential=${config.accessKey}/${scope}, SignedHeaders=${signedHeaders}, Signature=${signature}`;
   const target=new URL(endpoint.href);target.hostname=hostname;target.pathname=pathname;target.search='';target.hash='';
-  const response=await pinnedHttpsRequest(validated,target,{method,headers:{...headers,Authorization:authorization},body:['GET','HEAD'].includes(method)?Buffer.alloc(0):body});
+  const response=await pinnedHttpsRequest(validated,target,{method,headers:{...headers,Authorization:authorization},body:['GET','HEAD'].includes(method)?Buffer.alloc(0):body,maxResponseBytes});
   if (!response.ok) throw new Error(`S3 返回 ${response.status}`);
   return response;
 }
