@@ -1406,9 +1406,9 @@ body.reduce-motion .history-record,body.reduce-motion .history-record-art img,bo
 .daily-art-flow .daily-flow-footer{grid-row:4;grid-column:1;width:calc(min(100%,var(--review-width)) - 2 * var(--content-gutter));max-width:var(--review-width);margin:0 auto 26px;position:relative;z-index:1}
 .daily-art-flow :is(.daily-flow-head,.daily-intro){padding-inline:var(--content-gutter)}
 @media(max-width:820px){
- .daily-art-flow{grid-template-rows:auto auto auto 1fr auto}
- .daily-art-flow .daily-flow-footer{grid-row:5;margin-bottom:24px}
- .daily-art-flow[data-daily-current-prompt="intro"] .daily-scene-art{margin-bottom:24px}
+ .daily-art-flow{grid-template-rows:auto auto 1fr auto}
+ .daily-art-flow .daily-scene-art{display:none}
+ .daily-art-flow .daily-flow-footer{grid-row:4;margin-bottom:24px}
 }
 .app-shell:has(.main :is(.history-page,.actions-page,.workspace-page)){background:var(--workspace-canvas)}
 .sd-dialog.modal.workspace-dialog.workspace-settings{background:var(--workspace-canvas)}

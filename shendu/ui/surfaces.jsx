@@ -50,11 +50,11 @@ export function showDialog(container,{html,className='',title='慎独',descripti
   return body;
 }
 
-function MenuSurface({trigger,items,label,className,controls}){
+function MenuSurface({trigger,items,label,className,clickActivation=false,controls}){
   const [open,setOpen]=React.useState(false);controls.close=restore=>{flushSync(()=>setOpen(false));if(restore)controls.trigger?.focus()};
   return <DropdownMenu open={open} onOpenChange={setOpen} modal={false}>
-    <DropdownMenuTrigger asChild><Button {...trigger.props} ref={node=>{controls.trigger=node}} className={trigger.className} variant="ghost" dangerouslySetInnerHTML={raw(trigger.html)}/></DropdownMenuTrigger>
-    <DropdownMenuContent align="end" sideOffset={10} className={`sd-surface sd-menu ${className||''}`} onCloseAutoFocus={event=>{event.preventDefault();if(!document.querySelector('[data-slot="dialog-content"]')&&controls.trigger?.isConnected)controls.trigger.focus({preventScroll:true})}}>
+    <DropdownMenuTrigger asChild onPointerDown={clickActivation?event=>event.preventDefault():undefined} onClick={clickActivation?()=>setOpen(value=>!value):undefined}><Button {...trigger.props} ref={node=>{controls.trigger=node}} className={trigger.className} variant="ghost" dangerouslySetInnerHTML={raw(trigger.html)}/></DropdownMenuTrigger>
+    <DropdownMenuContent align="end" sideOffset={10} className={`sd-surface sd-menu ${className||''}`} onInteractOutside={clickActivation?event=>{if(controls.trigger?.contains(event.target))event.preventDefault()}:undefined} onCloseAutoFocus={event=>{event.preventDefault();if(!document.querySelector('[data-slot="dialog-content"]')&&controls.trigger?.isConnected)controls.trigger.focus({preventScroll:true})}}>
       {label&&<DropdownMenuLabel className="header-menu-caption">{label}</DropdownMenuLabel>}
       {items.map((item,index)=><DropdownMenuItem key={index} className={`header-menu-item ${item.className||''}`} onSelect={event=>{event.preventDefault();controls.close(false);controls.trigger?.focus({preventScroll:true});item.onSelect()}} aria-current={item.current?'page':undefined} dangerouslySetInnerHTML={raw(item.html)}/>)}
     </DropdownMenuContent>

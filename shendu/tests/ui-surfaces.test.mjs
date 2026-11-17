@@ -3,6 +3,8 @@ import assert from 'node:assert/strict';
 import {JSDOM} from 'jsdom';
 import {installCalendarTimezoneSpoof} from './helpers/calendar-timezone.cjs';
 import {verificationMinimum} from '../public/verification-policy.js';
+import {readFileSync} from 'node:fs';
+import {runInNewContext} from 'node:vm';
 
 const dom=new JSDOM('<!doctype html><body><button id="origin">打开</button><div id="surface"></div><div id="calendar"></div></body>',{url:'http://localhost'});
 const win=dom.window;
@@ -310,6 +312,59 @@ test('DropdownMenu keyboard opening and item selection have one interaction owne
   trigger.dispatchEvent(new KeyboardEvent('keydown',{key:'ArrowDown',bubbles:true}));await settle();
   const menu=document.querySelector('[role="menu"]');assert.ok(menu);assert.equal(trigger.getAttribute('aria-expanded'),'true');
   menu.querySelector('[role="menuitem"]').click();await settle();assert.equal(selected,1);assert.equal(document.querySelector('[role="menu"]'),null);
+});
+
+test('mobile menu supports click-only activation and each touch or mouse tap toggles once',async()=>{
+  let selected=0;
+  ui.showMenu(surface,{clickActivation:true,trigger:{html:'<span>菜单</span>',className:'header-mobile-trigger',props:{type:'button','aria-label':'手机菜单'}},items:[{html:'历史复盘',onSelect:()=>selected++}]});
+  const trigger=surface.querySelector('[data-slot="dropdown-menu-trigger"]'),icon=trigger.querySelector('span');
+  const pointer=(target,type,pointerType)=>{const event=new MouseEvent(type,{button:0,ctrlKey:false,bubbles:true,cancelable:true});Object.defineProperty(event,'pointerType',{value:pointerType});target.dispatchEvent(event);return event};
+  const isOpen=value=>{assert.equal(trigger.getAttribute('aria-expanded'),String(value));assert.equal(document.querySelectorAll('[role="menu"]').length,value?1:0)};
+  trigger.click();await settle();isOpen(true);trigger.click();await settle();isOpen(false);
+  for(const pointerType of ['touch','mouse']){
+    pointer(icon,'pointerdown',pointerType);await settle();isOpen(false);
+    pointer(icon,'pointerup',pointerType);icon.click();await settle();isOpen(true);
+    pointer(icon,'pointerdown',pointerType);await settle();isOpen(true);
+    pointer(icon,'pointerup',pointerType);icon.click();await settle();isOpen(false);
+  }
+  pointer(icon,'pointerdown','touch');pointer(icon,'pointercancel','touch');await settle();isOpen(false);
+  trigger.click();await settle();isOpen(true);
+  const outside=document.getElementById('origin');pointer(outside,'pointerdown','touch');outside.click();await settle();isOpen(false);
+  trigger.click();await settle();document.querySelector('[role="menuitem"]').click();await settle();isOpen(false);assert.equal(selected,1);assert.equal(document.activeElement,trigger);
+});
+
+test('mobile menu retains Radix keyboard activation and desktop pointer activation stays unchanged',async()=>{
+  for(const key of ['Enter',' ','ArrowDown']){
+    ui.showMenu(surface,{clickActivation:true,trigger:{html:'菜单',props:{type:'button'}},items:[{html:'历史复盘',onSelect:()=>{}}]});
+    const trigger=surface.querySelector('[data-slot="dropdown-menu-trigger"]');trigger.focus();
+    const event=new KeyboardEvent('keydown',{key,bubbles:true,cancelable:true});trigger.dispatchEvent(event);
+    assert.equal(event.defaultPrevented,true,'Radix prevents the native keyboard-generated click');
+    await settle();assert.equal(trigger.getAttribute('aria-expanded'),'true');assert.equal(document.querySelectorAll('[role="menu"]').length,1);
+    document.querySelector('[role="menu"]').dispatchEvent(new KeyboardEvent('keydown',{key:'Escape',bubbles:true,cancelable:true}));await settle();
+    assert.equal(trigger.getAttribute('aria-expanded'),'false');assert.equal(document.activeElement,trigger);ui.disposeUi(surface);
+  }
+  ui.showMenu(surface,{trigger:{html:'账户菜单',props:{type:'button'}},items:[{html:'设置',onSelect:()=>{}}]});
+  const trigger=surface.querySelector('[data-slot="dropdown-menu-trigger"]');
+  trigger.dispatchEvent(new MouseEvent('pointerdown',{button:0,ctrlKey:false,bubbles:true,cancelable:true}));await settle();
+  assert.equal(trigger.getAttribute('aria-expanded'),'true');trigger.click();await settle();assert.equal(trigger.getAttribute('aria-expanded'),'true');
+});
+
+test('real mobile header binding retains single guarded navigation and safely rebinds after rendering',async()=>{
+  const source=readFileSync(new URL('../public/app.js',import.meta.url),'utf8'),state={dirty:false,saving:false,reauthOpen:false},routes=[],notices=[];
+  const modal=document.createElement('div');modal.id='modal-root';document.body.append(modal);
+  const header=`<div class="header-account-menu" data-ui-native><button data-menu-trigger aria-label="账户菜单">账户</button><div id="account-menu"><button data-nav="settings">设置</button></div></div><button id="menu-toggle" class="header-mobile-trigger" data-ui-native><span></span><span></span><span></span></button><nav id="mobile-nav" data-ui-native><button data-nav="history">历史复盘</button><button data-nav="settings">设置</button></nav>`;
+  const context={document,state,showMenu:ui.showMenu,disposeUi:ui.disposeUi,$:(selector,root=document)=>root?.querySelector(selector),$$:(selector,root=document)=>[...root.querySelectorAll(selector)],navigate:route=>routes.push(route),openSettings:()=>assert.fail('settings should use its normal route'),toast:message=>notices.push(message),openModal:html=>{modal.innerHTML=html},closeModal:()=>modal.replaceChildren()};
+  const bind=runInNewContext(source.slice(source.indexOf('function attemptNavigate('),source.indexOf('function bindCalendar('))+source.slice(source.indexOf('let headerMenuControls=[];'),source.indexOf('function bindCommon('))+';bindHeaderMenus',context);
+  try{
+    for(let visit=0;visit<2;visit++){
+      ui.renderMarkup(surface,header);bind();const trigger=surface.querySelector('#menu-toggle');assert.ok(trigger.hasAttribute('data-slot'));
+      const choose=async()=>{trigger.click();await settle();assert.ok(document.querySelector('[role="menu"]'));document.querySelector('[role="menuitem"]').click();await settle();assert.equal(document.querySelector('[role="menu"]'),null)};
+      state.saving=true;await choose();assert.equal(routes.length,visit*2);assert.ok(notices.length);state.saving=false;
+      state.dirty=true;await choose();assert.equal(routes.length,visit*2);assert.match(modal.textContent,/未保存内容/);
+      modal.querySelector('#discard-change').click();assert.equal(state.dirty,false);assert.equal(routes.length,visit*2+1);
+      await choose();assert.equal(routes.length,visit*2+2);assert.equal(routes.at(-1),'history');
+    }
+  }finally{ui.disposeUi(surface);modal.remove()}
 });
 
 test('persistent and busy Dialog refuses Escape dismissal until the business guard permits it',async()=>{

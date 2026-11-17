@@ -1,7 +1,7 @@
 import {backupScheduleLabel} from './backup-schedule.js?v=1.0.0-backups1';
 import {normalizeReviewMetricIds,reconcileReviewMetrics} from './review-metrics.js?v=1.0.0-custom1';
 import {reviewQuestions,reviewDisabledFields} from './review-schema.js?v=1.0.0-finance1';
-import {renderMarkup,disposeUi,prepareDialogContainer,initializeToasts,showDialog,dismissDialog,showMenu,showVerificationCalendar,showStageCalendar,showFinanceMonthPicker,showFinanceDayPicker,showFinancePie,showToast} from './ui/shadcn.js?v=1.0.0-finance10';
+import {renderMarkup,disposeUi,prepareDialogContainer,initializeToasts,showDialog,dismissDialog,showMenu,showVerificationCalendar,showStageCalendar,showFinanceMonthPicker,showFinanceDayPicker,showFinancePie,showToast} from './ui/shadcn.js?v=1.0.0-mobile1';
 import {overviewRecordAppearances,overviewVerifiedRecords,overviewRecordExcerpt,overviewLoopMetrics,overviewRecordTitle,overviewDateParts} from './overview-reel.js?v=1.0.0-overview15';
 import {DAILY_STEPS,dailyStepIssues,dailyPrompts,dailyPromptIssues,dailyPromptNeighbor,dailyPromptOwner} from './daily-flow.js?v=1.0.0-finance2';
 import {dailyCalendarModel,dailyCalendarDateLabel} from './daily-calendar.js?v=1.0.0-art1';
@@ -1302,7 +1302,7 @@ function bindHeaderMenus(){
   const descriptors=panel=>$$('button',panel).map(button=>({html:button.innerHTML,className:button.className,current:button.hasAttribute('aria-current'),onSelect:action(button)}));
   const account=$('.header-account-menu'),trigger=$('[data-menu-trigger]',account),panel=$('#account-menu');
   if(account&&trigger&&panel){const options={trigger:{html:trigger.innerHTML,className:trigger.className,props:{type:'button','aria-label':trigger.getAttribute('aria-label')}},items:descriptors(panel),label:'我的空间'};disposeUi(account);account.replaceChildren();account.removeAttribute('data-ui-native');headerMenuControls.push(showMenu(account,options))}
-  const mobile=$('#menu-toggle'),nav=$('#mobile-nav');if(mobile&&nav){const host=document.createElement('span');host.className='sd-mobile-menu-host';const options={trigger:{html:mobile.innerHTML,className:mobile.className,props:{type:'button',id:'menu-toggle','aria-label':'打开顶部菜单'}},items:descriptors(nav),className:'sd-menu-mobile',label:'慎独'};mobile.replaceWith(host);nav.remove();headerMenuControls.push(showMenu(host,options))}
+  const mobile=$('#menu-toggle'),nav=$('#mobile-nav');if(mobile&&nav){const host=document.createElement('span');host.className='sd-mobile-menu-host';const options={trigger:{html:mobile.innerHTML,className:mobile.className,props:{type:'button',id:'menu-toggle','aria-label':'打开顶部菜单'}},items:descriptors(nav),className:'sd-menu-mobile',label:'慎独',clickActivation:true};mobile.replaceWith(host);nav.remove();headerMenuControls.push(showMenu(host,options))}
 }
 
 
