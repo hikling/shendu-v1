@@ -26,3 +26,10 @@ IAB browser against isolated synthetic account and entries:
 - Font CSS and binary URLs were versioned after repairing initially truncated downloads, so acceptance did not rely on those cached files.
 
 This is real browser verification at phone viewport sizes, not a physical Android/iOS-device test. No real-provider S3/R2 upload or production-server update was performed. New folder behavior applies to new uploads; existing external objects remain where they are.
+
+## Publication
+
+- Work commit `2c6bf7b639d44fdb2545e917fe82091164519f0e` pushed to GitHub main. Application tree `cb852c7fd4ba294fb84a2a76568af94031456933`.
+- <https://github.com/hikling/shendu-v1/actions/runs/44039197337>: all six jobs passed, including both architecture builds, handover, publication and both public download/container smoke checks.
+- Complete Release `deploy-cb852c7fd4ba294fb84a2a76568af94031456933` published. Audited Plan/Apply retained exactly four complete Releases: current, `20e126598dc9b5f5fbaca481292900491952810e`, `eff391597c0342c5d47dca9d6a5219f556fa50f0`, `9a1fa025561a476579a4dff1f4baa0121c415438`.
+- Removed only obsolete Release `deploy-9e8bb5568882d3e7546d57afb39afca60ca368fb`; all Git tags preserved.

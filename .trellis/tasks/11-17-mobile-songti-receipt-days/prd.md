@@ -13,14 +13,12 @@
 
 ## Acceptance Criteria
 
-- [ ] 本地宋体文件真实存在、可由网站加载且覆盖常见中文标题，手机标题使用该字体。
-- [ ] 收支明细更清楚且金额只在右侧显示，修改/退款/截图操作保持正常。
-- [ ] 同一天的多张新截图在同一目录，跨北京时间午夜分目录，重试仍隔离旧上传授权。
-- [ ] 新旧凭证均能校验、读取和备份恢复，账户隔离保持有效。
-- [ ] 自动检查通过并同步 GitHub main，说明实际设备验收范围。
+- [x] 本地宋体文件真实存在、可由网站加载且覆盖常见中文标题，手机标题使用该字体。
+- [x] 收支明细更清楚且金额只在右侧显示，修改/退款/截图操作保持正常。
+- [x] 同一天的多张新截图在同一目录，跨北京时间午夜分目录，重试仍隔离旧上传授权。
+- [x] 新旧凭证均能校验、读取和备份恢复，账户隔离保持有效。
+- [x] 自动检查通过并同步 GitHub main，说明实际设备验收范围。
 
 ## Notes
 
-- Keep `prd.md` focused on requirements, constraints, and acceptance criteria.
-- Lightweight tasks can remain PRD-only.
-- For complex tasks, add `design.md` for technical design and `implement.md` for execution planning before `task.py start`.
+- 按用户已授权流程直接修复、验证并同步 main，未更新生产服务器或迁移外部旧图片。
