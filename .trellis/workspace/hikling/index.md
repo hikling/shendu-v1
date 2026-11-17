@@ -8,7 +8,7 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 84
+- **Total Sessions**: 85
 - **Last Active**: 2026-11-17
 <!-- @@@/auto:current-status -->
 
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~1967 | Active |
+| `journal-1.md` | ~1990 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -29,6 +29,7 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 85 | 2026-11-17 | Mobile navigation styling and deterministic action arrows | `a98a634`, `56b8dc3` | `main` |
 | 84 | 2026-11-17 | Mobile menu activation and review art visibility | `9a457be`, `f704e22` | `main` |
 | 83 | 2026-11-17 | Repair pending receipt retries and verify release | `ab50264`, `02633b6` | `main` |
 | 82 | 2026-11-17 | R2 receipt content verification and safe upload stages | `a4c4242` | `main` |

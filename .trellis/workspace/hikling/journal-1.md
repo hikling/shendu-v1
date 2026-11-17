@@ -1965,3 +1965,26 @@ Only mobile hamburger opts into click activation; retained Radix keyboard/focus/
 ### Status
 
 [OK] **Completed**
+
+
+## Session 85: Mobile navigation styling and deterministic action arrows
+<!-- trellis-session: v=2 fp=4ebc319c5e0fbc1e -->
+
+**Date**: 2026-11-17
+**Task**: Mobile navigation styling and deterministic action arrows
+**Branch**: `main`
+
+### Summary
+
+Mobile menu descriptors no longer inherit desktop centering; <=960px rows align left with48px touch height,15px text, current marker and bounded scrolling. Authored diagonal arrows use same-origin SVG mask only on mobile, preserving desktop glyphs and hidden spans. Full507 pass1 optional browser skip; independent31 pass, build/syntax/CSS desktop comparison/isolated HTTP SVG smoke pass. User accepted code+checks with browser unavailable. All6 CI jobs44001137563 success; retained4 Releases, all tags. Production server/real phone not exercised.
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `a98a634` | fix: align mobile navigation and normalize action arrows |
+| `56b8dc3` | docs: record verified mobile menu style release |
+
+### Status
+
+[OK] **Completed**
