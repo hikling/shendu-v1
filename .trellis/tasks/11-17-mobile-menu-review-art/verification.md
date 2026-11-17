@@ -23,4 +23,8 @@ CUA inventory reported `Local browser access is unavailable for this chat`. No a
 
 ## Publication
 
-Pending GitHub main synchronization and deployment verification.
+- Commit `9a457be55b09dc09ea7523f5aa71fcdf62f1db82` pushed to main; application tree `9a1fa025561a476579a4dff1f4baa0121c415438`.
+- GitHub Actions <https://github.com/hikling/shendu-v1/actions/runs/43997554307>: completed/success. Both native builds, handover, publish and both public-download/Compose/health/UI/backup checks succeeded.
+- New complete Release `deploy-9a1fa025561a476579a4dff1f4baa0121c415438` published with both images and checksums.
+- Audited retention Plan/Apply confirmed exactly four Releases remain: current tree, `9e8bb5568882d3e7546d57afb39afca60ca368fb`, `cbe2bcb8a636c6e83978c08cdefa8e7cee57649f`, `07df282547cbc7798eef0a245c5acedf3f630223`. Removed only Release `deploy-a4daa76eb80b5ff47acfa5dfd6a977747d582a23`; no Git tags deleted.
+- The user's production server has not been updated by this session; server update and real phone acceptance remain external steps.
