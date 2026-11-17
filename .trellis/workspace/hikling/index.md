@@ -8,7 +8,7 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-2.md`
-- **Total Sessions**: 88
+- **Total Sessions**: 89
 - **Last Active**: 2026-11-17
 <!-- @@@/auto:current-status -->
 
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-2.md` | ~76 | Active |
+| `journal-2.md` | ~99 | Active |
 | `journal-1.md` | ~1990 | Archived |
 <!-- @@@/auto:active-documents -->
 
@@ -30,6 +30,7 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 89 | 2026-11-17 | Mobile finance import, smarter categories and daily ledger | `da8f1ea`, `70bfce9` | `main` |
 | 88 | 2026-11-17 | Finance ledger, lazy receipt gallery and expanded categories | `fa5d071`, `e850c44` | `main` |
 | 87 | 2026-11-17 | 手机实载宋体、明细大字与截图按日归档 | `2c6bf7b`, `a99f7cb` | `main` |
 | 86 | 2026-11-17 | 恢复手机菜单原宋体 | `0df6572`, `27961e9` | `main` |

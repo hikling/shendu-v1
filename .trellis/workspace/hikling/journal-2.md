@@ -74,3 +74,26 @@ Removed ledger category filter and thumbnails; aligned action typography; contex
 ### Status
 
 [OK] **Completed**
+
+
+## Session 89: Mobile finance import, smarter categories and daily ledger
+<!-- trellis-session: v=2 fp=6b5fbcd06bbf1ed7 -->
+
+**Date**: 2026-11-17
+**Task**: Mobile finance import, smarter categories and daily ledger
+**Branch**: `main`
+
+### Summary
+
+Contained mobile import date fields; expanded classification; separate day/month ledger scope; bright rounded Chart/Pie and reduced-motion. Full suite524pass/1optional skip, actual1280/390/320 synthetic browser checks plus large total/motion accepted; physical Safari not tested. GitHub all six release jobs green; retained four releases and all tags.
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `da8f1ea` | fix: improve mobile finance forms and daily ledger views |
+| `70bfce9` | docs: record finance mobile and chart release validation |
+
+### Status
+
+[OK] **Completed**
