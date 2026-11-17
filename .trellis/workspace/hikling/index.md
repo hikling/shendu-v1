@@ -7,8 +7,8 @@
 ## Current Status
 
 <!-- @@@auto:current-status -->
-- **Active File**: `journal-1.md`
-- **Total Sessions**: 85
+- **Active File**: `journal-2.md`
+- **Total Sessions**: 86
 - **Last Active**: 2026-11-17
 <!-- @@@/auto:current-status -->
 
@@ -19,7 +19,8 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~1990 | Active |
+| `journal-2.md` | ~30 | Active |
+| `journal-1.md` | ~1990 | Archived |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -29,6 +30,7 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 86 | 2026-11-17 | 恢复手机菜单原宋体 | `0df6572`, `27961e9` | `main` |
 | 85 | 2026-11-17 | Mobile navigation styling and deterministic action arrows | `a98a634`, `56b8dc3` | `main` |
 | 84 | 2026-11-17 | Mobile menu activation and review art visibility | `9a457be`, `f704e22` | `main` |
 | 83 | 2026-11-17 | Repair pending receipt retries and verify release | `ab50264`, `02633b6` | `main` |
