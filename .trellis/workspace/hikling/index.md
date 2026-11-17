@@ -8,7 +8,7 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-2.md`
-- **Total Sessions**: 86
+- **Total Sessions**: 87
 - **Last Active**: 2026-11-17
 <!-- @@@/auto:current-status -->
 
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-2.md` | ~30 | Active |
+| `journal-2.md` | ~53 | Active |
 | `journal-1.md` | ~1990 | Archived |
 <!-- @@@/auto:active-documents -->
 
@@ -30,6 +30,7 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 87 | 2026-11-17 | 手机实载宋体、明细大字与截图按日归档 | `2c6bf7b`, `a99f7cb` | `main` |
 | 86 | 2026-11-17 | 恢复手机菜单原宋体 | `0df6572`, `27961e9` | `main` |
 | 85 | 2026-11-17 | Mobile navigation styling and deterministic action arrows | `a98a634`, `56b8dc3` | `main` |
 | 84 | 2026-11-17 | Mobile menu activation and review art visibility | `9a457be`, `f704e22` | `main` |

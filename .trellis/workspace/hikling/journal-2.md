@@ -28,3 +28,26 @@
 ### Status
 
 [OK] **Completed**
+
+
+## Session 87: 手机实载宋体、明细大字与截图按日归档
+<!-- trellis-session: v=2 fp=4286dc3e20f58b7d -->
+
+**Date**: 2026-11-17
+**Task**: 手机实载宋体、明细大字与截图按日归档
+**Branch**: `main`
+
+### Summary
+
+自托管101份Noto Serif SC WOFF2，手机标题菜单实际使用宋体，桌面字体保持；字体解码与HTTP完整性全部验证。放大明细并去重复算式；新S3/R2图片按北京时间每天平铺，兼容旧图与恢复。全量510通过1可选跳过，最终UI55和凭证27通过；真实浏览器320/390/1280验证字体与无溢出。GitHub六任务通过并生成双架构Release，仅保留最近四个版本及全部tags。未操作生产服务器或迁移旧桶对象。
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `2c6bf7b` | fix: serve mobile Songti and organize receipt uploads by day |
+| `a99f7cb` | docs: record mobile font and daily receipt release validation |
+
+### Status
+
+[OK] **Completed**
