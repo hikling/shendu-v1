@@ -1,0 +1,11 @@
+/* Phones render U+2197 as a color emoji on some systems. Keep the desktop
+   glyph and replace only authored decorative action arrows at mobile widths. */
+@media(max-width:960px){
+  body.sd-surface .mobile-action-arrow[aria-hidden="true"]{font-size:0;line-height:0}
+  body.sd-surface .mobile-action-arrow[aria-hidden="true"]::before{
+    content:"";display:inline-block;width:1rem;height:1rem;vertical-align:middle;
+    background:currentColor;
+    -webkit-mask:url('/assets/icons/arrow-up-right.svg') center/contain no-repeat;
+    mask:url('/assets/icons/arrow-up-right.svg') center/contain no-repeat;
+  }
+}

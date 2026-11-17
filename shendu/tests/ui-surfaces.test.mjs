@@ -352,17 +352,18 @@ test('mobile menu retains Radix keyboard activation and desktop pointer activati
 test('real mobile header binding retains single guarded navigation and safely rebinds after rendering',async()=>{
   const source=readFileSync(new URL('../public/app.js',import.meta.url),'utf8'),state={dirty:false,saving:false,reauthOpen:false},routes=[],notices=[];
   const modal=document.createElement('div');modal.id='modal-root';document.body.append(modal);
-  const header=`<div class="header-account-menu" data-ui-native><button data-menu-trigger aria-label="账户菜单">账户</button><div id="account-menu"><button data-nav="settings">设置</button></div></div><button id="menu-toggle" class="header-mobile-trigger" data-ui-native><span></span><span></span><span></span></button><nav id="mobile-nav" data-ui-native><button data-nav="history">历史复盘</button><button data-nav="settings">设置</button></nav>`;
+  const header=`<div class="header-account-menu" data-ui-native><button data-menu-trigger aria-label="账户菜单">账户</button><div id="account-menu"><button class="account-fixture-item" data-nav="settings">设置</button></div></div><button id="menu-toggle" class="header-mobile-trigger" data-ui-native><span></span><span></span><span></span></button><nav id="mobile-nav" data-ui-native><button class="header-link active" data-nav="history" aria-current="page">历史复盘</button><button data-nav="settings">设置</button></nav>`;
   const context={document,state,showMenu:ui.showMenu,disposeUi:ui.disposeUi,$:(selector,root=document)=>root?.querySelector(selector),$$:(selector,root=document)=>[...root.querySelectorAll(selector)],navigate:route=>routes.push(route),openSettings:()=>assert.fail('settings should use its normal route'),toast:message=>notices.push(message),openModal:html=>{modal.innerHTML=html},closeModal:()=>modal.replaceChildren()};
   const bind=runInNewContext(source.slice(source.indexOf('function attemptNavigate('),source.indexOf('function bindCalendar('))+source.slice(source.indexOf('let headerMenuControls=[];'),source.indexOf('function bindCommon('))+';bindHeaderMenus',context);
   try{
     for(let visit=0;visit<2;visit++){
       ui.renderMarkup(surface,header);bind();const trigger=surface.querySelector('#menu-toggle');assert.ok(trigger.hasAttribute('data-slot'));
-      const choose=async()=>{trigger.click();await settle();assert.ok(document.querySelector('[role="menu"]'));document.querySelector('[role="menuitem"]').click();await settle();assert.equal(document.querySelector('[role="menu"]'),null)};
+      const choose=async()=>{trigger.click();await settle();const menu=document.querySelector('[role="menu"]');assert.ok(menu);const items=[...menu.querySelectorAll('[role="menuitem"]')];assert.deepEqual(items.map(item=>item.textContent),['历史复盘','设置']);assert.equal(items[0].getAttribute('aria-current'),'page');assert.equal(items[1].hasAttribute('aria-current'),false);assert.equal(menu.querySelector('.header-link'),null,'mobile row descriptors cannot inherit desktop navigation presentation');items[0].click();await settle();assert.equal(document.querySelector('[role="menu"]'),null)};
       state.saving=true;await choose();assert.equal(routes.length,visit*2);assert.ok(notices.length);state.saving=false;
       state.dirty=true;await choose();assert.equal(routes.length,visit*2);assert.match(modal.textContent,/未保存内容/);
       modal.querySelector('#discard-change').click();assert.equal(state.dirty,false);assert.equal(routes.length,visit*2+1);
       await choose();assert.equal(routes.length,visit*2+2);assert.equal(routes.at(-1),'history');
+      surface.querySelector('[aria-label="账户菜单"]').dispatchEvent(new KeyboardEvent('keydown',{key:'ArrowDown',bubbles:true,cancelable:true}));await settle();assert.ok(document.querySelector('[role="menuitem"].account-fixture-item'),'desktop account descriptors retain their original classes');document.querySelector('[role="menu"]').dispatchEvent(new KeyboardEvent('keydown',{key:'Escape',bubbles:true,cancelable:true}));await settle();
     }
   }finally{ui.disposeUi(surface);modal.remove()}
 });
