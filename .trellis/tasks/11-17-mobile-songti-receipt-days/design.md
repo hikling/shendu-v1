@@ -1,0 +1,6 @@
+# Design
+
+- Mobile titles: bundle a licensed Chinese Songti webfont under public/assets/fonts, with local CSS loading only within <=960px. Apply the actual bundled family to mobile semantic headings, review intro titles, brand and menu labels. Preserve desktop fonts and all existing geometry/behavior. Font-name declarations alone are insufficient on Android.
+- Finance list: adjust only ledger typography for readable purpose, category/date/notes/actions/receipt state/amount. Remove the visible expression below purpose; keep the stored expression and edit form intact, including refund association text.
+- Receipt keys: preserve receipts/<account namespace>/ security boundary. New upload revisions use receipts/<namespace>/<Beijing YYYY-MM-DD>/<random>-image.webp and -thumb.webp (or .jpg), with no per-receipt directories. One random revision identifier retains stale-ticket isolation. Do not relocate ready external objects; legacy keys and backup restore remain supported.
+- Expected files: mobile font assets/styles/index cache; finance-ui.js/finance.css/app import cache; finance-receipts.mjs and behavioral tests; specs/documentation for font availability and new/legacy key validation. No credentials, production data or external objects modified.

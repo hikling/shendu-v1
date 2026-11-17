@@ -13,7 +13,7 @@ const variants={image:{type:'image/webp',bytes:21000,sha256:hash('image')},thumb
 const r2Config={...config,endpoint:'https://0123456789abcdef0123456789abcdef.r2.cloudflarestorage.com',region:'auto'};
 const r2Image=Buffer.alloc(1024*1024+19,7),r2Thumb=Buffer.alloc(900,9);
 const r2Variants={image:{type:'image/webp',bytes:r2Image.length,sha256:hash(r2Image)},thumb:{type:'image/webp',bytes:r2Thumb.length,sha256:hash(r2Thumb)}};
-function r2Object(key){const name=key.includes('/thumb.')?'thumb':'image',variant=r2Variants[name],body=name==='image'?r2Image:r2Thumb;return {name,variant,body,headers:{'content-length':variant.bytes,'content-type':variant.type,'x-amz-meta-sha256':variant.sha256}}}
+function r2Object(key){const name=/(?:\/|-)thumb\./.test(key)?'thumb':'image',variant=r2Variants[name],body=name==='image'?r2Image:r2Thumb;return {name,variant,body,headers:{'content-length':variant.bytes,'content-type':variant.type,'x-amz-meta-sha256':variant.sha256}}}
 async function prepareR2(f){
   assert.equal((await f.route('/api/finance/storage',{method:'PUT',body:{config:r2Config,version:0}})).status,200);
   const prepared=await f.prepare(f.owner,{variants:r2Variants});assert.equal(prepared.status,200);return prepared.value.receiptId;
@@ -21,16 +21,16 @@ async function prepareR2(f){
 function fixture(){
   const db=new DatabaseSync(':memory:');db.exec('PRAGMA foreign_keys=ON; CREATE TABLE users(id TEXT PRIMARY KEY,username TEXT UNIQUE); CREATE TABLE user_settings(user_id TEXT,key TEXT,value TEXT,PRIMARY KEY(user_id,key));');
   const owner={id:randomUUID(),username:'receipt_owner'},other={id:randomUUID(),username:'receipt_other'};for(const user of [owner,other])db.prepare('INSERT INTO users VALUES(?,?)').run(user.id,user.username);
-  const master=randomBytes(32),calls=[],activity=[],probes=new Map();let valid=true,wrongHead=false,headChecksum='valid',dnsWait=null,networkWait=null,requestHook=null;
+  const master=randomBytes(32),calls=[],activity=[],probes=new Map();let clock='2026-11-17T01:00:00.000Z',valid=true,wrongHead=false,headChecksum='valid',dnsWait=null,networkWait=null,requestHook=null;
   const scope=(...parts)=>parts.join('|');
   const encrypt=(value,aad)=>{const iv=randomBytes(12),cipher=createCipheriv('aes-256-gcm',master,iv);cipher.setAAD(Buffer.from(aad));return JSON.stringify({iv:iv.toString('hex'),tag:(()=>{const bytes=Buffer.concat([cipher.update(JSON.stringify(value)),cipher.final()]);return {tag:cipher.getAuthTag().toString('hex'),bytes:bytes.toString('hex')}})()})};
   const decrypt=(text,aad)=>{const value=JSON.parse(text),decipher=createDecipheriv('aes-256-gcm',master,Buffer.from(value.iv,'hex'));decipher.setAAD(Buffer.from(aad));decipher.setAuthTag(Buffer.from(value.tag.tag,'hex'));return JSON.parse(Buffer.concat([decipher.update(Buffer.from(value.tag.bytes,'hex')),decipher.final()]).toString())};
   const setting=(id,key,fallback=null)=>{const row=db.prepare('SELECT value FROM user_settings WHERE user_id=? AND key=?').get(id,key);return row?decrypt(row.value,scope('setting',id,key)):fallback};
   const putSetting=(id,key,value)=>db.prepare('INSERT INTO user_settings VALUES(?,?,?) ON CONFLICT(user_id,key) DO UPDATE SET value=excluded.value').run(id,key,encrypt(value,scope('setting',id,key)));
   const normalize=(_kind,value)=>{const result={...value};const url=new URL(value.endpoint);if(url.protocol!=='https:'||url.hostname==='localhost'||url.username||url.password||!value.secretKey)throw new Error('invalid storage');return result};
-  const service=createFinanceReceipts({db,setting,putSetting,dataScope:scope,encryptData:encrypt,decryptData:decrypt,now:()=>new Date().toISOString(),readJson:async req=>req.body||{},json:(res,status,value)=>Object.assign(res,{status,value}),error:(res,status,message,error)=>Object.assign(res,{status,value:{message,error}}),assertPublicHttps:async endpoint=>{if(dnsWait)await dnsWait;return {url:new URL(endpoint)}},sessionUser:req=>valid?req.user:null,normalizeBackupConfig:normalize,getS3Targets:()=>[{id:'owned-target',name:'凭证存储'}],getS3TargetConfig:(id,target)=>id===owner.id&&target==='owned-target'?{...config}:null,withActivity:(id,action,metadata,write)=>{db.exec('BEGIN');try{const result=write();db.exec('COMMIT');activity.push({id,action});return result}catch(error){db.exec('ROLLBACK');throw error}},s3Request:async(c,key,method,body,options)=>{calls.push({key,method,config:{...c},body,options});if(networkWait)await networkWait;if(requestHook)return requestHook(c,key,method,body,options);if(key.includes('/connection-check-')){if(method==='PUT')probes.set(key,Buffer.from(body));if(method==='DELETE')probes.delete(key);return {body:probes.get(key),headers:{}};}const variant=key.includes('/thumb.')?variants.thumb:variants.image;return {headers:{'content-length':variant.bytes,'content-type':variant.type,'x-amz-meta-sha256':wrongHead?'bad':variant.sha256,...(headChecksum==='missing'?{}:{'x-amz-checksum-sha256':headChecksum==='valid'?checksum(variant.sha256):checksum(hash('different bytes'))})}}}});
+  const service=createFinanceReceipts({db,setting,putSetting,dataScope:scope,encryptData:encrypt,decryptData:decrypt,now:()=>clock,readJson:async req=>req.body||{},json:(res,status,value)=>Object.assign(res,{status,value}),error:(res,status,message,error)=>Object.assign(res,{status,value:{message,error}}),assertPublicHttps:async endpoint=>{if(dnsWait)await dnsWait;return {url:new URL(endpoint)}},sessionUser:req=>valid?req.user:null,normalizeBackupConfig:normalize,getS3Targets:()=>[{id:'owned-target',name:'凭证存储'}],getS3TargetConfig:(id,target)=>id===owner.id&&target==='owned-target'?{...config}:null,withActivity:(id,action,metadata,write)=>{db.exec('BEGIN');try{const result=write();db.exec('COMMIT');activity.push({id,action});return result}catch(error){db.exec('ROLLBACK');throw error}},s3Request:async(c,key,method,body,options)=>{calls.push({key,method,config:{...c},body,options});if(networkWait)await networkWait;if(requestHook)return requestHook(c,key,method,body,options);if(key.includes('/connection-check-')){if(method==='PUT')probes.set(key,Buffer.from(body));if(method==='DELETE')probes.delete(key);return {body:probes.get(key),headers:{}};}const variant=/(?:\/|-)thumb\./.test(key)?variants.thumb:variants.image;return {headers:{'content-length':variant.bytes,'content-type':variant.type,'x-amz-meta-sha256':wrongHead?'bad':variant.sha256,...(headChecksum==='missing'?{}:{'x-amz-checksum-sha256':headChecksum==='valid'?checksum(variant.sha256):checksum(hash('different bytes'))})}}}});
   async function route(path,{method='POST',body={},user=owner}={}){const res={};await service.handle({method,body,user},res,new URL(path,'http://localhost'),user);return res}
-  return {db,service,owner,other,calls,activity,probes,route,set requestHook(value){requestHook=value},set valid(value){valid=value},set wrongHead(value){wrongHead=value},set headChecksum(value){headChecksum=value},set dnsWait(value){dnsWait=value},set networkWait(value){networkWait=value},async configure(user=owner){return route('/api/finance/storage',{method:'PUT',body:{config,version:0},user})},async prepare(user=owner,body={}){return route('/api/finance/receipts/prepare',{user,body:{id:randomUUID(),hash:hash('original'),variants,...body}})},close(){db.close()}};
+  return {db,service,owner,other,calls,activity,probes,route,set clock(value){clock=value},set requestHook(value){requestHook=value},set valid(value){valid=value},set wrongHead(value){wrongHead=value},set headChecksum(value){headChecksum=value},set dnsWait(value){dnsWait=value},set networkWait(value){networkWait=value},async configure(user=owner){return route('/api/finance/storage',{method:'PUT',body:{config,version:0},user})},async prepare(user=owner,body={}){return route('/api/finance/receipts/prepare',{user,body:{id:randomUUID(),hash:hash('original'),variants,...body}})},close(){db.close()}};
 }
 
 test('presigned PUT binds exact object, MIME, byte length and digest without exposing the secret',()=>{
@@ -200,7 +200,7 @@ test('failed pending upload reuses identical tickets and rotates both paths when
     const next=await f.prepare(f.owner,{variants:changed});assert.equal(next.status,200);assert.equal(next.value.receiptId,id);assert.equal(next.value.uploadVersion,2);
     const row=f.service.exportUser(f.owner.id).receipts[0];
     assert.equal(row.hash,original.hash);assert.equal(row.ready,0);assert.equal(row.version,2);assert.equal(row.createdAt,original.createdAt);assert.deepEqual(row.data.variants,changed);
-    for(const name of ['image','thumb']){assert.notEqual(row.data.keys[name],original.data.keys[name]);assert.ok(row.data.keys[name].includes(`/${id}/`))}
+    for(const name of ['image','thumb']){assert.notEqual(row.data.keys[name],original.data.keys[name]);assert.ok(row.data.keys[name].includes(`/${id}-`))}
     assert.equal(f.db.prepare('SELECT COUNT(*) n FROM finance_receipts').get().n,1);
     assert.doesNotMatch(f.db.prepare('SELECT data FROM finance_receipts WHERE id=?').get(id).data,/receipts\/|variants|recompressed/);
     const beforeCalls=f.calls.length;
@@ -208,7 +208,7 @@ test('failed pending upload reuses identical tickets and rotates both paths when
       const response=await f.route(`/api/finance/receipts/${id}/complete`,{body:uploadVersion===undefined?{}:{uploadVersion}});
       assert.equal(response.status,409);assert.equal(response.value.error,'finance_receipt_stale_upload');assert.equal(f.calls.length,beforeCalls);assert.equal(f.service.hasReadyReceipt(f.owner.id,id),false);
     }
-    f.requestHook=(_config,key,method)=>{assert.equal(method,'HEAD');const v=key.includes('/thumb.')?changed.thumb:changed.image;return {headers:{'content-length':v.bytes,'content-type':v.type,'x-amz-meta-sha256':v.sha256,'x-amz-checksum-sha256':checksum(v.sha256)}}};
+    f.requestHook=(_config,key,method)=>{assert.equal(method,'HEAD');const v=/(?:\/|-)thumb\./.test(key)?changed.thumb:changed.image;return {headers:{'content-length':v.bytes,'content-type':v.type,'x-amz-meta-sha256':v.sha256,'x-amz-checksum-sha256':checksum(v.sha256)}}};
     assert.equal((await f.route(`/api/finance/receipts/${id}/complete`,{body:{uploadVersion:2}})).status,200);
     const saved=f.service.exportUser(f.owner.id).receipts[0];assert.equal(saved.ready,1);
     const replay=await f.prepare();assert.equal(replay.value.ready,true);assert.equal(replay.value.receiptId,id);assert.deepEqual(replay.value.uploads,{});
@@ -270,6 +270,48 @@ test('foreign receipts and old sessions cannot receive URLs or complete writes a
     assert.equal((await f.route('/api/finance/receipts/read',{user:f.other,body:{ids:[id],variant:'thumb'}})).status,404);
     let release;f.networkWait=new Promise(resolve=>{release=resolve});const pending=f.route(`/api/finance/receipts/${id}/complete`);await new Promise(resolve=>setImmediate(resolve));f.valid=false;release();
     assert.equal((await pending).status,401);assert.equal(f.service.hasReadyReceipt(f.owner.id,id),false);
+  }finally{f.close()}
+});
+
+test('new screenshots share one flat Beijing day folder and keep distinct upload revision names',async()=>{
+  const f=fixture();try{
+    await f.configure();
+    const keys=[];
+    for(const [index,time]of ['2026-11-16T16:00:00.000Z','2026-11-17T15:59:59.999Z','2026-11-17T16:00:00.000Z'].entries()){
+      f.clock=time;
+      const prepared=await f.prepare(f.owner,{hash:hash('day-image-'+index)});assert.equal(prepared.status,200);
+      const row=f.service.exportUser(f.owner.id).receipts.find(item=>item.id===prepared.value.receiptId);
+      const image=row.data.keys.image.split('/'),thumb=row.data.keys.thumb.split('/');
+      assert.equal(image.length,4);assert.equal(thumb.length,4);
+      assert.equal(image[2],index===2?'2026-11-18':'2026-11-17');assert.deepEqual(image.slice(0,3),thumb.slice(0,3));
+      assert.ok(image[3].startsWith(row.id+'-'));assert.ok(image[3].endsWith('-image.webp'));assert.ok(thumb[3].endsWith('-thumb.webp'));
+      keys.push(image);
+      assert.equal((await f.route(`/api/finance/receipts/${row.id}/complete`)).status,200);
+      const read=await f.route('/api/finance/receipts/read',{body:{ids:[row.id],variant:'image'}});assert.equal(read.status,200);assert.ok(new URL(read.value.urls[row.id]).pathname.endsWith(row.data.keys.image));
+    }
+    assert.deepEqual(keys[0].slice(0,3),keys[1].slice(0,3));assert.notEqual(keys[0][3],keys[1][3]);
+    const saved=f.service.exportUser(f.owner.id);assert.deepEqual(f.service.validateImport(saved),saved);
+    for(const replacement of ['2026-02-30','../other','2026-1-1']){
+      const malformed=structuredClone(saved);malformed.receipts[0].data.keys.image=malformed.receipts[0].data.keys.image.replace(/\/\d{4}-\d{2}-\d{2}\//,'/'+replacement+'/');
+      assert.throws(()=>f.service.validateImport(malformed),/路径/);
+    }
+    const foreign=structuredClone(saved);foreign.receipts[0].data.keys.image=foreign.receipts[0].data.keys.image.replace(/receipts\/[a-f0-9]{32}/,'receipts/'+'a'.repeat(32));
+    assert.throws(()=>f.service.importUser(f.other.id,saved,{replace:true}),/不属于/);assert.throws(()=>f.service.importUser(f.owner.id,foreign,{replace:true}),/不属于/);
+  }finally{f.close()}
+});
+
+test('legacy per-screenshot folders restore and read alongside the flat day layout',async()=>{
+  const f=fixture();try{
+    await f.configure();const prepared=await f.prepare(),id=prepared.value.receiptId;
+    const saved=f.service.exportUser(f.owner.id),row=saved.receipts[0],namespace=row.data.keys.image.split('/')[1],revision=randomUUID();
+    for(const name of ['image','thumb'])row.data.keys[name]=`receipts/${namespace}/${id}/${revision}/${name}.webp`;
+    row.ready=1;row.version++;
+    assert.deepEqual(f.service.validateImport(saved),saved);f.service.importUser(f.owner.id,saved,{replace:true});
+    for(const variant of ['image','thumb']){
+      const response=await f.route('/api/finance/receipts/read',{body:{ids:[id],variant}});assert.equal(response.status,200);assert.ok(new URL(response.value.urls[id]).pathname.endsWith(row.data.keys[variant]));
+    }
+    const next=await f.prepare(f.owner,{hash:hash('new-after-restore')});assert.equal(next.status,200);
+    const mixed=f.service.exportUser(f.owner.id);assert.equal(f.service.validateImport(mixed).receipts.length,2);
   }finally{f.close()}
 });
 

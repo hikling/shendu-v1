@@ -11,6 +11,19 @@ const checksum=value=>Buffer.from(value,'hex').toString('base64');
 const encode=value=>encodeURIComponent(value).replace(/[!'()*]/g,c=>'%'+c.charCodeAt(0).toString(16).toUpperCase());
 const stable=value=>JSON.stringify(value);
 const validTime=value=>typeof value==='string'&&Number.isFinite(Date.parse(value));
+const receiptDay=value=>new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Shanghai',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date(value));
+function validReceiptKey(key,id,name,variant){
+  if(typeof key!=='string')return false;
+  const parts=key.split('/'),file=name+(variant.type==='image/webp'?'.webp':'.jpg');
+  if(parts[0]!=='receipts'||!/^[a-f0-9]{32}$/.test(parts[1]||''))return false;
+  // Existing objects keep their original paths; restore must support both layouts.
+  if(parts.length===5)return parts[2]===id&&UUID.test(parts[3])&&parts[4]===file;
+  if(parts.length!==4||!/^\d{4}-\d{2}-\d{2}$/.test(parts[2]))return false;
+  const date=new Date(parts[2]+'T00:00:00Z');
+  if(!Number.isFinite(date.getTime())||date.toISOString().slice(0,10)!==parts[2])return false;
+  const prefix=id+'-',suffix='-'+file;
+  return parts[3].startsWith(prefix)&&parts[3].endsWith(suffix)&&UUID.test(parts[3].slice(prefix.length,-suffix.length));
+}
 
 export function isR2ReceiptStorage(config){
   try{const url=new URL(config.endpoint);return url.protocol==='https:'&&url.hostname.endsWith('.r2.cloudflarestorage.com')}catch{return false}
@@ -104,8 +117,8 @@ export function createFinanceReceipts(deps){
   };
   const requireStorage=userId=>{const config=storage(userId)?.config;if(!config)throw bad('请先配置凭证图片存储','finance_storage_required',409);return config};
   const uploadData=(userId,id,variants,config)=>{
-    const base=`receipts/${namespace(userId)}/${id}/${randomUUID()}`;
-    return {keys:Object.fromEntries(['image','thumb'].map(name=>[name,`${base}/${name}${variants[name].type==='image/webp'?'.webp':'.jpg'}`])),variants,storageIdentity:receiptStorageIdentity(config)};
+    const base=`receipts/${namespace(userId)}/${receiptDay(now())}/${id}-${randomUUID()}`;
+    return {keys:Object.fromEntries(['image','thumb'].map(name=>[name,`${base}-${name}${variants[name].type==='image/webp'?'.webp':'.jpg'}`])),variants,storageIdentity:receiptStorageIdentity(config)};
   };
   const owned=(userId,id)=>{if(!UUID.test(id))throw bad('图片不存在','finance_receipt_not_found',404);const row=db.prepare('SELECT * FROM finance_receipts WHERE id=? AND user_id=?').get(id,userId);if(!row)throw bad('图片不存在','finance_receipt_not_found',404);return unpack(row)};
   const hasReadyReceipt=(userId,id)=>!!db.prepare('SELECT id FROM finance_receipts WHERE id=? AND user_id=? AND ready=1').get(id,userId);
@@ -130,7 +143,7 @@ export function createFinanceReceipts(deps){
       if(!UUID.test(item?.id)||ids.has(item.id)||!HASH.test(item.hash)||hashes.has(item.hash)||![0,1].includes(item.ready)||!Number.isSafeInteger(item.version)||item.version<1||!validTime(item.createdAt)||!validTime(item.updatedAt))throw bad('备份中的图片索引无效');
       if(!storageIdentity(stored)||item.data?.storageIdentity!==storageIdentity(stored))throw bad('备份中的图片存储关联不一致');
       const variants=variantsFrom(item.data.variants),keys=item.data.keys;
-      if(!keys||['image','thumb'].some(name=>typeof keys[name]!=='string'||!/^receipts\/[a-f0-9]{32}\/[a-f0-9-]{36}\/[a-f0-9-]{36}\/(?:image|thumb)\.(?:webp|jpg)$/.test(keys[name])||!keys[name].includes('/'+item.id+'/')||!keys[name].endsWith('/'+name+(variants[name].type==='image/webp'?'.webp':'.jpg'))))throw bad('备份中的图片路径无效');
+      if(!keys||['image','thumb'].some(name=>!validReceiptKey(keys[name],item.id,name,variants[name])))throw bad('备份中的图片路径无效');
       ids.add(item.id);hashes.add(item.hash);receipts.push({id:item.id,hash:item.hash,ready:Number(item.ready),version:item.version,createdAt:new Date(item.createdAt).toISOString(),updatedAt:new Date(item.updatedAt).toISOString(),data:{keys:{...keys},variants,storageIdentity:item.data.storageIdentity}});
     }
     return {version:1,storage:stored,receipts};

@@ -241,6 +241,14 @@ test('textarea composition preserves the active native node, caret and draft wit
   const f=fixture({daily:true,draft:{text:'8+8-1 早餐'}});await flush();const form=$('[data-finance-create]',f.root),field=form.elements.text;field.focus();field.dispatchEvent(new win.Event('compositionstart',{bubbles:true}));field.value='60 打车\n50 吃';field.setSelectionRange(9,9);field.dispatchEvent(new win.InputEvent('input',{bubbles:true,isComposing:true}));assert.equal(f.drafts.at(-1).text,field.value);assert.equal(document.activeElement,field);assert.equal(form.elements.text,field);assert.equal(field.selectionStart,9);submit(form);await flush();assert.equal(f.calls.filter(call=>call.args.method==='POST').length,0);field.value='60 打车\n50 吃饭';field.dispatchEvent(new win.Event('compositionend',{bubbles:true}));assert.match($('[data-finance-calculation]',form).textContent,/110\.00/);assert.equal(controller.hasPendingDraft(),true);
 });
 
+test('ledger shows the amount only on the right and preserves original expressions in edit forms',async()=>{
+  const f=fixture({initialEntries:[{id:'vegetables',date:'2026-11-15',kind:'expense',expression:'8+8-1',amountCents:1500,purpose:'买菜',categoryId:'food',note:'晚饭用',receiptIds:[],version:1},{id:'refund',date:'2026-11-15',kind:'refund',expression:'2',amountCents:200,purpose:'退菜',categoryId:'food',refundOf:'vegetables',receiptIds:[],version:1}]});await flush();
+  const row=$('[data-entry-id="vegetables"]',f.root),copy=$('.finance-entry-copy',row);
+  assert.match(copy.textContent,/买菜/);assert.match(copy.textContent,/晚饭用/);assert.doesNotMatch(copy.textContent,/8\+8-1|15\.00/);
+  assert.equal($('.finance-entry-amount',row).textContent,'−¥15.00');assert.match($('[data-entry-id="refund"] .finance-entry-copy',f.root).textContent,/已关联原支出/);
+  $('[data-entry-action="edit"]',row).click();assert.equal($('#finance-edit-form').elements.expression.value,'8+8-1');
+});
+
 test('secondary detail retains exact expressions, income and transfers with compact categories',async()=>{
   const f=fixture();await flush();const filters=$('[data-finance-filters]',f.root);assert.equal(filters.elements.kind.dataset.slot,'native-select');assert.equal(filters.elements.category.dataset.slot,'native-select');assert.equal($('[role="radiogroup"]',filters),null);assert.equal($('input[type="month"]',f.root),null);assert.ok($('[data-finance-period]',f.root));
   for(const kind of ['income','transfer']){$('[data-finance-detail]',f.root).click();const form=$('#finance-detail-form');change(form,'kind',kind);input(form,'expression','8+8+8-1');input(form,'purpose',kind==='income'?'工资':'账户间转入');assert.equal($('[data-finance-calculation]',form).textContent,'合计 ¥23.00');assert.equal(form.elements.categoryId.dataset.slot,'native-select');submit(form);await flush()}
