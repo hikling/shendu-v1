@@ -51,3 +51,26 @@
 ### Status
 
 [OK] **Completed**
+
+
+## Session 88: Finance ledger, lazy receipt gallery and expanded categories
+<!-- trellis-session: v=2 fp=019ad84fcdaa202e -->
+
+**Date**: 2026-11-17
+**Task**: Finance ledger, lazy receipt gallery and expanded categories
+**Branch**: `main`
+
+### Summary
+
+Removed ledger category filter and thumbnails; aligned action typography; contextual receipt gallery; expanded shared category inference with purpose-only legacy compatibility. Local full suite519passed/1optional skip, desktop1280/mobile390/320 accepted, GitHub six release jobs passed; retained four complete releases and all tags.
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `fa5d071` | fix: refine finance ledger and automatic categories |
+| `e850c44` | docs: record finance ledger release validation |
+
+### Status
+
+[OK] **Completed**
