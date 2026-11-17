@@ -1,0 +1,4 @@
+{"file": ".trellis/spec/frontend/component-islands.md", "reason": "Finance forms, Select and receipt ownership"}
+{"file": ".trellis/spec/frontend/state-and-data.md", "reason": "Draft, retry, stale owner and list contracts"}
+{"file": ".trellis/spec/backend/finance.md", "reason": "Money and receipt associations"}
+{"file": ".trellis/spec/frontend/finance-entry-flow.md", "reason": "Income-only and screenshot matching contracts"}

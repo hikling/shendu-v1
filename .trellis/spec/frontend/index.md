@@ -29,3 +29,5 @@ Read the user-confirmed product direction in [`PRODUCT.md`](../../../PRODUCT.md)
 - [Extended review flows](./extended-review-flow.md)
 - [Component islands](./component-islands.md)
 - [Archive and workspace UI](./archive-and-workspace-ui.md)
+
+- [Finance entry and receipt matching](./finance-entry-flow.md) — read before income/expense creation, upload matching or finance retry changes.

@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {JSDOM} from 'jsdom';
 import {readFileSync} from 'node:fs';
 import {mountFinancePage,mountDailyFinance} from '../public/finance-ui.js';
-import {DEFAULT_FINANCE_CATEGORIES,parseMoneyExpression,suggestFinanceCategory} from '../public/finance-domain.js';
+import {DEFAULT_FINANCE_CATEGORIES,parseMoneyExpression,parseFinanceLines,suggestFinanceCategory} from '../public/finance-domain.js';
 
 const dom=new JSDOM('<main id="app"></main><div id="modal-root"></div>',{url:'https://shendu.test',pretendToBeVisual:true}),win=dom.window;
 for(const key of ['window','document','HTMLElement','HTMLInputElement','HTMLTextAreaElement','HTMLSelectElement','HTMLButtonElement','HTMLFormElement','Element','DocumentFragment','Node','NodeFilter','Event','CustomEvent','KeyboardEvent','MouseEvent','MutationObserver','getComputedStyle','FormData'])globalThis[key]=win[key];
@@ -12,8 +12,8 @@ globalThis.requestAnimationFrame=win.requestAnimationFrame.bind(win);globalThis.
 win.HTMLElement.prototype.scrollIntoView=function(){};
 const originalBounds=win.HTMLElement.prototype.getBoundingClientRect;win.HTMLElement.prototype.getBoundingClientRect=function(){return this.classList.contains('recharts-responsive-container')?{width:300,height:230,top:0,left:0,right:300,bottom:230,x:0,y:0,toJSON(){return this}}:originalBounds.call(this)};
 const ui=await import('../public/ui/shadcn.js');
-const $=(selector,root=document)=>root.querySelector(selector),$$=(selector,root=document)=>[...root.querySelectorAll(selector)],flush=async()=>{for(let i=0;i<5;i++)await new Promise(resolve=>setImmediate(resolve))};
-let controller;
+const $=(selector,root=document)=>root.querySelector(selector),$$=(selector,root=document)=>[...root.querySelectorAll(selector)],flush=async()=>{for(let i=0;i<16;i++)await new Promise(resolve=>setImmediate(resolve))};
+let controller,completeQuickUpload;
 
 function fixture({daily=false,readonly=false,snapshot,draft,handler,receiptClient,initialEntries=[],initialStorage}={}){
   ui.disposeUi($('#app'));ui.disposeUi($('#modal-root'));$('#app').replaceChildren();$('#modal-root').replaceChildren();
@@ -38,14 +38,28 @@ function fixture({daily=false,readonly=false,snapshot,draft,handler,receiptClien
     if(args.method==='PUT'){const entry=entries.find(row=>row.id===path.split('/').at(-1));Object.assign(entry,args.body,{version:entry.version+1,amountCents:parseMoneyExpression(args.body.expression)});return {entry}}
     throw new Error(`Unexpected ${path}`);
   };
-  const options={request,renderMarkup:ui.renderMarkup,today:()=> '2026-11-15',isCurrent:()=>current,toast:(...args)=>notices.push(args),setDirty:value=>dirty.push(value),onDraftChange:value=>drafts.push(value),beginWrite:()=>{if(pending)return null;pending=true;return {}},endWrite:token=>{pending=false;ended.push(token)},showMonthPicker:ui.showFinanceMonthPicker,showFinanceDayPicker:ui.showFinanceDayPicker,showFinancePie:ui.showFinancePie,openModal:(html,className='')=>ui.renderMarkup($('#modal-root'),`<section class="modal ${className}">${html}</section>`),closeModal:force=>{if($('#modal-root').dataset.persistent==='1'&&!force)return;ui.disposeUi($('#modal-root'));$('#modal-root').replaceChildren();$('#modal-root').dataset.persistent='0'},receiptClient};
+  const originalReceipt=receiptClient;
+  const receiptAdapter={...receiptClient,processReceiptFiles:async(...args)=>{
+    if(originalReceipt?.processReceiptFiles){const result=await originalReceipt.processReceiptFiles(...args);return result.imageStatus===undefined&&result.receiptIds?.length?{...result,imageStatus:'stored'}:result}
+    const parsed=parseFinanceLines($('[data-finance-create]',root).elements.text.value),receiptIds=parsed.rows.map(()=>globalThis.crypto.randomUUID());return {imageStatus:'stored',receiptIds,candidates:parsed.rows.map((row,index)=>({...row,kind:'expense',receiptIds:[receiptIds[index]]}))};
+  }};
+  const options={request,renderMarkup:ui.renderMarkup,today:()=> '2026-11-15',isCurrent:()=>current,toast:(...args)=>notices.push(args),setDirty:value=>dirty.push(value),onDraftChange:value=>drafts.push(value),beginWrite:()=>{if(pending)return null;pending=true;return {}},endWrite:token=>{pending=false;ended.push(token)},showMonthPicker:ui.showFinanceMonthPicker,showFinanceDayPicker:ui.showFinanceDayPicker,showFinancePie:ui.showFinancePie,openModal:(html,className='')=>ui.renderMarkup($('#modal-root'),`<section class="modal ${className}">${html}</section>`),closeModal:force=>{if($('#modal-root').dataset.persistent==='1'&&!force)return;ui.disposeUi($('#modal-root'));$('#modal-root').replaceChildren();$('#modal-root').dataset.persistent='0'},receiptClient:receiptAdapter};
   controller=daily?mountDailyFinance(root,{...options,date:'2026-11-15',readonly,snapshot,draft}):mountFinancePage(root,options);
+  let pickerRequested=false;$('[data-finance-files]',root)?.addEventListener('click',()=>{pickerRequested=true});
+  completeQuickUpload=async form=>{
+    // Tests of other behavior explicitly walk the real upload+matching path.
+    if(!form.isConnected||!form.matches('[data-finance-create]')||!parseFinanceLines(form.elements.text.value).rows.length||parseFinanceLines(form.elements.text.value).errors.length)return;
+    if(!$('#finance-match-form')){if(!pickerRequested)return;pickerRequested=false;const files=$('[data-finance-files]',root);Object.defineProperty(files,'files',{configurable:true,value:[{name:'test.png',type:'image/png'}]});files.dispatchEvent(new win.Event('change',{bubbles:true}));}
+    await flush();const match=$('#finance-match-form');if(!match)return;
+    for(const [index,section] of $$('[data-match-row]',match).entries()){const boxes=$$('input[type=checkbox][name^="match-"]',section);if(!boxes.some(box=>box.checked)&&boxes[index]){boxes[index].checked=true;boxes[index].dispatchEvent(new win.Event('change',{bubbles:true}))}}
+    match.elements['acknowledge-unused'].checked=true;dispatchSubmit(match);
+  };
   return {root,calls,notices,drafts,dirty,ended,request,result,setEntries:value=>{entries=value},setCategories:value=>{categories=value},setCursor:value=>{nextCursor=value},setCurrent:value=>{current=value},pending:()=>pending};
 }
 function input(form,name,value){const field=form.elements[name];field.value=value;field.dispatchEvent(new win.Event('input',{bubbles:true}));return field}
 function change(form,name,value){const field=form.elements[name];if(field.type==='checkbox')field.checked=value;else field.value=value;field.dispatchEvent(new win.Event('change',{bubbles:true}));return field}
-function openBatch(root){$('[data-finance-detail]',root).click();$('[data-manual-batch]').click();return $('#finance-import-form')}
-function submit(form){form.dispatchEvent(new win.Event('submit',{bubbles:true,cancelable:true}))}
+function dispatchSubmit(form){form.dispatchEvent(new win.Event('submit',{bubbles:true,cancelable:true}))}
+function submit(form){dispatchSubmit(form);if(form.matches('[data-finance-create]'))void completeQuickUpload(form)}
 
 test('refund-only month and day retain signed net values without inventing negative pie slices',async()=>{
   const refund={id:'refund',date:'2026-11-15',kind:'refund',amountCents:3000,categoryId:'shopping',receiptIds:[]};
@@ -73,13 +87,17 @@ for(const daily of [false,true])test(`shared ${daily?'daily':'finance'} textarea
 
 test('legacy daily draft retains note and receipts on failure, retry ID and mounted textarea',async()=>{
   let rejectWrite;let attempts=0;const f=fixture({daily:true,draft:{expression:'8+8',purpose:'早餐',note:'保留的旧备注',categoryId:'shopping',receiptIds:['old-receipt']},receiptClient:{loadReceiptUrls:async()=>({})},handler:(path,args)=>{if(path==='/api/finance/entries'&&++attempts===1)return new Promise((_,reject)=>{rejectWrite=reject})}});await flush();
-  const form=$('[data-finance-create]',f.root),field=form.elements.text;assert.equal(field.value,'8+8 早餐');assert.match($('[data-finance-legacy-note]',form).textContent,/旧备注.*1 张截图/);submit(form);submit(form);await flush();assert.equal(f.calls.filter(call=>call.path==='/api/finance/entries').length,1);assert.equal($('fieldset',form).disabled,true);assert.equal(f.pending(),true);
-  rejectWrite(new Error('网络暂时不可用'));await flush();assert.equal(form.elements.text,field);assert.equal(field.value,'8+8 早餐');assert.equal($('fieldset',form).disabled,false);assert.match($('[data-form-error]',form).textContent,/网络/);assert.equal(controller.hasPendingDraft(),true);
-  submit(form);await flush();const writes=f.calls.filter(call=>call.path==='/api/finance/entries');assert.equal(writes[0].args.body.id,writes[1].args.body.id);assert.equal(writes[1].args.body.categoryId,'shopping');assert.equal(writes[1].args.body.note,'保留的旧备注');assert.deepEqual(writes[1].args.body.receiptIds,['old-receipt']);assert.equal(f.drafts.at(-1).text,'');assert.equal(f.pending(),false);
+  const form=$('[data-finance-create]',f.root),field=form.elements.text;assert.equal(field.value,'8+8 早餐');assert.match($('[data-finance-legacy-note]',form).textContent,/旧备注.*1 张截图/);submit(form);submit(form);await flush();assert.equal(f.calls.filter(call=>call.path==='/api/finance/entries').length,1);assert.equal($('fieldset',$('#finance-match-form')).disabled,true);assert.equal(f.pending(),true);
+  rejectWrite(new Error('网络暂时不可用'));await flush();assert.equal(form.elements.text,field);assert.equal(field.value,'8+8 早餐');assert.equal($('fieldset',form).disabled,false);assert.match($('[data-form-error]',$('#finance-match-form')).textContent,/网络/);assert.equal(controller.hasPendingDraft(),true);
+  submit(form);await flush();const writes=f.calls.filter(call=>call.path==='/api/finance/entries');assert.equal(writes[0].args.body.id,writes[1].args.body.id);assert.equal(writes[1].args.body.categoryId,'shopping');assert.equal(writes[1].args.body.note,'保留的旧备注');assert.ok(writes[1].args.body.receiptIds.includes('old-receipt'));assert.equal(writes[1].args.body.receiptIds.length,2);assert.deepEqual(writes[1].args.body,writes[0].args.body);assert.equal(f.drafts.at(-1).text,'');assert.equal(f.pending(),false);
 });
 
-test('single pending category correction and detail edits preserve the legacy draft until confirmed',async()=>{
-  const f=fixture({daily:true,draft:{expression:'8+8-1',purpose:'早餐',note:'原备注',receiptIds:['retained-receipt']},receiptClient:{loadReceiptUrls:async()=>({})}});await flush();const quick=$('[data-finance-create]',f.root),field=quick.elements.text,category=$('[data-line-category]',quick);category.value='shopping';category.dispatchEvent(new win.Event('change',{bubbles:true}));assert.equal(f.drafts.at(-1).categoryId,'shopping');$('[data-finance-detail]',f.root).click();let detail=$('#finance-detail-form');const cancel=$('[data-clear-entry]',detail);assert.equal(cancel.textContent,'取消');cancel.click();await flush();assert.equal($('#finance-detail-form'),null);assert.equal(field.value,'8+8-1 早餐');assert.equal(f.calls.some(call=>call.args.method==='POST'),false);$('[data-finance-detail]',f.root).click();detail=$('#finance-detail-form');assert.equal(detail.elements.expression.value,'8+8-1');assert.equal(detail.elements.categoryId.value,'shopping');assert.equal(detail.elements.note.value,'原备注');input(detail,'note','更正后的备注');assert.equal(field.value,'8+8-1 早餐');assert.equal(f.drafts.at(-1).note,'更正后的备注');submit(detail);await flush();const write=f.calls.find(call=>call.path==='/api/finance/entries');assert.deepEqual(write.args.body.receiptIds,['retained-receipt']);assert.equal(write.args.body.note,'更正后的备注');assert.equal(write.args.body.categoryId,'shopping');assert.equal(field.value,'');assert.equal(quick.elements.text,field);assert.equal(controller.hasPendingDraft(),false);
+
+test('income recording leaves the exact expense plan and legacy metadata untouched',async()=>{
+ const f=fixture({daily:true,draft:{expression:'8+8-1',purpose:'早餐',note:'原备注',receiptIds:['retained-receipt']}});await flush();const quick=$('[data-finance-create]',f.root),field=quick.elements.text;
+ const category=$('[data-line-category]',quick);category.value='shopping';category.dispatchEvent(new win.Event('change',{bubbles:true}));const before=structuredClone(f.drafts.at(-1));
+ $('[data-finance-detail]',f.root).click();const form=$('#finance-detail-form');assert.equal(form.elements.expression.value,'');assert.equal(form.elements.kind.type,'hidden');assert.equal(form.elements.kind.value,'income');assert.equal($('[data-manual-batch]'),null);
+ input(form,'expression','1000');input(form,'purpose','工资');form.elements.kind.value='expense';submit(form);await flush();const post=f.calls.find(call=>call.path==='/api/finance/entries');assert.equal(post.args.body.kind,'income');assert.equal(post.args.body.categoryId,'salary');assert.equal(quick.elements.text,field);assert.equal(field.value,'8+8-1 早餐');assert.deepEqual(f.drafts.at(-1),before);
 });
 
 test('invalid lines show physical line numbers and block the entire confirmation without losing text',async()=>{
@@ -158,11 +176,10 @@ test('disposing processing aborts its owner and cannot update a replacement page
   let finish,signal;const f=fixture({receiptClient:{processReceiptFiles:async(files,options)=>{signal=options.signal;return new Promise(resolve=>{finish=resolve})},disposeReceiptWorker(){}}});await flush();selectScreenshot(f);await flush();controller.dispose();await flush();assert.equal(signal.aborted,true);assert.equal(f.pending(),false);finish({candidates:[{expression:'22'}]});await flush();assert.equal($('#finance-import-form'),null);
 });
 
-test('canceling a low-confidence preview creates no entries and duplicate candidates require an explicit selection',async()=>{
-  const f=fixture({initialEntries:[{id:'prior',date:'2026-11-15',kind:'expense',expression:'8',amountCents:800,purpose:'早餐',categoryId:'food',version:1,receiptIds:[]}],receiptClient:{processReceiptFiles:async()=>({candidates:[{expression:'8',date:'2026-11-15',kind:'expense',purpose:'早餐',confidence:'low',warnings:['日期需要核对']},{expression:'12',kind:'expense',purpose:'午餐',confidence:'medium'}],warnings:[]})}});await flush();selectScreenshot(f);await flush();const form=$('#finance-import-form');assert.match(form.textContent,/请仔细核对/);assert.match(form.textContent,/疑似重复/);assert.equal(form.elements['select-0'].checked,false);assert.equal(form.elements['select-1'].checked,true);assert.match(form.textContent,/日期需要核对/);
-  $('[data-close]',form).click(); // The app owns close handling; simulate the same successful close here.
-  ui.renderMarkup($('#modal-root'),'');await flush();assert.equal(f.calls.filter(call=>call.path==='/api/finance/entries').length,0);assert.equal(f.pending(),false);
-  selectScreenshot(f);await flush();const next=$('#finance-import-form');next.elements['select-0'].checked=true;next.elements['select-1'].checked=false;next.elements['acknowledge-0'].checked=true;submit(next);await flush();assert.equal(f.calls.filter(call=>call.path==='/api/finance/entries').length,1);assert.equal(f.calls.find(call=>call.path==='/api/finance/entries').args.body.expression,'8');
+
+test('stored low-confidence screenshot drafts retain duplicate selection and cancellation creates no entries',async()=>{
+ const f=fixture({initialEntries:[{id:'prior',date:'2026-11-15',kind:'expense',amountCents:800,purpose:'早餐',categoryId:'food',version:1,receiptIds:[]}],receiptClient:{processReceiptFiles:async()=>({imageStatus:'stored',receiptIds:['a','b'],candidates:[{expression:'8',date:'2026-11-15',kind:'expense',purpose:'早餐',receiptIds:['a'],confidence:'low',warnings:['日期需要核对']},{expression:'12',kind:'expense',purpose:'午餐',receiptIds:['b'],confidence:'medium'}],warnings:[]})}});await flush();selectScreenshot(f);await flush();const form=$('#finance-import-form');assert.ok(form);assert.equal(form.elements['select-0'].checked,false);assert.equal(form.elements['select-1'].checked,true);assert.match(form.textContent,/日期需要核对/);ui.renderMarkup($('#modal-root'),'');await flush();assert.equal(f.calls.some(call=>call.path==='/api/finance/entries'),false);
+ selectScreenshot(f);await flush();const next=$('#finance-import-form');change(next,'select-0',true);change(next,'select-1',false);submit(next);await flush();const post=f.calls.find(call=>call.path==='/api/finance/entries');assert.deepEqual(post.args.body.receiptIds,['a']);assert.equal(post.args.body.kind,'expense');
 });
 
 for(const daily of [false,true])test(`receipt lists ${daily?'inside a daily review':'on the finance page'} contain no thumbnails or eager image authorization`,async()=>{
@@ -221,22 +238,20 @@ test('old image-read failures stay silent while the latest receipt keeps its own
   $('[data-finance-image-retry]').click();$('[data-finance-image-retry]').dispatchEvent(new win.Event('click'));await flush();assert.equal(reads.length,3);assert.deepEqual(reads[2].ids,['receipt-b']);reads[2].resolve({'receipt-b':'https://private.example.com/latest.webp'});await flush();assert.match($('img',view).src,/latest\.webp/);
 });
 
-for(const daily of [false,true])test(`manual multi-entry ${daily?'daily':'finance'} flow preserves mounted rows and saves only explicitly confirmed rows`,async()=>{
-  const f=fixture({daily});await flush();const single=$('[data-finance-create]',f.root),unfinished=input(single,'text','9 保留单笔草稿');const form=openBatch(f.root);assert.match($('#modal-root').textContent,/记下多笔收支/);assert.equal($$('[data-import-index]',form).length,2);
-  const first=input(form,'expression-0','8+8+8-1');input(form,'purpose-0','早餐');assert.equal(form.elements['category-0'].value,'food');assert.equal($('[data-import-index="0"] output',form).textContent,'合计 ¥23.00');change(form,'category-0','shopping');input(form,'purpose-0','早餐和日用品');input(form,'note-0','可选备注');assert.equal(form.elements['category-0'].value,'shopping');
-  $('[data-import-add]',form).click();assert.equal($$('[data-import-index]',form).length,3);assert.equal(form.elements['expression-0'],first);assert.equal(first.value,'8+8+8-1');$('[data-import-remove="1"]',form).click();assert.equal($$('[data-import-index]',form).length,2);assert.equal(form.elements['expression-0'],first);assert.equal(form.elements['expression-1'],undefined);
-  change(form,'kind-2','income');input(form,'expression-2','100');input(form,'purpose-2','工资');assert.equal(form.elements['category-2'].value,'salary');assert.equal(f.calls.filter(call=>call.path==='/api/finance/entries').length,0);submit(form);await flush();const writes=f.calls.filter(call=>call.path==='/api/finance/entries');assert.equal(writes.length,2);assert.equal(writes[0].args.body.expression,'8+8+8-1');assert.equal(writes[0].args.body.categoryId,'shopping');assert.equal(writes[0].args.body.note,'可选备注');assert.equal(writes[1].args.body.kind,'income');assert.equal(writes[1].args.body.categoryId,'salary');assert.equal(writes[0].args.body.source,daily?'daily':'finance');assert.notEqual(writes[0].args.body.id,writes[1].args.body.id);assert.equal(single.elements.text,unfinished);assert.equal(unfinished.value,'9 保留单笔草稿');assert.equal(controller.hasPendingDraft(),true);
+
+for(const daily of [false,true])test(`receipt matching ${daily?'daily':'finance'} requires stored images and explicit manual choices`,async()=>{
+ const f=fixture({daily,receiptClient:{processReceiptFiles:async()=>({imageStatus:'stored',receiptIds:['taxi','unknown'],candidates:[{kind:'expense',expression:'60',receiptIds:['taxi']},{kind:'expense',expression:'',receiptIds:['unknown']} ]})}});await flush();const quick=$('[data-finance-create]',f.root),field=input(quick,'text','60 打车\n15 买东西');dispatchSubmit(quick);await flush();assert.equal(f.calls.some(call=>call.path==='/api/finance/entries'),false);selectScreenshot(f);await flush();const match=$('#finance-match-form');assert.ok(match);assert.equal(match.elements['match-0'][0].checked,true);dispatchSubmit(match);await flush();assert.equal(f.calls.some(call=>call.path==='/api/finance/entries'),false);assert.match($('[data-form-error]',match).textContent,/选择对应截图/);
+ const box=$('input[name="match-1"][value="unknown"]',match);box.checked=true;box.dispatchEvent(new win.Event('change',{bubbles:true}));dispatchSubmit(match);await flush();const posts=f.calls.filter(call=>call.path==='/api/finance/entries');assert.deepEqual(posts.map(call=>call.args.body.receiptIds),[['taxi'],['unknown']]);assert.ok(posts.every(call=>call.args.body.kind==='expense'&&call.args.body.source===(daily?'daily':'finance')));assert.equal(quick.elements.text,field);assert.equal(field.value,'');
 });
 
-test('manual multi-entry partial success preserves retry IDs and guards add/remove while a write is pending',async()=>{
-  let rejectSecond,failed=false;const f=fixture({handler:(path,args)=>{if(path==='/api/finance/entries'&&args.body.purpose==='午餐'&&!failed){failed=true;return new Promise((_,reject)=>{rejectSecond=reject})}}});await flush();const form=openBatch(f.root);input(form,'expression-0','8');input(form,'purpose-0','早餐');input(form,'expression-1','12');input(form,'purpose-1','午餐');submit(form);submit(form);await flush();assert.equal(f.pending(),true);assert.equal(f.calls.filter(call=>call.path==='/api/finance/entries').length,2);
-  $('[data-import-add]',form).dispatchEvent(new win.Event('click',{bubbles:true}));$('[data-import-remove="1"]',form).dispatchEvent(new win.Event('click',{bubbles:true}));assert.equal($$('[data-import-index]',form).length,2);rejectSecond(new Error('第二笔失败'));await flush();assert.equal($('[data-import-index="0"]',form).dataset.importDone,'true');assert.equal($('[data-import-remove="0"]',form).disabled,true);assert.equal(form.elements['expression-1'].value,'12');assert.match($('[data-form-error]',form).textContent,/第二笔失败/);
-  const retained=form.elements['expression-1'];$('[data-import-add]',form).click();input(form,'expression-2','7');input(form,'purpose-2','打车');assert.equal(form.elements['expression-1'],retained);submit(form);await flush();const writes=f.calls.filter(call=>call.path==='/api/finance/entries');assert.equal(writes.length,4);assert.equal(writes[1].args.body.id,writes[2].args.body.id);assert.equal(writes.filter(call=>call.args.body.purpose==='早餐').length,1);assert.equal(writes[3].args.body.categoryId,'transport');assert.equal($('#finance-import-form'),null);
+
+test('matching partial success freezes uncertain payloads and retries only the remaining original ID',async()=>{
+ let failed=false;const f=fixture({handler:(path,args)=>{if(path==='/api/finance/entries'&&args.body.purpose==='午餐'&&!failed){failed=true;return Promise.reject(new Error('响应中断'))}}});await flush();const quick=$('[data-finance-create]',f.root),field=input(quick,'text','8 早餐\n12 午餐');submit(quick);await flush();const match=$('#finance-match-form'),posts=f.calls.filter(call=>call.path==='/api/finance/entries');assert.equal(posts.length,2);assert.equal(field.value,'12 午餐');assert.equal(field.readOnly,true);assert.equal($('[data-clear-entry]',quick).disabled,true);assert.match($('[data-form-error]',match).textContent,/响应中断/);assert.equal($('input[name="match-1"]',match).disabled,true);dispatchSubmit(match);dispatchSubmit(match);await flush();const all=f.calls.filter(call=>call.path==='/api/finance/entries');assert.equal(all.length,3);assert.deepEqual(all[2].args.body,all[1].args.body);assert.equal(all.filter(call=>call.args.body.purpose==='早餐').length,1);assert.equal(field.value,'');assert.equal(field.readOnly,false);
 });
 
-test('an obsolete account surface cannot open a manual batch dialog or mutate an already mounted batch',async()=>{
-  const f=fixture();await flush();const button=$('[data-finance-detail]',f.root);f.setCurrent(false);button.click();assert.equal($('#finance-detail-form'),null);f.setCurrent(true);const form=openBatch(f.root);input(form,'expression-0','8');input(form,'purpose-0','早餐');input(form,'expression-1','12');input(form,'purpose-1','午餐');const rows=$$('[data-import-index]',form);
-  f.setCurrent(false);$('[data-import-add]',form).click();$('[data-import-remove="0"]',form).click();submit(form);await flush();assert.deepEqual($$('[data-import-index]',form),rows);assert.equal(form.elements['expression-0'].value,'8');assert.equal(f.calls.filter(call=>call.path==='/api/finance/entries').length,0);assert.equal(f.pending(),false);
+
+test('an obsolete account cannot open income or confirm a mounted expense matching dialog',async()=>{
+ const f=fixture();await flush();f.setCurrent(false);$('[data-finance-detail]',f.root).click();assert.equal($('#finance-detail-form'),null);f.setCurrent(true);const quick=$('[data-finance-create]',f.root);input(quick,'text','8 早餐');dispatchSubmit(quick);selectScreenshot(f);await flush();const match=$('#finance-match-form');assert.ok(match);f.setCurrent(false);dispatchSubmit(match);await flush();assert.equal(f.calls.some(call=>call.path==='/api/finance/entries'),false);assert.equal(quick.elements.text.value,'8 早餐');
 });
 
 test('IME composition never searches unfinished text, and clear restores the list without replacing the draft',async()=>{
@@ -248,13 +263,14 @@ test('IME composition never searches unfinished text, and clear restores the lis
 
 test('partial textarea confirmation removes committed lines and retries only the remaining stable IDs',async()=>{
   let rejectSecond,failed=false;const f=fixture({daily:true,handler:(path,args)=>{if(path==='/api/finance/entries'&&args.body.purpose==='吃饭'&&!failed){failed=true;return new Promise((_,reject)=>{rejectSecond=reject})}}});await flush();
-  const form=$('[data-finance-create]',f.root),field=input(form,'text','60 打车\n50 吃饭\n20 咖啡');submit(form);submit(form);await flush();assert.equal(f.calls.filter(call=>call.path==='/api/finance/entries').length,2);assert.equal(field.value,'50 吃饭\n20 咖啡');assert.equal(f.drafts.at(-1).text,'50 吃饭\n20 咖啡');assert.equal($('fieldset',form).disabled,true);
-  rejectSecond(new Error('第二笔暂未成功'));await flush();assert.match($('[data-form-error]',form).textContent,/第二笔/);assert.equal(controller.hasPendingDraft(),true);input(form,'text','50 吃饭\n20 咖啡\n8 早餐');submit(form);await flush();
+  const form=$('[data-finance-create]',f.root),field=input(form,'text','60 打车\n50 吃饭\n20 咖啡');submit(form);submit(form);await flush();assert.equal(f.calls.filter(call=>call.path==='/api/finance/entries').length,2);assert.equal(field.value,'50 吃饭\n20 咖啡');assert.equal(f.drafts.at(-1).text,'50 吃饭\n20 咖啡');assert.equal($('fieldset',$('#finance-match-form')).disabled,true);
+  rejectSecond(new Error('第二笔暂未成功'));await flush();assert.match($('[data-form-error]',$('#finance-match-form')).textContent,/第二笔/);assert.equal(controller.hasPendingDraft(),true);assert.equal(field.readOnly,true);submit(form);await flush();input(form,'text','8 早餐');submit(form);await flush();
   const writes=f.calls.filter(call=>call.path==='/api/finance/entries');assert.equal(writes.length,5);assert.equal(writes[1].args.body.id,writes[2].args.body.id);assert.equal(writes.filter(call=>call.args.body.purpose==='打车').length,1);assert.deepEqual(writes.slice(2).map(call=>call.args.body.purpose),['吃饭','咖啡','早餐']);assert.equal(field.value,'');assert.equal(form.elements.text,field);assert.equal(controller.hasPendingDraft(),false);
 });
 
-test('editing a failed pending line creates a new ID while committed text stays removed',async()=>{
-  let failed=false;const f=fixture({handler:(path,args)=>{if(path==='/api/finance/entries'&&args.body.purpose==='吃饭'&&!failed){failed=true;return Promise.reject(new Error('网络中断'))}}});await flush();const form=$('[data-finance-create]',f.root);input(form,'text','60 打车\n50 吃饭');submit(form);await flush();assert.equal(form.elements.text.value,'50 吃饭');input(form,'text','45 午饭');submit(form);await flush();const writes=f.calls.filter(call=>call.path==='/api/finance/entries');assert.equal(writes.length,3);assert.notEqual(writes[1].args.body.id,writes[2].args.body.id);assert.equal(writes.filter(call=>call.args.body.purpose==='打车').length,1);assert.equal(writes[2].args.body.expression,'45');
+
+test('a definitive validation rejection unlocks corrections while uncertain writes stay immutable',async()=>{
+ let first=true;const f=fixture({handler:path=>{if(path==='/api/finance/entries'&&first){first=false;return Promise.reject(Object.assign(new Error('请重新选择分类'),{status:400}))}}});await flush();const quick=$('[data-finance-create]',f.root),field=input(quick,'text','8 早餐');submit(quick);await flush();assert.equal(field.readOnly,false);assert.match($('[data-form-error]',$('#finance-match-form')).textContent,/分类/);ui.renderMarkup($('#modal-root'),'');input(quick,'text','9 午餐');submit(quick);await flush();const posts=f.calls.filter(call=>call.path==='/api/finance/entries');assert.equal(posts.length,2);assert.equal(posts[1].args.body.expression,'9');assert.notEqual(posts[0].args.body.id,posts[1].args.body.id);assert.equal(field.value,'');
 });
 
 test('identical lines stay distinct, retain retry order and never remove the wrong physical line',async()=>{
@@ -273,10 +289,9 @@ test('ledger shows the amount only on the right and preserves original expressio
   $('[data-entry-action="edit"]',row).click();assert.equal($('#finance-edit-form').elements.expression.value,'8+8-1');
 });
 
-test('secondary detail retains exact expressions, income and transfers with compact categories',async()=>{
-  const f=fixture();await flush();const filters=$('[data-finance-filters]',f.root);assert.equal(filters.elements.kind.dataset.slot,'native-select');assert.equal(filters.elements.category,undefined);assert.doesNotMatch(filters.textContent,/账目分类|全部分类/);assert.equal($('[role="radiogroup"]',filters),null);assert.equal($('input[type="month"]',f.root),null);assert.ok($('[data-finance-period]',f.root));
-  for(const kind of ['income','transfer']){$('[data-finance-detail]',f.root).click();const form=$('#finance-detail-form');change(form,'kind',kind);input(form,'expression','8+8+8-1');input(form,'purpose',kind==='income'?'工资':'账户间转入');assert.equal($('[data-finance-calculation]',form).textContent,'合计 ¥23.00');assert.equal(form.elements.categoryId.dataset.slot,'native-select');submit(form);await flush()}
-  const writes=f.calls.filter(call=>call.path==='/api/finance/entries');assert.deepEqual(writes.map(call=>call.args.body.kind),['income','transfer']);assert.equal(writes[0].args.body.expression,'8+8+8-1');assert.equal(writes[0].args.body.categoryId,'salary');assert.equal($('#finance-detail-form'),null);
+
+test('income-only entry preserves exact arithmetic and cannot submit another kind',async()=>{
+ const f=fixture();await flush();$('[data-finance-detail]',f.root).click();const form=$('#finance-detail-form');assert.equal(form.elements.kind.type,'hidden');input(form,'expression','8+8+8-1');input(form,'purpose','工资');assert.equal($('[data-finance-calculation]',form).textContent,'合计 ¥23.00');form.elements.kind.value='transfer';submit(form);await flush();const post=f.calls.find(call=>call.path==='/api/finance/entries');assert.equal(post.args.body.kind,'income');assert.equal(post.args.body.expression,'8+8+8-1');assert.equal(post.args.body.categoryId,'salary');
 });
 
 test('actual month controls load only accepted month changes and disable during entry writes',async()=>{
@@ -350,9 +365,21 @@ test('unknown quick-entry purposes show their own classification and save automa
   submit(form);await flush();const write=f.calls.find(call=>call.path==='/api/finance/entries');assert.equal(write.args.body.categoryId,'');assert.equal(write.args.body.purpose,'修鞋');assert.match($('[data-finance-entries]',f.root).textContent,/修鞋/);assert.equal(f.calls.some(call=>call.path.includes('/categories')),false);
 });
 
-test('detailed and multi-entry auto labels use unknown purposes while manual choices remain explicit',async()=>{
-  const f=fixture();await flush();$('[data-finance-detail]',f.root).click();let form=$('#finance-detail-form');assert.ok(form.closest('.finance-detail-dialog'));input(form,'expression','30');input(form,'purpose','修鞋');assert.equal(form.elements.categoryId.value,'');assert.match($('[data-category-hint]',form).textContent,/修鞋/);submit(form);await flush();assert.equal(f.calls.find(call=>call.path==='/api/finance/entries').args.body.categoryId,'');
-  form=openBatch(f.root);input(form,'expression-0','80');input(form,'purpose-0','稿酬');change(form,'kind-0','income');assert.equal(form.elements['category-0'].value,'');assert.match($('[data-import-category-hint]',form).textContent,/稿酬/);input(form,'expression-1','6');input(form,'purpose-1','早餐');change(form,'category-1','shopping');submit(form);await flush();const writes=f.calls.filter(call=>call.path==='/api/finance/entries');assert.equal(writes[1].args.body.categoryId,'');assert.equal(writes[2].args.body.categoryId,'shopping');
+
+test('unused images require an explicit acknowledgment and never create extra ledger entries',async()=>{
+ const f=fixture({receiptClient:{processReceiptFiles:async()=>({imageStatus:'stored',receiptIds:['meal','extra'],candidates:[{kind:'expense',expression:'8',receiptIds:['meal']},{kind:'expense',expression:'99',receiptIds:['extra']}]})}});await flush();const quick=$('[data-finance-create]',f.root);input(quick,'text','8 早餐');dispatchSubmit(quick);selectScreenshot(f);await flush();const match=$('#finance-match-form');dispatchSubmit(match);await flush();assert.equal(f.calls.some(call=>call.path==='/api/finance/entries'),false);assert.match($('[data-form-error]',match).textContent,/还有截图未关联/);change(match,'acknowledge-unused',true);dispatchSubmit(match);await flush();const writes=f.calls.filter(call=>call.path==='/api/finance/entries');assert.equal(writes.length,1);assert.deepEqual(writes[0].args.body.receiptIds,['meal']);
+});
+
+test('manual matching enforces the per-entry ten-image bound before any write',async()=>{
+ const ids=Array.from({length:11},(_,i)=>`image-${i}`),f=fixture({receiptClient:{processReceiptFiles:async()=>({imageStatus:'stored',receiptIds:ids,candidates:ids.map(id=>({kind:'expense',expression:'8',receiptIds:[id]}))})}});await flush();const quick=$('[data-finance-create]',f.root);input(quick,'text','8 早餐');dispatchSubmit(quick);selectScreenshot(f);await flush();const match=$('#finance-match-form');for(const box of $$('input[name="match-0"]',match)){box.checked=true;box.dispatchEvent(new win.Event('change',{bubbles:true}))}dispatchSubmit(match);await flush();assert.equal(f.calls.some(call=>call.path==='/api/finance/entries'),false);assert.match($('[data-form-error]',match).textContent,/最多关联10/);
+});
+
+test('inline receipt preview keeps matching mounted and ignores superseded read responses',async()=>{
+ const reads=[],f=fixture({receiptClient:{loadReceiptUrls:(ids,variant,{isCurrent})=>new Promise((resolve,reject)=>reads.push({ids,variant,current:isCurrent,resolve,reject}))}});await flush();const quick=$('[data-finance-create]',f.root);input(quick,'text','8 早餐');dispatchSubmit(quick);selectScreenshot(f);await flush();const match=$('#finance-match-form'),button=$('[data-match-preview]',match),id=button.dataset.matchPreview;button.click();await flush();assert.equal(reads.length,1);button.click();button.click();await flush();assert.equal(reads.length,2);assert.equal(reads[0].current(),false);reads[1].resolve({[id]:'https://private.example.com/latest.webp'});await flush();reads[0].resolve({[id]:'https://private.example.com/stale.webp'});await flush();assert.equal($('#finance-match-form'),match);assert.match($('[data-match-image] img',match).src,/latest/);assert.equal(f.calls.some(call=>call.path==='/api/finance/entries'),false);f.setCurrent(false);button.click();assert.equal(reads.length,2);
+});
+
+test('income category suggestions retain unknown purposes and explicit manual choices',async()=>{
+ const f=fixture();await flush();$('[data-finance-detail]',f.root).click();const form=$('#finance-detail-form');input(form,'expression','30');input(form,'purpose','稿酬');assert.equal(form.elements.categoryId.value,'');assert.match($('[data-category-hint]',form).textContent,/稿酬/);change(form,'categoryId','salary');input(form,'purpose','其他项目报酬');assert.equal(form.elements.categoryId.value,'salary');submit(form);await flush();const post=f.calls.find(call=>call.path==='/api/finance/entries');assert.equal(post.args.body.kind,'income');assert.equal(post.args.body.categoryId,'salary');
 });
 
 test('ledger receipt count links open the private image and upload explicitly awaits confirmation',async()=>{
@@ -360,17 +387,13 @@ test('ledger receipt count links open the private image and upload explicitly aw
   ui.disposeUi($('#modal-root'));$('#modal-root').replaceChildren();selectScreenshot(f);await flush();assert.match($('[data-finance-status]',f.root).textContent,/尚未入账/);assert.match($('#finance-import-form').textContent,/已附 1 张压缩截图/);assert.equal(f.calls.some(call=>call.path==='/api/finance/entries'),false);submit($('#finance-import-form'));await flush();assert.deepEqual(f.calls.find(call=>call.path==='/api/finance/entries').args.body.receiptIds,['new-photo']);assert.ok($('[data-receipt-open="new-photo"]',f.root));
 });
 
-test('detailed entry keeps automatic quick suggestions live and preserves explicit legacy categories on edits',async()=>{
-  const f=fixture({initialEntries:[{id:'legacy',date:'2026-11-15',kind:'expense',expression:'4',amountCents:400,purpose:'旧用途',categoryId:'uncategorized',receiptIds:[],version:1}]});await flush();
-  const quick=$('[data-finance-create]',f.root);input(quick,'text','60 早餐');$('[data-finance-detail]',f.root).click();let form=$('#finance-detail-form');
-  assert.equal(form.elements.categoryId.value,'food');input(form,'purpose','打车');assert.equal(form.elements.categoryId.value,'transport');submit(form);await flush();
-  assert.equal(f.calls.find(call=>call.path==='/api/finance/entries').args.body.categoryId,'transport');
-  $('[data-entry-action="edit"][data-id="legacy"]',f.root).click();form=$('#finance-edit-form');assert.ok(form);assert.equal(form.elements.categoryId.value,'uncategorized');input(form,'expression','5');submit(form);await flush();
-  assert.equal(f.calls.find(call=>call.path==='/api/finance/entries/legacy'&&call.args.method==='PUT').args.body.categoryId,'uncategorized');
+
+test('income and historical edits keep their separate category and draft ownership',async()=>{
+ const entry={id:'prior',date:'2026-11-15',kind:'expense',expression:'8',amountCents:800,purpose:'早餐',categoryId:'shopping',receiptIds:[],version:1};const f=fixture({initialEntries:[entry]});await flush();const quick=$('[data-finance-create]',f.root),field=input(quick,'text','12 修鞋');$('[data-finance-detail]',f.root).click();let form=$('#finance-detail-form');assert.equal(form.elements.purpose.value,'');input(form,'expression','20');input(form,'purpose','工资');submit(form);await flush();assert.equal(field.value,'12 修鞋');$('[data-entry-id="prior"] [data-entry-action="edit"]',f.root).click();form=$('#finance-edit-form');assert.equal(form.elements.categoryId.value,'shopping');input(form,'purpose','早餐修改');assert.equal(form.elements.categoryId.value,'shopping');submit(form);await flush();assert.equal(f.calls.find(call=>call.args.method==='PUT').args.body.categoryId,'shopping');assert.equal(field.value,'12 修鞋');
 });
 
-
 const storedImageConfig={configured:true,version:4,receiptCount:2,disconnected:false,config:{endpoint:'https://private.example.com',region:'auto',bucket:'photos',directory:'receipts',accessKey:'access-id',pathStyle:true},targets:[]};
+
 function setFiles(field){Object.defineProperty(field,'files',{configurable:true,value:[new win.File(['image'],'receipt.png',{type:'image/png'})]});field.dispatchEvent(new win.Event('change',{bubbles:true}))}
 
 test('storage test sends unsaved form values without saving, blocks duplicate work, and invalidates a prior success after edits',async()=>{
@@ -401,9 +424,9 @@ test('deleting storage requires confirmation, keeps external photos, and uses th
   $('[data-finance-storage]',f.root).click();await flush();assert.match($('#finance-storage-form').textContent,/配置已删除.*2 张凭证.*原存储位置/);assert.equal($('#finance-storage-form').elements.secretKey.value,'');
 });
 
-test('recognition-only confirmation explicitly acknowledges that the screenshot is not stored',async()=>{
-  const f=fixture({receiptClient:{processReceiptFiles:async()=>({candidates:[{expression:'6',purpose:'吃饭',kind:'expense',receiptIds:[]}],receiptIds:[],imageStatus:'not_stored',warnings:['尚未配置图片存储']})}});await flush();selectScreenshot(f);await flush();const form=$('#finance-import-form');assert.match(form.textContent,/截图未保存/);submit(form);await flush();assert.equal(f.calls.some(call=>call.path==='/api/finance/entries'),false);assert.match($('[data-form-error]',form).textContent,/未保存截图/);
-  change(form,'acknowledge-0',true);submit(form);await flush();assert.deepEqual(f.calls.find(call=>call.path==='/api/finance/entries').args.body.receiptIds,[]);
+
+test('recognition-only output never opens an expense confirmation or accepts text without saved images',async()=>{
+ const f=fixture({receiptClient:{processReceiptFiles:async()=>({imageStatus:'not_stored',receiptIds:[],candidates:[{kind:'expense',expression:'8',purpose:'早餐',receiptIds:[]}]})}});await flush();selectScreenshot(f);await flush();assert.equal($('#finance-import-form'),null);assert.equal($('#finance-match-form'),null);assert.equal(f.calls.some(call=>call.path==='/api/finance/entries'),false);assert.match($('[data-finance-status]',f.root).textContent,/截图尚未保存/);
 });
 
 test('failed configured screenshot processing opens no normal confirmation and preserves the manual draft',async()=>{

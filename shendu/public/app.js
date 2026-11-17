@@ -1,7 +1,7 @@
 import {backupScheduleLabel} from './backup-schedule.js?v=1.0.0-backups1';
 import {normalizeReviewMetricIds,reconcileReviewMetrics} from './review-metrics.js?v=1.0.0-custom1';
 import {reviewQuestions,reviewDisabledFields} from './review-schema.js?v=1.0.0-finance1';
-import {renderMarkup,disposeUi,prepareDialogContainer,initializeToasts,showDialog,dismissDialog,showMenu,showVerificationCalendar,showStageCalendar,showFinanceMonthPicker,showFinanceDayPicker,showFinancePie,showToast} from './ui/shadcn.js?v=1.0.0-finance16';
+import {renderMarkup,disposeUi,prepareDialogContainer,initializeToasts,showDialog,dismissDialog,showMenu,showVerificationCalendar,showStageCalendar,showFinanceMonthPicker,showFinanceDayPicker,showFinancePie,showToast} from './ui/shadcn.js?v=1.0.0-finance17';
 import {overviewRecordAppearances,overviewVerifiedRecords,overviewRecordExcerpt,overviewLoopMetrics,overviewRecordTitle,overviewDateParts} from './overview-reel.js?v=1.0.0-overview15';
 import {DAILY_STEPS,dailyStepIssues,dailyPrompts,dailyPromptIssues,dailyPromptNeighbor,dailyPromptOwner} from './daily-flow.js?v=1.0.0-finance2';
 import {dailyCalendarModel,dailyCalendarDateLabel} from './daily-calendar.js?v=1.0.0-art1';
@@ -11,7 +11,7 @@ import {createBrowserNavigator} from './browser-navigation.js?v=1.0.0-routes1';
 import {createReviewNavigator} from './review-navigation.js?v=1.0.0-finance1';
 import {attachReviewWheel} from './review-wheel.js?v=1.0.0-wheel1';
 import {createReviewTransition} from './review-transition.js?v=1.0.0-transition1';
-import {mountFinancePage,mountDailyFinance} from './finance-ui.js?v=1.0.0-finance16';
+import {mountFinancePage,mountDailyFinance} from './finance-ui.js?v=1.0.0-finance17';
 import {RECORD_ART,recordArtAssignments} from './record-art.js?v=1.0.0-records1';
 import {createReviewIntroPicker,reviewIntroLines,reviewIntroLayout} from './review-intros.js?v=1.0.0-intros2';
 const $ = (s, root = document) => root.querySelector(s);
@@ -452,7 +452,7 @@ function dailyPromptCopy(prompt){
   const template=templatesForRecord(state.current).review,metric=prompt.id.startsWith('metric-')?state.current.data.metrics[Number(prompt.id.slice(7))]:null;
   const question=reviewQuestions('daily',template).find(item=>item.id===prompt.id);
   if(question)return{title:question.label,description:question.required?'先写具体事实，再写自己的判断。':'选填。留下真正有用的线索即可。'};
-  if(prompt.id==='finance')return{title:'今天，花销多少？',description:'算一算今天的花销。确认入账后独立保存，暂时不记也可以跳过。'};
+  if(prompt.id==='finance')return{title:'今天，花销多少？',description:'逐行写下金额与用途，再上传截图匹配，核对后确认入账。暂时不记也可以跳过。'};
   if(metric)return{title:`${metric.name||'这项行动'}，今天做了什么？`,description:metric.target?`阶段目标：${metric.target}。记录具体行动，再选一个符合实际的状态。`:'记录具体行动，再选一个符合实际的状态。'};
   const copy={sleep:['昨夜，你睡了多久？','记下实际睡眠时间。暂时不想记录，也可以直接继续。'],energy:['此刻的精力状态如何？','用 0—100 记录你的感受，不需要为了达标而修改。'],risk:['有没有需要留意的风险或偏离？','选填。写下具体信号，以及准备怎样应对。'],today:[template.today,'至少留下一件真实发生的事。不记流水账，也不急着下结论。'],cause:[template.cause,'选填。看看哪些条件促成了它，哪些方法可以再用一次。'],action:[template.actionTitle,'如果明天只能完成一件事，你会选什么？把开始的动作写具体。'],ifCondition:['如果受阻，怎样继续？',template.obstacleTitle],verifyDate:[template.verifyDateTitle,'选定回看这次行动的日期。实际验证时间会在提交结果时自动记录。'],journal:['今天，还有什么想留下？','选填。这里不需要结论，几句话或一整页都可以。']};
   return{title:copy[prompt.id][0],description:copy[prompt.id][1]};

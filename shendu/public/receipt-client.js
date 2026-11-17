@@ -1,4 +1,4 @@
-import {parseReceiptText} from './finance-domain.js?v=1.0.0-finance16';
+import {parseReceiptText} from './finance-domain.js?v=1.0.0-finance17';
 
 export const RECEIPT_LIMITS=Object.freeze({files:20,fileBytes:20*1024*1024,pixels:32*1024*1024,imageBytes:2*1024*1024,thumbBytes:96*1024});
 let worker=null,workerPromise=null,workerGeneration=0,activeBatch=null,ocrProgress=()=>{};
@@ -184,7 +184,7 @@ export async function processReceiptFiles(files,{request,isCurrent=()=>true,onPr
   const current=()=>activeBatch===owner&&!owner.signal.aborted&&isCurrent(),candidates=[],receiptIds=[],warnings=[];
   try{
     let configured=null;
-    if(upload&&request){const result=await request('/api/finance/storage',{},current);assertCurrent(current,owner.signal);configured=result.configured?result.config:null;if(!configured)warnings.push('尚未配置凭证存储：可以识别和记账，但本次图片不会长期保存。')}
+    if(upload&&request){const result=await request('/api/finance/storage',{},current);assertCurrent(current,owner.signal);configured=result.configured?result.config:null;if(!configured)warnings.push('尚未配置凭证存储：本次图片不会长期保存，请先配置图片存储，再上传并确认支出。')}
     for(let index=0;index<list.length;index++){
       assertCurrent(current,owner.signal);onProgress({stage:'compressing',message:`正在压缩第${index+1}/${list.length}张截图`,index,total:list.length});
       const compressed=await compressReceipt(list[index],{isCurrent:current,signal:owner.signal});
