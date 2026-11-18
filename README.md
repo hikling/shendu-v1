@@ -84,10 +84,10 @@ npm start
 已有站点在服务器的 root 终端执行这一行。自定义安装目录时替换 `/opt/shendu-v1`。
 
 ```sh
-SHENDU_BACKUP_BEFORE_UPDATE=n sh /opt/shendu-v1/shendu/scripts/update.sh
+sh /opt/shendu-v1/update.sh
 ```
 
-这条命令跳过更新前的整站快照，拉取最新代码并启动对应版本。显示「更新完成」后刷新网页。整站快照可按需单独执行。
+更新入口会整理慎独的旧镜像缓存，保留最近两份及容器引用的镜像，并检查至少1GiB可用空间，再拉取代码并更新。显示「更新完成」后刷新网页。整站快照可按需单独执行。
 
 [更新排错与旧版脚本](docs/deployment.md#更新与检查) · [服务器整站快照](docs/deployment.md#服务器整站快照)
 

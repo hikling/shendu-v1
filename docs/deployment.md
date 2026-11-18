@@ -124,7 +124,7 @@ curl -fsS "https://$shendu_domain/healthz"
 在 root shell 执行：
 
 ```sh
-SHENDU_BACKUP_BEFORE_UPDATE=n sh /opt/shendu-v1/shendu/scripts/update.sh
+sh /opt/shendu-v1/update.sh
 ```
 
 更新脚本要求：
@@ -133,7 +133,13 @@ SHENDU_BACKUP_BEFORE_UPDATE=n sh /opt/shendu-v1/shendu/scripts/update.sh
 - 受版本控制的文件没有本地内容修改，已有 `.env` 存在。
 - Docker Engine 和 Compose v2 可用。
 
-自定义安装目录时替换 `/opt/shendu-v1`。`n` 表示跳过更新前的整站快照。需要快照时可单独执行[服务器整站快照](#服务器整站快照)。若将 `n` 改成 `y`，更新器会先备份，备份失败时停止更新。
+自定义安装目录时替换 `/opt/shendu-v1`。入口先整理符合慎独版本命名的旧镜像缓存，保留最近两份及所有容器引用的镜像，再检查数据目录和Docker目录至少1GiB可用空间。空间不足会在备份、拉取和容器切换前停止。整站快照可以单独执行。显式设置 `SHENDU_BACKUP_BEFORE_UPDATE=y` 时仍先备份，失败会停止更新。
+
+旧服务器首次使用根目录入口前，先同步一次代码。
+
+```sh
+git -C /opt/shendu-v1 -c core.fileMode=false pull --ff-only
+```
 
 如果服务器上的旧更新脚本仍会在本机编译，或者没有 `update.sh`，可以先下载当前更新器再执行。自定义路径时替换命令末尾的目录。
 
@@ -255,6 +261,27 @@ docker compose logs --tail=200 shendu
 ```
 
 按日志检查镜像准备、数据目录权限与原主密钥是否匹配。`/healthz` 为 503 且提示 `data_key_unavailable` 时，应恢复原密钥与对应配置；不要随机生成新密钥替换旧站密钥。
+
+### SQLite 报 disk I/O error
+
+先检查实际数据分区容量和Docker缓存。错误码4874表示SQLite扩展WAL共享内存文件失败，磁盘满可能触发该错误。
+
+```sh
+df -h /opt/shendu-v1/shendu/data
+docker system df
+```
+
+本次故障发生在7.8GB根分区，36个镜像累计占用5.205GB，其中4.225GB可回收，另有503.2MB构建缓存。清理可回收缓存并重启应用后，两个容器恢复Healthy，公网健康检查和首页恢复200。
+
+确认缓存占用后，可清理全部未被容器引用的镜像和构建缓存。下面的清理会移除旧版本本地镜像缓存。
+
+```sh
+docker image prune -af && docker builder prune -af
+docker restart shendu
+cd /opt/shendu-v1/shendu && docker compose up -d --wait --wait-timeout 180
+```
+
+恢复后使用上方根目录更新入口，控制慎独镜像缓存数量，并在每次更新前检查空间。
 
 ### 更新后仍是旧界面
 
