@@ -9,3 +9,5 @@ Reviewed inline because the helper service was unavailable. No unresolved findin
 - Specs, DESIGN and finance documentation synchronized with the final behavior.
 
 Checks: affected finance/reel86/86; full npm test541 total,540 passed,0 failed,1 optional browser OCR smoke skipped; npm run check and git diff --check passed. Final CSS-only long-title adjustment was rechecked in actual browser viewport fixtures after the full suite. Browser evidence is synthetic production-renderer testing, not physical iPhone Safari or real S3/OCR provider acceptance.
+
+Publication: work e7145be synchronized to main; GitHub run44224159585 passed all six jobs. Four complete Releases verified after planned retention, with all Git tags preserved. Local handover13/13 also passed.
