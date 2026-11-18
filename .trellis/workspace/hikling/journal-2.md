@@ -120,3 +120,26 @@ Income-only creation preserves expense drafts; typed expense plans require store
 ### Status
 
 [OK] **Completed**
+
+
+## Session 91: Simplify income, unify receipt upload and shrink phone reel
+<!-- trellis-session: v=2 fp=29f3deddc17c5468 -->
+
+**Date**: 2026-11-18
+**Task**: Simplify income, unify receipt upload and shrink phone reel
+**Branch**: `main`
+
+### Summary
+
+Income now shows date, amount, source and note only. One upload entry handles blank screenshot recognition and planned amount matching. Phone reel is 200x224 with long-title spacing; desktop unchanged. Local affected86 and full540 tests passed, handover13 passed; synthetic browser320/390/820/1280 verified. GitHub run44224159585 all6 jobs passed; latest4 Releases retained, tags preserved. Server deployment not performed.
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `e7145be` | fix: simplify income entry and mobile record carousel |
+| `8ed8335` | docs: record income and mobile reel release validation |
+
+### Status
+
+[OK] **Completed**

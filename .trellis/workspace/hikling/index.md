@@ -8,7 +8,7 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-2.md`
-- **Total Sessions**: 90
+- **Total Sessions**: 91
 - **Last Active**: 2026-11-18
 <!-- @@@/auto:current-status -->
 
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-2.md` | ~122 | Active |
+| `journal-2.md` | ~145 | Active |
 | `journal-1.md` | ~1990 | Archived |
 <!-- @@@/auto:active-documents -->
 
@@ -30,6 +30,7 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 91 | 2026-11-18 | Simplify income, unify receipt upload and shrink phone reel | `e7145be`, `8ed8335` | `main` |
 | 90 | 2026-11-18 | Income entry and screenshot-matched expense recording | `13ef4a8`, `7ab84dd` | `main` |
 | 89 | 2026-11-17 | Mobile finance import, smarter categories and daily ledger | `da8f1ea`, `70bfce9` | `main` |
 | 88 | 2026-11-17 | Finance ledger, lazy receipt gallery and expanded categories | `fa5d071`, `e850c44` | `main` |
