@@ -1,5 +1,27 @@
 @import url('/assets/fonts/noto-serif-sc/songti-v1.css?v=1') screen and (max-width:960px);
 
+/* The phone reel uses measured card geometry; desktop keeps its existing size. */
+@media(max-width:540px){
+  .overview-reel-track{gap:20px}
+  .overview-record-card{--record-width:200px;--record-hover-scale:1.04;--record-hover-lift:10px;height:224px;border-radius:17px}
+  .overview-record-surface,.record-layout-note .overview-record-surface{grid-template-rows:22px 72px minmax(0,1fr) 24px;padding:14px;gap:8px}
+  .record-has-weekday.record-has-title.record-layout-note .overview-record-surface{grid-template-rows:22px 84px minmax(0,1fr) 24px}
+  .overview-record-content{grid-template-columns:minmax(0,1fr) 60px;gap:7px}
+  .overview-record-art{width:60px;height:68px}
+  .overview-record-title,.overview-record-date-primary{font-size:15px;line-height:1.35}
+  .overview-record-title{margin-top:6px}
+  .overview-record-date:not(.overview-record-date-primary){font-size:10px}
+  .overview-record-category{font-size:11px;gap:5px}
+  .overview-record-glyph{width:22px;height:22px;flex-basis:22px;font-size:14px;border-radius:6px}
+  .overview-record-status{font-size:10px;gap:4px}
+  .overview-record-summary,.record-layout-note .overview-record-summary{font-size:12px;line-height:1.55;-webkit-line-clamp:2}
+  .record-layout-note .overview-record-art{right:12px;bottom:45px;width:68px;height:72px}
+  .record-has-weekday.record-has-title.record-layout-note .overview-record-art{bottom:40px;width:58px;height:56px}
+  .record-layout-note .overview-record-summary,.record-has-weekday.record-has-title.record-layout-note .overview-record-summary{width:calc(100% - 66px)}
+  .overview-record-footer{padding-top:7px;font-size:10px}
+  .overview-record-open{font-size:11px;gap:4px}
+}
+
 /* Phones need the actual Chinese serif face: a Songti font name alone can
    fall back to system sans-serif when the device has no Chinese serif font. */
 @media(max-width:960px){

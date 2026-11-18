@@ -1,0 +1,3 @@
+# Boundary
+
+Inline implementation/check in main session; helper service was unavailable in previous task. Small frontend-only follow-up: finance-ui.js conditionally hides income category/kind (hidden form values retained), removes duplicate trigger and allows empty upload submit. finance.css adds income-only field layout. mobile-ui.css at max540px shrinks actual reel cards from240×276 to200×224 with matching internal grids/type/art/gaps; existing measured arc code remains unchanged. Cache links and meaningful income/upload tests updated. No API/schema/ledger/category-data changes, no desktop reel dimensions or six-entry illustration changes. Browser test actual production renderer/arc, populated short/long/date-only cards and normal/static modes.
