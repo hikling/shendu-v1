@@ -124,13 +124,7 @@ curl -fsS "https://$shendu_domain/healthz"
 在 root shell 执行：
 
 ```sh
-(
-  set -eu
-  shendu_updater="$(mktemp)"
-  trap 'rm -f "$shendu_updater"' EXIT
-  curl -fsSL https://raw.githubusercontent.com/hikling/shendu-v1/main/shendu/scripts/update.sh -o "$shendu_updater"
-  SHENDU_BACKUP_BEFORE_UPDATE=y sh "$shendu_updater" /opt/shendu-v1
-)
+SHENDU_BACKUP_BEFORE_UPDATE=n sh /opt/shendu-v1/shendu/scripts/update.sh
 ```
 
 更新脚本要求：
@@ -139,13 +133,13 @@ curl -fsS "https://$shendu_domain/healthz"
 - 受版本控制的文件没有本地内容修改，已有 `.env` 存在。
 - Docker Engine 和 Compose v2 可用。
 
-自定义安装目录时替换 `/opt/shendu-v1`。上面的命令保留失败退出状态，下载失败不执行，并清理临时更新器；通过 `SHENDU_BACKUP_BEFORE_UPDATE=y` 明确确认先校验配置、再创建更新前整站加密快照，无需再次输入 `y`。备份失败时更新会停止，不拉取代码或替换容器。确实需要跳过备份时，可将该值改为 `n`。
+自定义安装目录时替换 `/opt/shendu-v1`。`n` 表示跳过更新前的整站快照。需要快照时可单独执行[服务器整站快照](#服务器整站快照)。若将 `n` 改成 `y`，更新器会先备份，备份失败时停止更新。
 
-不设置该变量、直接运行本地更新器时，终端会询问；直接回车默认跳过，没有终端的非交互调用也默认跳过。`y` / `yes` 与 `n` / `no` 不区分大小写，忽略选择前后的空格、制表符和回车符。错误的终端选择会重新询问；输入流断开或显式环境变量无效时停止更新。此处理仅适用于是否备份的选项，不改变任何备份密码字节。
+如果服务器上的旧更新脚本仍会在本机编译，或者没有 `update.sh`，可以先下载当前更新器再执行。自定义路径时替换命令末尾的目录。
 
-旧版出现“输入 y 仍提示备份选项无效”时，可能是终端粘贴带入了不可见空白。该错误发生在代码拉取前，原容器仍保持运行；重新执行上面的最新更新器命令，可通过显式变量确认备份并重试。
-
-下载最新更新器可让仍在使用旧版脚本的服务器直接采用快速部署。旧更新器会把自己复制后执行，单纯在其运行中拉取新代码不能改变已经运行的旧流程。
+```sh
+curl -fsSL https://raw.githubusercontent.com/hikling/shendu-v1/main/shendu/scripts/update.sh -o shendu-update.sh && SHENDU_BACKUP_BEFORE_UPDATE=n sh shendu-update.sh /opt/shendu-v1
+```
 
 随后脚本快进更新 `origin/main`、拉取 Caddy、下载/复用准确版本的应用镜像，再启动应用等待健康与前端资源检查。镜像准备期间旧应用继续运行；应用通过检查后再启动完整服务。核对：
 

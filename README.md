@@ -81,33 +81,15 @@ npm start
 
 ## 更新现有 shendu-v1 部署
 
-已部署且正在使用的站点，在服务器上先执行 `su -` 进入 root shell，再整段复制下面的命令。默认项目目录为 `/opt/shendu-v1`；自定义安装位置时替换最后的路径。
+已有站点在服务器的 root 终端执行这一行。自定义安装目录时替换 `/opt/shendu-v1`。
 
 ```sh
-(
-  set -eu
-  shendu_updater="$(mktemp)"
-  trap 'rm -f "$shendu_updater"' EXIT
-  curl -fsSL https://raw.githubusercontent.com/hikling/shendu-v1/main/shendu/scripts/update.sh -o "$shendu_updater"
-  SHENDU_BACKUP_BEFORE_UPDATE=y sh "$shendu_updater" /opt/shendu-v1
-)
+SHENDU_BACKUP_BEFORE_UPDATE=n sh /opt/shendu-v1/shendu/scripts/update.sh
 ```
 
-命令先下载最新更新器；下载失败不会执行脚本，并清理临时文件。更新器确认官方仓库、`main` 分支和代码无本地修改，再创建整站加密快照；备份失败立即停止。随后快进 `origin/main`，下载／复用与源码完全一致的预构建镜像，启动并检查健康和前端资源。准备镜像期间旧应用继续运行；`.env`、完整 `data/`、原主密钥、备份及 Caddy 卷保留。
+这条命令跳过更新前的整站快照，拉取最新代码并启动对应版本。显示「更新完成」后刷新网页。整站快照可按需单独执行。
 
-成功后检查容器和日志：
-
-```sh
-cd /opt/shendu-v1/shendu
-docker compose ps
-docker compose logs --tail=60 shendu
-```
-
-终端显示「更新完成」后刷新网页；电脑可用 Ctrl+F5，手机关闭本站页面再重新打开。GitHub 同步不等于服务器已更新，无需重新安装、注册账户或清空数据。更新前快照位于 `shendu/backups/`，恢复密码文件为 `shendu/data/server-backup.password`；请分别另存到服务器之外。R2/S3中的截图不在数据库快照内，仍须保留原存储和配置。
-
-如果此前输入 `y` 却提示“备份选项无效”，可直接重跑上面的命令：该错误发生在拉取代码、替换容器之前。新版会忽略选择前后的空格或回车符，终端输入有误时会重新询问。完整过程见[更新与检查](docs/deployment.md#更新与检查)。
-
-若新容器启动后的健康或前端资源检查失败，更新器会停止并输出日志，不会自动回滚容器或数据库。请保留更新前快照，按[迁移与回退说明](UPGRADING.md)核对后恢复。
+[更新排错与旧版脚本](docs/deployment.md#更新与检查) · [服务器整站快照](docs/deployment.md#服务器整站快照)
 
 ## 数据与备份
 
