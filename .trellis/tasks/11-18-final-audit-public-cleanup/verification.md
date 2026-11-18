@@ -9,4 +9,8 @@
 - Focused suites reported in their owning research documents. No real credentials/production data/provider requests used.
 
 ## Publishing and cleanup
-Pending final work commit, six-job CI, four-release retention and index-only local-directory preservation proof. Server deployment not performed.
+- Work commit655bccb0fce9d3a66862823fdfe64395be9a4b08; immutable application tree78926ee6983e4205bb40417bd1baba0b19ee3910.
+- GitHub run44228462928 completed/success, all six jobs including native Linux installation/update/PTY scenarios, both architecture builds/containers and public download smoke.
+- Four complete Releases verified after planned deletion of only Release448531059 (deploy-65dc2a7ce7759548e2c2d7bb52c091a533285c90). Retained trees78926ee...,d64c49b...,4663fd7...,a8edf4c...; all Git tags preserved.
+- Pending index-only local-directory preservation proof and final cleanup main sync. Local archive/journal will use no-commit after ignoring directories; session_auto_commit disabled.
+- Server deployment not performed.

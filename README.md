@@ -129,6 +129,8 @@ Releases 保留按发布时间最新的四个完整版本。更早下载包不�
 
 [安全、备份与部署检查记录](docs/security-audit.md)
 
+本次最终版已通过双架构构建、安装更新、容器和下载验证：[检查结果](https://github.com/hikling/shendu-v1/actions/runs/44228462928) · [对应发布包](https://github.com/hikling/shendu-v1/releases/tag/deploy-78926ee6983e4205bb40417bd1baba0b19ee3910)。上方更新命令会按当前应用源码自动选择对应镜像。
+
 ## 开发与检查
 
 在 `shendu/` 中执行：
