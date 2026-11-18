@@ -1,2 +1,0 @@
-{"file": ".trellis/spec/frontend/architecture.md", "reason": "共享渲染与缓存"}
-{"file": ".trellis/spec/frontend/state-and-data.md", "reason": "真实记录及副本契约"}

@@ -1,3 +1,0 @@
-{"file": ".trellis/spec/frontend/state-and-data.md", "reason": "Flow and write ownership"}
-{"file": ".trellis/spec/frontend/review-composition.md", "reason": "Mounted form and layout contract"}
-{"file": ".trellis/spec/frontend/component-islands.md", "reason": "Preserve actual control roots"}

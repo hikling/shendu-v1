@@ -1,5 +1,0 @@
-{"file":".trellis/spec/frontend/architecture.md","reason":"Navigation ownership"}
-{"file":".trellis/spec/frontend/state-and-data.md","reason":"Write and dirty guards"}
-{"file":".trellis/spec/frontend/component-islands.md","reason":"Actual component reuse"}
-{"file":".trellis/spec/backend/finance.md","reason":"Full-period aggregates"}
-{"file":".trellis/tasks/11-16-routes-finance-pies/design.md","reason":"Cross-worker interfaces"}

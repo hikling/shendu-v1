@@ -1,3 +1,0 @@
-{"file": ".trellis/spec/frontend/component-islands.md", "reason": "Actual controls and surfaces"}
-{"file": ".trellis/spec/backend/finance.md", "reason": "Money, receipt and idempotency boundary"}
-{"file": ".trellis/spec/frontend/finance-entry-flow.md", "reason": "Retry, stored image and actual popup contracts"}

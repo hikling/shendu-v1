@@ -1,5 +1,0 @@
-# Design and scope
-
-Backend worker owns finance-receipts.mjs, server.mjs S3 helper, and receipt service tests. Native Cloudflare endpoint hostname suffix .r2.cloudflarestorage.com selects readback verification. PUT retains signed content type/length/metaSHA but omits AWS checksum header; HEAD validates lengths/types/meta, followed by bounded GET and local SHA256 of actual compressed bytes. Metadata alone is never proof. Non-R2 S3 retains strict existing checksum HEAD path. Session/storage/receipt owners checked after awaits; concurrency4 and per-variant bounds (2MiB/96KiB), no disk writes. S3 helper optional fifth maxResponseBytes argument passes to pinned reader with validation; defaults unchanged. Omit checksum-mode HEAD header only for R2. No schema migration/provider setting.
-
-Root owns receipt-client.js/tests: safe prepare/upload-image/upload-thumb/complete step errors; keep receipt_upload_failed code and sanitized stage/status, preserve cancellation and stale guards. Root owns docs/spec/cache. Exact-origin CORS example supplied. Full-scope independent check and full tests, then main/release checks and retain4.

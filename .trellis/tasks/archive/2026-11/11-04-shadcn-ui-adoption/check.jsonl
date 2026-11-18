@@ -1,3 +1,0 @@
-{"file": ".trellis/spec/frontend/architecture.md", "reason": "Rendering and asset contracts"}
-{"file": ".trellis/spec/frontend/state-and-data.md", "reason": "Data preservation"}
-{"file": ".trellis/spec/frontend/ui-quality.md", "reason": "UI verification"}

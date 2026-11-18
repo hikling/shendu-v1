@@ -1,7 +1,0 @@
-# Design and ownership
-
-Backend implementer owns finance-receipts.mjs and finance-receipts.test.mjs. Same account/source hash ready row stays immutable/idempotent. Pending row with changed normalized variants rotates both object keys, stores current variants encrypted and increments existing row.version using CAS; same pending variants reuses keys/version. Keep receipt ID/raw hash and ready=false, no new row/quota consumption. Old presigned URLs can write only retired keys. No remote photo deletion. Existing storage/auth guards remain; reject incompatible storage changes rather than weakening ownership.
-
-Prepare returns uploadVersion for pending tickets. Completion accepts body.uploadVersion and rejects stale versions before HEAD/GET or ready mutation. Legacy missing version accepted only for pending version1; newer pending attempts require explicit current ticket version. Ready duplicate completion stays idempotent. During verification existing full row/version/storage/auth snapshots prevent stale completion. Distinguish client UUID collisions using safe finance_receipt_id_conflict; pending stale completion finance_receipt_stale_upload.
-
-Root owns receipt-client.js/tests, forwards uploadVersion when supplied, preserves a finite allowlist of server reason codes, displays safe specific prepare reasons without URLs/secrets/provider raw messages. Cache10/docs/spec/root full tests and publish. No schema/provider/storage method changes or bucket operations.

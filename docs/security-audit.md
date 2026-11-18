@@ -26,6 +26,8 @@
 
 最终应用先完成构建、测试、原生amd64/arm64容器与公开下载检查，再从当前Git跟踪中移除四个指定目录：`.agents/skills`、`.codex`、`.github/workflows`、`.trellis`。本地文件保留并设置忽略，旧Git历史和标签不改写；应用运行不依赖这些开发目录。移除工作流后后续推送不再自动构建，最终main的应用tree必须与已验证Release一致。保留最近四个完整Releases。
 
+取消跟踪前后逐文件核对：895个原跟踪文件均仍在本地，字节大小和SHA-256完全一致，四个目录的Git跟踪文件数为0；本地任务归档和日志以后不再自动提交。
+
 本地生产构建、语法检查、553项Node/DOM/HTTP/CLI测试中的552项通过，0失败；1项需显式启用的浏览器OCR烟测跳过，另有13项交接包测试通过。已知修复均有失败场景回归，并完成独立整合审查。
 
 应用提交 `655bccb0fce9d3a66862823fdfe64395be9a4b08`、应用tree `78926ee6983e4205bb40417bd1baba0b19ee3910` 的[最终发布检查](https://github.com/hikling/shendu-v1/actions/runs/44228462928)六项全部通过：交接包、原生amd64/arm64安装更新场景与全套测试／容器检查、发布以及两个架构的公开下载校验。[最终版镜像](https://github.com/hikling/shendu-v1/releases/tag/deploy-78926ee6983e4205bb40417bd1baba0b19ee3910)已提供；移除开发目录不改变这个应用tree。Releases清理后已核对剩余四个完整版本，Git标签保留。

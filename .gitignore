@@ -1,3 +1,9 @@
 __pycache__/
 *.py[cod]
 .DS_Store
+
+# Local development tools and records; keep on disk, outside public Git.
+/.agents/skills/
+/.codex/
+/.github/workflows/
+/.trellis/

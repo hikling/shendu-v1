@@ -1,3 +1,0 @@
-{"file": ".trellis/spec/frontend/ui-quality.md", "reason": "Typography and narrow layout"}
-{"file": ".trellis/spec/frontend/component-islands.md", "reason": "Dialog behavior and thumbnail removal"}
-{"file": ".trellis/spec/backend/finance.md", "reason": "Automatic category rules, explicit IDs, history and idempotency"}

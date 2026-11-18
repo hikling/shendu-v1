@@ -1,3 +1,0 @@
-{"file": ".trellis/spec/frontend/architecture.md", "reason": "Route and rendering ownership"}
-{"file": ".trellis/spec/frontend/state-and-data.md", "reason": "Guard and record state invariants"}
-{"file": ".trellis/spec/frontend/ui-quality.md", "reason": "Layout, category themes and accessibility"}
