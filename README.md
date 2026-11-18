@@ -6,9 +6,7 @@
 
 给自己用的个人成长复盘系统。记录事实，调整行动，回来验证。
 
-[![构建检查](https://github.com/hikling/shendu-v1/actions/workflows/verify.yml/badge.svg)](https://github.com/hikling/shendu-v1/actions/workflows/verify.yml)
-
-[快速部署](#debian-1213-服务器部署) · [本地运行](#本地运行) · [完整部署指南](docs/deployment.md) · [项目交接](HANDOVER.md)
+[快速部署](#debian-1213-服务器部署) · [更新现有部署](#更新现有-shendu-v1-部署) · [本地运行](#本地运行) · [完整部署指南](docs/deployment.md)
 
 </div>
 
@@ -30,7 +28,7 @@
 - **按时回来**：行动验证保留原计划、预期日期、实际结果与下一次调整。
 - **慢慢回看**：历史复盘可按关键词、类型和年月筛选；已保存记录的开场文案固定，概览沿弧线轮播已经验证的记录。
 - **看见积累**：阶段与日历汇总每日足迹、农历节气、阶段目标和待验证行动。
-- **记清花销**：每日复盘和财务页共用逐行记账框，例如每行写 `60 打车`、`50 吃饭`，自动合计、按用途关键词归类，未识别用途直接作为分类，核对后入账；详细录入支持收入、退款与备注。用月度／每日分类饼图查看花销及流水，截图本地识别，私有S3仅存压缩图。[使用与存储配置](docs/finance.md)
+- **记清收支**：花销区可先按行写 `60 打车`、`50 吃饭`，自动合计、按用途归类，再用唯一的「上传截图」入口匹配凭证；也可留空直接上传识别，核对后入账。收入记账只填日期、金额、来源和备注；退款从原支出登记。明细可切换整月／单日，月度与每日分类环形图展示花销，点击「查看截图」才加载图片。截图在设备压缩与识别，私有S3保存压缩图。[使用与存储配置](docs/finance.md)
 - **自己保管**：自托管 SQLite、账户隔离、数据加密，以及个人、整站和外部备份。
 - **查看使用记录**：设置中的「使用日志」按北京时间列出操作人、时间与行为；管理员看全站操作，普通成员只看本人，不记录复盘正文或密码。
 
@@ -48,7 +46,7 @@ curl -fsSL https://raw.githubusercontent.com/hikling/shendu-v1/main/install.sh -
 
 按提示输入域名，例如 `review.example.com`，不带 `https://`。脚本自动下载到 `/opt/shendu-v1`、安装缺少的依赖、生成密钥，下载并校验 GitHub Actions 已构建好的镜像，再启动 **Docker Compose + Caddy**。最后检查应用与前端资源并显示访问地址。已有 Docker 和配置会被沿用，宿主机无需安装 Node.js，也无需手动修改 `.env`。
 
-**默认不在服务器执行 `npm ci`、前端编译或应用镜像构建。** 支持 Linux amd64/arm64；相同版本已有镜像时直接复用。首次部署仍需下载镜像并可能安装 Docker，耗时取决于网络。若该版本镜像尚未发布，脚本会明确停止，等待 Actions 发布成功后重试。
+**默认不在服务器执行 `npm ci`、前端编译或应用镜像构建。** 支持 Linux amd64/arm64；相同版本已有镜像时直接复用。首次部署仍需下载镜像并可能安装 Docker，耗时取决于网络。镜像必须与应用源码版本一致，缺失或校验失败会停止，不能换用不对应的下载包。
 
 如果提示找不到 `curl`，先执行一次 `apt-get update && apt-get install -y curl`。HTTPS 证书由 Caddy 自动申请，取决于域名解析和端口连通。
 
@@ -66,7 +64,7 @@ cd /opt/shendu-v1 && git -c core.fileMode=false pull --ff-only && sh shendu/scri
 
 这会先更新安装脚本，再采用预构建镜像。仅重新下载一键安装入口不会更新已经存在的代码目录，可能仍运行旧构建脚本。当前版本安装中断后，也可用这条命令重试；已有配置、密钥、数据和备份会保留。不要删除 `.env`、`data/` 或 Docker 卷来重新搭建。若 Git 提示本地代码修改或分支冲突，先保留并处理修改，不要强制重置。
 
-正常情况下终端应进入预构建镜像的下载、校验、加载和健康检查，不应再出现本机 `npm ci` / Vite 编译。首次 Docker 安装和镜像下载仍受网络影响；提示镜像尚未发布时，等待 [Actions](https://github.com/hikling/shendu-v1/actions/workflows/verify.yml) 成功后重试。
+正常情况下终端应进入预构建镜像的下载、校验、加载和健康检查，不应再出现本机 `npm ci` / Vite 编译。首次 Docker 安装和镜像下载仍受网络影响；下载异常时核对 [Releases](https://github.com/hikling/shendu-v1/releases) 和服务器网络后重试。
 
 ## 本地运行
 
@@ -83,15 +81,29 @@ npm start
 
 ## 更新现有 shendu-v1 部署
 
-在 root shell 执行：
+已部署且正在使用的站点，在服务器上先执行 `su -` 进入 root shell，再整段复制下面的命令。默认项目目录为 `/opt/shendu-v1`；自定义安装位置时替换最后的路径。
 
 ```sh
-shendu_updater=$(mktemp)
-curl -fsSL https://raw.githubusercontent.com/hikling/shendu-v1/main/shendu/scripts/update.sh -o "$shendu_updater" && SHENDU_BACKUP_BEFORE_UPDATE=y sh "$shendu_updater" /opt/shendu-v1
-rm -f "$shendu_updater"
+(
+  set -eu
+  shendu_updater="$(mktemp)"
+  trap 'rm -f "$shendu_updater"' EXIT
+  curl -fsSL https://raw.githubusercontent.com/hikling/shendu-v1/main/shendu/scripts/update.sh -o "$shendu_updater"
+  SHENDU_BACKUP_BEFORE_UPDATE=y sh "$shendu_updater" /opt/shendu-v1
+)
 ```
 
-这条命令使用最新更新器，并通过 `SHENDU_BACKUP_BEFORE_UPDATE=y` 明确选择先创建整站加密快照，省去终端输入确认；备份失败会停止更新。然后拉取 `origin/main`、准备对应版本的预构建镜像并检查健康与前端资源。它要求部署目录是无本地代码改动的 `main` 分支 Git 克隆，保留现有 `.env`、密钥、数据和备份。使用最新更新器也可避免旧脚本继续本机编译。
+命令先下载最新更新器；下载失败不会执行脚本，并清理临时文件。更新器确认官方仓库、`main` 分支和代码无本地修改，再创建整站加密快照；备份失败立即停止。随后快进 `origin/main`，下载／复用与源码完全一致的预构建镜像，启动并检查健康和前端资源。准备镜像期间旧应用继续运行；`.env`、完整 `data/`、原主密钥、备份及 Caddy 卷保留。
+
+成功后检查容器和日志：
+
+```sh
+cd /opt/shendu-v1/shendu
+docker compose ps
+docker compose logs --tail=60 shendu
+```
+
+终端显示「更新完成」后刷新网页；电脑可用 Ctrl+F5，手机关闭本站页面再重新打开。GitHub 同步不等于服务器已更新，无需重新安装、注册账户或清空数据。更新前快照位于 `shendu/backups/`，恢复密码文件为 `shendu/data/server-backup.password`；请分别另存到服务器之外。R2/S3中的截图不在数据库快照内，仍须保留原存储和配置。
 
 如果此前输入 `y` 却提示“备份选项无效”，可直接重跑上面的命令：该错误发生在拉取代码、替换容器之前。新版会忽略选择前后的空格或回车符，终端输入有误时会重新询问。完整过程见[更新与检查](docs/deployment.md#更新与检查)。
 
@@ -111,7 +123,9 @@ rm -f "$shendu_updater"
 
 外部备份的最近运行记录显示目标名称、存储类型、执行方式及结果，只保留含今天在内的十个北京时间自然日；连接测试不计入。它与设置中的使用日志分开，后者不按十天清理。
 
-Releases 本次整理仅保留按发布时间最新的四个版本。更早的下载包不再提供，Git标签和源码仍保留；需要长期回退某版时，请提前另存镜像与校验文件，并单独备份数据库、原主密钥和配置。已在本机加载的对应镜像仍可复用；从更早源码部署需明确选择源码构建，操作前先阅读迁移与回退说明。
+Releases 保留按发布时间最新的四个完整版本。更早下载包不再提供，Git 标签和源码保留；需要长期回退某版时，请提前另存镜像与校验文件，并单独备份数据库、原主密钥和配置。已在本机加载的对应镜像仍可复用；从更早源码部署需明确选择源码构建，操作前先阅读迁移与回退说明。
+
+最终版完成构建、双架构容器及公开下载检查后，`.agents/skills`、`.codex`、`.github/workflows` 和 `.trellis` 只在维护者本地保留，不再跟踪到 GitHub；应用运行不依赖这些目录。公开仓库不再自动构建后续推送，现有安装／更新仍使用与应用目录版本对应的已验证 Release。以后若更改 `shendu/`，须另行构建并发布对应镜像，或明确选择源码构建。
 
 [安全、备份与部署检查记录](docs/security-audit.md)
 
@@ -131,7 +145,7 @@ npm test
 
 ## 项目文档
 
-交给新维护者时，直接使用 [GitHub `main`](https://github.com/hikling/shendu-v1/tree/main) 获取完整源码、插画、测试与规范，并阅读[开发与交接手册](HANDOVER.md)。需要随附入口文件时，使用 **Python 3.11+ 和 Git**，在已提交并同步到 GitHub 的干净仓库根目录生成轻量包：
+交给新维护者时，直接使用 [GitHub `main`](https://github.com/hikling/shendu-v1/tree/main) 获取应用源码、插画、测试和公开文档，并阅读[开发与交接手册](HANDOVER.md)。本地开发工具与任务记录需另行交接。需要随附入口文件时，使用 **Python 3.11+ 和 Git**，在已提交并同步到 GitHub 的干净仓库根目录生成轻量包：
 
 ```sh
 python scripts/package-handover.py --output-dir ../交接包
@@ -143,6 +157,6 @@ ZIP **小于 20 KiB**，只含 `shendu-v1-handover/` 下的简短 `README.md` �
 | --- | --- |
 | [完整部署指南](docs/deployment.md) | [产品方向](PRODUCT.md) · [设计约定](DESIGN.md) |
 | [迁移与回退](UPGRADING.md) | [交互契约](UX-CONTRACT.md) · [组件接入](docs/shadcn-adoption.md) |
-| [构建与容器检查](.github/workflows/verify.yml) | [插画与素材来源](art/record-library/README.md) · [第三方声明](THIRD-PARTY-NOTICES.md) |
+| [最终审查与发布记录](docs/security-audit.md) | [插画与素材来源](art/record-library/README.md) · [第三方声明](THIRD-PARTY-NOTICES.md) |
 
 代码公开，运行中的账户、复盘资料、数据库与密钥由部署者自行保管。服务器管理员持有运行时解密能力，相关边界见[加密与账户归属](docs/deployment.md#加密与账户归属)。

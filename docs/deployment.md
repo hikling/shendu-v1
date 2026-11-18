@@ -51,7 +51,7 @@ cd /opt/shendu-v1 && git -c core.fileMode=false pull --ff-only && sh shendu/scri
 
 已有 `.env`、完整 `data/`、原主密钥、备份和 Caddy 卷都需保留。安装器会复用配置，不需要再次清空或克隆目录。已正常运行的站点应使用[最新更新器](#更新与检查)，可选择先创建整站加密快照，并在新镜像准备期间继续保留旧应用运行。
 
-默认步骤为下载、校验、加载预构建镜像和健康检查，不执行服务器上的 npm/Vite/应用镜像编译。相同源码和架构的本机镜像可直接复用；网络慢仍会影响首次 Docker 与镜像下载。若提示对应镜像尚未发布，等待 [Actions](https://github.com/hikling/shendu-v1/actions/workflows/verify.yml) 成功后重试。
+默认步骤为下载、校验、加载预构建镜像和健康检查，不执行服务器上的 npm/Vite/应用镜像编译。相同源码和架构的本机镜像可直接复用；网络慢仍会影响首次 Docker 与镜像下载。下载异常时检查 [Releases](https://github.com/hikling/shendu-v1/releases) 中是否有对应应用版本的镜像及校验文件，并核对服务器网络。
 
 ## 环境配置
 
@@ -98,7 +98,9 @@ docker compose ps
 
 相同版本的本机镜像通过检查后直接复用，不下载、不编译。仅 README、Trellis 记录等应用目录外的变化会复用同一版本。`compose.override.yaml` 或 `.yml` 如有自行维护的配置，安装器会停止，需先自行合并/保存配置，不能直接覆盖。
 
-默认部署耗时主要是首次 Docker/Caddy/应用镜像下载与启动；网络慢仍可能等待，但不再受服务器编译能力限制。如果提示镜像尚未发布，先查看 [Actions](https://github.com/hikling/shendu-v1/actions/workflows/verify.yml)，等待成功后重试，不要换成随机版本。
+默认部署耗时主要是首次 Docker/Caddy/应用镜像下载与启动；网络慢仍可能等待，但不再受服务器编译能力限制。最终版的准确镜像由 [Releases](https://github.com/hikling/shendu-v1/releases) 提供，不要换成与源码不一致的版本。
+
+最终版发布验证完成后，自动工作流配置仅保留在维护者本地，公开仓库后续推送不再自动构建。已验证镜像仍按 `deploy-<应用tree>` 下载；README或本地工具目录整理不会改变应用tree。未来修改 `shendu/` 后，需要维护者另行发布对应镜像，或明确选择下述源码构建方式。
 
 需要自行编译时可明确执行 `SHENDU_BUILD_FROM_SOURCE=1 sh scripts/prepare-image.sh`，再 `docker compose up -d`；这是可选的源码路径。基于源码的 Docker 构建仍需联网和足够内存，耗时不会由预构建路径保证。
 
@@ -115,25 +117,29 @@ curl -fsS "https://$shendu_domain/healthz"
 
 健康检查应返回含 `"ok":true` 的 JSON。打开域名，注册第一个账户：它会成为超级管理员，并自动关闭公开注册。之后由管理员创建成员，或由超级管理员决定是否重新开放注册。
 
-应用默认按北京时间处理复盘日期。插画、装饰字体与组件资源由本站提供，中文字体使用本机字体回退；运行时不需要图像 API 密钥、Python 或图像生成服务。
+应用默认按北京时间处理复盘日期。插画、装饰字体与组件资源由本站提供，手机标题使用本站附带的中文宋体，桌面维持既有字体；运行时不需要图像 API 密钥、Python 或图像生成服务。
 
 ## 更新与检查
 
 在 root shell 执行：
 
 ```sh
-shendu_updater=$(mktemp)
-curl -fsSL https://raw.githubusercontent.com/hikling/shendu-v1/main/shendu/scripts/update.sh -o "$shendu_updater" && SHENDU_BACKUP_BEFORE_UPDATE=y sh "$shendu_updater" /opt/shendu-v1
-rm -f "$shendu_updater"
+(
+  set -eu
+  shendu_updater="$(mktemp)"
+  trap 'rm -f "$shendu_updater"' EXIT
+  curl -fsSL https://raw.githubusercontent.com/hikling/shendu-v1/main/shendu/scripts/update.sh -o "$shendu_updater"
+  SHENDU_BACKUP_BEFORE_UPDATE=y sh "$shendu_updater" /opt/shendu-v1
+)
 ```
 
 更新脚本要求：
 
-- 目录是本仓库的 `main` 分支 Git 克隆；ZIP 解压目录不适用。
+- 目录是本仓库的 `main` 分支 Git 克隆，`origin` 为官方 `hikling/shendu-v1` 的HTTPS或SSH地址；来源不匹配时在备份、拉取和Docker操作前停止。ZIP 解压目录不适用。
 - 受版本控制的文件没有本地内容修改，已有 `.env` 存在。
 - Docker Engine 和 Compose v2 可用。
 
-上面的命令通过 `SHENDU_BACKUP_BEFORE_UPDATE=y` 明确确认：先校验配置，再创建更新前整站加密快照；无需再次输入 `y`。备份失败时更新会停止，不拉取代码或替换容器。确实需要跳过备份时，可将该值改为 `n`。
+自定义安装目录时替换 `/opt/shendu-v1`。上面的命令保留失败退出状态，下载失败不执行，并清理临时更新器；通过 `SHENDU_BACKUP_BEFORE_UPDATE=y` 明确确认先校验配置、再创建更新前整站加密快照，无需再次输入 `y`。备份失败时更新会停止，不拉取代码或替换容器。确实需要跳过备份时，可将该值改为 `n`。
 
 不设置该变量、直接运行本地更新器时，终端会询问；直接回车默认跳过，没有终端的非交互调用也默认跳过。`y` / `yes` 与 `n` / `no` 不区分大小写，忽略选择前后的空格、制表符和回车符。错误的终端选择会重新询问；输入流断开或显式环境变量无效时停止更新。此处理仅适用于是否备份的选项，不改变任何备份密码字节。
 
@@ -151,7 +157,9 @@ shendu_domain=$(sed -n 's/^SHENDU_DOMAIN=//p' .env)
 curl -fsS "https://$shendu_domain/healthz"
 ```
 
-保留 `.env`、完整 `data/`、`data/backup-master.key` 和 Caddy 卷。不要为“刷新版本”删除数据库或主密钥。GitHub 的 `main` 或 CI 已更新，不代表现有服务器容器自动更新；需要运行更新器准备并切换镜像。
+保留 `.env`、完整 `data/`、`data/backup-master.key` 和 Caddy 卷。不要为“刷新版本”删除数据库或主密钥。GitHub的main已更新，不代表现有服务器容器自动更新；需要运行更新器准备并切换镜像。终端显示「更新完成」后刷新网页，电脑可用Ctrl+F5，手机关闭本站再重开。
+
+准备镜像失败时原应用继续运行；新容器启动后若健康或前端资源检查失败，更新器停止并输出日志，**不会自动回滚容器或数据库**。保留更新前快照和恢复密码，按[迁移与回退](../UPGRADING.md)处理。截图图片仍在原R2/S3，数据库快照不含图片本体。
 
 ## 数据与备份
 
@@ -178,6 +186,8 @@ curl -fsS "https://$shendu_domain/healthz"
 | `.shendu-db` | 服务器备份脚本 | 数据库和原主密钥的加密快照 |
 
 应用还支持最多 8 个 S3 / WebDAV 目标，可手动执行，或设置每天的具体时分、每周的星期和具体时分（全部按北京时间）。系统每分钟检查一次，繁忙时顺延，服务恢复后只补最近一个到期任务；连接测试和手动备份不改变定时计划。旧定时目标升级后默认02:00，周计划默认周一，可在目标编辑中修改。运行记录按目标名称、存储类型和执行方式显示最近十个北京时间自然日的备份成功/失败，不记录连接测试。外部服务收到加密备份包，不接收明文复盘正文。
+
+个人 `.shendu` 备份限制为加密文件36MiB、展开数据48MiB；手动导出和外部备份采用相同校验，超限会明确失败，不生成或上传一份无法恢复的文件。数据较大时使用下述服务器整站快照。财务账目及截图索引会校验加密内容，但R2/S3图片本体仍在原桶中，不包含在数据库备份内。
 
 ### 服务器整站快照
 
@@ -266,7 +276,7 @@ ZIP 目录没有 Git 历史，不能直接运行更新脚本。先保留原目�
 
 ## 构建与维护资料
 
-- [Linux CI](../.github/workflows/verify.yml)：安装锁定依赖、构建组件、检查脚本和测试、验证 Compose、构建镜像，再启动容器检查健康与实际 JS/CSS。
+- [安全与发布检查记录](security-audit.md)：最终版隔离测试、双架构构建、容器和下载验证结果；工作流配置仅保留维护者本地。
 - [组件接入说明](shadcn-adoption.md)：本地维护的 shadcn/ui、React 与 Radix UI 组件及原生业务边界。
-- [产品方向](../PRODUCT.md)、[设计约定](../DESIGN.md)、[交互契约](../UX-CONTRACT.md)和 `.trellis/`：产品与开发规范。
+- [产品方向](../PRODUCT.md)、[设计约定](../DESIGN.md)、[交互契约](../UX-CONTRACT.md)：公开产品与开发约定；Trellis规范和任务记录仅保留本地，需另行交接。
 - [第三方声明](../THIRD-PARTY-NOTICES.md)及[插画来源](../art/record-library/README.md)：组件和素材来源。

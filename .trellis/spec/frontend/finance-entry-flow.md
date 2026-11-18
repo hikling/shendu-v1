@@ -26,6 +26,7 @@ Standalone screenshot entry also requires stored images and expense rows; income
 - Missing match, >10 images or unacknowledged unused image: inline error before POST.
 - Cancel matching: no new write; retain planned text and choices in the live workspace.
 - Partial success: remove only confirmed physical lines; retain original ID and full attempted payload for uncertain rows. Disable remapping, text editing and clear while a result is unresolved. Retry the same payload. A definitive400 validation rejection may unlock correction;409 or uncertain failure must retain identity.
+- Image-only import confirmation follows the same400 boundary: unlock only the current rejected row, discard its frozen attempted payload and preserve already committed rows. All409/network/ambiguous failures retain exact payload and disabled controls; subsequent correction cannot resubmit earlier successful entries. Regressions must submit an actually rejected row and then a corrected retry, not just inspect a template.
 - Replaced account/page/modal/reauth: old upload, preview and save responses cannot mutate or close the replacement. Preview guards include exact live form, host visibility and fresh image owner.
 
 ## 5. Surfaces

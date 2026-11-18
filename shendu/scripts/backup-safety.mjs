@@ -60,6 +60,19 @@ export function validateSnapshotDatabase(db, keyHex) {
       else content(row.value, `setting:${row.user_id}:${row.key}`);
     }
     for (const row of db.prepare('SELECT encrypted_config FROM backup_targets').all()) credential(row.encrypted_config);
+    // Older snapshots predate finance. Authenticate every field when its table
+    // exists, using the same owner/identity AAD as the live ledger and receipts.
+    for (const [table, identity, scope, suffix] of [
+      ['finance_entries', 'id', 'finance-entry', ''],
+      ['finance_categories', 'id', 'finance-category', ''],
+      ['finance_days', 'date', 'finance-day', ''],
+      ['finance_receipts', 'id', 'finance-receipt', ':data']
+    ]) {
+      if (!db.prepare("SELECT 1 FROM sqlite_master WHERE type='table' AND name=?").get(table)) continue;
+      for (const row of db.prepare(`SELECT user_id,${identity} AS identity,data FROM ${table}`).all()) {
+        content(row.data, `${scope}:${row.user_id}:${row.identity}${suffix}`);
+      }
+    }
   } catch {
     throw new Error('内部密钥与快照数据库不匹配，或加密数据损坏；操作已停止');
   }

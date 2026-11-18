@@ -19,13 +19,13 @@ const owner=name=>{
   const start=match.index+(source[match.index]==='\n'?1:0),next=/\n(?:async )?function /.exec(source.slice(start+1));
   return source.slice(start,next?start+1+next.index:source.length);
 };
-function fixture(impl){
+function fixture(impl,realRequest=false){
   ui.dismissDialog($('#modal-root'));ui.renderMarkup($('#app'),'<main id="actions-page"><button id="open-verification">填写行动验证</button></main>');
   const original={id:'record-one',type:'daily',period:'2026-09-01',status:'completed',data:{action:'original action',verifyDate:'2026-09-02'}};
   const state={user:{id:'owner',username:'owner'},records:[original],stats:{pending:1},saving:false},calls=[],notices=[],renders=[];
   const request=(path,options)=>{calls.push({path,...options});return impl(path,options)};
-  const names=['syncOverlayBackground','openModal','closeModal','dialogWriteTask','openVerification','attemptNavigate'];
-  const functions=new Function('$','$$','state','request','prepareDialogContainer','showDialog','dismissDialog','cancelDailyTypewriter','esc','toast','earliestActualVerification','today','dailyCalendarDateLabel','templatesForRecord','recordArtAssignments','RECORD_ART','TYPES','overviewDateParts','formatDate','renderActions',`let modalReturnFocus=null;\n${names.map(owner).join('\n')}\nreturn {openModal,closeModal,openVerification,attemptNavigate};`)($,$$,state,request,ui.prepareDialogContainer,ui.showDialog,ui.dismissDialog,()=>{},esc,(...args)=>notices.push(args),()=> '2026-09-02',()=> '2026-11-06',value=>value,()=>({action:new Proxy({},{get:(_,key)=>String(key)})}),()=>new Map(),{daily:[{src:'/assets/daily/action.webp'}]},{daily:{label:'每日复盘'}},()=>null,value=>value,()=>renders.push('actions'));
+  const names=['sessionExpired','syncOverlayBackground','openModal','closeModal','dialogWriteTask','openVerification','attemptNavigate'];
+  const functions=new Function('$','$$','state','request','prepareDialogContainer','showDialog','dismissDialog','cancelDailyTypewriter','esc','toast','earliestActualVerification','today','dailyCalendarDateLabel','templatesForRecord','recordArtAssignments','RECORD_ART','TYPES','overviewDateParts','formatDate','renderActions','fetch',`let modalReturnFocus=null;\n${realRequest?owner('request'):''}\n${names.map(owner).join('\n')}\nreturn {openModal,closeModal,openVerification,attemptNavigate};`)($,$$,state,request,ui.prepareDialogContainer,ui.showDialog,ui.dismissDialog,()=>{},esc,(...args)=>notices.push(args),()=> '2026-09-02',()=> '2026-11-06',value=>value,()=>({action:new Proxy({},{get:(_,key)=>String(key)})}),()=>new Map(),{daily:[{src:'/assets/daily/action.webp'}]},{daily:{label:'每日复盘'}},()=>null,value=>value,()=>renders.push('actions'),(path,options)=>{calls.push({path,...options});return impl(path,options)});
   $('#open-verification').addEventListener('click',()=>functions.openVerification(original.id));
   return {state,original,calls,notices,renders,...functions};
 }
@@ -53,4 +53,25 @@ test('late verification responses cannot close another modal, alter another acco
   f.closeModal(true);f.state.user={id:'new-owner'};f.state.records=[{id:'private-record'}];f.state.stats={pending:9};f.openModal('<div class="modal-head"><h2>New operation</h2></div><form id="replacement"><input name="value"><button>Save</button></form>');
   const replacement=$('#replacement');f.state.dialogWriteOwner=replacement;f.state.saving=true;
   finish({record:verified(f.original)});await settle();assert.equal($('#replacement'),replacement);assert.deepEqual(f.state.records,[{id:'private-record'}]);assert.deepEqual(f.state.stats,{pending:9});assert.equal(f.state.saving,true);assert.equal(f.state.dialogWriteOwner,replacement);assert.deepEqual(f.renders,[]);assert.equal(f.calls.length,1);
+});
+
+const unauthorized=()=>({ok:false,status:401,headers:{get:()=> 'application/json'},json:async()=>({error:'unauthorized',message:'expired session'})});
+const jsonResponse=value=>({ok:true,status:200,headers:{get:()=> 'application/json'},json:async()=>value});
+
+test('obsolete verification and stats 401 responses cannot replace a newer dialog or account',async()=>{
+  for(const phase of ['verify','stats'])for(const replaceAccount of [false,true]){
+    let finish;
+    const f=fixture(path=>path==='/api/stats'||phase==='verify'?new Promise(resolve=>{finish=resolve}):Promise.resolve(jsonResponse({record:verified(f.original)})),true);
+    $('#open-verification').click();fill();submit();await settle();
+    f.closeModal(true);if(replaceAccount)f.state.user={id:'new-owner',username:'new-owner'};
+    f.openModal('<div class="modal-head"><h2>新的未保存操作</h2></div><input id="replacement-value" value="保留新输入">','',true);
+    finish(unauthorized());await settle();
+    assert.equal($('#replacement-value')?.value,'保留新输入',phase);assert.equal($('#reauth-form'),null);assert.notEqual(f.state.reauthOpen,true);
+    assert.equal(f.state.records[0].status,phase==='verify'?'completed':'verified');
+  }
+});
+
+test('a current verification 401 still opens reauthentication through the actual request handler',async()=>{
+  const f=fixture(async()=>unauthorized(),true);$('#open-verification').click();fill();submit();await settle();
+  assert.ok($('#reauth-form'));assert.equal($('#reauth-username').value,'owner');assert.equal(f.state.reauthOpen,true);assert.equal(f.state.records[0].status,'completed');
 });

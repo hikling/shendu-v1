@@ -562,12 +562,16 @@ function createBackupBuffer(userId, password) {
     { kind: 'profile', value: payload.profile }, { kind: 'stage', value: payload.stage },
     { kind: 'theme', value: payload.theme }, ...(hasFinanceData(payload.finance)?[{kind:'finance',value:payload.finance}]:[]), ...payload.records.map(value => ({ kind: 'record', value }))
   ];
+  const serialized=Buffer.from(JSON.stringify({format:'shendu-account-data',version:4,owner:payload.profile,exportedAt:payload.exportedAt,entries}));
+  if(serialized.length>MAX_BACKUP_REQUEST_BYTES)throw Object.assign(new Error('个人备份解压后超过网页恢复上限，请使用服务器整站快照备份'),{status:413,code:'backup_limit_exceeded'});
   const salt=randomBytes(16),iv=randomBytes(12),key=pbkdf2Sync(password,salt,600000,32,'sha256');
   const header={format:'shendu-v4',version:4,kind:'account',kdf:{name:'PBKDF2-HMAC-SHA-256',iterations:600000,salt:salt.toString('base64')},cipher:{name:'AES-256-GCM',iv:iv.toString('base64')},compression:'gzip'};
-  const clear=gzipSync(Buffer.from(JSON.stringify({format:'shendu-account-data',version:4,owner:payload.profile,exportedAt:payload.exportedAt,entries})),{level:9});
+  const clear=gzipSync(serialized,{level:9});
   const cipher=createCipheriv('aes-256-gcm',key,iv);cipher.setAAD(Buffer.from(JSON.stringify(header)));
   const encrypted=Buffer.concat([cipher.update(clear),cipher.final()]);
-  return Buffer.from(JSON.stringify({...header,tag:cipher.getAuthTag().toString('base64'),data:encrypted.toString('base64')}));
+  const sealed=Buffer.from(JSON.stringify({...header,tag:cipher.getAuthTag().toString('base64'),data:encrypted.toString('base64')}));
+  if(sealed.length>MAX_BACKUP_FILE_BYTES)throw Object.assign(new Error('个人备份超过 36 MB，无法生成可恢复的文件，请使用服务器整站快照备份'),{status:413,code:'backup_limit_exceeded'});
+  return sealed;
 }
 
 const validTime = value => typeof value === 'string' && Number.isFinite(Date.parse(value));
@@ -1369,7 +1373,7 @@ async function api(req, res, url) {
   if (path === '/api/records' && method === 'PUT') {
     const body=await readJson(req); if(!validRecordType(body.type)||!body.period)return error(res,400,'记录类型或周期不正确');
     if(String(body.period)!==currentPeriodFor(body.type))return error(res,400,currentPeriodMessage(body.type),'period_locked');
-    if(body.id&&!validEntityId(body.id))return error(res,400,'记录编号不正确');
+    if(body.id&&!validStoredRecordId(body.id))return error(res,400,'记录编号不正确');
     const id=body.id||randomUUID(), existing=db.prepare(`SELECT * FROM records WHERE id=? AND user_id=?`).get(id,user.id);
     if(body.id&&!existing)return error(res,404,'记录不存在或已被删除','record_not_found');
     if(existing&&existing.status!=='draft')return error(res,409,'已完成的记录不能修改','locked');
@@ -1389,8 +1393,14 @@ async function api(req, res, url) {
     return json(res,200,{record:recordOut(db.prepare(`SELECT * FROM records WHERE id=?`).get(id))});
   }
   if (/^\/api\/records\/[^/]+\/complete$/.test(path) && method === 'POST') {
+    // Older clients sent no body. New clients identify the exact reviewed
+    // version; both paths wait for the body and revalidate the session.
+    const body=req.headers['content-type']||req.headers['transfer-encoding']||Number(req.headers['content-length']||0)>0?await readJson(req):(await readBody(req,0),{});
+    if(sessionUser(req)?.id!==user.id)return error(res,401,'登录已失效，请重新登录','unauthorized');
     const id=path.split('/')[3], row=db.prepare(`SELECT * FROM records WHERE id=? AND user_id=?`).get(id,user.id); if(!row)return error(res,404,'记录不存在'); if(row.status!=='draft')return error(res,409,'记录已经完成');
     if(row.period!==currentPeriodFor(row.type))return error(res,400,currentPeriodMessage(row.type),'period_locked');
+    if(Object.hasOwn(body,'version')&&(!Number.isSafeInteger(body.version)||body.version<1))return error(res,400,'请提供有效的草稿版本后重试','invalid_record_version');
+    if(Object.hasOwn(body,'version')&&body.version!==row.version)return error(res,409,'这条草稿已在其他设备更新，请重新打开并核对后再提交','version_conflict');
     const decoded=recordOut(row),data=decoded.data,normalizedSnapshot=normalizeTemplateSnapshot(data.templateSnapshot,row.type);
     const stage=normalizedSnapshot?null:normalizeStage(setting(user.id,'stage',defaultStage()));
     const snapshot=normalizedSnapshot||{version:1,review:{...stage.reviewTemplates[row.type],...(row.type==='daily'?{financeEnabled:false}:{})},action:stage.actionTemplate};
@@ -1399,13 +1409,13 @@ async function api(req, res, url) {
     const missing=required.some(k=>!Array.isArray(data.answers?.[k])||!data.answers[k].some(v=>typeof v==='string'&&v.trim()))||!String(data.action||'').trim()||(row.type==='daily'&&!String(data.ifCondition||'').trim())||!String(data.ifThen||'').trim()||!validIsoDate(data.verifyDate)||data.verifyDate<earliest||(row.type==='decision'&&!decoded.title.trim()); if(missing)return error(res,400,`请先完成所有必填项，并确认预期验证日期不早于 ${earliest}`);
     if(row.type==='daily'&&snapshot.review.financeEnabled&&financeDraftPending(data.financeDraft))return error(res,400,'请先确认入账或清空尚未保存的花销','finance_draft_pending');
     data.templateSnapshot=snapshot;
-    withActivity(user.id,'review_completed',{recordType:row.type,period:row.period},()=>{
+    const completed=withActivity(user.id,'review_completed',{recordType:row.type,period:row.period},()=>{
       if(row.type==='daily'&&snapshot.review.financeEnabled)data.financeSnapshot=financeLedger.snapshot(user.id,row.period);else delete data.financeSnapshot;
       if(row.type==='daily'&&snapshot.review.financeEnabled&&Buffer.byteLength(JSON.stringify(data))>MAX_RECORD_DATA_BYTES)throw Object.assign(new Error('加入当日财务快照后复盘内容过大，请精简正文后再提交；已入账账目仍然保留'),{status:413,code:'record_too_large'});
       const stamp=now(),storedData=encryptData(data,dataScope('record',user.id,id,'data'));
       if(accountRecordBytes(user.id)-Buffer.byteLength(row.data)+Buffer.byteLength(storedData)>MAX_ACCOUNT_CONTENT_BYTES)throw Object.assign(new Error('账户复盘内容已达到存储上限'),{status:413,code:'account_storage_limit'});
-      return db.prepare(`UPDATE records SET data=?,status='completed',version=version+1,completed_at=?,updated_at=? WHERE id=? AND user_id=? AND status='draft'`).run(storedData,stamp,stamp,id,user.id);
-    });return json(res,200,{record:recordOut(db.prepare(`SELECT * FROM records WHERE id=?`).get(id))});
+      return db.prepare(`UPDATE records SET data=?,status='completed',version=version+1,completed_at=?,updated_at=? WHERE id=? AND user_id=? AND status='draft' AND version=?`).run(storedData,stamp,stamp,id,user.id,row.version);
+    });if(completed.changes!==1)return error(res,409,'这条草稿状态已变化，请重新打开并核对后再提交','version_conflict');return json(res,200,{record:recordOut(db.prepare(`SELECT * FROM records WHERE id=?`).get(id))});
   }
   if (/^\/api\/records\/[^/]+\/verify$/.test(path) && method === 'POST') {
     const id=path.split('/')[3],body=await readJson(req),row=db.prepare(`SELECT * FROM records WHERE id=? AND user_id=?`).get(id,user.id);if(!row)return error(res,404,'记录不存在');if(row.status!=='completed')return error(res,409,'只有待验证记录可以提交结果');

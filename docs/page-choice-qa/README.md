@@ -40,4 +40,4 @@
 
 截图为实际视口截图；当前浏览器完整长页截图接口不可用，页面下部通过滚动和DOM检查验收，不把视口截图当作整页截图。
 
-实现及独立审查记录见[任务目录](../../.trellis/tasks/archive/2026-11/11-05-workspace-pages-and-choice-controls/)。main同步与CI见任务verification.md。
+实现及独立审查记录见任务目录（本地记录）。main同步与CI见任务verification.md。

@@ -11,7 +11,7 @@ import { randomBytes, createCipheriv, createDecipheriv, pbkdf2Sync, createHmac, 
 import { gzipSync, gunzipSync } from 'node:zlib';
 import { DatabaseSync } from 'node:sqlite';
 import { runInNewContext } from 'node:vm';
-import { atomicWriteFile } from '../scripts/backup-safety.mjs';
+import { atomicWriteFile, validBase64, validateSnapshotDatabase } from '../scripts/backup-safety.mjs';
 import { verificationMinimum } from '../public/verification-policy.js';
 
 const appDir = fileURLToPath(new URL('../', import.meta.url));
@@ -187,6 +187,67 @@ test('服务器快照往返恢复可解密；数据库与密钥匹配', () => {
     assert.equal(db.prepare('SELECT COUNT(*) AS n FROM sessions').get().n, 0);
   } finally { db.close(); }
 });
+test('快照兼容旧数据库，并认证每个财务表的账户、编号和密文', () => {
+  const db = new DatabaseSync(':memory:'), key = randomBytes(32);
+  const seal = (value, scope) => {
+    const iv = randomBytes(12), cipher = createCipheriv('aes-256-gcm', key, iv);
+    cipher.setAAD(Buffer.from(`shendu:data:v1:${scope}`));
+    const encrypted = Buffer.concat([cipher.update(JSON.stringify(value)), cipher.final()]);
+    return `sd1.${iv.toString('base64url')}.${cipher.getAuthTag().toString('base64url')}.${encrypted.toString('base64url')}`;
+  };
+  try {
+    db.exec(`CREATE TABLE schema_meta(key,value); INSERT INTO schema_meta VALUES('data_encryption','AES-256-GCM'); CREATE TABLE records(id,user_id,title,data,verification); CREATE TABLE user_settings(user_id,key,value); CREATE TABLE backup_targets(encrypted_config);`);
+    db.prepare('INSERT INTO user_settings VALUES(?,?,?)').run('owner', 'theme', seal({ reduceMotion: false }, 'setting:owner:theme'));
+    assert.doesNotThrow(() => validateSnapshotDatabase(db, key.toString('hex')), 'legacy snapshots have no finance tables');
+    assert.throws(() => validateSnapshotDatabase(db, randomBytes(32).toString('hex')), /内部密钥与快照数据库不匹配/);
+    for (const [table, identity, scope] of [
+      ['finance_entries', 'id', 'finance-entry:owner:item'],
+      ['finance_categories', 'id', 'finance-category:owner:item'],
+      ['finance_days', 'date', 'finance-day:owner:item'],
+      ['finance_receipts', 'id', 'finance-receipt:owner:item:data']
+    ]) {
+      db.exec(`CREATE TABLE ${table}(user_id,${identity},data)`);
+      const stored = seal({ marker: table }, scope);
+      db.prepare(`INSERT INTO ${table} VALUES(?,?,?)`).run('owner', 'item', stored);
+      assert.doesNotThrow(() => validateSnapshotDatabase(db, key.toString('hex')), table);
+      const parts = stored.split('.'), tag = Buffer.from(parts[2], 'base64url'); tag[0] ^= 1; parts[2] = tag.toString('base64url');
+      db.prepare(`UPDATE ${table} SET data=?`).run(parts.join('.'));
+      assert.throws(() => validateSnapshotDatabase(db, key.toString('hex')), /内部密钥与快照数据库不匹配/, `${table} rejects a changed authentication tag`);
+      db.prepare(`UPDATE ${table} SET data=?,user_id=?`).run(stored, 'another-owner');
+      assert.throws(() => validateSnapshotDatabase(db, key.toString('hex')), /内部密钥与快照数据库不匹配/, `${table} rejects ciphertext moved across owners`);
+      db.prepare(`UPDATE ${table} SET user_id=?,${identity}=?`).run('owner', 'another-item');
+      assert.throws(() => validateSnapshotDatabase(db, key.toString('hex')), /内部密钥与快照数据库不匹配/, `${table} rejects ciphertext moved across identities`);
+      db.exec(`DELETE FROM ${table}`);
+    }
+  } finally { db.close(); }
+});
+test('财务密文损坏时快照创建与恢复均停止，保留原输出和目标数据', () => {
+  const file = join(root, 'snapshot.shendu-db'), directory = join(root, 'finance-corrupt-source');
+  assert.equal(cli('restore', file, directory).status, 0);
+  const dbFile = join(directory, 'shendu.db'), masterKeyFile = join(directory, 'backup-master.key');
+  const db = new DatabaseSync(dbFile), receiptId = '55555555-5555-4555-8555-555555555555';
+  try {
+    db.prepare('INSERT INTO finance_receipts(id,user_id,hash,ready,data,version,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?)').run(receiptId, sourceId, 'a'.repeat(64), 0, 'sd1.corrupted.corrupted.corrupted', 1, new Date().toISOString(), new Date().toISOString());
+  } finally { db.close(); }
+  const beforeSource = readFileSync(dbFile), beforeSourceKey = readFileSync(masterKeyFile), output = join(root, 'preserved-output.shendu-db');
+  writeFileSync(output, 'existing-backup-bytes');
+  const failedSnapshot = cli('snapshot', output, directory);
+  assert.notEqual(failedSnapshot.status, 0); assert.match(failedSnapshot.stderr, /内部密钥与快照数据库不匹配/);
+  assert.equal(readFileSync(output, 'utf8'), 'existing-backup-bytes');
+  assert.deepEqual(readFileSync(dbFile), beforeSource); assert.deepEqual(readFileSync(masterKeyFile), beforeSourceKey);
+  const envelope = JSON.parse(readFileSync(file, 'utf8')), envelopeKey = pbkdf2Sync(backupPassword, Buffer.from(envelope.salt, 'base64'), 600000, 32, 'sha256');
+  const decipher = createDecipheriv('aes-256-gcm', envelopeKey, Buffer.from(envelope.iv, 'base64')); decipher.setAAD(Buffer.from(envelope.format)); decipher.setAuthTag(Buffer.from(envelope.tag, 'base64'));
+  const payload = JSON.parse(gunzipSync(Buffer.concat([decipher.update(Buffer.from(envelope.data, 'base64')), decipher.final()])));
+  payload.database = beforeSource.toString('base64'); envelope.iv = randomBytes(12).toString('base64');
+  const cipher = createCipheriv('aes-256-gcm', envelopeKey, Buffer.from(envelope.iv, 'base64')); cipher.setAAD(Buffer.from(envelope.format));
+  envelope.data = Buffer.concat([cipher.update(gzipSync(Buffer.from(JSON.stringify(payload)))), cipher.final()]).toString('base64'); envelope.tag = cipher.getAuthTag().toString('base64');
+  const corruptSnapshot = join(root, 'finance-corrupt.shendu-db'); writeFileSync(corruptSnapshot, JSON.stringify(envelope));
+  const destination = join(root, 'finance-preserved-target'); assert.equal(cli('restore', file, destination).status, 0);
+  const targetDb = join(destination, 'shendu.db'), targetKey = join(destination, 'backup-master.key'), beforeDb = readFileSync(targetDb), beforeKey = readFileSync(targetKey);
+  const failedRestore = cli('restore', corruptSnapshot, destination);
+  assert.notEqual(failedRestore.status, 0); assert.match(failedRestore.stderr, /内部密钥与快照数据库不匹配/);
+  assert.deepEqual(readFileSync(targetDb), beforeDb); assert.deepEqual(readFileSync(targetKey), beforeKey);
+});
 test('快照拒绝截短认证标签和错误密码', () => {
   const x = JSON.parse(readFileSync(join(root, 'snapshot.shendu-db'), 'utf8')); x.tag = Buffer.from(x.tag, 'base64').subarray(0, 4).toString('base64');
   const file = join(root, 'truncated.shendu-db'); writeFileSync(file, JSON.stringify(x));
@@ -244,6 +305,44 @@ test('网页整站导出检查解压上限，避免生成无法导入的高压�
   const implementation = source.slice(source.indexOf('function createSiteBackupBuffer('), source.indexOf('function siteBackupTextFrom('));
   const context = { Buffer, randomBytes, pbkdf2Sync, createCipheriv, gzipSync, MAX_SITE_BACKUP_REQUEST_BYTES: 1024, siteBackupPayload: () => ({ journal: 'x'.repeat(1024) }), validateSiteBackupPayload: () => {} };
   assert.throws(() => runInNewContext(implementation + ';createSiteBackupBuffer("test-password-for-export")', context), e => e.status === 413);
+});
+test('个人及外部备份共用可恢复的解压和文件大小边界，超限不上传且释放任务', async () => {
+  const source = readFileSync(join(appDir, 'server.mjs'), 'utf8');
+  const builder = source.slice(source.indexOf('function createBackupBuffer('), source.indexOf('const validTime ='));
+  const parser = source.slice(source.indexOf('function parseCurrentEnvelope('), source.indexOf('function parseBackupBuffer('));
+  const external = source.slice(source.indexOf('const activeExternalBackupUsers ='), source.indexOf('function saveBackupOutcome('));
+  const profile = { username: 'audit_backup_limit' }, payload = { profile, records: [{ data: { journal: '复盘'.repeat(1000) } }], stage: {}, theme: {}, finance: { entries: [{ note: '账本'.repeat(1000) }] }, exportedAt: '2026-11-18T00:00:00.000Z' };
+  let uploads = 0;
+  const context = {
+    Buffer, randomBytes, pbkdf2Sync, createCipheriv, createDecipheriv, gzipSync, gunzipSync,
+    MAX_BACKUP_REQUEST_BYTES: 64 * 1024, MAX_BACKUP_FILE_BYTES: 64 * 1024,
+    exportPayload: () => payload, hasFinanceData: value => Boolean(value), checkUsername: value => value === profile.username,
+    validBackupCipherFields: value => validBase64(value.kdf?.salt, 16) && validBase64(value.cipher?.iv, 12) && validBase64(value.tag, 16) && validBase64(value.data),
+    normalizeBackupConfig: (_kind, config) => config, decryptSecret: config => config,
+    getBackupPassword: () => backupPassword, accountBackupFilename: () => 'synthetic-backup.shendu',
+    uploadWebdav: async () => { uploads++; }, s3Request: async () => { uploads++; }
+  };
+  const functions = runInNewContext(builder + parser + external + ';({createBackupBuffer,parseCurrentEnvelope,runExternalBackup})', context);
+  const valid = functions.createBackupBuffer('owner', backupPassword), decoded = envelopePayload(valid);
+  assert.equal(functions.parseCurrentEnvelope(JSON.parse(valid), backupPassword).entries.length, decoded.entries.length);
+  const expandedBytes = Buffer.byteLength(JSON.stringify(decoded));
+  context.MAX_BACKUP_REQUEST_BYTES = expandedBytes; context.MAX_BACKUP_FILE_BYTES = valid.length;
+  assert.doesNotThrow(() => functions.parseCurrentEnvelope(JSON.parse(functions.createBackupBuffer('owner', backupPassword)), backupPassword), 'exact limits remain recoverable');
+  const tooLarge = error => error.status === 413 && error.code === 'backup_limit_exceeded' && /服务器整站快照/.test(error.message);
+  for (const kind of ['webdav', 's3']) {
+    const target = { user_id: kind, kind, encrypted_config: {} }, before = uploads;
+    context.MAX_BACKUP_REQUEST_BYTES = expandedBytes - 1;
+    assert.throws(() => functions.createBackupBuffer(kind, backupPassword), tooLarge);
+    await assert.rejects(functions.runExternalBackup(target), tooLarge);
+    assert.equal(uploads, before, 'expanded over-limit backups never reach storage');
+    context.MAX_BACKUP_REQUEST_BYTES = expandedBytes; context.MAX_BACKUP_FILE_BYTES = valid.length - 1;
+    assert.throws(() => functions.createBackupBuffer(kind, backupPassword), tooLarge);
+    await assert.rejects(functions.runExternalBackup(target), tooLarge);
+    assert.equal(uploads, before, 'sealed over-limit backups never reach storage');
+    context.MAX_BACKUP_FILE_BYTES = valid.length;
+    await functions.runExternalBackup(target);
+    assert.equal(uploads, before + 1, 'both failure paths release the account slot for a valid retry');
+  }
 });
 test('旧 v3 与 v2 个人加密备份保持兼容', async () => {
   const payload = envelopePayload(accountBackup), { tag, data, kind, ...header } = JSON.parse(accountBackup);

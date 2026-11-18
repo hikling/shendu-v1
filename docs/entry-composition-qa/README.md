@@ -1,6 +1,6 @@
 # 登录首页、翻面散开与复盘宽度验收
 
-2026-11-05，任务 [entry-composition-and-review-width](../../.trellis/tasks/archive/2026-11/11-05-entry-composition-and-review-width/prd.md)。本次仅调整概览入口、认证首页与六类复盘的构图宽度；记录、认证、保存、验证等待期和轮播规则未改动。
+2026-11-05，任务 entry-composition-and-review-width（本地记录）。本次仅调整概览入口、认证首页与六类复盘的构图宽度；记录、认证、保存、验证等待期和轮播规则未改动。
 
 ## 实际页面
 
@@ -30,7 +30,7 @@
 - `npm run check`：通过。
 - `npm test`（先执行 `npm run build`）：121/121通过，0失败。
 - `npm run smoke:ui -- http://127.0.0.1:3192`：健康、HTML、应用脚本、本地shadcn JS/CSS全部通过。
-- 独立复核另跑28项控件/认证/导航/动态偏好测试全部通过；无代码修复项。[独立报告](../../.trellis/tasks/archive/2026-11/11-05-entry-composition-and-review-width/research/independent-review.md)。
+- 独立复核另跑28项控件/认证/导航/动态偏好测试全部通过；无代码修复项。独立报告（本地记录）。
 - `git diff --check`：通过。
 
 功能提交 [`ad7238d43791e13cb634ee3944bf01454d999b96`](https://github.com/hikling/shendu-v1/commit/ad7238d43791e13cb634ee3944bf01454d999b96) 已推送main，[Linux CI #41977907422](https://github.com/hikling/shendu-v1/actions/runs/41977907422) completed/success：Ubuntu24.04、Node24、锁定依赖安装、构建/脚本/全量测试、Compose配置、Docker镜像及容器资源烟测均通过。后续归档/日志提交会再次核对最终HEAD的CI。

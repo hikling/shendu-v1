@@ -10,7 +10,7 @@
 - 登录／注册、首次管理员、加载／连接失败、持久重新认证、完成锁定／未保存／恢复／删除确认统一为本地插画纸面；已经定制的工作区和验证表单保留各自布局。
 - 备份目标删除使用真实Radix确认，只有明确确认才请求；等待期间阻止重复与关闭，延迟响应不能关闭后来打开的弹窗。
 
-完整页面与弹层清点见[审计清单](../../.trellis/tasks/archive/2026-11/11-05-overview-flip-and-ui-audit/research/ui-inventory.md)，代码审查见[独立审查](../../.trellis/tasks/archive/2026-11/11-05-overview-flip-and-ui-audit/research/independent-review.md)。
+完整页面与弹层清点见审计清单（本地记录），代码审查见独立审查（本地记录）。
 
 ## 浏览器证据
 

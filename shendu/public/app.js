@@ -11,7 +11,7 @@ import {createBrowserNavigator} from './browser-navigation.js?v=1.0.0-routes1';
 import {createReviewNavigator} from './review-navigation.js?v=1.0.0-finance1';
 import {attachReviewWheel} from './review-wheel.js?v=1.0.0-wheel1';
 import {createReviewTransition} from './review-transition.js?v=1.0.0-transition1';
-import {mountFinancePage,mountDailyFinance} from './finance-ui.js?v=1.0.0-finance18';
+import {mountFinancePage,mountDailyFinance} from './finance-ui.js?v=1.0.0-finance19';
 import {RECORD_ART,recordArtAssignments} from './record-art.js?v=1.0.0-records1';
 import {createReviewIntroPicker,reviewIntroLines,reviewIntroLayout} from './review-intros.js?v=1.0.0-intros2';
 const $ = (s, root = document) => root.querySelector(s);
@@ -709,7 +709,7 @@ async function completeCurrent(){
       }
       if(!current()||state.saving)return;
       state.reviewWriteOwner=token;state.saving=true;setReviewBusy(true);
-      const {record:completed}=await request(`/api/records/${record.id}/complete`,{method:'POST'},owns);if(!owns())return;
+      const {record:completed}=await request(`/api/records/${record.id}/complete`,{method:'POST',body:{version:record.version}},owns);if(!owns())return;
       const i=state.records.findIndex(x=>x.id===completed.id);if(i>=0)state.records[i]=completed;else state.records.push(completed);state.current=completed;
       finish();closeModal(true);toast('复盘已完成并锁定');renderReview(completed.type,completed.period,false,completed,{dailySection:completed.type==='daily'?currentDailyPrompts().at(-1).step:'intro',dailyPrompt:completed.type==='daily'?currentDailyPrompts().at(-1).id:null,extendedPrompt});
       const locked=state.current,statsEditor=$('#daily-editor'),statsPage=$('#main-content'),statsModal=$('.modal',root);
@@ -719,7 +719,7 @@ async function completeCurrent(){
         const link=$('.header-nav [data-nav="actions"]'),badge=link?$('.header-count',link):null;
         if(stats.pending){if(badge)badge.textContent=String(Number(stats.pending));else if(link){const count=document.createElement('span');count.className='header-count';count.textContent=String(Number(stats.pending));link.append(count)}}else badge?.remove();
       }).catch(()=>{});
-    }catch(e){if(current()&&(!state.saving||owns()))toast(e.message,'error')}
+    }catch(e){if(current()&&(!state.saving||owns())){toast(e.message,'error');if(e.code==='version_conflict'&&owns())try{if(await refreshData(owns))account=state.user}catch{}}}
     finally{finish();pending=false;if(modal.isConnected&&!state.saving){delete modal.dataset.reviewLockBusy;modal.removeAttribute('aria-busy');$$('[data-close]',modal).forEach(control=>control.removeAttribute('aria-disabled'));button.disabled=false;button.textContent='确认完成并锁定'}}
   });
 }
@@ -768,7 +768,7 @@ function deleteDraftRecord(record){
     const button=event.currentTarget;if(button.disabled||!current())return;
     const task=dialogWriteTask(button);if(!task.begin())return;
     try{
-      if(id)await request(`/api/records/${id}`,{method:'DELETE',body:{version}});
+      if(id)await request(`/api/records/${id}`,{method:'DELETE',body:{version}},()=>task.current()&&current());
       if(!task.current()||!current())return;
       if(id)state.records=state.records.filter(item=>item.id!==id);
       state.current=null;state.dirty=false;
@@ -811,7 +811,7 @@ function openVerification(id){
   openModal(`<div class="modal-head verification-dialog-head"><div><p class="verification-category">${esc(TYPES[r.type].label)} · ${esc(overviewDateParts(r.period)?.full||formatDate(r.period))}</p><h2>${esc(r.type==='decision'?t.decisionModalTitle:t.modalTitle)}</h2><p>${esc(t.modalIntro)}</p></div><div class="verification-dialog-art" aria-hidden="true"><img src="${esc(art.src)}" alt="" width="1254" height="1254" draggable="false"></div><button type="button" class="modal-close" data-close>×</button></div>
   <section class="verification-original"><p class="verification-original-label">${esc(t.originalActionLabel)}</p><blockquote>${esc(r.data.action||t.missingActionText)}</blockquote><dl><div><dt>${esc(t.expectedDateLabel)}</dt><dd>${esc(r.data.verifyDate?dailyCalendarDateLabel(r.data.verifyDate):t.expectedMissingText)}</dd></div><div><dt>${esc(t.actualDateLabel)}</dt><dd>${esc(t.actualAutoText)}</dd></div></dl></section>
   <form id="verify-form"><div class="field"><label for="verify-result">${esc(t.resultPrompt)}</label><textarea id="verify-result" name="result" required maxlength="6000"></textarea></div>${r.type==='decision'?`<div class="input-grid"><div class="field"><label for="verify-outcome">${esc(t.outcomePrompt)}</label><select id="verify-outcome" name="outcome" required><option value="">请选择</option><option>好</option><option>差</option></select></div><div class="field"><label for="verify-process">${esc(t.processPrompt)}</label><select id="verify-process" name="process" required><option value="">请选择</option><option>好</option><option>差</option></select></div></div><div class="subsection hidden" id="decision-advice" role="status"></div>`:''}<div class="field"><label for="verify-adjustment">${esc(t.adjustmentPrompt)}</label><textarea id="verify-adjustment" name="adjustment" required maxlength="6000"></textarea></div><div class="modal-actions"><button class="btn btn-ghost" type="button" data-close>${esc(t.cancelButton)}</button><button class="btn btn-red" type="submit">${esc(t.submitButton)}</button></div></form>`,`verification-dialog type-${esc(r.type)}`);
-  if(r.type==='decision'){$('[name=outcome]').addEventListener('change',showAdvice);$('[name=process]').addEventListener('change',showAdvice);function showAdvice(){const advice=decisionAdvice($('[name=outcome]').value,$('[name=process]').value),el=$('#decision-advice');el.textContent=advice;el.classList.toggle('hidden',!advice)}}$('#verify-form').addEventListener('submit',async e=>{e.preventDefault();const form=e.currentTarget,body=Object.fromEntries(new FormData(form)),task=dialogWriteTask(form);if(!task.begin())return;try{const {record}=await request(`/api/records/${id}/verify`,{method:'POST',body});if(!task.current())return;const i=state.records.findIndex(x=>x.id===id);if(i>=0)state.records[i]=record;else state.records.push(record);const stats=await request('/api/stats').catch(()=>null);if(!task.current())return;if(stats)state.stats=stats;task.finish();closeModal();toast('验证结果与实际时间已锁定');renderActions()}catch(err){if(task.current())toast(err.message,'error')}finally{task.finish()}})}
+  if(r.type==='decision'){$('[name=outcome]').addEventListener('change',showAdvice);$('[name=process]').addEventListener('change',showAdvice);function showAdvice(){const advice=decisionAdvice($('[name=outcome]').value,$('[name=process]').value),el=$('#decision-advice');el.textContent=advice;el.classList.toggle('hidden',!advice)}}$('#verify-form').addEventListener('submit',async e=>{e.preventDefault();const form=e.currentTarget,body=Object.fromEntries(new FormData(form)),task=dialogWriteTask(form);if(!task.begin())return;try{const {record}=await request(`/api/records/${id}/verify`,{method:'POST',body},task.current);if(!task.current())return;const i=state.records.findIndex(x=>x.id===id);if(i>=0)state.records[i]=record;else state.records.push(record);const stats=await request('/api/stats',{},task.current).catch(()=>null);if(!task.current())return;if(stats)state.stats=stats;task.finish();closeModal();toast('验证结果与实际时间已锁定');renderActions()}catch(err){if(task.current())toast(err.message,'error')}finally{task.finish()}})}
 
 
 function siteBackupSection(){return state.user.role==='superadmin'?`<section class="card workspace-panel site-backup-card"><div class="workspace-panel-head"><div><h2>整站迁移备份</h2></div><span class="badge verified">仅超级管理员</span></div><p class="workspace-panel-description">加密打包全部账户、复盘、设置、账户密码摘要与外部备份配置。</p><div class="backup-notice">整站恢复会完整替换当前站点资料并注销所有会话。适合在新服务器搭建完成后直接迁移，无需进入服务器执行命令。</div><div class="button-row workspace-panel-actions"><button class="btn btn-primary" id="site-backup-export">导出整站备份</button><label class="btn btn-ghost">恢复整站备份<input class="hidden" id="site-backup-file" type="file" accept=".shendu-site"></label></div><p class="help">整站文件使用独立密码进行 PBKDF2 + AES-256-GCM 整包加密；不会明文暴露用户名或数据统计。</p></section>`:''}
@@ -848,7 +848,7 @@ async function renderBackup(){
   shell(`<section class="workspace-page workspace-backup" aria-labelledby="workspace-backup-title">${spacePageHead('backup',{title:'数据备份',description:'把写下的每一页，妥善留存。服务器内的复盘内容与导出的备份均为密文。'})}<div id="backup-content"><div class="card workspace-panel skeleton" style="height:180px"></div></div></section>`);
   const owner=$('#backup-content'),account=state.user,current=()=>owner.isConnected&&state.user===account;
   try{
-    const [status,targets]=await Promise.all([request('/api/backup/status'),request('/api/backup/targets')]);
+    const [status,targets]=await Promise.all([request('/api/backup/status',{},current),request('/api/backup/targets',{},current)]);
     if(!current())return;
     renderMarkup($('#backup-content'),`<div class="workspace-backup-grid"><section class="card workspace-panel workspace-personal-backup"><div class="workspace-panel-head"><div><h2>个人加密备份</h2></div><span class="badge ${status.configured?'completed':status.available?'':'overdue'}">${status.configured?'密码已设置':status.available?'尚未设置密码':'内部密钥待恢复'}</span></div><p class="workspace-panel-description">给复盘留一份只有自己能打开的副本，换一台设备，也能接着记录。</p>${status.error?`<div class="backup-notice">${esc(status.error)}</div>`:''}<div class="button-row workspace-panel-actions"><button class="btn btn-primary" id="backup-export" ${status.configured?'':'disabled'}>导出 .shendu</button><label class="btn btn-ghost">恢复备份<input class="hidden" id="backup-file" type="file" accept=".shendu"></label><button class="btn btn-soft" id="backup-password" ${status.available?'':'disabled'}>${status.configured?'修改备份密码':'设置备份密码'}</button></div><section class="workspace-details" aria-labelledby="backup-ownership-title"><h3 id="backup-ownership-title">加密方式与账户归属</h3><p>整包 PBKDF2-HMAC-SHA-256（600,000 次）与 AES-256-GCM 加密。远端只会收到加密整包。</p><p>新版备份会在密文中写入所属用户名；跨账户恢复必须再次输入原用户名与该文件的备份密码，旧版加密包仍会尽量读取原 profile 进行归属校验。</p></section></section>${siteBackupSection()}
     <section class="card workspace-panel workspace-external-backup"><div class="workspace-panel-head"><div><h2>S3 / WebDAV 外部备份</h2><p class="workspace-panel-description">最多 8 个目标，支持手动备份，或指定每天、每周的北京时间。</p></div><button class="btn btn-primary" id="add-target" ${status.configured?'':'disabled'}>新增目标</button></div><div class="list">${targets.targets.length?targets.targets.map(t=>`<div class="backup-target"><div><strong>${esc(t.name)}</strong> <span class="badge">${esc(backupTargetKindLabel(t.kind))}</span><p>${esc(backupScheduleLabel(t))} · ${t.last_success_at?`上次成功 ${beijingDateTime(t.last_success_at)}`:'尚未成功备份'}${t.last_error?` · ${esc(t.last_error)}`:''}</p></div><div class="backup-actions"><button class="btn btn-ghost" data-target-edit="${esc(t.id)}">编辑</button><button class="btn btn-ghost" data-target-test="${esc(t.id)}">测试</button><button class="btn btn-soft" data-target-run="${esc(t.id)}">立即备份</button><button class="btn btn-danger" data-target-delete="${esc(t.id)}">删除</button></div></div>`).join(''):`<div class="workspace-empty">${workspaceArt('guide','workspace-empty-art')}<div><h3>还没有外部目标</h3><p>可以连接 WebDAV、Cloudflare R2、AWS S3、MinIO 等服务。</p></div></div>`}</div></section>
@@ -858,8 +858,8 @@ async function renderBackup(){
 }
 
 function bindBackup(status,targets=[]){
-  $('#backup-password')?.addEventListener('click',()=>{openModal(`<div class="modal-head"><div><h2>${status.configured?'修改':'设置'}备份密码</h2><p>至少 15 个字符。服务器无法替你找回这个密码。</p></div><button class="modal-close" data-close>×</button></div><form id="backup-pass-form"><div class="field"><label>备份密码</label><input name="password" type="password" minlength="15" maxlength="128" required autocomplete="new-password"></div><div class="modal-actions"><button type="button" class="btn btn-ghost" data-close>取消</button><button class="btn btn-primary">保存密码</button></div></form>`);$('#backup-pass-form').addEventListener('submit',async e=>{e.preventDefault();const form=e.currentTarget,body=Object.fromEntries(new FormData(form)),task=dialogWriteTask(form);if(!task.begin())return;try{await request('/api/backup/password',{method:'POST',body});if(!task.current())return;task.finish();closeModal();toast('备份密码已保存');renderBackup()}catch(err){if(task.current())toast(err.message,'error')}finally{task.finish()}})});
-  $('#backup-export')?.addEventListener('click',async event=>{const button=event.currentTarget,account=state.user,current=()=>button.isConnected&&state.user===account;if(button.disabled)return;try{button.disabled=true;button.textContent='正在加密…';const blob=await request('/api/backup/export',{method:'POST',body:{}});if(!current())return;downloadBlob(blob,`shendu-${today()}.shendu`);toast('个人加密备份已下载')}catch(error){if(current())toast(error.message,'error')}finally{button.disabled=false;button.textContent='导出 .shendu'}});
+  $('#backup-password')?.addEventListener('click',()=>{openModal(`<div class="modal-head"><div><h2>${status.configured?'修改':'设置'}备份密码</h2><p>至少 15 个字符。服务器无法替你找回这个密码。</p></div><button class="modal-close" data-close>×</button></div><form id="backup-pass-form"><div class="field"><label>备份密码</label><input name="password" type="password" minlength="15" maxlength="128" required autocomplete="new-password"></div><div class="modal-actions"><button type="button" class="btn btn-ghost" data-close>取消</button><button class="btn btn-primary">保存密码</button></div></form>`);$('#backup-pass-form').addEventListener('submit',async e=>{e.preventDefault();const form=e.currentTarget,body=Object.fromEntries(new FormData(form)),task=dialogWriteTask(form);if(!task.begin())return;try{await request('/api/backup/password',{method:'POST',body},task.current);if(!task.current())return;task.finish();closeModal();toast('备份密码已保存');renderBackup()}catch(err){if(task.current())toast(err.message,'error')}finally{task.finish()}})});
+  $('#backup-export')?.addEventListener('click',async event=>{const button=event.currentTarget,account=state.user,current=()=>button.isConnected&&state.user===account;if(button.disabled)return;try{button.disabled=true;button.textContent='正在加密…';const blob=await request('/api/backup/export',{method:'POST',body:{}},current);if(!current())return;downloadBlob(blob,`shendu-${today()}.shendu`);toast('个人加密备份已下载')}catch(error){if(current())toast(error.message,'error')}finally{button.disabled=false;button.textContent='导出 .shendu'}});
   $('#backup-file')?.addEventListener('change',async e=>{
     const input=e.target,file=input.files[0],account=state.user,visit=Symbol();input.backupReadOwner=visit;
     const current=()=>input.isConnected&&input.backupReadOwner===visit&&state.user===account;
@@ -879,7 +879,7 @@ function bindBackup(status,targets=[]){
         const task=dialogWriteTask(ev.currentTarget);if(!task.begin())return;
         try{
           submit.disabled=true;submit.textContent='正在校验…';
-          const preview=await request('/api/data/inspect',{method:'POST',body:{encryptedBackup,password}});
+          const preview=await request('/api/data/inspect',{method:'POST',body:{encryptedBackup,password}},task.current);
           if(!task.current())return;task.finish();
           const crossAccount=preview.requiresOwnerConfirmation===true;
           openModal(`<div class="modal-head"><div><h2>恢复前确认</h2><p>备份已通过密码、完整性与账户归属校验。</p></div><button class="modal-close" data-close>×</button></div><div class="lock-summary">备份所属账户：${esc(preview.ownerUsername||'无法识别')}<br>当前登录账户：${esc(state.user.username)}<br>导出时间：${esc(beijingDateTime(preview.exportedAt)||preview.exportedAt||'未记录')}<br>总条目：${preview.count}<br>复盘记录：${preview.counts.record||0}${preview.finance?`<br>财务账目：${Number(preview.finance.entries)||0} 条 · 回收站 ${Number(preview.finance.deleted)||0} 条<br>压缩凭证：${Number(preview.finance.receipts)||0} 张（图片本体保存在外部存储）`:"<br>旧备份未含财务，恢复时保留现有账本"}</div>${crossAccount?`<div class="backup-notice">检测到备份账户与当前账户不同。为防止误恢复，请重新输入备份所属用户名和生成这份文件时使用的备份密码。</div><div class="input-grid"><div class="field"><label for="source-backup-username">备份所属用户名</label><input id="source-backup-username" maxlength="32" required autocomplete="username" placeholder="输入 ${esc(preview.ownerUsername||'原用户名')}"></div><div class="field"><label for="source-backup-password">该文件的备份密码</label><input id="source-backup-password" type="password" minlength="15" maxlength="256" required autocomplete="current-password"></div></div>`:''}<div class="field" style="margin-top:16px"><label>恢复方式</label><select id="restore-mode"><option value="merge">安全合并：保留较新的记录</option><option value="replace">完整恢复：替换当前账户复盘</option></select></div><div class="modal-actions"><button class="btn btn-ghost" data-close>取消</button><button class="btn btn-red" id="apply-restore">开始恢复</button></div>`);
@@ -893,7 +893,7 @@ function bindBackup(status,targets=[]){
               if(crossAccount&&(!sourceUsername||!restorePassword))throw new Error('请输入备份所属用户名和该文件的备份密码');
               if(!restore.begin())return;
               button.disabled=true;button.textContent='正在恢复…';
-              await request('/api/data/import',{method:'POST',body:{encryptedBackup,password:restorePassword,sourceUsername,mode,confirmation:mode==='replace'?'RESTORE':undefined}});
+              await request('/api/data/import',{method:'POST',body:{encryptedBackup,password:restorePassword,sourceUsername,mode,confirmation:mode==='replace'?'RESTORE':undefined}},restore.current);
               if(!restore.current()||!await refreshData(restore.current))return;
               restore.finish();closeModal();toast('备份已恢复');renderBackup();
             }catch(err){if(restore.current()){button.textContent='开始恢复';toast(err.message,'error')}}finally{restore.finish()}
@@ -908,7 +908,7 @@ function bindBackup(status,targets=[]){
     $('#delete-target-confirm').addEventListener('click',async e=>{
       const button=e.currentTarget;if(button.disabled)return;
       const task=dialogWriteTask(button);if(!task.begin())return;
-      try{await request(`/api/backup/targets/${b.dataset.targetDelete}`,{method:'DELETE'});if(task.current()){task.finish();closeModal();toast('目标已删除');renderBackup()}}
+      try{await request(`/api/backup/targets/${b.dataset.targetDelete}`,{method:'DELETE'},task.current);if(task.current()){task.finish();closeModal();toast('目标已删除');renderBackup()}}
       catch(err){if(task.current())toast(err.message,'error')}
       finally{task.finish()}
     });
@@ -923,7 +923,7 @@ function bindSiteBackup(){
       event.preventDefault();const form=event.currentTarget,button=form.querySelector('button[type="submit"]'),values=Object.fromEntries(new FormData(form));
       if(values.backupPassword!==values.backupPasswordConfirm){toast('两次输入的整站备份密码不一致','error');return}
       const task=dialogWriteTask(form);if(!task.begin())return;
-      try{button.disabled=true;button.textContent='正在加密整站资料…';const blob=await request('/api/admin/site-backup/export',{method:'POST',body:{currentPassword:values.currentPassword,backupPassword:values.backupPassword}});if(!task.current())return;downloadBlob(blob,`shendu-site-${today()}.shendu-site`);task.finish();closeModal();toast('整站加密备份已下载')}
+      try{button.disabled=true;button.textContent='正在加密整站资料…';const blob=await request('/api/admin/site-backup/export',{method:'POST',body:{currentPassword:values.currentPassword,backupPassword:values.backupPassword}},task.current);if(!task.current())return;downloadBlob(blob,`shendu-site-${today()}.shendu-site`);task.finish();closeModal();toast('整站加密备份已下载')}
       catch(error){if(task.current()){button.textContent='生成并下载';toast(error.message,'error')}}finally{task.finish()}
     });
   });
@@ -938,14 +938,14 @@ function bindSiteBackup(){
         inspectEvent.preventDefault();const inspectForm=inspectEvent.currentTarget,inspectButton=inspectForm.querySelector('button[type="submit"]'),backupPassword=String(new FormData(inspectForm).get('backupPassword')||'');
         const task=dialogWriteTask(inspectForm);if(!task.begin())return;
         try{
-          inspectButton.disabled=true;inspectButton.textContent='正在校验…';const preview=await request('/api/admin/site-backup/inspect',{method:'POST',body:{encryptedBackup,backupPassword}});
+          inspectButton.disabled=true;inspectButton.textContent='正在校验…';const preview=await request('/api/admin/site-backup/inspect',{method:'POST',body:{encryptedBackup,backupPassword}},task.current);
           if(!task.current())return;task.finish();
           openModal(`<div class="modal-head"><div><h2>确认恢复整站资料</h2><p>备份已通过密码与完整性校验。恢复完成后所有账户都会退出登录。</p></div><button class="modal-close" data-close>×</button></div><div class="lock-summary">创建时间：${esc(beijingDateTime(preview.createdAt)||preview.createdAt||'未记录')}<br>账户：${preview.users} 个<br>复盘记录：${preview.records} 条<br>设置：${preview.settings} 项<br>外部备份目标：${preview.targets} 个<br>财务账目：${Number(preview.financeEntries)||0} 条 · 压缩凭证 ${Number(preview.financeReceipts)||0} 张<br>${preview.legacyFinancePreserved?"旧备份未含财务，保留同一账户的现有账本":"账目和图片关联会恢复，外部图片本体需由原存储继续提供"}</div><div class="backup-notice">此操作会删除当前站点的全部账户与资料，再恢复备份中的完整数据。请确认你保存了当前站点所需内容。</div><form id="site-restore-form"><div class="field"><label for="site-restore-current-password">当前超级管理员登录密码</label><input id="site-restore-current-password" name="currentPassword" type="password" minlength="15" maxlength="128" required autocomplete="current-password"></div><div class="field"><label for="site-restore-confirmation">输入“恢复全部资料”确认</label><input id="site-restore-confirmation" name="confirmationText" required autocomplete="off" placeholder="恢复全部资料"></div><div class="modal-actions"><button type="button" class="btn btn-ghost" data-close>取消</button><button class="btn btn-red" type="submit">完整恢复本站</button></div></form>`);
           $('#site-restore-form').addEventListener('submit',async restoreEvent=>{
             restoreEvent.preventDefault();const restoreForm=restoreEvent.currentTarget,restoreButton=restoreForm.querySelector('button[type="submit"]'),values=Object.fromEntries(new FormData(restoreForm));
             if(String(values.confirmationText||'').trim()!=='恢复全部资料'){toast('请输入“恢复全部资料”后再继续','error');return}
             const restore=dialogWriteTask(restoreForm);if(!restore.begin())return;
-            try{restoreButton.disabled=true;restoreButton.textContent='正在恢复全部资料…';await request('/api/admin/site-backup/restore',{method:'POST',body:{encryptedBackup,backupPassword,currentPassword:values.currentPassword,confirmation:'RESTORE_SITE'}});if(!restore.current())return;restore.finish();closeModal();state.user=null;toast('整站资料已恢复，即将返回登录页');setTimeout(()=>{if(state.user===null)location.assign('/')},1200)}
+            try{restoreButton.disabled=true;restoreButton.textContent='正在恢复全部资料…';await request('/api/admin/site-backup/restore',{method:'POST',body:{encryptedBackup,backupPassword,currentPassword:values.currentPassword,confirmation:'RESTORE_SITE'}},restore.current);if(!restore.current())return;restore.finish();closeModal();state.user=null;toast('整站资料已恢复，即将返回登录页');setTimeout(()=>{if(state.user===null)location.assign('/')},1200)}
             catch(error){if(restore.current()){restoreButton.textContent='完整恢复本站';toast(error.message,'error')}}finally{restore.finish()}
           });
         }catch(error){if(task.current()){inspectButton.textContent='校验整站备份';toast(error.message,'error')}}finally{task.finish()}
@@ -980,12 +980,12 @@ function openTargetModal(existing=null){
     const schedule=fd.get('schedule'),time=$('[name="scheduleTime"]',form).value;
     const body={name:fd.get('name'),kind,schedule,scheduleTime:schedule==='manual'?(time||'02:00'):time,scheduleWeekday:Number($('[name="scheduleWeekday"]',form).value)||1,config};
     const task=dialogWriteTask(form);if(!task.begin())return;
-    try{await request(existing?`/api/backup/targets/${existing.id}`:'/api/backup/targets',{method:existing?'PATCH':'POST',body});if(!task.current())return;task.finish();closeModal();toast('外部目标与备份计划已保存');renderBackup()}
+    try{await request(existing?`/api/backup/targets/${existing.id}`:'/api/backup/targets',{method:existing?'PATCH':'POST',body},task.current);if(!task.current())return;task.finish();closeModal();toast('外部目标与备份计划已保存');renderBackup()}
     catch(error){if(task.current())toast(error.message,'error')}finally{task.finish()}
   });
 }
 
-async function targetAction(id,action,button){const page=$('#backup-content'),account=state.user,current=()=>page?.isConnected&&state.user===account;if(!current()||button?.disabled)return;const controls=button?$$('button',button.closest('.backup-target')):[],disabled=controls.map(control=>control.disabled);controls.forEach(control=>{control.disabled=true});try{toast(action==='test'?'正在测试连接…':'正在生成并上传加密备份…');await request(`/api/backup/targets/${id}/${action}`,{method:'POST'});if(!current())return;toast(action==='test'?'连接测试成功':'外部备份完成');renderBackup()}catch(e){if(current())toast(e.message,'error')}finally{controls.forEach((control,index)=>{control.disabled=disabled[index]})}}
+async function targetAction(id,action,button){const page=$('#backup-content'),account=state.user,current=()=>page?.isConnected&&state.user===account;if(!current()||button?.disabled)return;const controls=button?$$('button',button.closest('.backup-target')):[],disabled=controls.map(control=>control.disabled);controls.forEach(control=>{control.disabled=true});try{toast(action==='test'?'正在测试连接…':'正在生成并上传加密备份…');await request(`/api/backup/targets/${id}/${action}`,{method:'POST'},current);if(!current())return;toast(action==='test'?'连接测试成功':'外部备份完成');renderBackup()}catch(e){if(current())toast(e.message,'error')}finally{controls.forEach((control,index)=>{control.disabled=disabled[index]})}}
 
 
 function accountSecurityHtml(){
@@ -1004,7 +1004,7 @@ async function loadManagedUsers(q=$('#user-search')?.value||''){
   const visit=Symbol();owner.usersVisit=visit;owner.setAttribute('aria-busy','true');
   const current=()=>owner.isConnected&&owner.usersVisit===visit&&state.user===account;
   try{
-    const data=await request(`/api/admin/users?q=${encodeURIComponent(q)}`);
+    const data=await request(`/api/admin/users?q=${encodeURIComponent(q)}`,{},current);
     if(!current())return;
     owner.className='card workspace-panel users-card';
     renderMarkup(owner,`<div class="workspace-panel-head workspace-users-tools"><label class="workspace-user-search"><span>查找账户</span><input id="user-search" placeholder="搜索用户名或称呼" value="${esc(q)}" aria-label="搜索账户"></label>${state.user.role==='superadmin'?`<label class="help registration-toggle"><input type="checkbox" id="registration-open" ${data.registrationOpen?'checked':''}> 允许公开注册</label>`:''}</div><div class="table-wrap users-table-wrap"><table class="table users-table"><thead><tr><th>称呼</th><th>用户名</th><th>加入日期</th><th>角色</th><th>状态</th><th>操作</th></tr></thead><tbody>${data.users.length?data.users.map(u=>`<tr><td data-label="称呼"><span class="workspace-person-name">${esc(u.displayName)}</span>${u.id===state.user.id?'<small class="workspace-self">当前账户</small>':''}</td><td data-label="用户名">${esc(u.username)}</td><td data-label="加入日期">${esc(u.createdAt.slice(0,10))}</td><td data-label="角色">${u.role==='superadmin'?'超级管理员':u.role==='admin'?'管理员':'成员'}</td><td data-label="状态"><span class="badge ${u.status==='active'?'completed':'overdue'}">${u.status==='active'?'正常':'停用'}</span></td><td data-label="操作">${u.id===state.user.id||u.role==='superadmin'||(state.user.role==='admin'&&u.role==='admin')?'—':`<div class="inline-actions"><button class="btn btn-ghost" data-user-toggle="${esc(u.id)}" data-status="${u.status==='active'?'disabled':'active'}">${u.status==='active'?'停用':'恢复'}</button><button class="btn btn-soft" data-user-reset="${esc(u.id)}">重置密码</button>${state.user.role==='superadmin'?`<button class="btn btn-ghost" data-user-role="${esc(u.id)}" data-role="${u.role==='admin'?'member':'admin'}">设为${u.role==='admin'?'成员':'管理员'}</button>`:''}<button class="btn btn-danger" data-user-delete="${esc(u.id)}">删除用户</button></div>`}</td></tr>`).join(''):'<tr class="workspace-empty-row"><td colspan="6" class="workspace-empty-cell">没有找到匹配的账户，试试其他用户名或称呼。</td></tr>'}</tbody></table></div>`);
@@ -1116,7 +1116,7 @@ function renderActivity(){
     if(!append)summary.textContent=entries.length?`正在刷新 · 已显示 ${entries.length} 条记录`:'正在读取使用记录…';
     renderMarkup(feedback,'<p class="help">正在读取使用记录…</p>');
     try{
-      const data=await request(`/api/activity${after?`?cursor=${encodeURIComponent(after)}`:''}`);
+      const data=await request(`/api/activity${after?`?cursor=${encodeURIComponent(after)}`:''}`,{},()=>current()&&owner===sequence);
       if(!current()||owner!==sequence)return;
       const known=new Set(append?entries.map(entry=>entry.id):[]),incoming=data.entries.filter(entry=>{if(known.has(entry.id))return false;known.add(entry.id);return true});entries=append?[...entries,...incoming]:incoming;cursor=data.nextCursor||null;
       scope.firstChild.textContent=data.scope==='site'&&siteAllowed?'全站操作':'我的操作';
@@ -1234,7 +1234,7 @@ function bindStageSettings(actionTemplate){
     if(!form.checkValidity()){const invalid=$(':invalid',form);for(let parent=invalid?.parentElement;parent&&parent!==form;parent=parent.parentElement)if(parent.tagName==='DETAILS')parent.open=true;invalid?.focus();form.reportValidity();return}
     const f=new FormData(form),reviewTemplates=Object.fromEntries(Object.keys(TYPES).map(type=>[type,{...Object.fromEntries($$(`[data-review-template="${type}"]`,form).map(input=>[input.dataset.templateKey,input.value.trim()])),questions:readTemplateQuestions($(`[data-template-type="${type}"]`,form)),disabledFields:$$('[data-include-field]',$(`[data-template-type="${type}"]`,form)).filter(input=>!input.checked).map(input=>input.dataset.includeField)}])),actionPrompts=Object.fromEntries($$('[data-action-template]',form).map(input=>[input.dataset.templateKey,input.value.trim()])),savedActionTemplate={...actionTemplate,...actionPrompts},stage={name:f.get('name'),startDate:f.get('startDate'),days:Number(f.get('days')),focus:f.get('focus'),sleepTarget:Number(f.get('sleepTarget')),energyTarget:Number(f.get('energyTarget')),showQuarter:legacyShowQuarter,metrics:$$('[data-stage-metric]',form).map(row=>({id:row.dataset.stageMetric,name:$('[data-metric-name]',row).value,target:$('[data-metric-target]',row).value})),reviewTemplates,actionTemplate:savedActionTemplate};
     pending=true;state.settingsWriteOwner=form;state.saving=true;form.setAttribute('aria-busy','true');$('fieldset',form).disabled=true;
-    try{const result=await request('/api/settings',{method:'PUT',body:{stage}});if(!current())return;state.stage=result.stage||stage;state.dirty=false;toast('阶段与内容设置已保存');navigate(returnRoute)}
+    try{const result=await request('/api/settings',{method:'PUT',body:{stage}},current);if(!current())return;state.stage=result.stage||stage;state.dirty=false;toast('阶段与内容设置已保存');navigate(returnRoute)}
     catch(error){if(current())toast(error.message,'error')}
     finally{pending=false;if(state.settingsWriteOwner===form){state.saving=false;delete state.settingsWriteOwner}if(form.isConnected){form.removeAttribute('aria-busy');$('fieldset',form).disabled=false}}
   });
@@ -1249,7 +1249,7 @@ function bindAccountSecurity(){
   form.addEventListener('submit',async event=>{
     event.preventDefault();if(pending||!current())return;
     const body=Object.fromEntries(new FormData(form));busy(true);
-    try{await request('/api/me/password',{method:'POST',body});if(!current())return;form.reset();toast('密码已修改，请重新登录');await init()}
+    try{await request('/api/me/password',{method:'POST',body},current);if(!current())return;form.reset();toast('密码已修改，请重新登录');await init()}
     catch(error){if(current())toast(error.message,'error')}
     finally{finish()}
   });

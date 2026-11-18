@@ -21,13 +21,13 @@ const owner=name=>{
   return source.slice(start,next?start+1+next.index:source.length);
 };
 const status={configured:true,available:true},targets={targets:[],runs:[]};
-function fixture(impl=async path=>path==='/api/backup/status'?status:targets){
+function fixture(impl=async path=>path==='/api/backup/status'?status:targets,realRequest=false){
   ui.dismissDialog($('#modal-root'));ui.renderMarkup($('#app'),'');
   const state={user:{id:'owner',username:'owner',role:'superadmin'},saving:false},calls=[],notices=[],downloads=[];
   const request=(path,options)=>{calls.push({path,...options});return impl(path,options)};
   const shell=html=>ui.renderMarkup($('#app'),`<main>${html}</main>`);
-  const names=['syncOverlayBackground','openModal','closeModal','dialogWriteTask','backupTargetKindLabel','backupRunRows','renderBackup','bindBackup','bindSiteBackup','refreshData'];
-  const functions=new Function('$','$$','state','request','renderMarkup','prepareDialogContainer','showDialog','dismissDialog','cancelDailyTypewriter','esc','shell','spacePageHead','workspaceArt','siteBackupSection','beijingDateTime','today','toast','downloadBlob','openTargetModal','targetAction','applyTheme','backupScheduleLabel',`let modalReturnFocus=null;\n${names.map(owner).join('\n')}\nreturn {renderBackup,bindBackup,bindSiteBackup,openModal,closeModal,refreshData};`)($,$$,state,request,ui.renderMarkup,ui.prepareDialogContainer,ui.showDialog,ui.dismissDialog,()=>{},esc,shell,()=>'<h1>数据备份</h1>',()=>'',()=>'<button id="site-backup-export">整站导出</button><input id="site-backup-file" type="file">',value=>value||'',()=> '2026-11-06',(...args)=>notices.push(args),(blob,name)=>downloads.push({blob,name}),()=>{},()=>{},()=>{},backupScheduleLabel);
+  const names=['sessionExpired','syncOverlayBackground','openModal','closeModal','dialogWriteTask','backupTargetKindLabel','backupRunRows','renderBackup','bindBackup','bindSiteBackup','refreshData'];
+  const functions=new Function('$','$$','state','request','renderMarkup','prepareDialogContainer','showDialog','dismissDialog','cancelDailyTypewriter','esc','shell','spacePageHead','workspaceArt','siteBackupSection','beijingDateTime','today','toast','downloadBlob','openTargetModal','targetAction','applyTheme','backupScheduleLabel','fetch',`let modalReturnFocus=null;\n${realRequest?owner('request'):''}\n${names.map(owner).join('\n')}\nreturn {renderBackup,bindBackup,bindSiteBackup,openModal,closeModal,refreshData};`)($,$$,state,request,ui.renderMarkup,ui.prepareDialogContainer,ui.showDialog,ui.dismissDialog,()=>{},esc,shell,()=>'<h1>数据备份</h1>',()=>'',()=>'<button id="site-backup-export">整站导出</button><input id="site-backup-file" type="file">',value=>value||'',()=> '2026-11-06',(...args)=>notices.push(args),(blob,name)=>downloads.push({blob,name}),()=>{},()=>{},()=>{},backupScheduleLabel,(path,options)=>{calls.push({path,...options});return impl(path,options)});
   return {state,calls,notices,downloads,...functions};
 }
 function choose(id,file){const input=$(id);Object.defineProperty(input,'files',{value:[file],configurable:true});input.dispatchEvent(new win.Event('change',{bubbles:true}));}
@@ -123,3 +123,22 @@ test('account refresh never commits responses after its caller or account became
 
 test.afterEach(()=>{ui.dismissDialog($('#modal-root'));ui.disposeUi($('#app'));$('#app').replaceChildren()});
 test.after(()=>dom.window.close());
+
+const jsonResponse=value=>({ok:true,status:200,headers:{get:()=> 'application/json'},json:async()=>value});
+const unauthorized=()=>({ok:false,status:401,headers:{get:()=> 'application/json'},json:async()=>({error:'unauthorized',message:'expired session'})});
+
+test('obsolete backup load, export and inspect 401 responses preserve newer account dialogs',async()=>{
+  for(const phase of ['load','export','inspect']){
+    let finish,hold=phase==='load';
+    const f=fixture(path=>hold?new Promise(resolve=>{finish=resolve}):Promise.resolve(jsonResponse(path==='/api/backup/status'?status:targets)),true);
+    if(phase==='load')void f.renderBackup();else{
+      await f.renderBackup();hold=true;
+      if(phase==='export')$('#backup-export').click();
+      else{choose('#backup-file',file);await settle();$('#restore-password-form input').value='private-backup-password';submit('#restore-password-form')}
+    }
+    f.closeModal(true);f.state.user={id:'new-owner',username:'new-owner',role:'member'};
+    f.openModal('<div class="modal-head"><h2>新的操作</h2></div><input id="replacement-value" value="保留新账户输入">','',true);
+    finish(unauthorized());await settle();
+    assert.equal($('#replacement-value')?.value,'保留新账户输入',phase);assert.equal($('#reauth-form'),null);assert.deepEqual(f.downloads,[]);assert.notEqual(f.state.reauthOpen,true);
+  }
+});

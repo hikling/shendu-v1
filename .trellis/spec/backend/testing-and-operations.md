@@ -28,6 +28,10 @@ CLI snapshot/migration output must not alias the active DB, SQLite `-wal`/`-shm`
 
 Keep `pinnedHttpsRequest` request and response error/abort handling symmetric: reject the operation directly and destroy the request even when it has already closed. Oversized and truncated responses must never settle as a successful external backup. Caddy receives only its domain, never the application's master key; enforce this on resolved Compose configuration in CI.
 
+Snapshot validation must authenticate every present finance table's data using the live scopes: finance-entry:user:id, finance-category:user:id, finance-day:user:date, and finance-receipt:user:id:data. Old databases lacking these tables remain valid; a present table with malformed data, changed owner or identity must fail before snapshot publication or original-file restore replacement. Regressions cover all four scopes plus actual CLI rollback, not only PRAGMA integrity checks.
+
+Personal and external backups share createBackupBuffer. Enforce MAX_BACKUP_REQUEST_BYTES on serialized expanded payload before compression/derivation, and MAX_BACKUP_FILE_BYTES on the sealed file before returning it or making any upload. Return413/backup_limit_exceeded with the server snapshot alternative. Exact limits succeed, one byte over fails; test the real builder/parser and S3/WebDAV no-network failure with slot release. The importer and common builder must never disagree on recoverable size.
+
 ## Automated server installation contract
 
 ### 1. Scope and ownership
@@ -45,6 +49,8 @@ Bootstrap downloads only the official `hikling/shendu-v1` `main` checkout or reu
 ### 4. Validation and failure behavior
 
 Reject unsupported OS, wrong repository/destination, dirty code, domain conflicts and unusable existing configuration. Reuse functioning Docker/Compose; stop for an incomplete existing installation instead of uninstalling packages. Download/clone/config/build/start/health/smoke failures return nonzero and never print an installation-success message. Suppress expanded Compose environment output. Diagnostics must not expose environment values or master keys.
+
+The updater must validate `remote.origin.url` against the same official HTTPS/SSH allowlist as root bootstrap, before backup, fetch, Docker or lock creation. Do not assume a directory containing shendu/ and a main branch is the official checkout. The install-script regression supplies an unrelated origin and asserts no snapshot/fetch/Docker, no new lock and unchanged .env. README's downloaded-updater command uses an isolated `set -eu` subshell with EXIT cleanup so a later successful rm cannot hide a download/update failure.
 
 ### 5. Examples
 

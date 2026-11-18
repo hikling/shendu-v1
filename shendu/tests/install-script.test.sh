@@ -552,6 +552,19 @@ pass 'snapshot rejects its own temporary directory as a final destination'
 new_case
 mkdir -p "$MOCK_FIXTURE/.git" "$app_dir/data"
 existing_env
+MOCK_ORIGIN=https://github.com/other/repository.git; export MOCK_ORIGIN
+if run_update; then fail 'updater accepted an unrelated origin'; fi
+assert_output 'origin 不是 hikling/shendu-v1'
+assert_not_logged 'snapshot'
+assert_not_logged 'fetch --prune'
+assert_not_logged 'docker'
+cmp "$app_dir/.env" "$MOCK_CASE/env-before" || fail 'rejected origin changed configuration'
+[ ! -d "$app_dir/tmp/.update.lock" ] || fail 'rejected origin left an update lock'
+pass 'updater rejects unrelated repository before backup, fetch or Docker'
+
+new_case
+mkdir -p "$MOCK_FIXTURE/.git" "$app_dir/data"
+existing_env
 printf '%s\n' bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb > "$app_dir/data/backup-master.key"
 run_update || fail 'update backup delegation failed'
 cmp "$app_dir/data/server-backup.password" "$MOCK_CASE/password-used" || fail 'update did not use shared snapshot password'

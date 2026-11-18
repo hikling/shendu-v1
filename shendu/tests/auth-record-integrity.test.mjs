@@ -8,7 +8,9 @@ import {join,dirname,basename} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {randomBytes,randomUUID} from 'node:crypto';
 import net from 'node:net';
+import http from 'node:http';
 import {DatabaseSync} from 'node:sqlite';
+import {verificationMinimum} from '../public/verification-policy.js';
 
 const appDir=fileURLToPath(new URL('../',import.meta.url)),tempParent=realpathSync(tmpdir());
 const root=mkdtempSync(join(tempParent,'shendu-auth-record-integrity-'));
@@ -134,4 +136,37 @@ test('account-update atomicity preserves the established administrator boundarie
     const before=userRow(id),beforeSessions=sessions(id),result=await api(`/api/admin/users/${id}`,{method:'PATCH',auth,body:{status:'disabled',role:'member'}});
     assert.equal(result.status,403,result.text);assert.deepEqual(userRow(id),before);assert.deepEqual(sessions(id),beforeSessions);
   }
+});
+
+const completionData=type=>({answers:{},action:'已核对的原定行动',ifCondition:'如果遇到阻碍',ifThen:'那么调整方法',verifyDate:verificationMinimum(type,today),templateSnapshot:{review:{questions:[],financeEnabled:false},action:{}}});
+
+test('completion locks only the version the current client reviewed across all six types',async()=>{
+  for(const type of types){
+    const first=await api('/api/records',{method:'PUT',body:{type,period:period(type),title:'已核对的标题',data:completionData(type)}});assert.equal(first.status,200,first.text);const tabA=first.value.record;
+    const second=await api('/api/records',{method:'PUT',body:{...tabA,data:{...tabA.data,action:'另一设备后来修改的行动'}}});assert.equal(second.status,200,second.text);const tabB=second.value.record,before=row(tabA.id),events=activities();
+    const stale=await api(`/api/records/${tabA.id}/complete`,{method:'POST',body:{version:tabA.version}});assert.equal(stale.status,409,type);assert.equal(stale.value.error,'version_conflict');assert.deepEqual(row(tabA.id),before);assert.deepEqual(activities(),events);
+    for(const version of [null,'2',0,1.5]){const invalid=await api(`/api/records/${tabA.id}/complete`,{method:'POST',body:{version}});assert.equal(invalid.status,400,type);assert.equal(invalid.value.error,'invalid_record_version');assert.deepEqual(row(tabA.id),before);assert.deepEqual(activities(),events)}
+    const complete=await api(`/api/records/${tabB.id}/complete`,{method:'POST',body:{version:tabB.version}});assert.equal(complete.status,200,complete.text);assert.equal(complete.value.record.status,'completed');assert.equal(complete.value.record.data.action,tabB.data.action);assert.equal(complete.value.record.version,tabB.version+1);
+  }
+});
+
+test('legacy bodyless completion remains supported while existing non-UUID drafts retain owner, version and lock boundaries',async()=>{
+  for(const type of types){
+    const legacyId=`legacy-${type}-draft`,stamp=new Date().toISOString();db.prepare('INSERT INTO records(id,user_id,type,period,title,data,status,version,created_at,updated_at) VALUES(?,?,?,?,?,?,?,1,?,?)').run(legacyId,ownerId,type,period(type),'历史格式草稿',JSON.stringify(completionData(type)),'draft',stamp,stamp);
+    const body={id:legacyId,type,period:period(type),version:1,title:'继续填写旧草稿',data:completionData(type)},before=row(legacyId),events=activities();
+    const foreign=await api('/api/records',{method:'PUT',auth:memberCookie,body});assert.equal(foreign.status,404);assert.deepEqual(row(legacyId),before);assert.deepEqual(activities(),events);
+    const saved=await api('/api/records',{method:'PUT',body});assert.equal(saved.status,200,saved.text);assert.equal(saved.value.record.id,legacyId);assert.equal(saved.value.record.version,2);
+    const after=row(legacyId),savedEvents=activities(),stale=await api('/api/records',{method:'PUT',body});assert.equal(stale.status,409);assert.equal(stale.value.error,'version_conflict');assert.deepEqual(row(legacyId),after);assert.deepEqual(activities(),savedEvents);
+    const missing=await api('/api/records',{method:'PUT',body:{...body,id:`missing-${type}`}});assert.equal(missing.status,404);assert.equal(db.prepare('SELECT 1 FROM records WHERE id=?').get(`missing-${type}`),undefined);
+    const complete=await api(`/api/records/${legacyId}/complete`,{method:'POST'});assert.equal(complete.status,200,complete.text);assert.equal(complete.value.record.status,'completed');
+    const locked=await api('/api/records',{method:'PUT',body:{...body,version:complete.value.record.version}});assert.equal(locked.status,409);assert.equal(locked.value.error,'locked');
+  }
+});
+
+test('completion revalidates the authenticated session after a slow JSON body',async()=>{
+  const member=await account(),created=await api('/api/records',{method:'PUT',auth:member.cookie,body:{type:'daily',period:today,title:'不能被注销后的请求锁定',data:completionData('daily')}});assert.equal(created.status,200,created.text);const record=created.value.record,payload=JSON.stringify({version:record.version});
+  let upload;
+  const result=new Promise((resolve,reject)=>{upload=http.request(base+`/api/records/${record.id}/complete`,{method:'POST',headers:{Cookie:member.cookie,'Content-Type':'application/json','Content-Length':Buffer.byteLength(payload)}},response=>{let text='';response.on('data',chunk=>{text+=chunk});response.on('end',()=>resolve({status:response.statusCode,value:JSON.parse(text)}));response.on('error',reject)});upload.on('error',reject);upload.flushHeaders();upload.write(payload.slice(0,1))});
+  await new Promise(resolve=>setTimeout(resolve,40));assert.equal((await api('/api/auth/logout',{method:'POST',auth:member.cookie})).status,200);const before=row(record.id),events=activities();upload.end(payload.slice(1));
+  const denied=await result;assert.equal(denied.status,401);assert.equal(denied.value.error,'unauthorized');assert.deepEqual(row(record.id),before);assert.deepEqual(activities(),events);
 });

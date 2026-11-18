@@ -52,6 +52,11 @@ command -v git >/dev/null 2>&1 || fail "服务器没有安装 git。请先执行
 [ -d "$repo_dir/.git" ] || fail "$repo_dir 不是 Git 克隆目录。ZIP 解压版不能执行 git pull，请按 README 的“ZIP 旧部署迁移”处理。"
 [ -f "$app_dir/compose.yaml" ] || fail "缺少 $app_dir/compose.yaml，项目目录可能填写错误。"
 [ -f "$app_dir/.env" ] || fail "缺少 $app_dir/.env。为防止覆盖域名与加密密钥，脚本已停止。"
+origin="$(git_in_repo config --get remote.origin.url)" || fail '无法确认项目的仓库来源。'
+case "$origin" in
+  https://github.com/hikling/shendu-v1|https://github.com/hikling/shendu-v1.git|git@github.com:hikling/shendu-v1.git) ;;
+  *) fail '当前目录的 origin 不是 hikling/shendu-v1，未执行备份、拉取或容器更新。' ;;
+esac
 mkdir -p "$app_dir/tmp"
 update_lock_dir="$app_dir/tmp/.update.lock"
 if ! mkdir "$update_lock_dir" 2>/dev/null; then

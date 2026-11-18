@@ -337,7 +337,16 @@ function createWorkspace(container,options,daily){
     form.addEventListener('submit',event=>{event.preventDefault();if(!editable())return;const values=new FormData(form),selected=rows.flatMap((row,index)=>!row.removed&&!row.done&&(row.attemptedBody||values.get(`select-${index}`)==='on')?[{row,index,body:row.attemptedBody||{id:row.id,date:String(values.get(`date-${index}`)||day),kind:'expense',expression:String(values.get(`expression-${index}`)||''),purpose:String(values.get(`purpose-${index}`)||''),categoryId:String(values.get(`category-${index}`)||''),receiptIds:row.receiptIds,note:String(values.get(`note-${index}`)||''),source:daily?'daily':'finance'}}]:[]);
       if(!selected.length){$('[data-form-error]',form).textContent='请至少选择一笔待入账记录。';return}
       try{for(const item of selected){if(!item.row.receiptIds?.length)throw new Error(`第 ${item.index+1} 笔未保存截图，请配置图片存储后重新上传。`);if(item.row.receiptIds.length>10)throw new Error(`第 ${item.index+1} 笔最多关联10张截图，请减少图片后重试。`);if(item.row.kind!=='expense')throw new Error('收入或退款截图请使用对应记账入口。');if(parseMoneyExpression(item.body.expression)<=0)throw new Error(`请检查第 ${item.index+1} 笔金额。`)}}catch(error){$('[data-form-error]',form).textContent=error.message;return}
-      write(form,async current=>{for(const item of selected){item.row.attemptedBody=item.body;const locked=$(`[data-import-index="${item.index}"]`,form);for(const control of $$('input,select,button',locked))control.disabled=true;await request('/api/finance/entries',{method:'POST',body:item.body},current);if(!current())return;const section=$(`[data-import-index="${item.index}"]`,form);item.row.done=true;$('[data-import-result]',section).textContent='已入账';for(const control of $$('input,select,button',section))control.disabled=true;section.dataset.importDone='true'}if(current()){options.closeModal?.(true);await load();notify('选中账目已入账。','success')}});
+      write(form,async current=>{for(const item of selected){
+        item.row.attemptedBody=item.body;const locked=$(`[data-import-index="${item.index}"]`,form);for(const control of $$('input,select,button',locked))control.disabled=true;
+        try{await request('/api/finance/entries',{method:'POST',body:item.body},current)}catch(error){
+          // A definitive validation rejection committed nothing; let this row be
+          // corrected. Uncertain failures keep their original idempotent payload.
+          if(error.status===400&&current()){delete item.row.attemptedBody;for(const control of $$('input,select,button',locked))control.disabled=false;updateRowActions()}
+          throw error;
+        }
+        if(!current())return;const section=$(`[data-import-index="${item.index}"]`,form);item.row.done=true;$('[data-import-result]',section).textContent='已入账';for(const control of $$('input,select,button',section))control.disabled=true;section.dataset.importDone='true';
+      }if(current()){options.closeModal?.(true);await load();notify('选中账目已入账。','success')}});
     });
   }
   async function importFiles(files){

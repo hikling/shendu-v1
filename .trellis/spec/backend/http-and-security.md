@@ -40,6 +40,16 @@ External backup schedules use public/backup-schedule.js as the shared Beijing ci
 
 Result history retains ten Beijing calendar days including today, without a12-row or500-row truncation within that window. Only identifiable backup success/error events enter the result list; store attempted target name/kind and manual/scheduled source. Do not expose credentials when returning safe edit configuration. New site backups preserve schedule and run metadata; normalize imported timestamps to ISO before lexical cutoff comparisons. Legacy unknown test/backup failures must not be falsely relabeled. CLI snapshots read actual schema_meta version rather than hard-coding one.
 
+## Completion concurrency and legacy draft identity
+
+1. Scope: completing a draft after another tab saves, and saving drafts restored with pre-UUID IDs.
+2. Signature: current UI sends POST /api/records/:id/complete with {version: savedRecord.version}; old bodyless calls remain compatible.
+3. Contract: read the body and revalidate the session before selecting/locking. A supplied version must be a positive safe integer matching the owned draft; current UI always supplies it. Use the existing optimistic version in the lock UPDATE. Existing draft IDs use validStoredRecordId, never ID-based insertion; new IDs remain server UUIDs.
+4. Errors: malformed supplied version400/invalid_record_version; stale409/version_conflict with no record/activity mutation. Missing or foreign stored ID404; locked/wrong-period/version rules remain.
+5. Cases: v1 shown then v2 saved in another tab must reject v1 completion; current v2 may complete. Old valid draft IDs may save without changing identity; missing old ID cannot be recreated.
+6. Tests: real HTTP two-tab sequence, unchanged action/status/log after conflict, old no-version compatibility, live UI version payload and legacy owner/missing/locked cases.
+7. Wrong: lock whatever row happens to exist when an old page confirms. Correct: current UI identifies its reviewed version, backend rejects changes. Compatibility means old no-version clients lack this optimistic check, so refresh old pages after update.
+
 ## Write integrity and health metadata
 
 ### 1. Scope / Trigger

@@ -1,6 +1,6 @@
 # 慎独 · 开发与交接手册
 
-源码、设计素材、测试与维护规范统一通过 [GitHub 的 `main` 分支](https://github.com/hikling/shendu-v1/tree/main)交接。轻量交接包只提供仓库/文档入口、版本信息与校验清单，总大小小于 20 KiB，不重复装入项目文件。
+应用源码、设计素材、测试与公开维护文档通过 [GitHub 的 `main` 分支](https://github.com/hikling/shendu-v1/tree/main)交接，本地开发工具和详细任务规范另行提供。轻量交接包只提供仓库/文档入口、版本信息与校验清单，总大小小于 20 KiB，不重复装入项目文件。
 
 项目仓库：<https://github.com/hikling/shendu-v1>。日常维护以 GitHub `main` 为准；需要复现交接时点时，按包内 `VERSION.json` 中的提交和应用目录版本查阅。此次不交接运行站点的账户、个人复盘、数据库、密钥或备份，不执行线上迁移。
 
@@ -9,10 +9,10 @@
 1. [README](README.md)：产品入口、本地运行、当前一键部署和更新方式。
 2. [PRODUCT](PRODUCT.md)、[DESIGN](DESIGN.md)、[交互契约](UX-CONTRACT.md)：已经确认的产品、视觉和行为边界。
 3. [部署与维护](docs/deployment.md)、[迁移与回退](UPGRADING.md)：环境、数据、密钥、备份和故障处理。
-4. [组件接入](docs/shadcn-adoption.md)、[前端规范](.trellis/spec/frontend/index.md)、[后端规范](.trellis/spec/backend/index.md)：修改对应层之前阅读。
-5. [安全检查记录](docs/security-audit.md)、[CI 工作流](.github/workflows/verify.yml)：既有检查范围、限制和自动化门禁。
+4. [组件接入](docs/shadcn-adoption.md)、[交互契约](UX-CONTRACT.md)：修改界面前阅读；本地前后端详细规范需向维护者另行获取。
+5. [安全检查记录](docs/security-audit.md)：既有检查范围、限制和最终发布验证。
 
-开发由 Trellis 管理，工作流见 [.trellis/workflow.md](.trellis/workflow.md)。本手册、项目规范、素材源及历史 `docs/*-qa/` 验收材料均在 GitHub 仓库或其 Git 历史中查阅，不进入轻量包。包内文档链接会直接引导到仓库。
+开发曾由Trellis管理；最终版将 `.agents/skills`、`.codex`、`.github/workflows`、`.trellis` 仅保留在维护者本地，不随当前GitHub克隆提供，旧提交历史仍可查阅。完整本地规范、任务记录及工作流如需交接应另行提供。公开应用代码、素材和文档不依赖这些目录；轻量包仍只提供仓库与文档入口。
 
 ## 2. 第一天：在隔离环境运行
 
@@ -71,7 +71,7 @@ git rev-parse HEAD
 | `install.sh`、`shendu/scripts/install.sh`、`update.sh` | 仓库入口、安装与更新；后两者在 `shendu/scripts/` |
 | `shendu/scripts/prepare-image.sh`、`site-backup.sh`、`admin-cli.mjs` | 镜像准备、加密快照与离线管理工具 |
 | `shendu/compose.yaml`、`Dockerfile`、`Caddyfile` | 生产容器、构建与 HTTPS 反向代理 |
-| `shendu/tests/`、`scripts/`、`.github/workflows/` | 应用回归、部署场景与 CI |
+| `shendu/tests/`、`scripts/` | 应用回归、部署场景与轻量交接工具 |
 
 上表文件均从 GitHub 获取。`node_modules/` 与构建生成的 `shendu/public/ui/` 使用锁定依赖重新生成。运行环境不依赖 Python；交接打包、部分开发测试和素材加工工具另有各自依赖。
 
@@ -125,7 +125,7 @@ schema8新增 `activity_events` 使用日志表，与业务操作原子写入，
 
 运行中的站点使用 README 的“更新现有部署”命令下载最新更新器，默认示例显式选择先生成加密快照。更新器会先复制自身再拉取，旧进程不会在执行中途变成新版；只在现有目录重跑旧脚本可能继续触发旧问题。选择备份后，备份失败必须阻止拉取与容器替换。
 
-提交到 `main` 和 CI 成功不会自动修改自托管站点，仍需站点维护者执行更新。公网可用性还取决于 DNS、证书、防火墙和下载网络；镜像尚未发布时应等对应 Actions 成功后重试。
+最终版已发布的镜像继续可下载，公开仓库后续推送不再自动触发构建；修改应用后须维护者另行构建、验证和发布准确版本。同步main不会自动修改自托管站点，仍需执行README更新命令。公网可用性还取决于DNS、证书、防火墙和下载网络。
 
 排错先看 `docker compose ps`、应用日志、`/healthz` 与 `smoke:ui`；配置展开会包含密钥，不要公开完整 `docker compose config` 输出。密钥不可用时恢复原密钥，不要生成新密钥覆盖旧站。细节见[故障处理](docs/deployment.md#故障处理)。
 
@@ -139,7 +139,7 @@ ZIP 内只有一个 `shendu-v1-handover/` 根目录，且只包含以下三个�
 | `VERSION.json` | 本次交接对应的 Git 提交与应用目录版本信息 |
 | `HANDOVER-MANIFEST.json` | 入口文件的成员、大小和 SHA-256 校验清单 |
 
-整个 ZIP 必须小于 **20 KiB**，旁边附 `.zip.sha256`；程序、插画、原始 PNG、测试、规范、完整手册、历史验收材料及运行文件全部留在 GitHub 或各自受控环境，不复制进包。所有已采用插画及加工源文件继续保留在 GitHub，运行现有图片不需要 API 密钥。
+整个 ZIP 必须小于 **20 KiB**，旁边附 `.zip.sha256`；程序、插画、原始PNG、测试和公开手册留在GitHub，本地开发规范、任务记录及运行文件留在各自受控环境，不复制进包。所有已采用插画及加工源文件继续保留在GitHub，运行现有图片不需要API密钥。
 
 打包与校验需要 **Python 3.11 或以上**；只有打包需要 Git，并在干净的源码克隆根目录运行。校验器从 GitHub 项目中获取，它的 `--verify` 操作不依赖 Git：
 
