@@ -26,27 +26,37 @@ test('finance compact shadcn Select retains one native form value, real selectio
   const fieldset=$('fieldset');fieldset.disabled=true;await settle();assert.equal(trigger.disabled,true);fieldset.disabled=false;await settle();assert.equal(trigger.disabled,false);
 });
 
-test('history filters stay compact native selects with labels, values, disabled months and one change path',async()=>{
+test('history filters use downward Radix Select with native sync and dynamic month options',async()=>{
   renderMarkup(root,'<section class="history-page"><form><label>复盘类型<select id="history-type" name="type"><option value="all">全部类型</option><option value="daily" selected>每日复盘</option></select><span class="select-chevron" aria-hidden="true"></span></label><label>年份<select id="history-year" name="year"><option value="all">全部年份</option><option value="2026" selected>2026 年</option></select><span class="select-chevron" aria-hidden="true"></span></label><label>月份<select id="history-month" name="month" disabled><option value="all">先选年份</option><option value="11">11 月</option></select><span class="select-chevron" aria-hidden="true"></span></label></form></section>');
-  assert.equal($$('[data-slot="native-select-wrapper"]').length,3);
+  assert.equal($$('.sd-history-select [data-slot="select-trigger"]').length,3);
   assert.equal($('[role="radiogroup"]'),null);
   const type=$('#history-type'),year=$('#history-year'),month=$('#history-month');
+  const typeTrigger=$('[data-ui-select-for="history-type"]'),monthTrigger=$('[data-ui-select-for="history-month"]');
+  assert.equal(typeTrigger.getAttribute('role'),'combobox');
+  assert.equal(monthTrigger.disabled,true);
+  assert.match(monthTrigger.textContent,/先选年份/);
   for(const select of [type,year,month]){
-    assert.equal(select.getAttribute('aria-hidden'),null);
-    assert.equal(select.tabIndex,0);
+    assert.equal(select.getAttribute('aria-hidden'),'true');
+    assert.equal(select.tabIndex,-1);
     assert.equal(select.labels.length,1);
-    assert.equal(select.classList.contains('sd-choice-native'),false);
+    assert.equal(select.classList.contains('sd-choice-native'),true);
   }
   assert.equal(type.value,'daily');assert.equal(year.value,'2026');assert.equal(month.disabled,true);
   assert.deepEqual([...new win.FormData($('form'))],[['type','daily'],['year','2026']]);
   let changes=0,target;
   type.addEventListener('change',event=>{changes++;target=event.target;});
-  type.value='all';type.dispatchEvent(new win.Event('change',{bubbles:true}));await settle();
+  typeTrigger.focus();typeTrigger.dispatchEvent(new win.KeyboardEvent('keydown',{key:'ArrowDown',bubbles:true,cancelable:true}));await settle();
+  const listbox=document.querySelector('[role="listbox"]');
+  assert.ok(listbox);
+  assert.equal(listbox.getAttribute('data-side'),'bottom');
+  listbox.querySelector('[role="option"][data-state="unchecked"]').click();await settle();
   assert.equal(changes,1);assert.equal(target,type);assert.equal(type.value,'all');
-  month.disabled=false;month.value='11';month.dispatchEvent(new win.Event('change',{bubbles:true}));
+  month.disabled=false;month.options[0].textContent='全年';month.dispatchEvent(new win.Event('input',{bubbles:true}));await settle();
+  assert.equal(monthTrigger.disabled,false);assert.match(monthTrigger.textContent,/全年/);
+  month.value='11';month.dispatchEvent(new win.Event('change',{bubbles:true}));await settle();
   assert.equal(new win.FormData($('form')).get('month'),'11');
   enhanceUi(root);assert.equal($('#history-type'),type);assert.equal($('#history-month'),month);
-  $('form').reset();assert.equal(type.value,'daily');assert.equal(month.value,'all');
+  $('form').reset();await settle();assert.equal(type.value,'daily');assert.equal(month.value,'all');
 });
 
 test('direct shadcn choices preserve the one native value and emit one input/change event',async()=>{

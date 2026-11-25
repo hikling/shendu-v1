@@ -1,6 +1,6 @@
-.finance-period-control{display:inline-flex;align-items:center;gap:5px;max-width:100%;color:var(--workspace-ink,#244b43)}
-.finance-period-control .finance-period-arrow{display:grid;place-items:center;width:38px;min-height:42px;padding:0;border:0;background:transparent;box-shadow:none;color:inherit;border-radius:7px}
-.finance-period-trigger{display:flex;align-items:center;justify-content:center;gap:12px;min-height:44px;min-width:166px;padding:5px 10px;border:0;background:transparent;box-shadow:none;border-radius:7px;color:inherit;font:600 23px/1.4 "Noto Serif SC","Songti SC",serif;letter-spacing:.01em}
+.finance-period-control{display:inline-flex;align-items:center;gap:2px;max-width:100%;padding:2px 4px;border:1px solid #dce3d5;border-radius:12px;background:#f4f7f0;color:var(--workspace-ink,#244b43)}
+.finance-period-control .finance-period-arrow{display:grid;place-items:center;width:36px;min-height:38px;padding:0;border:0;background:transparent;box-shadow:none;color:inherit;border-radius:8px}
+.finance-period-trigger{display:flex;align-items:center;justify-content:center;gap:10px;min-height:38px;min-width:148px;padding:4px 10px;border:0;background:transparent;box-shadow:none;border-radius:8px;color:inherit;font:600 20px/1.35 "Noto Serif SC","Songti SC",serif;letter-spacing:.01em}
 .finance-period-trigger small{font-size:14px;font-weight:400;margin-left:2px;color:var(--muted-foreground,#6e7d73)}
 .finance-period-control button:focus-visible,.finance-day-trigger:focus-visible{outline:2px solid var(--ring,#176b67);outline-offset:2px}
 .finance-period-control button:disabled{opacity:.4}

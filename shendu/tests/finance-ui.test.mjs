@@ -144,6 +144,7 @@ test('the finance page and daily ledger render locked records and preserve recei
   const entries=[photoEntry,{...photoEntry,id:'legacy-deleted',deletedAt:'2026-11-15T12:00:00Z',receiptIds:['old-photo']}];
   for(const daily of [false,true]){
     const f=fixture({daily,initialEntries:entries});await flush();
+    if(!daily)$('[data-finance-day-card="2026-11-15"]',f.root).click();
     assert.ok($('[data-entry-id="photo-entry"] [data-receipt-open]',f.root));
     assert.ok($('[data-entry-id="photo-entry"] [data-entry-action="refund"]',f.root));
     assert.equal($('[data-entry-action="edit"],[data-entry-action="delete"],[data-entry-action="restore"]',f.root),null);
@@ -202,6 +203,7 @@ test('uncertain screenshot conflict retains its exact attempted payload and disa
 
 for(const daily of [false,true])test(`receipt lists ${daily?'inside a daily review':'on the finance page'} contain no thumbnails or eager image authorization`,async()=>{
   const reads=[];const f=fixture({daily,initialEntries:[{id:'photo-entry',date:'2026-11-15',kind:'expense',expression:'8',amountCents:800,purpose:'早餐',categoryId:'food',version:1,receiptIds:['receipt']}],receiptClient:{loadReceiptUrls:async(ids,variant)=>{reads.push({ids,variant});throw new Error('过期授权')}}});await flush();
+  if(!daily)$('[data-finance-day-card="2026-11-15"]',f.root).click();
   assert.equal(reads.length,0);assert.equal($$('img,[data-receipt-thumb],.finance-receipt-thumb', $('[data-finance-entries]',f.root)).length,0);
   const links=$$('[data-receipt-open]',f.root);assert.equal(links.length,1);assert.equal(links[0].textContent,'查看截图 · 1 张');
   links[0].click();await flush();assert.deepEqual(reads,[{ids:['receipt'],variant:'image'}]);assert.match($('[data-finance-image-status]').textContent,/过期授权/);assert.equal($('[data-finance-image-retry]').hidden,false);
@@ -216,14 +218,17 @@ const photoEntry={id:'photo-entry',date:'2026-11-15',kind:'expense',expression:'
 test('receipt preview uses the clicked entry metadata even when two entries share the same image',async()=>{
   const other={...photoEntry,id:'other-entry',date:'2026-11-14',kind:'income',purpose:'稿酬 <img src=x onerror=bad()>',amountCents:12600,categoryId:'salary',receiptIds:['receipt-a']},reads=[];
   const f=fixture({initialEntries:[photoEntry,other],receiptClient:{loadReceiptUrls:async(ids,variant)=>{reads.push({ids,variant});return {[ids[0]]:'https://private.example.com/shared.webp'}}}});await flush();
+  $('[data-finance-day-card="2026-11-14"]',f.root).click();
   const row=$('[data-entry-id="other-entry"]',f.root);assert.equal($('.finance-entry-heading h3',row).textContent,other.purpose);assert.equal($$('.finance-entry-tag',row).length,2);assert.ok($('.finance-entry-footer .finance-entry-actions',row));
   $('.finance-receipt-link',row).click();await flush();const modal=$('.finance-image-dialog');assert.equal($('.modal-head h2',modal).textContent,other.purpose);assert.equal($('.modal-head img',modal),null);assert.equal($('.finance-receipt-amount',modal).textContent,'+¥126.00');assert.equal($('time',modal).textContent,'2026-11-14');assert.equal($('time',modal).dateTime,'2026-11-14');assert.match($('.finance-receipt-details',modal).textContent,/收入.*工资/);assert.doesNotMatch(modal.textContent,/账目截图|原图未上传/);
   assert.deepEqual(reads,[{ids:['receipt-a'],variant:'image'}]);assert.equal($('.finance-image-navigation',modal).hidden,true);
+  $('[data-finance-day-card="2026-11-15"]',f.root).click();
   $('.finance-receipt-link',$('[data-entry-id="photo-entry"]',f.root)).click();await flush();assert.equal($('.modal-head h2',$('.finance-image-dialog')).textContent,'早餐');assert.equal($('.finance-receipt-amount').textContent,'−¥8.00');assert.equal($('time',$('.finance-image-dialog')).textContent,'2026-11-15');assert.equal(reads.length,2);
 });
 
 test('receipt gallery opens one image at a time and isolates rapid next/back requests and old image events',async()=>{
   const reads=[];const f=fixture({initialEntries:[photoEntry],receiptClient:{loadReceiptUrls:async(ids,variant,options)=>{assert.equal(variant,'image');return new Promise((resolve,reject)=>reads.push({ids,resolve,reject,current:options.isCurrent}))}}});await flush();
+  $('[data-finance-day-card="2026-11-15"]',f.root).click();
   $('.finance-receipt-link',f.root).click();await flush();const view=$('[data-finance-image-view]'),firstImage=$('img',view),previous=$('[data-finance-image-previous]'),next=$('[data-finance-image-next]');
   assert.equal(reads.length,1);assert.deepEqual(reads[0].ids,['receipt-a']);assert.equal(previous.disabled,true);assert.equal(next.disabled,false);assert.equal($('[data-finance-image-position]').textContent,'1 / 2');
   previous.dispatchEvent(new win.Event('click'));await flush();assert.equal(reads.length,1);
@@ -237,6 +242,7 @@ test('receipt gallery opens one image at a time and isolates rapid next/back req
 
 test('full-image load failure offers a retry that obtains fresh authorization without replacing the modal',async()=>{
   const reads=[];const f=fixture({initialEntries:[photoEntry],receiptClient:{loadReceiptUrls:async(ids,variant)=>{assert.equal(variant,'image');reads.push(ids);return {[ids[0]]:`https://private.example.com/image.webp?signature=${reads.length}`}}}});await flush();
+  $('[data-finance-day-card="2026-11-15"]',f.root).click();
   $('[data-receipt-open="receipt-a"]',f.root).click();await flush();const view=$('[data-finance-image-view]'),image=$('img',view),message=$('[data-finance-image-status]',view),retry=$('[data-finance-image-retry]');assert.equal(reads.length,1);assert.match(image.src,/signature=1/);
   image.dispatchEvent(new win.Event('error'));assert.equal(image.hidden,true);assert.equal(message.hidden,false);assert.match(message.textContent,/截图加载失败.*授权已过期/);assert.equal(retry.hidden,false);
   retry.click();await flush();assert.equal($('[data-finance-image-view]'),view);assert.equal(reads.length,2);const refreshed=$('img',view);assert.notEqual(refreshed,image);assert.match(refreshed.src,/signature=2/);refreshed.dispatchEvent(new win.Event('load'));assert.equal(message.hidden,true);assert.equal(refreshed.hidden,false);assert.equal(retry.hidden,true);
@@ -244,13 +250,14 @@ test('full-image load failure offers a retry that obtains fresh authorization wi
 });
 
 test('a late full-image authorization cannot replace a newer same-account reauthentication modal',async()=>{
-  let finish,guard;const f=fixture({initialEntries:[photoEntry],receiptClient:{loadReceiptUrls:async(ids,variant,options)=>{assert.equal(variant,'image');guard=options.isCurrent;return new Promise(resolve=>{finish=resolve})}}});await flush();$('[data-receipt-open="receipt-a"]',f.root).click();await flush();assert.equal(guard(),true);
+  let finish,guard;const f=fixture({initialEntries:[photoEntry],receiptClient:{loadReceiptUrls:async(ids,variant,options)=>{assert.equal(variant,'image');guard=options.isCurrent;return new Promise(resolve=>{finish=resolve})}}});await flush();$('[data-finance-day-card="2026-11-15"]',f.root).click();$('[data-receipt-open="receipt-a"]',f.root).click();await flush();assert.equal(guard(),true);
   ui.renderMarkup($('#modal-root'),'<section class="modal" id="replacement-reauth"><h2>重新登录</h2><input type="password" value="保持当前输入"></section>');$('#modal-root').dataset.persistent='1';assert.equal(guard(),false);
   finish({'receipt-a':'https://private.example.com/stale.webp'});await flush();assert.ok($('#replacement-reauth'));assert.equal($('input',$('#replacement-reauth')).value,'保持当前输入');assert.equal($('#modal-root').dataset.persistent,'1');assert.equal($('[data-finance-image-view]'),null);assert.equal(f.notices.length,0);
 });
 
 test('old image-read failures stay silent while the latest receipt keeps its own inline retry',async()=>{
   const reads=[];const f=fixture({initialEntries:[photoEntry],receiptClient:{loadReceiptUrls:async(ids,variant,options)=>{assert.equal(variant,'image');return new Promise((resolve,reject)=>reads.push({ids,resolve,reject,current:options.isCurrent}))}}});await flush();
+  $('[data-finance-day-card="2026-11-15"]',f.root).click();
   $('[data-receipt-open="receipt-a"]',f.root).click();await flush();$('[data-finance-image-next]').click();await flush();assert.equal(reads[0].current(),false);assert.equal(reads[1].current(),true);const view=$('[data-finance-image-view]');
   reads[0].reject(new Error('旧截图错误不能出现'));reads[1].reject(new Error('图片授权暂时不可用'));await flush();assert.equal($('[data-finance-image-view]'),view);assert.match(view.textContent,/图片授权暂时不可用/);assert.doesNotMatch(view.textContent,/旧截图错误/);assert.equal($('[data-finance-image-retry]').hidden,false);assert.equal(f.notices.length,0);
   $('[data-finance-image-retry]').click();$('[data-finance-image-retry]').dispatchEvent(new win.Event('click'));await flush();assert.equal(reads.length,3);assert.deepEqual(reads[2].ids,['receipt-b']);reads[2].resolve({'receipt-b':'https://private.example.com/latest.webp'});await flush();assert.match($('img',view).src,/latest\.webp/);
@@ -301,6 +308,7 @@ test('textarea composition preserves the active native node, caret and draft wit
 
 test('ledger shows the amount only on the right and keeps refunds as separate entries',async()=>{
   const f=fixture({initialEntries:[{id:'vegetables',date:'2026-11-15',kind:'expense',expression:'8+8-1',amountCents:1500,purpose:'买菜',categoryId:'food',note:'晚饭用',receiptIds:[],version:1},{id:'refund',date:'2026-11-15',kind:'refund',expression:'2',amountCents:200,purpose:'退菜',categoryId:'food',refundOf:'vegetables',receiptIds:[],version:1}]});await flush();
+  $('[data-finance-day-card="2026-11-15"]',f.root).click();
   const row=$('[data-entry-id="vegetables"]',f.root),copy=$('.finance-entry-copy',row);
   assert.match(copy.textContent,/买菜/);assert.match(copy.textContent,/晚饭用/);assert.doesNotMatch(copy.textContent,/8\+8-1|15\.00/);
   assert.equal($('.finance-entry-amount',row).textContent,'−¥15.00');assert.match($('[data-entry-id="refund"] .finance-entry-copy',f.root).textContent,/已关联原支出/);
@@ -362,12 +370,13 @@ test('ledger day/month scope keeps monthly totals, independent chart dates, pagi
   const make=(id,date,amountCents)=>({id,date,kind:'expense',categoryId:'food',purpose:id,amountCents,expression:String(amountCents/100),receiptIds:[],version:1});
   const f=fixture({initialEntries:[make('今天早餐','2026-11-15',800),make('昨天面条','2026-11-14',1200)]});await flush();
   const form=$('[data-finance-create]',f.root),field=input(form,'text','30 尚未入账'),filters=$('[data-finance-filters]',f.root),summary=$('[data-finance-summary]',f.root);
-  assert.equal(filters.elements.range.value,'month');assert.equal($$('.finance-entry',f.root).length,2);
+  assert.equal(filters.elements.range.value,'month');assert.equal($$('.finance-day-card',f.root).length,2);assert.equal($$('.finance-entry',f.root).length,0);
+  $('[data-finance-day-card="2026-11-15"]',f.root).click();assert.equal($$('.finance-entry',f.root).length,1);assert.match($('[data-finance-day-detail="2026-11-15"]',f.root).textContent,/今天早餐/);
   change(filters,'range','day');await flush();assert.equal($$('.finance-entry',f.root).length,1);assert.match($('[data-finance-entries]',f.root).textContent,/今天早餐/);assert.match(summary.textContent,/20\.00/);assert.match($('[data-finance-month-pie]',f.root).textContent,/20\.00/);
   assert.equal($('[data-finance-ledger-date-row]',f.root).hidden,false);$('[aria-label^="选择明细日期"]',f.root).click();await flush();$('[aria-label="2026-11-14"]').click();await flush();
   assert.match($('[data-finance-entries]',f.root).textContent,/昨天面条/);assert.doesNotMatch($('[data-finance-entries]',f.root).textContent,/今天早餐/);assert.match(summary.textContent,/20\.00/);assert.match($('[data-finance-day-pie]',f.root).textContent,/8\.00/,'ledger date does not change the independent daily chart');
   f.setCursor('next-day-page');$('[data-finance-refresh]',f.root).click();await flush();$('[data-finance-more]',f.root).click();await flush();assert.ok(f.calls.some(call=>call.path.includes('date=2026-11-14')&&call.path.includes('cursor=next-day-page')));
-  change(filters,'range','month');await flush();assert.equal($$('.finance-entry',f.root).length,2);assert.equal($('[data-finance-ledger-date-row]',f.root).hidden,true);assert.equal(form.elements.text,field);assert.equal(field.value,'30 尚未入账');assert.equal(f.calls.some(call=>call.args.method==='POST'),false);
+  change(filters,'range','month');await flush();assert.equal($$('.finance-day-card',f.root).length,2);assert.equal($$('.finance-entry',f.root).length,0);assert.equal($('[data-finance-ledger-date-row]',f.root).hidden,true);assert.equal(form.elements.text,field);assert.equal(field.value,'30 尚未入账');assert.equal(f.calls.some(call=>call.args.method==='POST'),false);
 });
 
 test('a stale day-list response cannot overwrite a newer month view or its pagination',async()=>{
@@ -403,6 +412,7 @@ test('unknown quick-entry purposes show their own classification and save automa
 test('registering a refund lets the user resume automatic classification and then choose a manual category',async()=>{
   const f=fixture({initialEntries:[{id:'older-meal',date:'2026-11-15',kind:'expense',expression:'8',amountCents:800,purpose:'买面条',categoryId:'shopping',version:1,receiptIds:[]}]});
   await flush();
+  $('[data-finance-day-card="2026-11-15"]',f.root).click();
   $('[data-entry-action="refund"]',f.root).click();
   const form=$('#finance-refund-form');
   assert.equal(form.elements.categoryId.value,'shopping');
@@ -510,7 +520,7 @@ test('income form has only date, amount, source and note while classification st
 });
 
 test('ledger receipt count links open the private image and upload explicitly awaits confirmation',async()=>{
-  const reads=[];const f=fixture({initialEntries:[photoEntry],receiptClient:{loadReceiptUrls:async(ids,variant)=>{reads.push({ids,variant});return {[ids[0]]:'https://private.example.com/photo.webp'}},processReceiptFiles:async()=>({candidates:[{expression:'5',purpose:'吃饭',kind:'expense',receiptIds:['new-photo']}],receiptIds:['new-photo'],warnings:[]})}});await flush();const link=$('.finance-receipt-link',f.root);assert.equal(link.textContent,'查看截图 · 2 张');link.click();await flush();assert.ok($('[data-finance-image-view]'));assert.deepEqual(reads.find(read=>read.variant==='image').ids,['receipt-a']);
+  const reads=[];const f=fixture({initialEntries:[photoEntry],receiptClient:{loadReceiptUrls:async(ids,variant)=>{reads.push({ids,variant});return {[ids[0]]:'https://private.example.com/photo.webp'}},processReceiptFiles:async()=>({candidates:[{expression:'5',purpose:'吃饭',kind:'expense',receiptIds:['new-photo']}],receiptIds:['new-photo'],warnings:[]})}});await flush();$('[data-finance-day-card="2026-11-15"]',f.root).click();const link=$('.finance-receipt-link',f.root);assert.equal(link.textContent,'查看截图 · 2 张');link.click();await flush();assert.ok($('[data-finance-image-view]'));assert.deepEqual(reads.find(read=>read.variant==='image').ids,['receipt-a']);
   ui.disposeUi($('#modal-root'));$('#modal-root').replaceChildren();selectScreenshot(f);await flush();assert.match($('[data-finance-status]',f.root).textContent,/尚未入账/);assert.match($('#finance-import-form').textContent,/已附 1 张压缩截图/);assert.equal(f.calls.some(call=>call.path==='/api/finance/entries'),false);submit($('#finance-import-form'));await flush();assert.deepEqual(f.calls.find(call=>call.path==='/api/finance/entries').args.body.receiptIds,['new-photo']);assert.ok($('[data-receipt-open="new-photo"]',f.root));
 });
 
@@ -628,9 +638,37 @@ test('income and refund modal changes do not throw and storage readiness note re
   $('[data-finance-detail]',f.root).click();
   const detail=$('#finance-detail-form');
   assert.doesNotThrow(()=>{change(detail,'categoryId','salary');detail.elements.kind.dispatchEvent(new win.Event('change',{bubbles:true}))});
+  $('[data-finance-day-card="2026-11-15"]',f.root).click();
   $('[data-entry-action="refund"]',f.root).click();
   const refund=$('#finance-refund-form');
   assert.doesNotThrow(()=>{change(refund,'categoryId','shopping');change(refund,'kind','refund')});
   const f2=fixture({initialStorage:{configured:true,config:{endpoint:'https://s3.example.com',bucket:'b'},version:1,receiptCount:0,disconnected:false,targets:[]}});await flush();
   assert.match($('[data-storage-note]',f2.root).textContent,/压缩截图保存在你配置的私有存储/);
+});
+
+test('month ledger groups entries into collapsed day cards that expand on click and toggle cleanly',async()=>{
+  const initialEntries=[
+    {id:'e-1',date:'2026-11-15',kind:'expense',expression:'35.5',amountCents:3550,purpose:'午饭',categoryId:'food',receiptIds:[],version:1},
+    {id:'e-2',date:'2026-11-15',kind:'expense',expression:'12',amountCents:1200,purpose:'地铁',categoryId:'transport',receiptIds:[],version:1},
+    {id:'e-3',date:'2026-11-14',kind:'income',expression:'800',amountCents:80000,purpose:'兼职稿酬',categoryId:'salary',receiptIds:[],version:1}
+  ];
+  const f=fixture({initialEntries});await flush();
+  const cards=$$('.finance-day-card',f.root);
+  assert.equal(cards.length,2);
+  assert.equal($$('.finance-entry',f.root).length,0);
+  assert.match($('[data-finance-day-card="2026-11-15"]',f.root).textContent,/¥47\.50/);
+  assert.match($('[data-finance-day-card="2026-11-14"]',f.root).textContent,/\+¥800\.00/);
+  assert.equal($('[data-finance-day-card="2026-11-15"]',f.root).closest('[data-slot="button"]'),null);
+  $('[data-finance-day-card="2026-11-15"]',f.root).click();
+  assert.equal($('[data-finance-day-detail]',f.root).dataset.financeDayDetail,'2026-11-15');
+  assert.equal($$('.finance-entry',f.root).length,2);
+  assert.match($('[data-finance-day-detail]',f.root).textContent,/午饭/);
+  assert.doesNotMatch($('[data-finance-day-detail]',f.root).textContent,/兼职稿酬/);
+  $('[data-finance-day-card="2026-11-14"]',f.root).click();
+  assert.equal($('[data-finance-day-detail]',f.root).dataset.financeDayDetail,'2026-11-14');
+  assert.equal($$('.finance-entry',f.root).length,1);
+  assert.match($('[data-finance-day-detail]',f.root).textContent,/兼职稿酬/);
+  $('[data-finance-day-close]',f.root).click();
+  assert.equal($('[data-finance-day-detail]',f.root),null);
+  assert.equal($$('.finance-entry',f.root).length,0);
 });

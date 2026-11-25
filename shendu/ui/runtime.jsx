@@ -190,30 +190,76 @@ function NativeChoices({initial, nativeProps, options, html}) {
   </span>;
 }
 
-// Finance uses the maintained shadcn Select; the original native select stays
-// the sole named field/event target for legacy bindings and FormData.
-function FinanceSelect({initial,nativeProps,options,html}) {
-  const native=useRef(null),trigger=useRef(null);
-  const [value,setValue]=useState(initial),[disabled,setDisabled]=useState(Boolean(nativeProps.disabled)),[invalid,setInvalid]=useState(false);
-  useEffect(()=>{
-    const select=native.current,sync=()=>{setValue(select.value);setDisabled(select.matches(':disabled'));setInvalid(select.getAttribute('aria-invalid')==='true')},reset=()=>queueMicrotask(sync);
-    const changed=()=>{sync();queueMicrotask(()=>{if(select.isConnected)sync()})};
-    const observer=new MutationObserver(sync);observer.observe(select,{attributes:true,attributeFilter:['disabled','required','aria-invalid','aria-describedby']});
-    for(let parent=select.parentElement;parent;parent=parent.parentElement)if(parent.tagName==='FIELDSET')observer.observe(parent,{attributes:true,attributeFilter:['disabled']});
-    select.addEventListener('input',changed);select.addEventListener('change',changed);select.form?.addEventListener('reset',reset);sync();
-    return ()=>{observer.disconnect();select.removeEventListener('input',changed);select.removeEventListener('change',changed);select.form?.removeEventListener('reset',reset)};
-  },[]);
-  const selected=options.findIndex(option=>option.value===value),focus=()=>trigger.current?.focus();
-  return <span className="sd-finance-select" data-ui-native="">
-    <select {...nativeProps} ref={native} defaultValue={initial} className="sd-choice-native" data-slot="native-select" tabIndex={-1} aria-hidden="true" onFocus={focus} onInvalid={event=>{event.preventDefault();setInvalid(true);focus()}} dangerouslySetInnerHTML={{__html:html}}/>
-    <Select value={selected<0?'':`option-${selected}`} disabled={disabled} onValueChange={key=>{
-      const option=options[Number(key.slice(7))],select=native.current;
-      if(!option||option.disabled||select.matches(':disabled')||select.value===option.value)return;
-      select.value=option.value;setValue(option.value);setInvalid(false);
-      select.dispatchEvent(new Event('input',{bubbles:true}));select.dispatchEvent(new Event('change',{bubbles:true}));
-    }}>
-      <SelectTrigger ref={trigger} aria-label={nativeProps['aria-label']} aria-labelledby={nativeProps['aria-labelledby']} aria-describedby={native.current?.getAttribute('aria-describedby')||nativeProps['aria-describedby']} aria-invalid={invalid||undefined} aria-required={nativeProps.required||undefined} data-ui-select-for={nativeProps.id||nativeProps.name||''}><SelectValue/></SelectTrigger>
-      <SelectContent className="sd-surface finance-select-menu">{options.map((option,index)=><SelectItem key={index} value={`option-${index}`} disabled={option.disabled}>{option.label}</SelectItem>)}</SelectContent>
+function readOptions(select) {
+  return [...select.options].map(option => ({
+    value: option.value,
+    label: option.label || option.textContent.trim(),
+    disabled: option.disabled || option.parentElement?.disabled === true,
+  }));
+}
+
+// Compact selects (history filters and finance fields) use Radix Select so the
+// menu reliably unfurls downward with paper styling while keeping native form
+// semantics and events on the hidden select.
+function CompactSelect({initial, nativeProps, options, html, variant = 'finance'}) {
+  const native = useRef(null), trigger = useRef(null);
+  const [optionList, setOptionList] = useState(options);
+  const [value, setValue] = useState(initial), [disabled, setDisabled] = useState(Boolean(nativeProps.disabled)), [invalid, setInvalid] = useState(false);
+  const [menuBounds, setMenuBounds] = useState({avoidCollisions: false, maxHeight: 320});
+  useEffect(() => {
+    const select = native.current;
+    const sync = () => {
+      setValue(select.value);
+      setDisabled(select.matches(':disabled'));
+      setInvalid(select.getAttribute('aria-invalid') === 'true');
+      setOptionList(readOptions(select));
+    };
+    const reset = () => queueMicrotask(sync);
+    const changed = () => {sync(); queueMicrotask(() => {if (select.isConnected) sync();});};
+    const observer = new MutationObserver(sync);
+    observer.observe(select, {
+      attributes: true,
+      attributeFilter: ['disabled', 'required', 'aria-invalid', 'aria-describedby'],
+      childList: true,
+      subtree: true,
+      characterData: true,
+    });
+    for (let parent = select.parentElement; parent; parent = parent.parentElement) {
+      if (parent.tagName === 'FIELDSET') observer.observe(parent, {attributes: true, attributeFilter: ['disabled']});
+    }
+    select.addEventListener('input', changed);
+    select.addEventListener('change', changed);
+    select.form?.addEventListener('reset', reset);
+    sync();
+    return () => {
+      observer.disconnect();
+      select.removeEventListener('input', changed);
+      select.removeEventListener('change', changed);
+      select.form?.removeEventListener('reset', reset);
+    };
+  }, []);
+  const selected = optionList.findIndex(option => option.value === value), focus = () => trigger.current?.focus();
+  const wrapperClass = variant === 'finance' ? 'sd-select sd-finance-select' : 'sd-select sd-history-select';
+  return <span className={wrapperClass} data-ui-native="">
+    <select {...nativeProps} ref={native} defaultValue={initial} className="sd-choice-native" data-slot="native-select" tabIndex={-1} aria-hidden="true" onFocus={focus} onInvalid={event => {event.preventDefault(); setInvalid(true); focus();}} dangerouslySetInnerHTML={{__html: html}}/>
+    <Select value={selected < 0 ? '' : `option-${selected}`} disabled={disabled}
+      onOpenChange={open => {
+        if (!open || !trigger.current) return;
+        const rect = trigger.current.getBoundingClientRect();
+        const below = Math.floor(window.innerHeight - rect.bottom - 14);
+        setMenuBounds(below >= 132 ? {avoidCollisions: false, maxHeight: Math.min(320, below)} : {avoidCollisions: true, maxHeight: 280});
+      }}
+      onValueChange={key => {
+        const option = optionList[Number(key.slice(7))], select = native.current;
+        if (!option || option.disabled || select.matches(':disabled') || select.value === option.value) return;
+        select.value = option.value;
+        setValue(option.value);
+        setInvalid(false);
+        select.dispatchEvent(new Event('input', {bubbles: true}));
+        select.dispatchEvent(new Event('change', {bubbles: true}));
+      }}>
+      <SelectTrigger ref={trigger} aria-label={nativeProps['aria-label']} aria-labelledby={nativeProps['aria-labelledby']} aria-describedby={native.current?.getAttribute('aria-describedby') || nativeProps['aria-describedby']} aria-invalid={invalid || undefined} aria-required={nativeProps.required || undefined} data-ui-select-for={nativeProps.id || nativeProps.name || ''}><SelectValue/></SelectTrigger>
+      <SelectContent side="bottom" align="start" sideOffset={6} avoidCollisions={menuBounds.avoidCollisions} style={{maxHeight: `${menuBounds.maxHeight}px`}} className="sd-surface sd-select-menu finance-select-menu">{optionList.map((option, index) => <SelectItem key={index} value={`option-${index}`} disabled={option.disabled}>{option.label}</SelectItem>)}</SelectContent>
     </Select>
   </span>;
 }
@@ -245,15 +291,13 @@ function componentFor(node) {
   if (tag === 'textarea') return <Textarea {...props} defaultValue={node.value}/>;
   if (tag === 'select') {
     const selected = node.multiple ? [...node.selectedOptions].map(option => option.value) : node.value;
-    // History filters retain their compact native dropdowns by explicit product
-    // choice. Other single selects keep the directly visible RadioGroup.
     const historyFilter=node.matches('#history-type,#history-year,#history-month')&&node.closest('.history-page');
     const financeCompact=node.hasAttribute('data-finance-compact')&&node.closest('.finance-page,.finance-daily,.finance-dialog,.finance-import-row');
     // Multiple selects retain their native multi-value list contract.
-    if(node.multiple||historyFilter)return <NativeSelect {...props} defaultValue={selected} {...raw(node)}/>;
+    if(node.multiple)return <NativeSelect {...props} defaultValue={selected} {...raw(node)}/>;
     if(!props['aria-label']&&!props['aria-labelledby'])props['aria-label']=selectLabel(node);
-    const options=[...node.options].map(option=>({value:option.value,label:option.label,disabled:option.disabled||option.parentElement?.disabled===true}));
-    if(financeCompact)return <FinanceSelect nativeProps={props} initial={selected} options={options} html={node.innerHTML}/>;
+    const options=readOptions(node);
+    if(financeCompact||historyFilter)return <CompactSelect nativeProps={props} initial={selected} options={options} html={node.innerHTML} variant={historyFilter?'history':'finance'}/>;
     return <NativeChoices nativeProps={props} initial={selected} options={options} html={node.innerHTML}/>;
   }
   if (tag === 'label') return <Label {...props} {...raw(node)}/>;
