@@ -220,37 +220,68 @@ export function financeCategoryLabel(purpose,categories=DEFAULT_FINANCE_CATEGORI
   return categoryId==='uncategorized'?(String(purpose??'').trim().slice(0,160)||'待填写用途'):categories.find(category=>category.id===categoryId)?.name||String(purpose??'').trim().slice(0,160);
 }
 
-function receiptDate(text,fallback){
-  const match=text.match(/\b(20\d{2})[年\/.\-](\d{1,2})[月\/.\-](\d{1,2})(?:日|\b)/);
-  if(!match)return fallback;
-  const date=`${match[1]}-${match[2].padStart(2,'0')}-${match[3].padStart(2,'0')}`,parsed=new Date(`${date}T12:00:00Z`);
-  return Number.isFinite(parsed.valueOf())&&parsed.toISOString().slice(0,10)===date?date:fallback;
+const normalizeReceiptText=value=>String(value??'').slice(0,50_000).normalize('NFKC')
+  .replace(/[−–—‑‒﹣]/g,'-').replace(/(?<=\p{Script=Han})[^\S\r\n]+(?=\p{Script=Han})/gu,'');
+const RECEIPT_DATE=/(?<!\d)(20\d{2})\s*[年/.-]\s*(\d{1,2})\s*[月/.-]\s*(\d{1,2})(?:\s*日|(?!\d))/;
+const RECEIPT_TIME_LABEL=/(?:支付|付款|转账|交易|到账|退款)(?:时间|日期)/;
+const ACTUAL_AMOUNT_LABEL=/实(?:际)?(?:支付|付(?:款)?|收(?:款)?)(?:金额)?|到账金额|退款金额/;
+const AMOUNT_LABEL=/(?:支付|付款|合计|收支)金额/;
+const NON_AMOUNT_FIELD=/(?:余额|优惠|折扣|减免|手续费|订单(?:编)?号|单号|交易号|账单号|流水号|支付方式|收单机构)/;
+
+function receiptDate(lines,fallback){
+  for(const line of [...lines.filter(line=>RECEIPT_TIME_LABEL.test(line)),...lines]){
+    const match=line.match(RECEIPT_DATE);
+    if(!match)continue;
+    const [,year,month,day]=match,date=[year,month.padStart(2,'0'),day.padStart(2,'0')].join('-'),parsed=new Date(date+'T12:00:00Z');
+    if(Number.isFinite(parsed.valueOf())&&parsed.toISOString().slice(0,10)===date)return date;
+  }
+  return fallback;
 }
 
-// OCR is a draft, not a transaction: leave ambiguity visible for human confirmation.
-export function parseReceiptText(value,{date='',categories=DEFAULT_FINANCE_CATEGORIES}={}){
-  const text=String(value??'').slice(0,50_000).replace(/[￥¥]/g,'¥'),lines=text.split(/\r?\n/).map(line=>line.trim()).filter(Boolean);
-  if(!lines.length)return [];
-  const found=[];
-  const merchant=lines.find(line=>/^(?:商户(?:名称|全称)?|收款(?:方|商家)|商品(?:说明|名称)?|交易对方)\s*[:：]?\s*\S/.test(line));
-  const merchantName=merchant?.replace(/^(?:商户(?:名称|全称)?|收款(?:方|商家)|商品(?:说明|名称)?|交易对方)\s*[:：]?\s*/,'').slice(0,120)||'';
-  const transactionDate=receiptDate(text,date);
-  const strong=lines.filter(line=>/(?:实付|实付款|支付金额|付款金额|实收|到账金额|退款金额|合计金额|收支金额)/.test(line));
-  const candidates=strong.length?strong:lines.filter(line=>/(?:¥\s*[-+]?\s*\d|(?:^|\s)[-+]\s*\d+\.\d{2}\b|\d+\.\d{2}\s*元)/.test(line)&&!/(?:余额|优惠|折扣|减免|手续费|订单号|交易号|账单号)/.test(line));
-  for(const line of candidates.slice(0,30)){
-    const matches=[...line.matchAll(/(?:¥\s*)?([-+]?\s*\d{1,9}(?:,\d{3})*(?:\.\d{1,2})?)(?:\s*元)?/g)].filter(match=>!/^20\d{2}$/.test(match[1].trim()));
-    if(!matches.length)continue;
-    // Currency marker/decimal takes precedence over unrelated counts on the same line.
-    const chosen=matches.find(match=>match[0].includes('¥'))||matches.find(match=>match[1].includes('.'))||matches.at(-1);
-    const expression=chosen[1].replace(/[\s,+]/g,'').replace(/^-/,'');
-    let amount;try{amount=parseMoneyExpression(expression)}catch{continue}
-    if(amount<=0)continue;
-    const kind=/退款/.test(line)||(/退款成功/.test(text)&&strong.length<=1)?'refund':/(?:实收|到账|收入|收款成功)/.test(line)?'income':'expense';
-    const purpose=merchantName||line.replace(chosen[0],'').replace(/(?:支付金额|付款金额|实付款?|实收|到账金额|退款金额|合计金额|收支金额|元|[:：])/g,'').trim().slice(0,120)||'截图识别';
-    const warnings=['请核对金额、日期和分类后入账'];
-    if(!transactionDate)warnings.push('未识别到日期');
-    if(!merchantName)warnings.push('用途需要核对');
-    found.push({date:transactionDate,expression:formatFinanceMoney(amount).replace(/,/g,''),purpose,kind,categoryId:suggestFinanceCategory(purpose,categories,kind),confidence:strong.includes(line)?'medium':'low',warnings});
+function receiptMerchant(lines){
+  for(const line of lines){
+    const field=line.match(/^(?:商户(?:名称|全称|简称)|商户\s*:|收款(?:方(?!备注)|商家)|商品(?:说明|名称)?|交易对方)\s*:?\s*(.*)$/);
+    if(!field)continue;
+    const value=field[1].split(/[-\s]*(?:订单(?:编)?号|商户单号|交易单号)/)[0].trim();
+    if(/\p{L}/u.test(value))return value.slice(0,120);
   }
-  return found;
+  return '';
+}
+
+function receiptAmount(line,label=''){
+  const value=label?line.slice(line.indexOf(label)+label.length):line;
+  const numberTokens=/(?<![\p{L}\d.,:])(?:¥\s*)?([-+]?\s*(?:\d{1,3}(?:,\d{3})+|\d{1,9})(?:\s*\.\s*\d{1,2})?)(?:\s*元)?(?![\d.,:])/gu;
+  const matches=[...value.matchAll(numberTokens)],chosen=matches.find(match=>match[0].includes('¥'))||matches.find(match=>match[1].includes('.'))||(label?matches[0]:null);
+  if(!chosen)return null;
+  const signed=chosen[1].replace(/[\s,]/g,''),expression=signed.replace(/^[-+]/,'');
+  let cents;try{cents=parseMoneyExpression(expression)}catch{return null}
+  return cents>0?{cents,signed,token:chosen[0]}:null;
+}
+
+// Amounts remain editable until the user confirms the screenshot.
+export function parseReceiptText(value,{date='',categories=DEFAULT_FINANCE_CATEGORIES,primaryAmount=''}={}){
+  const text=normalizeReceiptText(value),lines=text.split(/\r?\n/).map(line=>line.trim().replace(/^一(?=\s*\d+\s*\.\s*\d{2}$)/,'-')).filter(Boolean);
+  if(!lines.length||lines.some(line=>/^(?:当前状态\s*:?\s*)?(?:待支付|支付失败|交易关闭|交易取消|已取消|未支付)\s*$/.test(line)))return [];
+  const merchant=receiptMerchant(lines),recognizedDate=receiptDate(lines,'');
+  const labeled=lines.flatMap(line=>{
+    const actual=line.match(ACTUAL_AMOUNT_LABEL),label=(actual||line.match(AMOUNT_LABEL))?.[0];
+    if(!label||NON_AMOUNT_FIELD.test(line.slice(0,line.indexOf(label))))return [];
+    const amount=receiptAmount(line,label);
+    return amount?[{line,label,amount,actual:Boolean(actual)}]:[];
+  });
+  const actual=labeled.filter(candidate=>candidate.actual);
+  const primary=normalizeReceiptText(primaryAmount).replace(/\s+/g,'');
+  const main=/^[-+]\d{1,9}\.\d{2}$/.test(primary)?receiptAmount(primary):null;
+  const candidates=actual.length?actual:main?[{line:primary,amount:main}]:labeled.length?labeled:lines.flatMap(line=>{
+    if(NON_AMOUNT_FIELD.test(line)||RECEIPT_TIME_LABEL.test(line)||RECEIPT_DATE.test(line)||!/(?:¥\s*[-+]?\s*\d|(?:^|\s)[-+]\s*\d+\s*\.\s*\d{2}\b|\d+\s*\.\s*\d{2}\s*元)/.test(line))return [];
+    const amount=receiptAmount(line);return amount?[{line,amount}]:[];
+  });
+  return candidates.slice(0,30).map(({line,label,amount})=>{
+    const kind=/退款/.test(line)||(/退款成功/.test(text)&&candidates.length===1)?'refund':amount.signed.startsWith('+')||/(?:实收|到账|收入|收款成功)/.test(line)?'income':'expense';
+    const purpose=merchant||line.replace(amount.token,'').replace(ACTUAL_AMOUNT_LABEL,'').replace(AMOUNT_LABEL,'').replace(/[:：]/g,'').trim().slice(0,120)||'截图识别';
+    const warnings=['请核对金额、日期和分类后入账'];
+    if(!recognizedDate)warnings.push(date?'未识别到交易日期，请核对预填日期':'未识别到日期');
+    if(!merchant)warnings.push('用途需要核对');
+    return {date:recognizedDate||date,expression:formatFinanceMoney(amount.cents).replace(/,/g,''),purpose,kind,categoryId:suggestFinanceCategory(purpose,categories,kind),confidence:label||main?'medium':'low',warnings};
+  });
 }

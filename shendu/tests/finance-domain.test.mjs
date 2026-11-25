@@ -236,3 +236,23 @@ test('receipt OCR produces editable drafts with warnings, excludes balances and 
   assert.deepEqual(parseReceiptText('没有金额的文字'),[]);
   const refund=parseReceiptText('退款金额 ¥12.00',{date:'2026-11-15'})[0];assert.equal(refund.kind,'refund');assert.equal(refund.expression,'12.00');
 });
+
+test('receipt OCR recognizes a spaced signed amount and prefers payment date over other dates',()=>{
+  const [draft]=parseReceiptText('09:59\n服务   交易 详 情\n− 6 . 78\n当前 状态 支付 成 功\n付 款 时 间 2026 年 10 月 3 日 07:00:19\n商品 早餐铺-订单编号 123456789012345\n商户单号 981234567890123\n2\n商品日期 2026-10-02');
+  assert.equal(draft.expression,'6.78');assert.equal(draft.kind,'expense');assert.equal(draft.date,'2026-10-03');
+  assert.equal(draft.purpose,'早餐铺');assert.equal(draft.categoryId,'food');
+});
+
+test('a dedicated amount read replaces the whole-page guess but yields to explicit actual payment',()=>{
+  const detail='账单 全部账单\n-10.90\n当前状态 支付成功\n支付时间 2026-10-03 11:00:01\n订单编号 9831234567890367';
+  const matches=parseReceiptText(detail,{primaryAmount:'− 10.96'});
+  assert.equal(matches.length,1);assert.equal(matches[0].expression,'10.96');
+  assert.equal(parseReceiptText(detail+'\n实付金额 ￥ 9.99\n合计金额 ¥18.00',{primaryAmount:'-10.96'})[0].expression,'9.99');
+  assert.equal(parseReceiptText('当前状态 支付失败\n-10.96',{primaryAmount:'-10.96'}).length,0);
+  assert.equal(parseReceiptText('账单',{primaryAmount:'10.96'}).length,0);
+  assert.ok(parseReceiptText('一 12.30',{date:'2026-10-03'})[0].warnings.some(value=>value.includes('核对预填日期')));
+});
+
+test('receipt OCR ignores order numbers, dates and non-payment money fields',()=>{
+  assert.deepEqual(parseReceiptText('14:57\n交易时间 2026.11.24 10:32:07\n交易单号 -8.00\n订单编号 ¥944.00\n手续费 ¥9.00\n账户余额 ¥199.00\n商品 2026-11-24\n001'),[]);
+});

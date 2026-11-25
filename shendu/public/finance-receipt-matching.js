@@ -1,4 +1,4 @@
-import {parseMoneyExpression} from './finance-domain.js?v=1.0.0-finance-category1';
+import {parseMoneyExpression} from './finance-domain.js?v=1.0.0-finance-receipts1';
 
 const array=value=>Array.isArray(value)?value:[];
 const validAmount=value=>Number.isSafeInteger(value)&&value>0;
@@ -22,8 +22,15 @@ export function matchFinanceReceipts(rows=[],result={}){
   }
 
   const receipts=[...groups.values()].map(group=>({...group,amounts:[...group.amounts].sort((a,b)=>a-b)}));
-  const amountReceipts=new Map(),rowCounts=new Map();
+  const used=new Set(array(result?.usedReceiptIds).filter(id=>groups.has(id)));
+  const manualForRow=sourceRows.map(row=>{
+    const manual=[...new Set(array(row?.receiptIds).filter(id=>groups.has(id)))].filter(id=>!used.has(id));
+    manual.forEach(id=>used.add(id));
+    return manual;
+  });
+  const amountReceipts=new Map(),rowCounts=new Map(),receiptCounts=new Map();
   for(const receipt of receipts){
+    if(used.has(receipt.id))continue;
     for(const amount of receipt.amounts){
       if(!amountReceipts.has(amount))amountReceipts.set(amount,[]);
       amountReceipts.get(amount).push(receipt.id);
@@ -32,17 +39,23 @@ export function matchFinanceReceipts(rows=[],result={}){
   for(const row of sourceRows){
     if(validAmount(row?.amountCents))rowCounts.set(row.amountCents,(rowCounts.get(row.amountCents)||0)+1);
   }
+  sourceRows.forEach((row,index)=>{
+    if(manualForRow[index].length)return;
+    for(const id of amountReceipts.get(row?.amountCents)||[])receiptCounts.set(id,(receiptCounts.get(id)||0)+1);
+  });
 
-  const matchedRows=sourceRows.map(row=>{
-    const manual=[...new Set(array(row?.receiptIds).filter(id=>groups.has(id)))];
+  const matchedRows=sourceRows.map((row,index)=>{
+    const manual=manualForRow[index];
     if(manual.length)return {...row,receiptIds:manual,matchReason:'manual'};
     if(!validAmount(row?.amountCents))return {...row,receiptIds:[],matchReason:'invalid-amount'};
     if(rowCounts.get(row.amountCents)!==1)return {...row,receiptIds:[],matchReason:'duplicate-row-amount'};
     const matches=amountReceipts.get(row.amountCents)||[];
-    if(matches.length===1)return {...row,receiptIds:[matches[0]],matchReason:'amount'};
+    if(matches.length===1&&receiptCounts.get(matches[0])===1){
+      used.add(matches[0]);return {...row,receiptIds:[matches[0]],matchReason:'amount'};
+    }
+    if(matches.length===1)return {...row,receiptIds:[],matchReason:'multiple-rows'};
     if(matches.length>1)return {...row,receiptIds:[],matchReason:'multiple-receipts'};
     return {...row,receiptIds:[],matchReason:amountReceipts.size?'amount-mismatch':'unrecognized-amount'};
   });
-  const used=new Set(matchedRows.flatMap(row=>row.receiptIds));
   return {rows:matchedRows,receipts,unmatchedReceiptIds:ids.filter(id=>!used.has(id))};
 }

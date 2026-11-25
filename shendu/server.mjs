@@ -513,7 +513,7 @@ function migrateSensitiveData() {
 }
 migrateSensitiveData();
 
-const financeReceipts=createFinanceReceipts({db,setting,putSetting,encryptData,decryptData,dataScope,now,readJson,json,error,assertPublicHttps,s3Request,normalizeBackupConfig,sessionUser,withActivity,recordActivity:appendActivity,getS3Targets:userId=>db.prepare("SELECT id,name FROM backup_targets WHERE user_id=? AND kind='s3' ORDER BY name,id").all(userId),getS3TargetConfig:(userId,id)=>{const target=db.prepare("SELECT encrypted_config FROM backup_targets WHERE user_id=? AND id=? AND kind='s3'").get(userId,id);return target?decryptSecret(target.encrypted_config):null}});
+const financeReceipts=createFinanceReceipts({db,setting,putSetting,encryptData,decryptData,dataScope,now,readJson,json,error,assertPublicHttps,s3Request,normalizeBackupConfig,sessionUser,withActivity,isReceiptUsed:(userId,id)=>financeLedger.hasUsedReceipt(userId,[id]),recordActivity:appendActivity,getS3Targets:userId=>db.prepare("SELECT id,name FROM backup_targets WHERE user_id=? AND kind='s3' ORDER BY name,id").all(userId),getS3TargetConfig:(userId,id)=>{const target=db.prepare("SELECT encrypted_config FROM backup_targets WHERE user_id=? AND id=? AND kind='s3'").get(userId,id);return target?decryptSecret(target.encrypted_config):null}});
 const financeLedger=createFinanceLedger({db,encryptData,decryptData,dataScope,now,readJson,json,today:todayDate,withActivity,verifyReceipts:(userId,ids)=>ids.every(id=>financeReceipts.hasReadyReceipt(userId,id))});
 
 const rateMap = new Map();

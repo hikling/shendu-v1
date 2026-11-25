@@ -1,6 +1,6 @@
-import {parseMoneyExpression,parseFinanceLines,formatFinanceMoney,DEFAULT_FINANCE_CATEGORIES,FINANCE_KINDS,suggestFinanceCategory,financeCategoryLabel} from './finance-domain.js?v=1.0.0-finance-category1';
+import {parseMoneyExpression,parseFinanceLines,formatFinanceMoney,DEFAULT_FINANCE_CATEGORIES,FINANCE_KINDS,suggestFinanceCategory,financeCategoryLabel} from './finance-domain.js?v=1.0.0-finance-receipts1';
 
-import {matchFinanceReceipts} from './finance-receipt-matching.js?v=1.0.0-finance-category1';
+import {matchFinanceReceipts} from './finance-receipt-matching.js?v=1.0.0-finance-receipts1';
 
 const $=(selector,root)=>root.querySelector(selector),$$=(selector,root)=>[...root.querySelectorAll(selector)];
 const esc=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
@@ -17,11 +17,21 @@ function categoryOptions(categories,selected='',purpose='',kind='expense'){
 }
 function hasDraft(draft){return Boolean(String(draft.text||'').trim()||String(draft.expression||'').trim()||String(draft.purpose||'').trim()||String(draft.note||'').trim()||draft.receiptIds?.length)}
 function safeImageUrl(value){try{const url=new URL(value);return url.protocol==='https:'?url.href:''}catch{return ''}}
+const rejectedFinanceWrite=error=>error.status===400||error.code==='finance_receipt_in_use';
+const receiptOwners=ids=>new Map((ids||[]).map(id=>[id,-1]));
+function claimRowReceipts(owners,ids,index){
+  for(const id of ids)if(!owners.has(id))owners.set(id,index);
+}
+function clearReceiptChoice(checkbox){
+  if(!checkbox.checked)return;
+  checkbox.checked=false;
+  checkbox.dispatchEvent(new Event('change'));
+}
 
 function createWorkspace(container,options,daily){
   let disposed=false,pending=false,loadOwner=null,storageOwner=null,data=null,storage=null,categories=[...DEFAULT_FINANCE_CATEGORIES],cursor=null;
   let importController=null,receiptModule=null,storageDialogOwner=null,lastMatchResult=null;
-  let entries=[],draft={...blank(),...(options.draft||{})},createId=id(),searchTimer,periodController=null,quickRows=[],refreshQuick=null,dayPicker=null,ledgerDayPicker=null,monthPie=null,dayPie=null,dayOwner=null,selectedDay='',chartMonth=null;
+  let entries=[],draft={...blank(),...(options.draft||{})},searchTimer,periodController=null,quickRows=[],refreshQuick=null,dayPicker=null,ledgerDayPicker=null,monthPie=null,dayPie=null,dayOwner=null,selectedDay='',chartMonth=null;
   if(!draft.text&&(draft.expression||draft.purpose))draft.text=`${draft.expression} ${draft.purpose}`.trim();
   const aborter=new AbortController();
   const day=options.date||options.today(),filters={month:day.slice(0,7),range:'month',date:day,q:'',kind:'',deleted:false};
@@ -87,24 +97,22 @@ function createWorkspace(container,options,daily){
 
   function openDetailed(){
     const seed={...blank(),kind:'income'};
-    options.openModal?.(`<div class="modal-head"><div><h2>收入记账</h2><p>记录实际到账的收入，支出请在花销区上传截图。</p></div></div><form id="finance-detail-form" class="finance-entry-form finance-income-form">${entryForm(seed,{modal:true,incomeOnly:true})}</form>`,'workspace-dialog finance-dialog finance-detail-dialog');
+    options.openModal?.(`<div class="modal-head"><div><h2>收入记账</h2><p>核对收入日期、金额和来源，明细入账后锁定。</p></div></div><form id="finance-detail-form" class="finance-entry-form finance-income-form">${entryForm(seed,{modal:true,incomeOnly:true})}</form>`,'workspace-dialog finance-dialog finance-detail-dialog');
     const form=container.ownerDocument.querySelector('#finance-detail-form');if(form)bindForm(form,seed,{modal:true,incomeOnly:true,automaticCategory:true});
   }
 
   function entryForm(entry={},extra={}){
-    const prefix=`finance-form-${++formSequence}`,kind=entry.kind||'expense',refunds=entries.filter(row=>row.kind==='expense'&&!row.deletedAt),dailyInline=daily&&!extra.modal;
+    const prefix=`finance-form-${++formSequence}`,kind=entry.kind||'expense',refunds=entries.filter(row=>row.kind==='expense'&&!row.deletedAt);
     if(extra.original&&!refunds.some(row=>row.id===extra.original.id))refunds.unshift(extra.original);
-    return `<fieldset><div class="finance-form-top">${dailyInline?'':`<div class="field"><label for="${prefix}-date">日期</label><input id="${prefix}-date" name="date" type="date" required value="${esc(entry.date||day)}"></div>${extra.incomeOnly?'<input type="hidden" name="kind" value="income">':`<div class="field"><label for="${prefix}-kind">收支类型</label><select data-finance-compact id="${prefix}-kind" name="kind">${Object.entries(FINANCE_KINDS).map(([key,label])=>`<option value="${key}" ${kind===key?'selected':''}>${esc(label)}</option>`).join('')}</select></div>`}`}</div><div class="finance-money-row"><div class="field"><label for="${prefix}-amount">金额 / 算式</label><input id="${prefix}-amount" name="expression" inputmode="decimal" autocomplete="off" maxlength="240" required value="${esc(entry.expression||'')}" placeholder="例如 8+8+8-1" aria-describedby="${prefix}-calculation"><output id="${prefix}-calculation" data-finance-calculation>输入金额，自动计算合计</output></div><div class="field"><label for="${prefix}-purpose">${extra.incomeOnly?'收入来源':'用途'}</label><input id="${prefix}-purpose" name="purpose" maxlength="160" value="${esc(entry.purpose||'')}" placeholder="${extra.incomeOnly?'例如 工资、奖金':'例如 早餐、打车'}"></div></div><div class="finance-form-bottom">${extra.incomeOnly?'<input type="hidden" name="categoryId" value="">':`<div class="field"><label for="${prefix}-category">分类</label><div data-category-host><select data-finance-compact id="${prefix}-category" name="categoryId">${categoryOptions(categories,entry.categoryId==='uncategorized'&&!extra.edit&&!extra.preserveCategory?'':entry.categoryId,'',kind)}</select></div><span class="help" data-category-hint>${esc(entry.purpose?`自动分类：${financeCategoryLabel(entry.purpose,categories,kind)}`:'常见用途归入对应类别，其他用途直接作为分类。')}</span></div>`}<div class="field"><label for="${prefix}-note">备注（选填）</label><input id="${prefix}-note" name="note" maxlength="500" value="${esc(entry.note||'')}" placeholder="补充说明（可不填）"></div></div>${dailyInline?'':`<div class="field finance-refund-source" data-refund-source ${kind==='refund'?'':'hidden'}><label for="${prefix}-refund">对应的原支出</label><select data-finance-compact id="${prefix}-refund" name="refundOf"><option value="">选择原支出</option>${refunds.map(row=>`<option value="${esc(row.id)}" ${row.id===entry.refundOf?'selected':''}>${esc(row.date)} · ${esc(row.purpose||categoryName(row.categoryId))} · ¥${money(row.amountCents)}</option>`).join('')}</select><span class="help">可先找到原支出，再点“登记退款”。退款会减少净支出。</span></div>`}${extra.edit?'<section class="finance-receipt-supplement"><div><h3>账目截图</h3><p>补传图片后，点击“保存修改”才会关联到这笔账目。</p></div><button class="btn btn-ghost" type="button" data-attach-receipts>补传截图</button><input data-attach-files type="file" accept="image/png,image/jpeg,image/webp" multiple hidden><p data-attach-status class="help" role="status" aria-live="polite"></p></section>':''}<p class="error-text" data-form-error role="status" aria-live="polite"></p><div class="finance-form-actions"><span class="finance-receipt-count" data-receipt-count>${entry.receiptIds?.length?`附有 ${entry.receiptIds.length} 张压缩截图`:''}</span><button class="btn btn-ghost" type="button" data-clear-entry>${extra.edit||extra.modal?'取消':'清空'}</button><button class="btn btn-primary" type="submit">${extra.edit?'保存修改':'确认入账'}</button></div></fieldset>`;
+    return `<fieldset><div class="finance-form-top"><div class="field"><label for="${prefix}-date">日期</label><input id="${prefix}-date" name="date" type="date" required value="${esc(entry.date||day)}"></div>${extra.incomeOnly?'<input type="hidden" name="kind" value="income">':`<div class="field"><label for="${prefix}-kind">收支类型</label><select data-finance-compact id="${prefix}-kind" name="kind">${Object.entries(FINANCE_KINDS).map(([key,label])=>`<option value="${key}" ${kind===key?'selected':''}>${esc(label)}</option>`).join('')}</select></div>`}</div><div class="finance-money-row"><div class="field"><label for="${prefix}-amount">金额 / 算式</label><input id="${prefix}-amount" name="expression" inputmode="decimal" autocomplete="off" maxlength="240" required value="${esc(entry.expression||'')}" placeholder="例如 8+8+8-1" aria-describedby="${prefix}-calculation"><output id="${prefix}-calculation" data-finance-calculation>输入金额，自动计算合计</output></div><div class="field"><label for="${prefix}-purpose">${extra.incomeOnly?'收入来源':'用途'}</label><input id="${prefix}-purpose" name="purpose" maxlength="160" value="${esc(entry.purpose||'')}" placeholder="${extra.incomeOnly?'例如 工资、奖金':'例如 早餐、打车'}"></div></div><div class="finance-form-bottom">${extra.incomeOnly?'<input type="hidden" name="categoryId" value="">':`<div class="field"><label for="${prefix}-category">分类</label><div data-category-host><select data-finance-compact id="${prefix}-category" name="categoryId">${categoryOptions(categories,entry.categoryId==='uncategorized'&&!extra.original?'':entry.categoryId,'',kind)}</select></div><span class="help" data-category-hint>${esc(entry.purpose?`自动分类：${financeCategoryLabel(entry.purpose,categories,kind)}`:'常见用途归入对应类别，其他用途直接作为分类。')}</span></div>`}<div class="field"><label for="${prefix}-note">备注（选填）</label><input id="${prefix}-note" name="note" maxlength="500" value="${esc(entry.note||'')}" placeholder="补充说明（可不填）"></div></div>${extra.incomeOnly?'':`<div class="field finance-refund-source" data-refund-source ${kind==='refund'?'':'hidden'}><label for="${prefix}-refund">对应的原支出</label><select data-finance-compact id="${prefix}-refund" name="refundOf"><option value="">选择原支出</option>${refunds.map(row=>`<option value="${esc(row.id)}" ${row.id===entry.refundOf?'selected':''}>${esc(row.date)} · ${esc(row.purpose||categoryName(row.categoryId))} · ¥${money(row.amountCents)}</option>`).join('')}</select><span class="help">到账后确认金额和对应支出，明细入账后锁定。</span></div>`}<p class="error-text" data-form-error role="status" aria-live="polite"></p><div class="finance-form-actions"><button class="btn btn-ghost" type="button" data-clear-entry>取消</button><button class="btn btn-primary" type="submit">确认入账</button></div></fieldset>`;
   }
 
   function bindForm(form,entry={},extra={}){
-    let formReceiptIds=[...(entry.receiptIds||[])];
-    let categoryChosen=extra.edit||extra.preserveCategory||!extra.automaticCategory&&Boolean(entry.categoryId&&entry.categoryId!=='uncategorized'),entryId=entry.id||(extra.modal?id():createId);
+    let categoryChosen=Boolean(entry.categoryId);const entryId=id();
     const refreshCalculation=()=>{
       const output=$('[data-finance-calculation]',form),text=form.elements.expression.value.trim();
       try{const amount=parseMoneyExpression(text);output.textContent=amount>0?`合计 ¥${money(amount)}`:'入账金额需要大于 0';output.classList.toggle('is-error',amount<=0)}catch{output.textContent=text?'请检查算式，只支持数字、小数、加减。':'输入金额，自动计算合计';output.classList.toggle('is-error',Boolean(text))}
     };
-    const capture=()=>{if(extra.edit||extra.modal&&!extra.consumeDraft)return;draft={...draft,text:`${form.elements.expression.value} ${form.elements.purpose.value}`.trim(),expression:form.elements.expression.value,purpose:form.elements.purpose.value,categoryId:form.elements.categoryId.value,note:form.elements.note.value,receiptIds:[...(draft.receiptIds||[])]};const quick=$('[data-finance-create]',container);if(quick){quick.elements.text.value=draft.text;quickRows=[];refreshQuick?.()}changed()};
     let suggesting=false;
     const refreshSuggestion=()=>{
       const kind=form.elements.kind?.value||'expense',purpose=form.elements.purpose.value;
@@ -116,7 +124,7 @@ function createWorkspace(container,options,daily){
       form.elements.categoryId.dispatchEvent(new Event('change',{bubbles:true}));
       suggesting=false;
     };
-    form.addEventListener('input',event=>{if(!alive()||pending)return;if(event.target.name==='purpose')refreshSuggestion();refreshCalculation();capture()});
+    form.addEventListener('input',event=>{if(!alive()||pending)return;if(event.target.name==='purpose')refreshSuggestion();refreshCalculation()});
     form.addEventListener('change',event=>{
       if(!alive()||pending||suggesting)return;
       if(event.target.name==='categoryId'){
@@ -129,57 +137,24 @@ function createWorkspace(container,options,daily){
       }
       capture();
     });
-    $('[data-clear-entry]',form).addEventListener('click',()=>{if(pending)return;if(extra.edit||extra.modal){options.closeModal?.();return}draft=blank();createId=id();entryId=createId;categoryChosen=false;form.reset();form.elements.expression.value='';form.elements.purpose.value='';form.elements.categoryId.value='';form.elements.note.value='';$('[data-receipt-count]',form).textContent='';$('[data-form-error]',form).textContent='';refreshCalculation();changed()});
+    $('[data-clear-entry]',form).addEventListener('click',()=>{if(!pending)options.closeModal?.()});
     form.addEventListener('submit',event=>{
       event.preventDefault();if(pending||!alive())return;
       const values=new FormData(form),expression=String(values.get('expression')||'');
       try{if(parseMoneyExpression(expression)<=0)throw new Error('入账金额需要大于 0。')}catch(error){$('[data-form-error]',form).textContent=error.message||'请检查金额算式。';form.elements.expression.focus();return}
-      const kind=extra.incomeOnly?'income':String(values.get('kind')||'expense'),body={id:entryId,date:String(values.get('date')||day),kind,expression,purpose:String(values.get('purpose')||''),categoryId:String(values.get('categoryId')||''),note:String(values.get('note')||''),refundOf:kind==='refund'?String(values.get('refundOf')||''):null,receiptIds:[...(extra.edit?formReceiptIds:extra.modal?entry.receiptIds||[]:draft.receiptIds||[])],source:daily?'daily':'finance'};
-      if(extra.edit)body.version=entry.version;
+      const kind=extra.incomeOnly?'income':String(values.get('kind')||'expense'),body={id:entryId,date:String(values.get('date')||day),kind,expression,purpose:String(values.get('purpose')||''),categoryId:String(values.get('categoryId')||''),note:String(values.get('note')||''),refundOf:kind==='refund'?String(values.get('refundOf')||''):null,receiptIds:[],source:daily?'daily':'finance'};
       write(form,async current=>{
-        await request(extra.edit?`/api/finance/entries/${encodeURIComponent(entry.id)}`:'/api/finance/entries',{method:extra.edit?'PUT':'POST',body},current);if(!current())return;
-        if(extra.consumeDraft){draft=blank();quickRows=[];const quick=$('[data-finance-create]',container);if(quick)quick.elements.text.value='';changed();refreshQuick?.()}
-        if(extra.edit||extra.modal)options.closeModal?.(true);else{draft=blank();createId=id();entryId=createId;categoryChosen=false;form.reset();form.elements.expression.value='';form.elements.purpose.value='';form.elements.categoryId.value='';form.elements.note.value='';$('[data-receipt-count]',form).textContent='';changed();refreshCalculation()}
-        notify(extra.edit?'账目已更新':'已入账，复盘草稿可继续填写。','success');await load();
+        await request('/api/finance/entries',{method:'POST',body},current);if(!current())return;
+        options.closeModal?.(true);
+        notify('已入账。','success');await load();
       });
     });
-    if(extra.edit)bindReceiptSupplement(form,()=>formReceiptIds,value=>{formReceiptIds=value});
     refreshCalculation();return form;
-  }
-
-  function bindReceiptSupplement(form,getIds,setIds){
-    const input=$('[data-attach-files]',form),button=$('[data-attach-receipts]',form),message=$('[data-attach-status]',form),cancel=$('[data-cancel-attach]',form.parentElement);
-    let attachmentOwner=null;
-    button.addEventListener('click',()=>{if(alive()&&form.isConnected&&!pending)input.click()});
-    cancel?.addEventListener('click',()=>{attachmentOwner?.abort();receiptModule?.disposeReceiptWorker?.()});
-    input.addEventListener('change',async()=>{
-      const files=Array.from(input.files||[]);input.value='';if(!files.length||pending||!alive()||!form.isConnected)return;
-      const error=$('[data-form-error]',form);error.textContent='';
-      if(files.length>10-getIds().length){error.textContent='每笔账目最多关联10张截图，请减少选择的图片。';return}
-      const owner=new AbortController();attachmentOwner=owner;const stop=()=>owner.abort();aborter.signal.addEventListener('abort',stop,{once:true});if(cancel)cancel.hidden=false;
-      let onAbort;
-      try{await write(form,async current=>{
-        const active=()=>current()&&!owner.signal.aborted;
-        try{
-          message.textContent='正在保存补传截图…';receiptModule=options.receiptClient||await import('./receipt-client.js?v=1.0.0-finance-category1');if(!active())return;
-          const task=receiptModule.processReceiptFiles(files,{request,isCurrent:active,signal:owner.signal,categories,date:form.elements.date.value,upload:true,onProgress:progress=>{if(active())message.textContent=typeof progress==='string'?progress:progress?.message||'正在保存截图…'}});
-          const result=await Promise.race([task,new Promise((_,reject)=>{onAbort=()=>reject(new DOMException('已取消截图处理','AbortError'));owner.signal.addEventListener('abort',onAbort,{once:true});if(owner.signal.aborted)onAbort()})]);if(!active())return;
-          const uploaded=[...new Set(result.receiptIds||[])];if(!uploaded.length||result.imageStatus==='not_stored')throw new Error('截图尚未保存，未关联到账目。请先在图片存储设置中配置并测试S3，再重新补传。');
-          const merged=[...new Set([...getIds(),...uploaded])];if(merged.length>10)throw new Error('每笔账目最多关联10张截图，请减少图片后重试。');
-          setIds(merged);$('[data-receipt-count]',form).textContent=`附有 ${merged.length} 张压缩截图`;
-          message.textContent=`已保存 ${uploaded.length} 张补传截图。点击“保存修改”后会显示在这笔账目的明细中。`;
-        }catch(error){if(error.name!=='AbortError'){if(current())message.textContent='截图未关联，原账目内容已保留。';throw error}if(current())message.textContent='已取消补传，原账目内容已保留。'}
-      })}finally{if(onAbort)owner.signal.removeEventListener('abort',onAbort);aborter.signal.removeEventListener('abort',stop);if(attachmentOwner===owner){attachmentOwner=null;if(cancel?.isConnected)cancel.hidden=true}}
-    });
-  }
-
-  function updateCategories(){
-    for(const host of $$('[data-category-host]',container)){const select=$('select',host),selected=select?.value||'',identifier=select?.id;if(identifier)render(host,`<select data-finance-compact id="${esc(identifier)}" name="categoryId">${categoryOptions(categories,selected)}</select>`)}
   }
 
   function entryHtml(entry){
     const deleted=Boolean(entry.deletedAt),title=entry.purpose||categoryName(entry.categoryId),receiptIds=entry.receiptIds||[],amount=money(entry.amountCents);
-    const actions=deleted?`<button type="button" class="link-button" data-entry-action="restore" data-id="${esc(entry.id)}">恢复</button>`:`<button type="button" class="link-button" data-entry-action="edit" data-id="${esc(entry.id)}">修改</button>${entry.kind==='expense'?`<button type="button" class="link-button" data-entry-action="refund" data-id="${esc(entry.id)}">登记退款</button>`:''}<button type="button" class="link-button" data-entry-action="delete" data-id="${esc(entry.id)}">删除</button>`;
+    const actions=!deleted&&entry.kind==='expense'?`<button type="button" class="link-button" data-entry-action="refund" data-id="${esc(entry.id)}">登记退款</button>`:'';
     return `<article class="finance-entry ${amount.length>10?'has-long-amount':''} ${deleted?'is-deleted':''}" data-entry-id="${esc(entry.id)}"><div class="finance-entry-copy"><div class="finance-entry-heading"><h3>${esc(title)}</h3><span class="finance-entry-tag kind-${esc(entry.kind)}">${esc(FINANCE_KINDS[entry.kind]||'账目')}</span><span class="finance-entry-tag finance-entry-tag-category">${esc(categoryName(entry.categoryId))}</span>${deleted?'<span class="finance-entry-tag">已删除</span>':''}</div>${entry.note?`<p>${esc(entry.note)}</p>`:''}${entry.refundOf?'<small>已关联原支出</small>':''}</div><div class="finance-entry-end"><strong class="finance-entry-amount kind-${esc(entry.kind)}">${entryMoney(entry)}</strong></div><div class="finance-entry-footer">${receiptIds.length?`<button type="button" class="link-button finance-receipt-link" data-receipt-open="${esc(receiptIds[0])}">查看截图 · ${receiptIds.length} 张</button>`:'<span class="finance-entry-no-receipt">未附截图</span>'}<div class="finance-entry-actions">${actions}</div></div></article>`;
   }
   function renderEntries(){
@@ -228,7 +203,7 @@ function createWorkspace(container,options,daily){
     if(!append){clearTimeout(searchTimer);resetPagination()}
     const params=query();if(append)params.set('cursor',cursor);status(append?'正在读取更早的账目…':'正在整理账目…');
     try{const byDay=!daily&&filters.range==='day';const [result,monthly]=await Promise.all([request(`/api/finance?${params}`,{},current),byDay?request(`/api/finance?month=${encodeURIComponent(filters.month)}`,{},current):Promise.resolve(null)]);if(!current())return;data=monthly||result;categories=result.categories||categories;entries=append?[...entries,...(result.entries||[])]:result.entries||[];cursor=result.nextCursor||null;renderSummary();renderEntries();syncDailyChart();
-      if(!noFormLoss()){const host=$('[data-finance-form]',container);mountQuickEntry(host)}else updateCategories();refreshQuick?.();
+      if(!noFormLoss()){const host=$('[data-finance-form]',container);mountQuickEntry(host)}refreshQuick?.();
       status(daily?'确认入账后，账目已保存；复盘仍可保留为草稿。':`明细显示 ${byDay?filters.date:filters.month+' 整月'}；上方总计与月度饼图仍按整月计算。`);
     }catch(error){if(current()){status(error.message||'账目暂时未能读取。',true);if(!daily){monthPie?.setData({loading:false,error:'当月花销暂时未能读取，请刷新账本重试。'});dayPie?.setData({loading:false,error:'请先重新读取当月账本。'});dayOwner=null}const list=$('[data-finance-entries]',container);if(!data)render(list,'<div class="finance-empty"><h3>暂时没有翻开账本</h3><button class="btn" type="button" data-finance-retry>重新读取</button></div>')}}
   }
@@ -249,7 +224,7 @@ function createWorkspace(container,options,daily){
       render(host,`<img alt="${esc(title)}的${esc(kind)}凭证，第${index+1}张" hidden>`);const image=$('img',host);
       const failed=error=>{if(!accepted()||!image.isConnected)return;image.hidden=true;message.hidden=false;message.textContent=error?.message||'截图加载失败，可能是授权已过期或网络暂时不可用。请重新读取。';retry.hidden=false;retry.disabled=false};
       image.addEventListener('error',()=>failed(),{once:true});image.addEventListener('load',()=>{if(accepted()&&image.isConnected){message.hidden=true;image.hidden=false}},{once:true});
-      try{const {loadReceiptUrls}=options.receiptClient||await import('./receipt-client.js?v=1.0.0-finance-category1');if(!accepted())return;const urls=await loadReceiptUrls([receiptId],'image',{request,isCurrent:accepted});if(!accepted())return;const url=safeImageUrl(urls[receiptId]);if(!url)throw new Error('这张截图暂时无法读取，请检查凭证存储后重试。');message.textContent='正在载入截图…';image.src=url;image.hidden=false}
+      try{const {loadReceiptUrls}=options.receiptClient||await import('./receipt-client.js?v=1.0.0-finance-receipts1');if(!accepted())return;const urls=await loadReceiptUrls([receiptId],'image',{request,isCurrent:accepted});if(!accepted())return;const url=safeImageUrl(urls[receiptId]);if(!url)throw new Error('这张截图暂时无法读取，请检查凭证存储后重试。');message.textContent='正在载入截图…';image.src=url;image.hidden=false}
       catch(error){failed(error)}finally{if(accepted()){loading=false;retry.disabled=false}}
     }
     function changeImage(offset){
@@ -259,14 +234,10 @@ function createWorkspace(container,options,daily){
     previous.addEventListener('click',()=>changeImage(-1));next.addEventListener('click',()=>changeImage(1));
     retry.addEventListener('click',()=>loadImage());await loadImage();
   }
-  function openEdit(entry,refund=false){
-    const value=refund?{date:options.today(),kind:'refund',expression:money(entry.amountCents).replaceAll(',',''),purpose:`退回：${entry.purpose||categoryName(entry.categoryId)}`,categoryId:entry.categoryId,refundOf:entry.id,receiptIds:[]}:entry;
-    options.openModal?.(`<div class="modal-head"><div><h2>${refund?'登记退款':'修改账目'}</h2><p>${refund?'到账后再登记，退款会从净支出中扣除。':'保留更正后的金额、分类和用途。'}</p></div></div><form id="finance-edit-form" class="finance-entry-form">${entryForm(value,{edit:!refund,modal:true,original:entry})}</form><button class="link-button" type="button" data-cancel-attach hidden>取消截图处理</button>`,'workspace-dialog finance-dialog finance-detail-dialog');
-    const form=container.ownerDocument.querySelector('#finance-edit-form');if(form)bindForm(form,value,{edit:!refund,modal:true,original:entry});
-  }
-  function confirmDelete(entry){
-    options.openModal?.(`<div class="modal-head"><div><h2>删除这笔账目？</h2><p>${esc(entry.purpose||categoryName(entry.categoryId))} · ¥${money(entry.amountCents)}。删除后不再计入统计，可以在已删除记录中恢复。</p></div></div><form id="finance-delete-form"><fieldset><p class="error-text" data-form-error role="status"></p><div class="modal-actions"><button class="btn" type="button" data-close>保留</button><button class="btn btn-danger" type="submit">删除账目</button></div></fieldset></form>`,'workspace-dialog');
-    const form=container.ownerDocument.querySelector('#finance-delete-form');form?.addEventListener('submit',event=>{event.preventDefault();write(form,async current=>{await request(`/api/finance/entries/${encodeURIComponent(entry.id)}`,{method:'DELETE',body:{version:entry.version}},current);if(current()){options.closeModal?.(true);await load();notify('账目已移入已删除记录。','success')}})});
+  function openRefund(entry){
+    const value={date:options.today(),kind:'refund',expression:money(entry.amountCents).replaceAll(',',''),purpose:`退回：${entry.purpose||categoryName(entry.categoryId)}`,categoryId:entry.categoryId,refundOf:entry.id,receiptIds:[]};
+    options.openModal?.(`<div class="modal-head"><div><h2>登记退款</h2><p>到账后再登记，退款会从净支出中扣除。</p></div></div><form id="finance-refund-form" class="finance-entry-form">${entryForm(value,{modal:true,original:entry})}</form>`,'workspace-dialog finance-dialog finance-detail-dialog');
+    const form=container.ownerDocument.querySelector('#finance-refund-form');if(form)bindForm(form,value,{modal:true,original:entry});
   }
   async function loadStorage(){const owner={};storageOwner=owner;const current=()=>alive()&&storageOwner===owner;try{const result=await request('/api/finance/storage',{},current);if(!current())return;storage=result;const node=$('[data-storage-note]',container);if(node)node.textContent=result.configured?'压缩截图保存在你配置的私有存储。':'尚未配置图片存储：收入可直接登记，支出需先配置存储并上传截图。'}catch{if(current()){const node=$('[data-storage-note]',container);if(node)node.textContent='图片存储状态暂未读取，可打开设置重试。'}}}
   async function storageDialog(){
@@ -287,27 +258,46 @@ function createWorkspace(container,options,daily){
   }
 
   function openMatchedExpenses(planned,result){
-    const legacyIds=planned.length?[...(draft.receiptIds||[])]:[],previousIds=[...legacyIds,...planned.flatMap(row=>row.attemptedBody?.receiptIds||[])],combined={...result,receiptIds:[...new Set([...(result.receiptIds||[]),...previousIds])]};
+    const unavailable=new Set(result.usedReceiptIds||[]),attemptedIds=new Set(planned.flatMap(row=>row.attemptedBody?.receiptIds||[]));
+    const legacyIds=planned.length&&!planned[0].attemptedBody?(draft.receiptIds||[]).filter(id=>!unavailable.has(id)&&!attemptedIds.has(id)):[];
+    const combined={...result,receiptIds:[...new Set([...(result.receiptIds||[]),...legacyIds,...attemptedIds])],usedReceiptIds:[...unavailable,...legacyIds]};
     const matched=matchFinanceReceipts(planned.map(row=>({...row,receiptIds:row.attemptedBody?.receiptIds||[]})),combined),allowed=new Set(combined.receiptIds);
-    const rows=matched.rows.map((row,index)=>({...row,receiptIds:[...new Set([...(row.attemptedBody?.receiptIds||row.receiptIds),...(!index&&!row.attemptedBody?legacyIds:[])])]})),receipts=matched.receipts;
+    const rows=matched.rows.map((row,index)=>({...row,receiptIds:row.attemptedBody?.receiptIds||[...row.receiptIds,...(!index?legacyIds:[])]})),receipts=matched.receipts;
     const number=receiptId=>(receipts.find(receipt=>receipt.id===receiptId)?.index??0)+1;
-    const reasons={'duplicate-row-amount':'有多笔相同金额，请手动匹配','multiple-receipts':'多张截图金额相同，请手动匹配','amount-mismatch':'识别金额不同，请手动匹配','unrecognized-amount':'未识别到金额，请手动匹配','invalid-amount':'请先检查金额'};
-    options.openModal?.(`<div class="modal-head"><div><h2>核对花销与截图</h2><p>金额和用途按你的填写保留。相同金额或未识别的截图，请手动选择对应关系。</p></div></div>${(result.warnings||[]).length?`<div class="finance-import-warnings">${result.warnings.map(value=>`<p>${esc(value)}</p>`).join('')}</div>`:''}<form id="finance-match-form"><fieldset><div class="finance-match-rows">${rows.map((row,index)=>`<section class="finance-match-row" data-match-row="${esc(row.id)}"><div class="finance-match-heading"><div><h3>${esc(row.purpose)}</h3><span>${esc(row.categoryId?categoryName(row.categoryId):financeCategoryLabel(row.purpose,categories))}</span></div><strong>¥${money(row.amountCents)}</strong></div><p class="help" data-match-reason>${row.attemptedBody?'提交结果待确认，重试时保留原金额与截图。':row.matchReason==='amount'?'已按唯一金额自动匹配。':esc(reasons[row.matchReason]||'请选择对应截图。')}</p><details class="finance-match-options" ${row.receiptIds.length?'':'open'}><summary data-match-summary>${row.receiptIds.length?row.receiptIds.map(value=>`截图 ${number(value)}`).join('、'):'选择对应截图'}</summary><div>${receipts.map(receipt=>`<label class="finance-checkbox"><input type="checkbox" name="match-${index}" value="${esc(receipt.id)}" ${row.receiptIds.includes(receipt.id)?'checked':''} ${row.attemptedBody?'disabled':''}>截图 ${receipt.index+1}<small>${receipt.amounts.length?receipt.amounts.map(value=>`¥${money(value)}`).join(' / '):'未识别金额'}${receipt.duplicate?' · 已上传过':''}</small></label>`).join('')}</div></details><p class="finance-import-result" data-match-result></p></section>`).join('')}</div><section class="finance-match-images"><h3>本次截图</h3>${receipts.map(receipt=>`<div class="finance-match-image"><div><span>截图 ${receipt.index+1}</span><span>${receipt.amounts.length?receipt.amounts.map(value=>`¥${money(value)}`).join(' / '):'金额待手动核对'}</span><button type="button" class="link-button" data-match-preview="${esc(receipt.id)}">查看截图</button></div><div data-match-image="${esc(receipt.id)}" hidden></div></div>`).join('')}</section><label class="finance-checkbox finance-match-unused" data-match-unused hidden><input type="checkbox" name="acknowledge-unused"><span data-match-unused-copy></span></label><p class="error-text" data-form-error role="status" aria-live="polite"></p><div class="modal-actions"><button type="button" class="btn" data-close>返回修改</button><button type="submit" class="btn btn-primary">确认匹配并入账</button></div></fieldset></form>`,'workspace-dialog finance-dialog finance-import-dialog finance-match-dialog');
+    const reasons={'duplicate-row-amount':'有多笔相同金额，请手动匹配','multiple-receipts':'多张截图金额相同，请手动匹配','multiple-rows':'这张图可能对应多笔花销，请手动匹配','amount-mismatch':'识别金额不同，请手动匹配','unrecognized-amount':'未识别到金额，请手动匹配','invalid-amount':'请先检查金额'};
+    options.openModal?.(`<div class="modal-head"><div><h2>核对花销与截图</h2><p>金额和用途按你的填写保留。每张截图只可选给一笔。请核对匹配关系，明细入账后锁定。</p></div></div>${(result.warnings||[]).length?`<div class="finance-import-warnings">${result.warnings.map(value=>`<p>${esc(value)}</p>`).join('')}</div>`:''}<form id="finance-match-form"><fieldset><div class="finance-match-rows">${rows.map((row,index)=>`<section class="finance-match-row" data-match-row="${esc(row.id)}"><div class="finance-match-heading"><div><h3>${esc(row.purpose)}</h3><span>${esc(row.categoryId?categoryName(row.categoryId):financeCategoryLabel(row.purpose,categories))}</span></div><strong>¥${money(row.amountCents)}</strong></div><p class="help" data-match-reason>${row.attemptedBody?'提交结果待确认，重试时保留原金额与截图。':row.matchReason==='amount'?'已按唯一金额自动匹配。':esc(reasons[row.matchReason]||'请选择对应截图。')}</p><details class="finance-match-options" ${row.receiptIds.length?'':'open'}><summary data-match-summary>${row.receiptIds.length?row.receiptIds.map(value=>`截图 ${number(value)}`).join('、'):'选择对应截图'}</summary><div>${receipts.map(receipt=>`<label class="finance-checkbox"><input type="checkbox" name="match-${index}" value="${esc(receipt.id)}" ${row.receiptIds.includes(receipt.id)?'checked':''} ${row.attemptedBody?'disabled':''}>截图 ${receipt.index+1}<small>${receipt.amounts.length?receipt.amounts.map(value=>`¥${money(value)}`).join(' / '):'未识别金额'}${receipt.duplicate?' · 已上传过':''}<span data-receipt-owner></span></small></label>`).join('')}</div></details><p class="finance-import-result" data-match-result></p></section>`).join('')}</div><section class="finance-match-images"><h3>本次截图</h3>${receipts.map(receipt=>`<div class="finance-match-image"><div><span>截图 ${receipt.index+1}</span><span>${receipt.amounts.length?receipt.amounts.map(value=>`¥${money(value)}`).join(' / '):'金额待手动核对'}</span><button type="button" class="link-button" data-match-preview="${esc(receipt.id)}">查看截图</button></div><div data-match-image="${esc(receipt.id)}" hidden></div></div>`).join('')}</section><label class="finance-checkbox finance-match-unused" data-match-unused hidden><input type="checkbox" name="acknowledge-unused"><span data-match-unused-copy></span></label><p class="error-text" data-form-error role="status" aria-live="polite"></p><div class="modal-actions"><button type="button" class="btn" data-close>返回修改</button><button type="submit" class="btn btn-primary">确认匹配并入账</button></div></fieldset></form>`,'workspace-dialog finance-dialog finance-import-dialog finance-match-dialog');
     const form=container.ownerDocument.querySelector('#finance-match-form');if(!form)return;
     const live=()=>alive()&&form.isConnected&&container.ownerDocument.querySelector('#finance-match-form')===form;
+    const sections=$$('[data-match-row]',form);
+    const choices=sections.map((section,index)=>$$(`input[name="match-${index}"]`,section));
     const update=()=>{
-      const values=new FormData(form),used=new Set();
+      const owners=receiptOwners([...unavailable]);
       for(const [index,row] of rows.entries()){
-        if(!row.attemptedBody&&!row.done)row.receiptIds=[...new Set(values.getAll(`match-${index}`).map(String))].filter(value=>allowed.has(value));
-        for(const receiptId of row.receiptIds)used.add(receiptId);
-        const section=$(`[data-match-row="${row.id}"]`,form);$('[data-match-reason]',section).textContent=row.attemptedBody?'提交结果待确认，重试时保留原金额与截图。':row.receiptIds.length?(row.matchReason==='amount'?'已按唯一金额自动匹配。':'已手动匹配，请核对所选截图。'):(reasons[row.matchReason]||'请选择对应截图。');$('[data-match-summary]',section).textContent=row.receiptIds.length?row.receiptIds.map(value=>`截图 ${number(value)}`).join('、'):'选择对应截图';
+        if(row.attemptedBody||row.done)claimRowReceipts(owners,row.receiptIds,index);
       }
-      const unused=receipts.filter(receipt=>!used.has(receipt.id));$('[data-match-unused]',form).hidden=!unused.length;
+      for(const [index,row] of rows.entries()){
+        if(row.attemptedBody||row.done)continue;
+        row.receiptIds=choices[index].filter(box=>box.checked&&allowed.has(box.value)&&!owners.has(box.value)).map(box=>box.value);
+        claimRowReceipts(owners,row.receiptIds,index);
+      }
+      for(const [index,row] of rows.entries()){
+        const section=sections[index],locked=Boolean(row.attemptedBody||row.done);
+        for(const box of choices[index]){
+          const owner=owners.get(box.value),taken=owner!==undefined&&owner!==index;
+          box.disabled=locked||taken;
+          const label=box.closest('label'),message=$('[data-receipt-owner]',label);
+          message.textContent=taken?(owner<0||rows[owner].done?' · 已用于入账':` · 已选给第 ${owner+1} 笔`):'';
+          if(taken&&!locked)clearReceiptChoice(box);
+        }
+        $('[data-match-reason]',section).textContent=row.done?'本笔已入账。':row.attemptedBody?'提交结果待确认，重试时保留原金额与截图。':row.receiptIds.length?(row.matchReason==='amount'?'已按唯一金额自动匹配。':'已手动匹配，请核对所选截图。'):(reasons[row.matchReason]||'请选择对应截图。');
+        $('[data-match-summary]',section).textContent=row.receiptIds.length?row.receiptIds.map(value=>`截图 ${number(value)}`).join('、'):'选择对应截图';
+      }
+      const unused=receipts.filter(receipt=>!owners.has(receipt.id));$('[data-match-unused]',form).hidden=!unused.length;
       $('[data-match-unused-copy]',form).textContent=`截图 ${unused.map(receipt=>receipt.index+1).join('、')} 未关联本次账目，我确认暂不用于入账。`;
       return unused;
     };
     form.addEventListener('change',event=>{
-      if(!live()||pending||!event.target.name?.startsWith('match-'))return;
+      if(!live()||pending||event.target.disabled||!event.target.name?.startsWith('match-'))return;
       const row=rows[Number(event.target.name.slice(6))];if(row&&!row.attemptedBody)row.matchReason='manual';
       const acknowledgment=form.elements['acknowledge-unused'];
       if(acknowledgment.checked){
@@ -321,7 +311,7 @@ function createWorkspace(container,options,daily){
       const button=event.target.closest('[data-match-preview]');if(!button||!live()||pending)return;const receiptId=button.dataset.matchPreview,host=$(`[data-match-image="${receiptId}"]`,form),owner={};previewOwners.set(receiptId,owner);
       if(!host.hidden){host.hidden=true;return}host.hidden=false;render(host,'<p class="help" role="status">正在读取截图…</p>');
       const current=()=>live()&&!host.hidden&&previewOwners.get(receiptId)===owner;
-      try{const module=options.receiptClient||await import('./receipt-client.js?v=1.0.0-finance-category1');if(!current())return;const urls=await module.loadReceiptUrls([receiptId],'image',{request,isCurrent:current});if(!current())return;const url=safeImageUrl(urls[receiptId]);if(!url)throw new Error('截图暂时无法读取，请点击重新查看。');render(host,`<img src="${esc(url)}" alt="截图 ${number(receiptId)}，用于核对花销" loading="lazy">`);const image=$('img',host);image.addEventListener('error',()=>{if(current())render(host,'<p class="help">图片未能载入，请收起后重新查看。</p>')},{once:true})}
+      try{const module=options.receiptClient||await import('./receipt-client.js?v=1.0.0-finance-receipts1');if(!current())return;const urls=await module.loadReceiptUrls([receiptId],'image',{request,isCurrent:current});if(!current())return;const url=safeImageUrl(urls[receiptId]);if(!url)throw new Error('截图暂时无法读取，请点击重新查看。');render(host,`<img src="${esc(url)}" alt="截图 ${number(receiptId)}，用于核对花销" loading="lazy">`);const image=$('img',host);image.addEventListener('error',()=>{if(current())render(host,'<p class="help">图片未能载入，请收起后重新查看。</p>')},{once:true})}
       catch(error){if(current())render(host,`<p class="help" role="status">${esc(error.message||'截图读取失败，请重试。')}</p>`)}
     });
     update();
@@ -336,9 +326,26 @@ function createWorkspace(container,options,daily){
           const original=quickRows.find(item=>item.id===row.id);if(!original)throw new Error('待记花销已变化，请返回后重新核对。');
           const first=quickRows[0]===original,body=row.attemptedBody||{id:row.id,date:day,kind:'expense',expression:row.expression,purpose:row.purpose,categoryId:row.categoryId||'',note:first?draft.note||'':'',receiptIds:[...row.receiptIds],source:daily?'daily':'finance'};
           row.attemptedBody=body;original.attemptedBody=body;original.attempted=true;original.receiptIds=[...body.receiptIds];
-          const section=$(`[data-match-row="${row.id}"]`,form);for(const control of $$('input',section))control.disabled=true;
-          refreshQuick?.();try{await request('/api/finance/entries',{method:'POST',body},()=>current()&&live())}catch(error){if(error.status===400&&current()&&live()){delete row.attemptedBody;delete original.attemptedBody;original.attempted=false;const latest=quickRows.find(item=>item.id===row.id);if(latest){delete latest.attemptedBody;latest.attempted=false;}for(const control of $$('input',section))control.disabled=false;refreshQuick?.()}throw error}if(!current()||!live())return;
+          const section=$(`[data-match-row="${row.id}"]`,form);update();
+          refreshQuick?.();
+          try{await request('/api/finance/entries',{method:'POST',body},()=>current()&&live())}
+          catch(error){
+            if(rejectedFinanceWrite(error)&&current()&&live()){
+              delete row.attemptedBody;delete original.attemptedBody;original.attempted=false;
+              const latest=quickRows.find(item=>item.id===row.id);
+              if(latest){delete latest.attemptedBody;latest.attempted=false}
+              if(error.code==='finance_receipt_in_use'&&body.receiptIds.length===1){
+                unavailable.add(body.receiptIds[0]);
+                if(lastMatchResult)lastMatchResult={...lastMatchResult,usedReceiptIds:[...new Set([...(lastMatchResult.usedReceiptIds||[]),...unavailable])]};
+              }
+              update();refreshQuick?.();
+            }
+            throw error;
+          }
+          if(!current()||!live())return;
           row.done=true;$('[data-match-result]',section).textContent='已入账';section.dataset.matchDone='true';
+          if(lastMatchResult)lastMatchResult={...lastMatchResult,usedReceiptIds:[...new Set([...(lastMatchResult.usedReceiptIds||[]),...body.receiptIds])]};
+          update();
           const quick=$('[data-finance-create]',container),lines=quick.elements.text.value.split(/\r\n?|\n/);lines.splice(original.line-1,1);quick.elements.text.value=lines.join('\n');quickRows=quickRows.filter(item=>item.id!==original.id);
           if(first){draft.note='';draft.receiptIds=[];draft.categoryId=''}draft={...draft,text:quick.elements.text.value,expression:'',purpose:''};committed++;changed();refreshQuick?.();
         }
@@ -348,15 +355,40 @@ function createWorkspace(container,options,daily){
     });
   }
 
-  function importPreview(candidates,warnings=[],{manual=false}={}){
+  function importPreview(candidates,warnings=[],{manual=false,usedReceiptIds=[]}={}){
     const normalize=candidate=>{let duplicate=candidate.duplicate===true;try{const amount=parseMoneyExpression(candidate.expression);duplicate ||= entries.some(entry=>!entry.deletedAt&&entry.date===(candidate.date||day)&&entry.kind===(candidate.kind||'expense')&&entry.amountCents===amount)}catch{}return {...candidate,duplicate,id:id(),receiptIds:candidate.receiptIds||[],categoryChosen:false,categoryId:automaticCategory(candidate.purpose,categories,candidate.kind)}};
     const rows=candidates.map(candidate=>normalize({...candidate,manual}));
-    const rowFields=(row,index)=>`<div class="finance-import-row-head"><label class="finance-checkbox"><input name="select-${index}" type="checkbox" ${row.kind!=='expense'||row.duplicate?'':'checked'}>第 ${index+1} 笔${row.duplicate?' · 疑似重复，确认仍需保留时勾选':''}${!row.manual&&row.confidence!=='high'?' · 请仔细核对':''}</label><button class="link-button" type="button" data-import-remove="${index}" aria-label="移除第 ${index+1} 笔">移除</button></div><div class="finance-form-top"><label>日期<input name="date-${index}" type="date" value="${esc(row.date||day)}" required></label><input type="hidden" name="kind-${index}" value="expense"><div class="finance-income-kind"><span>类型</span><strong>支出</strong></div></div><div class="finance-money-row"><label>金额 / 算式<input name="expression-${index}" value="${esc(row.expression||'')}" inputmode="decimal" maxlength="240" placeholder="例如 8+8+8-1"><output data-import-calculation aria-live="polite"></output></label><label>用途<input name="purpose-${index}" value="${esc(row.purpose||'')}" maxlength="160" placeholder="例如 早餐、打车"></label></div><label>分类<select data-finance-compact name="category-${index}">${categoryOptions(categories,row.categoryId,'',row.kind)}</select><span class="help" data-import-category-hint>${esc(row.purpose?`自动分类：${financeCategoryLabel(row.purpose,categories,row.kind)}`:'根据用途自动分类')}</span></label><label>备注（选填）<input name="note-${index}" value="${esc(row.note||'')}" maxlength="500"></label>${row.kind!=='expense'?'<p class="help">这张截图可能是收入或退款，请从收入记账或原支出退款入口登记。</p>':''}${row.receiptIds?.length?`<p class="finance-import-receipt-note">已附 ${row.receiptIds.length} 张压缩截图 · 确认入账后可在收支明细查看</p>`:'<p class="help">截图未保存，不能确认支出。</p>'}${row.warnings?.length?`<p class="help">${row.warnings.map(esc).join('；')}</p>`:''}<p class="finance-import-result" data-import-result></p>`;
-    options.openModal?.(`<div class="modal-head"><div><h2>${manual?'记下多笔收支':'核对截图账目'}</h2><p>${manual?'逐行填写金额和用途，可以增加或移除行，核对后再确认入账。':'识别可能有误，请核对日期、金额和分类，再确认入账。'}</p></div></div>${warnings.length?`<div class="finance-import-warnings" role="status">${warnings.map(warning=>`<p>${esc(warning)}</p>`).join('')}</div>`:''}<form id="finance-import-form"><fieldset><div class="finance-import-rows">${rows.map((row,index)=>`<section class="finance-import-row" data-import-index="${index}">${rowFields(row,index)}</section>`).join('')}</div><p class="error-text" data-form-error role="status"></p><div class="modal-actions"><button class="btn" type="button" data-close>取消</button><button class="btn btn-primary" type="submit">确认选中账目入账</button></div></fieldset></form>`,'workspace-dialog finance-dialog finance-import-dialog');
+    const existingUsage=receiptOwners(usedReceiptIds),candidateCounts=new Map();
+    for(const row of rows){
+      if(row.kind!=='expense')continue;
+      for(const id of row.receiptIds)candidateCounts.set(id,(candidateCounts.get(id)||0)+1);
+    }
+    const initiallySelected=row=>row.kind==='expense'&&!row.duplicate&&row.receiptIds.every(id=>!existingUsage.has(id)&&candidateCounts.get(id)===1);
+    const rowFields=(row,index)=>`<div class="finance-import-row-head"><label class="finance-checkbox"><input name="select-${index}" type="checkbox" ${initiallySelected(row)?'checked':''}>第 ${index+1} 笔${row.duplicate?' · 疑似重复，确认仍需保留时勾选':''}${!row.manual&&row.confidence!=='high'?' · 请仔细核对':''}</label><button class="link-button" type="button" data-import-remove="${index}" aria-label="移除第 ${index+1} 笔">移除</button></div><div class="finance-form-top"><label>日期<input name="date-${index}" type="date" value="${esc(row.date||day)}" required></label><input type="hidden" name="kind-${index}" value="expense"><div class="finance-income-kind"><span>类型</span><strong>支出</strong></div></div><div class="finance-money-row"><label>金额 / 算式<input name="expression-${index}" value="${esc(row.expression||'')}" inputmode="decimal" maxlength="240" placeholder="例如 8+8+8-1"><output data-import-calculation aria-live="polite"></output></label><label>用途<input name="purpose-${index}" value="${esc(row.purpose||'')}" maxlength="160" placeholder="例如 早餐、打车"></label></div><label>分类<select data-finance-compact name="category-${index}">${categoryOptions(categories,row.categoryId,'',row.kind)}</select><span class="help" data-import-category-hint>${esc(row.purpose?`自动分类：${financeCategoryLabel(row.purpose,categories,row.kind)}`:'根据用途自动分类')}</span></label><label>备注（选填）<input name="note-${index}" value="${esc(row.note||'')}" maxlength="500"></label>${row.kind!=='expense'?'<p class="help">这张截图可能是收入或退款，请从收入记账或原支出退款入口登记。</p>':''}${row.receiptIds?.length?`<p class="finance-import-receipt-note">已附 ${row.receiptIds.length} 张压缩截图 · 确认入账后可在收支明细查看</p>`:'<p class="help">截图未保存，不能确认支出。</p>'}${row.warnings?.length?`<p class="help">${row.warnings.map(esc).join('；')}</p>`:''}<p class="help" data-import-conflict hidden></p><p class="finance-import-result" data-import-result></p>`;
+    options.openModal?.(`<div class="modal-head"><div><h2>${manual?'记下多笔收支':'核对截图账目'}</h2><p>${manual?'逐行填写金额和用途，可以增加或移除行，核对后再确认入账。':'请核对日期、金额和用途，明细入账后锁定。'}</p></div></div>${warnings.length?`<div class="finance-import-warnings" role="status">${warnings.map(warning=>`<p>${esc(warning)}</p>`).join('')}</div>`:''}<form id="finance-import-form"><fieldset><div class="finance-import-rows">${rows.map((row,index)=>`<section class="finance-import-row" data-import-index="${index}">${rowFields(row,index)}</section>`).join('')}</div><p class="error-text" data-form-error role="status"></p><div class="modal-actions"><button class="btn" type="button" data-close>取消</button><button class="btn btn-primary" type="submit">确认选中账目入账</button></div></fieldset></form>`,'workspace-dialog finance-dialog finance-import-dialog');
     const form=container.ownerDocument.querySelector('#finance-import-form');if(!form)return;
     const editable=()=>alive()&&form.isConnected&&!pending;
     const refreshCalculation=section=>{const index=Number(section.dataset.importIndex),text=form.elements[`expression-${index}`].value.trim(),output=$('[data-import-calculation]',section);try{const amount=parseMoneyExpression(text);output.textContent=amount>0?`合计 ¥${money(amount)}`:'入账金额需要大于 0';output.classList.toggle('is-error',amount<=0)}catch{output.textContent=text?'请检查算式，只支持数字、小数、加减。':'输入金额，自动计算合计';output.classList.toggle('is-error',Boolean(text))}};
-    const updateRowActions=()=>{const count=rows.filter(row=>!row.removed).length;for(const section of $$('[data-import-index]',form))$('[data-import-remove]',section).disabled=count<=1||rows[Number(section.dataset.importIndex)].done===true};
+    const updateRowActions=()=>{
+      const sections=$$('[data-import-index]',form),owners=new Map(existingUsage);
+      for(const [index,row] of rows.entries()){
+        if(row.done||row.attemptedBody)claimRowReceipts(owners,row.receiptIds,index);
+      }
+      for(const section of sections){
+        const index=Number(section.dataset.importIndex),row=rows[index],choice=form.elements[`select-${index}`];
+        if(row.kind==='expense'&&choice.checked&&row.receiptIds.every(id=>!owners.has(id)||owners.get(id)===index))claimRowReceipts(owners,row.receiptIds,index);
+      }
+      for(const section of sections){
+        const index=Number(section.dataset.importIndex),row=rows[index],choice=form.elements[`select-${index}`],locked=Boolean(row.done||row.attemptedBody);
+        const other=row.receiptIds.map(id=>owners.get(id)).find(owner=>owner!==undefined&&owner!==index);
+        choice.disabled=locked||row.kind!=='expense'||other!==undefined;
+        if(choice.disabled&&!locked)clearReceiptChoice(choice);
+        $('[data-import-remove]',section).disabled=sections.length<=1||locked;
+        const hint=$('[data-import-conflict]',section);
+        hint.hidden=other===undefined;
+        hint.textContent=other===undefined?'':other<0||rows[other].done?'这张截图已用于入账。':`这张截图已选给第 ${other+1} 笔。`;
+      }
+    };
     let suggesting=false;
     const suggestRow=(index)=>{
       const select=form.elements[`category-${index}`],purpose=form.elements[`purpose-${index}`].value,kind=form.elements[`kind-${index}`].value;
@@ -378,6 +410,7 @@ function createWorkspace(container,options,daily){
         if(!rows[index].categoryChosen)suggestRow(index);
       }
       if(event.target.name===`kind-${index}`)suggestRow(index);
+      if(event.target.name===`select-${index}`)updateRowActions();
     });
     form.addEventListener('click',event=>{
       if(!editable())return;const button=event.target.closest('button');
@@ -385,7 +418,7 @@ function createWorkspace(container,options,daily){
       if(button?.matches('[data-import-remove]')){const index=Number(button.dataset.importRemove);if(rows[index]?.done||rows[index]?.attemptedBody||rows.filter(row=>!row.removed).length<=1)return;const section=button.closest('[data-import-index]'),neighbor=section.nextElementSibling||section.previousElementSibling;rows[index].removed=true;render(section,'');section.remove();updateRowActions();$('input[name^="expression-"]',neighbor)?.focus()}
     });
     for(const section of $$('[data-import-index]',form))refreshCalculation(section);updateRowActions();
-    form.addEventListener('submit',event=>{event.preventDefault();if(!editable())return;const values=new FormData(form),selected=rows.flatMap((row,index)=>!row.removed&&!row.done&&(row.attemptedBody||values.get(`select-${index}`)==='on')?[{row,index,body:row.attemptedBody||{id:row.id,date:String(values.get(`date-${index}`)||day),kind:'expense',expression:String(values.get(`expression-${index}`)||''),purpose:String(values.get(`purpose-${index}`)||''),categoryId:String(values.get(`category-${index}`)||''),receiptIds:row.receiptIds,note:String(values.get(`note-${index}`)||''),source:daily?'daily':'finance'}}]:[]);
+    form.addEventListener('submit',event=>{event.preventDefault();if(!editable())return;updateRowActions();const values=new FormData(form),selected=rows.flatMap((row,index)=>!row.removed&&!row.done&&(row.attemptedBody||values.get(`select-${index}`)==='on')?[{row,index,body:row.attemptedBody||{id:row.id,date:String(values.get(`date-${index}`)||day),kind:'expense',expression:String(values.get(`expression-${index}`)||''),purpose:String(values.get(`purpose-${index}`)||''),categoryId:String(values.get(`category-${index}`)||''),receiptIds:row.receiptIds,note:String(values.get(`note-${index}`)||''),source:daily?'daily':'finance'}}]:[]);
       if(!selected.length){$('[data-form-error]',form).textContent='请至少选择一笔待入账记录。';return}
       try{for(const item of selected){if(!item.row.receiptIds?.length)throw new Error(`第 ${item.index+1} 笔未保存截图，请配置图片存储后重新上传。`);if(item.row.receiptIds.length>10)throw new Error(`第 ${item.index+1} 笔最多关联10张截图，请减少图片后重试。`);if(item.row.kind!=='expense')throw new Error('收入或退款截图请使用对应记账入口。');if(parseMoneyExpression(item.body.expression)<=0)throw new Error(`请检查第 ${item.index+1} 笔金额。`)}}catch(error){$('[data-form-error]',form).textContent=error.message;return}
       write(form,async current=>{for(const item of selected){
@@ -393,10 +426,16 @@ function createWorkspace(container,options,daily){
         try{await request('/api/finance/entries',{method:'POST',body:item.body},current)}catch(error){
           // A definitive validation rejection committed nothing; let this row be
           // corrected. Uncertain failures keep their original idempotent payload.
-          if(error.status===400&&current()){delete item.row.attemptedBody;for(const control of $$('input,select,button',locked))control.disabled=false;updateRowActions()}
+          if(rejectedFinanceWrite(error)&&current()){
+            delete item.row.attemptedBody;
+            for(const control of $$('input,select,button',locked))control.disabled=false;
+            if(error.code==='finance_receipt_in_use'&&item.row.receiptIds.length===1)existingUsage.set(item.row.receiptIds[0],-1);
+            updateRowActions();
+          }
           throw error;
         }
         if(!current())return;const section=$(`[data-import-index="${item.index}"]`,form);item.row.done=true;$('[data-import-result]',section).textContent='已入账';for(const control of $$('input,select,button',section))control.disabled=true;section.dataset.importDone='true';
+        updateRowActions();
       }if(current()){options.closeModal?.(true);await load();notify('选中账目已入账。','success')}});
     });
   }
@@ -412,15 +451,17 @@ function createWorkspace(container,options,daily){
     try{await write(anchor,async current=>{
       const active=()=>current()&&!owner.signal.aborted;
       try{
-        status('正在本地读取截图…');receiptModule=options.receiptClient||await import('./receipt-client.js?v=1.0.0-finance-category1');if(!active())return;
+        status('正在本地读取截图…');receiptModule=options.receiptClient||await import('./receipt-client.js?v=1.0.0-finance-receipts1');if(!active())return;
         const task=receiptModule.processReceiptFiles(files,{request,isCurrent:active,signal:owner.signal,categories,date:day,upload:true,onProgress:progress=>{if(active())status(typeof progress==='string'?progress:progress?.message||'正在本地识别截图…')}});
         const result=await Promise.race([task,new Promise((_,reject)=>{onAbort=()=>reject(new DOMException('已取消图片处理','AbortError'));owner.signal.addEventListener('abort',onAbort,{once:true});if(owner.signal.aborted)onAbort()})]);if(!active())return;
         if(result.imageStatus!=='stored'||!result.receiptIds?.length)throw new Error('截图尚未保存，不能确认支出。请先在图片存储设置中配置并测试S3，再重新上传。');
+        const usedReceiptIds=result.usedReceiptIds||[];
+        if(result.receiptIds.every(id=>usedReceiptIds.includes(id)))throw new Error('这批截图都已用于入账，请换成对应新账目的截图。');
         lastMatchResult=result;
         if(planned.length){status('截图已保存，请核对花销与截图的匹配关系。');openMatchedExpenses(planned,result);return}
         const candidates=result.candidates?.length?result.candidates.map(candidate=>({...candidate,receiptIds:(candidate.receiptIds||[]).filter(value=>result.receiptIds.includes(value))})):[{date:day,expression:'',purpose:'',kind:'expense',categoryId:'',receiptIds:result.receiptIds||[],confidence:0}];
         if(candidates.length===1&&!candidates[0].receiptIds?.length)candidates[0].receiptIds=result.receiptIds||[];
-        status(result.receiptIds?.length?`已上传 ${result.receiptIds.length} 张压缩截图，尚未入账。请核对并确认，入账后在明细点击“查看截图”。`:'截图已识别，未保存图片。请核对后确认入账。');importPreview(candidates,result.warnings||[]);
+        status(result.receiptIds?.length?`已上传 ${result.receiptIds.length} 张压缩截图，尚未入账。请核对并确认，入账后在明细点击“查看截图”。`:'截图已识别，未保存图片。请核对后确认入账。');importPreview(candidates,result.warnings||[],{usedReceiptIds});
       }catch(error){if(error.name!=='AbortError'){if(current())status(error.message||'图片未能保存，尚未入账。',true);throw error}if(current())status('已取消截图处理，未入账。')}
     })}finally{if(onAbort)owner.signal.removeEventListener('abort',onAbort);aborter.signal.removeEventListener('abort',stop);if(importController===owner){importController=null;cancel.hidden=true}}
   }
@@ -435,7 +476,10 @@ function createWorkspace(container,options,daily){
     if(button.matches('[data-focus-entry]')){const form=$('[data-finance-create]',container);form?.elements.text.focus();form?.scrollIntoView?.({block:'center',behavior:'smooth'})}
     if(button.matches('[data-day-zero]'))write(button,async current=>{await request('/api/finance/day',{method:'POST',body:{date:day,state:'zero'}},current);if(current()){await load();notify('已记录今日零支出。','success')}});
     if(button.matches('[data-receipt-open]')){const entry=entries.find(row=>row.id===button.closest('[data-entry-id]')?.dataset.entryId);if(entry)viewReceipt(entry)}
-    if(button.matches('[data-entry-action]')){const entry=entries.find(row=>row.id===button.dataset.id);if(!entry)return;const action=button.dataset.entryAction;if(action==='edit')openEdit(entry);if(action==='refund')openEdit(entry,true);if(action==='delete')confirmDelete(entry);if(action==='restore')write(button,async current=>{await request(`/api/finance/entries/${encodeURIComponent(entry.id)}/restore`,{method:'POST',body:{version:entry.version}},current);if(current()){await load();notify('账目已恢复。','success')}})}
+    if(button.matches('[data-entry-action="refund"]')){
+      const entry=entries.find(row=>row.id===button.dataset.id);
+      if(entry?.kind==='expense'&&!entry.deletedAt)openRefund(entry);
+    }
   }
   function mount(){
     if(daily){render(container,`<div class="finance-daily"><div class="finance-day-summary" data-finance-summary><span>今日净支出</span><strong>—</strong><small>正在读取当天账目</small></div><div data-finance-form class="finance-entry-form"></div><div class="finance-daily-tools"><button class="btn btn-ghost" type="button" data-finance-detail>收入记账</button><button class="btn btn-ghost" type="button" data-day-zero>今天没有花销</button><button class="link-button" type="button" data-finance-storage>图片存储设置</button></div><p class="help" data-storage-note></p><p class="finance-status" data-finance-status role="status" aria-live="polite"></p><button type="button" class="btn btn-ghost" data-cancel-import hidden>取消截图处理</button><div data-finance-entries></div><button class="btn btn-ghost" type="button" data-finance-more hidden>加载更早记录</button><input data-finance-files type="file" accept="image/png,image/jpeg,image/webp" multiple hidden></div>`)}

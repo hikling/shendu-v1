@@ -1,4 +1,4 @@
-import {parseReceiptText} from './finance-domain.js?v=1.0.0-finance-category1';
+import {parseReceiptText} from './finance-domain.js?v=1.0.0-finance-receipts1';
 
 export const RECEIPT_LIMITS=Object.freeze({files:20,fileBytes:20*1024*1024,pixels:32*1024*1024,imageBytes:2*1024*1024,thumbBytes:96*1024});
 let worker=null,workerPromise=null,workerGeneration=0,activeBatch=null,ocrProgress=()=>{};
@@ -69,7 +69,7 @@ export async function compressReceipt(file,{isCurrent=()=>true,signal}={}){
         if(name==='image'&&blob.size>300*1024)blob=await toBlob(canvas,blob.type,.72);
         const maximum=name==='image'?RECEIPT_LIMITS.imageBytes:RECEIPT_LIMITS.thumbBytes;
         if(blob.size>maximum)throw new Error('截图压缩后仍然过大，请裁剪或分成几张以保留清晰文字');
-        assertCurrent(isCurrent,signal);result[name]={blob,type:blob.type,bytes:blob.size,sha256:await digest(blob)};
+        assertCurrent(isCurrent,signal);result[name]={...size,blob,type:blob.type,bytes:blob.size,sha256:await digest(blob)};
       }finally{canvas.width=1;canvas.height=1}
     }
     return {...result,hash:[...new Uint8Array(await crypto.subtle.digest('SHA-256',buffer))].map(value=>value.toString(16).padStart(2,'0')).join('')};
@@ -94,17 +94,46 @@ function resetWorker(abortBatch){
   if(prior)Promise.resolve(prior.terminate()).catch(()=>{});
 }
 export function disposeReceiptWorker(){resetWorker(true)}
-async function recognize(blob,{isCurrent,signal,onProgress}){
+
+function paymentAmountRegion(blocks,{width,height}){
+  const lines=(blocks||[]).flatMap(block=>block.paragraphs.flatMap(paragraph=>paragraph.lines))
+    .map(line=>({text:line.text.replace(/\s/g,''),box:line.bbox})).sort((a,b)=>a.box.y0-b.box.y0);
+  const heading=lines.find(line=>/交易详情|[账帐]单/.test(line.text));
+  if(!heading)return null;
+  const details=lines.find(line=>line.box.y0>heading.box.y1&&/^当前状态/.test(line.text));
+  if(!details||!lines.some(line=>line.box.y0>=details.box.y0&&/(?:支付时间|转账时间|交易单号|转账单号)/.test(line.text)))return null;
+  // A bill puts the merchant above the amount. Transaction details put the
+  // amount first, including when the details are below a separate profile.
+  const detailsTab=heading.text.includes('交易详情'),distance=details.box.y0-heading.box.y0;
+  const top=Math.round(heading.box.y0+distance*(detailsTab?.34:.565));
+  const amountHeight=Math.round(distance*(detailsTab?.22:.156));
+  if(amountHeight<16||top<heading.box.y1||top+amountHeight>height)return null;
+  return {top,left:Math.round(width*.245),width:Math.round(width*.565),height:amountHeight};
+}
+
+async function recognize(image,{isCurrent,signal,onProgress}){
   const generation=workerGeneration;
   ocrProgress=message=>{if(!signal?.aborted&&isCurrent())onProgress({stage:'recognizing',message:'正在本地识别截图',progress:Number(message.progress)||0})};
   let timer,abort;
   try{
-    const task=(async()=>{const engine=await localWorker();assertCurrent(isCurrent,signal);return engine.recognize(blob)})();
+    const task=(async()=>{
+      const engine=await localWorker();assertCurrent(isCurrent,signal);
+      const {data}=await engine.recognize(image.blob,{},{blocks:true});
+      assertCurrent(isCurrent,signal);
+      const text=data?.text||'',rectangle=paymentAmountRegion(data?.blocks,image);
+      if(!rectangle)return {text};
+      try{
+        // Raw-line mode reads the amount without the surrounding merchant and
+        // metadata. Its digit whitelist keeps OCR from substituting letters.
+        const scan=await engine.recognize(image.blob,{rectangle,tessedit_pageseg_mode:'13',tessedit_char_whitelist:'0123456789.-+'});
+        return {text,primaryAmount:scan.data?.confidence>=45?scan.data.text:''};
+      }catch(caught){assertCurrent(isCurrent,signal);return {text}}
+    })();
     const result=await Promise.race([task,new Promise((_,reject)=>{
       timer=setTimeout(()=>{resetWorker(false);reject(new Error('本地识别用时较长，可先手动填写账目'))},90000);
       abort=()=>{resetWorker(false);reject(cancelled())};signal?.addEventListener('abort',abort,{once:true});if(signal?.aborted)abort();
     })]);
-    assertCurrent(isCurrent,signal);if(generation!==workerGeneration)throw cancelled();return result.data?.text||'';
+    assertCurrent(isCurrent,signal);if(generation!==workerGeneration)throw cancelled();return result;
   }finally{clearTimeout(timer);if(abort)signal?.removeEventListener('abort',abort);ocrProgress=()=>{}}
 }
 
@@ -128,7 +157,7 @@ async function uploadVariants(compressed,{request,isCurrent,signal,config}){
   const variants=Object.fromEntries(['image','thumb'].map(name=>[name,{bytes:compressed[name].bytes,type:compressed[name].type,sha256:compressed[name].sha256}]));
   const ticket=await request('/api/finance/receipts/prepare',{method:'POST',body:{id:crypto.randomUUID(),hash:compressed.hash,variants}},isCurrent);assertCurrent(isCurrent,signal);
   if(typeof ticket.receiptId!=='string'||!ticket.receiptId)throw new Error('凭证保存响应不完整，请重试');
-  if(ticket.ready)return {id:ticket.receiptId,duplicate:ticket.duplicate===true};
+  if(ticket.ready)return {id:ticket.receiptId,duplicate:ticket.duplicate===true,inUse:ticket.inUse===true};
   if(ticket.uploadVersion!==undefined&&(!Number.isSafeInteger(ticket.uploadVersion)||ticket.uploadVersion<1))throw Object.assign(new Error('上传版本无效'),{code:'finance_receipt_stale_upload'});
   for(const name of ['image','thumb']){
     stage=name==='image'?'upload-image':'upload-thumb';
@@ -181,27 +210,32 @@ export async function processReceiptFiles(files,{request,isCurrent=()=>true,onPr
   if(list.length>RECEIPT_LIMITS.files)throw new Error('每次最多处理20张截图，请分批选择');
   if(activeBatch)throw new Error('上一批截图还在处理中，请稍候');list.forEach(validateReceiptFile);
   const owner=new AbortController();activeBatch=owner;const abort=()=>owner.abort();signal?.addEventListener('abort',abort,{once:true});if(signal?.aborted)owner.abort();
-  const current=()=>activeBatch===owner&&!owner.signal.aborted&&isCurrent(),candidates=[],receiptIds=[],warnings=[];
+  const current=()=>activeBatch===owner&&!owner.signal.aborted&&isCurrent(),candidates=[],receiptIds=[],usedReceiptIds=new Set(),warnings=[];
   try{
     let configured=null;
     if(upload&&request){const result=await request('/api/finance/storage',{},current);assertCurrent(current,owner.signal);configured=result.configured?result.config:null;if(!configured)warnings.push('尚未配置凭证存储：本次图片不会长期保存，请先配置图片存储，再上传并确认支出。')}
     for(let index=0;index<list.length;index++){
       assertCurrent(current,owner.signal);onProgress({stage:'compressing',message:`正在压缩第${index+1}/${list.length}张截图`,index,total:list.length});
       const compressed=await compressReceipt(list[index],{isCurrent:current,signal:owner.signal});
-      let text='',imageWarning=[];
-      try{text=await recognize(compressed.image.blob,{isCurrent:current,signal:owner.signal,onProgress})}
+      let recognized={},imageWarning=[];
+      try{recognized=await recognize(compressed.image,{isCurrent:current,signal:owner.signal,onProgress})}
       catch(caught){assertCurrent(current,owner.signal);imageWarning.push('未能自动识别完整账目，请核对并手动补充。')}
       assertCurrent(current,owner.signal);let receiptId=null,duplicate=false;
       if(configured){
         onProgress({stage:'uploading',message:`正在保存第${index+1}/${list.length}张压缩凭证`,index,total:list.length});
-        try{const stored=await uploadVariants(compressed,{request,isCurrent:current,signal:owner.signal,config:configured});receiptId=stored.id;duplicate=stored.duplicate;receiptIds.push(receiptId);if(duplicate)imageWarning.push('这张截图已保存过，请核对是否重复记账。')}
+        try{
+          const stored=await uploadVariants(compressed,{request,isCurrent:current,signal:owner.signal,config:configured});
+          receiptId=stored.id;duplicate=stored.duplicate;receiptIds.push(receiptId);
+          if(stored.inUse){usedReceiptIds.add(receiptId);imageWarning.push('这张截图已用于入账。')}
+          else if(duplicate)imageWarning.push('这张截图已保存过，请核对是否重复记账。');
+        }
         catch(caught){assertCurrent(current,owner.signal);throw Object.assign(new Error(`第 ${index+1} 张截图未能保存，本批次尚未入账。${receiptFailureMessage(caught)}`),{code:'receipt_upload_failed',receiptStage:caught.receiptStage,receiptReason:caught.receiptReason,status:caught.status,cause:caught})}
       }
-      const parsed=parseReceiptText(text,{date,categories}),rows=parsed.length?parsed:[{date,expression:'',purpose:'',kind:'expense',categoryId:'uncategorized',confidence:0,warnings:['未识别到金额，请手动填写。']}];
+      const parsed=parseReceiptText(recognized.text,{date,categories,primaryAmount:recognized.primaryAmount}),rows=parsed.length?parsed:[{date,expression:'',purpose:'',kind:'expense',categoryId:'uncategorized',confidence:0,warnings:['未识别到金额，请手动填写。']}];
       for(const row of rows)candidates.push({...row,duplicate,receiptIds:receiptId?[receiptId]:[],warnings:[...(row.warnings||[]),...imageWarning]});
       warnings.push(...imageWarning);onProgress({stage:'processed',message:`已处理${index+1}/${list.length}张截图`,index:index+1,total:list.length});
     }
-    return {candidates,receiptIds:[...new Set(receiptIds)],warnings:[...new Set(warnings)],imageStatus:configured?'stored':'not_stored'};
+    return {candidates,receiptIds:[...new Set(receiptIds)],usedReceiptIds:[...usedReceiptIds],warnings:[...new Set(warnings)],imageStatus:configured?'stored':'not_stored'};
   }finally{signal?.removeEventListener('abort',abort);if(activeBatch===owner)activeBatch=null;ocrProgress=()=>{}}
 }
 

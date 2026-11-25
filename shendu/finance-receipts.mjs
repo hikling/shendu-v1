@@ -243,7 +243,10 @@ export function createFinanceReceipts(deps){
         if(sameId&&(sameId.user_id!==user.id||sameId.hash!==body.hash))throw bad('图片标识不可用，请重新选择截图','finance_receipt_id_conflict',409);
         if(row){
           const encrypted=row.data;row=unpack(row);
-          if(row.ready){json(res,200,{receiptId:row.id,ready:true,duplicate:true,uploads:{}});return true}
+          if(row.ready){
+            const inUse=deps.isReceiptUsed?.(user.id,row.id)===true;
+            json(res,200,{receiptId:row.id,ready:true,duplicate:true,uploads:{},...(inUse?{inUse}:{})});return true;
+          }
           if(row.data.storageIdentity!==receiptStorageIdentity(config))throw bad('图片存储位置已变化，请检查设置','finance_storage_conflict',409);
           if(stable(row.data.variants)!==stable(variants)){
             const version=row.version+1;if(!Number.isSafeInteger(version))throw bad('图片上传版本超出范围','finance_receipt_stale_upload',409);

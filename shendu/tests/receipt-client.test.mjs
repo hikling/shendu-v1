@@ -78,6 +78,33 @@ test('ready duplicate images reuse the owned receipt and ask for duplicate revie
   const b=await browser();try{const result=await b.client.processReceiptFiles([screenshot()],{request:async path=>path.endsWith('/storage')?{configured:true,config}:{receiptId:'existing',ready:true,duplicate:true}});assert.equal(b.fetches.length,0);assert.deepEqual(result.receiptIds,['existing']);assert.equal(result.candidates[0].duplicate,true);assert.match(result.warnings.join(' '),/重复记账/)}finally{b.restore()}
 });
 
+test('the uploaded batch distinguishes already posted receipts from unassigned ready duplicates',async()=>{
+  const b=await browser();
+  try{
+    const result=await b.client.processReceiptFiles([screenshot()],{request:async path=>path.endsWith('/storage')?{configured:true,config}:{receiptId:'posted',ready:true,duplicate:true,inUse:true}});
+    assert.deepEqual(result.receiptIds,['posted']);assert.deepEqual(result.usedReceiptIds,['posted']);
+    assert.equal(b.fetches.length,0);assert.match(result.warnings.join(' '),/已用于入账/);
+  }finally{b.restore()}
+});
+
+test('bill geometry rescans the central amount as a single numeric line and keeps full-page metadata',async()=>{
+  const calls=[],line=(text,y0,y1)=>({text,bbox:{x0:30,x1:770,y0,y1}});
+  const lines=[line('账 单   全 部 账 单',175,213),line('当前 状态 支付成功',840,877),line('支付 时间 2026 年 10 月 3 日',900,936)];
+  const b=await browser({recognize:async(blob,options,output)=>{
+    calls.push({options,output});
+    if(options.rectangle)return {data:{text:'-16.25\n',confidence:64}};
+    return {data:{text:'账单\n14:57\n商户简称：地铁\n支付时间 2026 年 10 月 3 日',blocks:[{paragraphs:[{lines}]}]}};
+  }});
+  try{
+    const {candidates}=await b.client.processReceiptFiles([screenshot()],{upload:false});
+    assert.equal(calls.length,2);assert.equal(calls[0].output.blocks,true);
+    const scan=calls[1].options;assert.equal(scan.tessedit_pageseg_mode,'13');
+    assert.ok(scan.rectangle.top>500&&scan.rectangle.top+scan.rectangle.height<840);
+    assert.equal(candidates[0].expression,'16.25');assert.equal(candidates[0].date,'2026-10-03');
+    assert.equal(candidates[0].categoryId,'transport');
+  }finally{b.restore()}
+});
+
 test('OCR failure preserves manual candidates and never creates ledger entries',async()=>{
   const b=await browser({recognize:async()=>{throw new Error('runtime error')}});try{const result=await b.client.processReceiptFiles([screenshot()],{upload:false});assert.equal(result.candidates[0].expression,'');assert.equal(result.candidates[0].confidence,0);assert.match(result.warnings.join(' '),/手动补充/);assert.equal(b.fetches.length,0)}finally{b.restore()}
 });

@@ -26,6 +26,10 @@ async function account(){const username=`finance_member_${++index}`,created=awai
 const input=(extra={})=>({id:randomUUID(),date:today,kind:'expense',expression:'8+8+8-1',purpose:'早餐',categoryId:'food',note:'',receiptIds:[],...extra});
 async function create(auth,extra={}){const body=input(extra),result=await api('/api/finance/entries',{method:'POST',auth,body});assert.equal(result.status,201,result.text);return result.value.entry}
 async function ledger(auth,query=''){const result=await api('/api/finance?month='+month+query,{auth});assert.equal(result.status,200,result.text);return result.value}
+function legacyDeletion(userId,id){
+  const time=new Date().toISOString();
+  assert.equal(db.prepare('UPDATE finance_entries SET deleted_at=?,updated_at=?,version=version+1 WHERE user_id=? AND id=?').run(time,time,userId,id).changes,1);
+}
 function clearBackup(text){const {tag,data,...header}=JSON.parse(text),key=pbkdf2Sync(backupPassword,Buffer.from(header.kdf.salt,'base64'),600000,32,'sha256'),decipher=createDecipheriv('aes-256-gcm',key,Buffer.from(header.cipher.iv,'base64'));decipher.setAAD(Buffer.from(JSON.stringify(header)));decipher.setAuthTag(Buffer.from(tag,'base64'));return JSON.parse(gunzipSync(Buffer.concat([decipher.update(Buffer.from(data,'base64')),decipher.final()])))}
 function sealBackup(text,clear){const {tag,data,...header}=JSON.parse(text);header.kdf.salt=randomBytes(16).toString('base64');header.cipher.iv=randomBytes(12).toString('base64');const cipher=createCipheriv('aes-256-gcm',pbkdf2Sync(backupPassword,Buffer.from(header.kdf.salt,'base64'),600000,32,'sha256'),Buffer.from(header.cipher.iv,'base64'));cipher.setAAD(Buffer.from(JSON.stringify(header)));const encrypted=Buffer.concat([cipher.update(gzipSync(Buffer.from(JSON.stringify(clear)))),cipher.final()]);return JSON.stringify({...header,tag:cipher.getAuthTag().toString('base64'),data:encrypted.toString('base64')})}
 before(async()=>{
@@ -51,14 +55,25 @@ test('finance exact cents, encrypted storage, account isolation and retry idempo
   const activity=await api('/api/activity',{auth:a.cookie});assert.doesNotMatch(JSON.stringify(activity.value),/早餐|2300|amountCents|expression/);
 });
 
-test('entry versions, deletion and explicit recovery preserve data without counting tombstones',async()=>{
-  const a=await account(),entry=await create(a.cookie),updated=await api('/api/finance/entries/'+entry.id,{method:'PUT',auth:a.cookie,body:{...entry,expression:'0.1+0.2',version:1}});
-  assert.equal(updated.status,200,updated.text);assert.equal(updated.value.entry.amountCents,30);assert.equal(updated.value.entry.version,2);
-  assert.equal((await api('/api/finance/entries/'+entry.id,{method:'DELETE',auth:a.cookie,body:{version:1}})).status,409);
-  const deleted=await api('/api/finance/entries/'+entry.id,{method:'DELETE',auth:a.cookie,body:{version:2}});assert.equal(deleted.status,200,deleted.text);assert.ok(deleted.value.entry.deletedAt);assert.equal(deleted.value.entry.version,3);
-  assert.equal((await ledger(a.cookie)).summary.expenseCents,0);assert.equal((await ledger(a.cookie)).entries.length,0);assert.equal((await ledger(a.cookie,'&deleted=1')).entries.length,1);
-  assert.equal((await api('/api/finance/entries/'+entry.id,{method:'PUT',auth:a.cookie,body:{...entry,version:3}})).status,409);
-  const restore=await api('/api/finance/entries/'+entry.id+'/restore',{method:'POST',auth:a.cookie,body:{version:3}});assert.equal(restore.status,200,restore.text);assert.equal(restore.value.entry.deletedAt,null);assert.equal((await ledger(a.cookie)).summary.expenseCents,30);
+test('posted entries are locked for every kind, while historical tombstones remain viewable',async()=>{
+  const a=await account(),expense=await create(a.cookie),path=entry=>'/api/finance/entries/'+entry.id;
+  const income=await create(a.cookie,{kind:'income',purpose:'工资',categoryId:'salary'});
+  const refund=await create(a.cookie,{kind:'refund',purpose:'退款',expression:'5',refundOf:expense.id});
+  const transfer=await create(a.cookie,{kind:'transfer',purpose:'转账'});
+  const before=await ledger(a.cookie),events=db.prepare('SELECT count(*) n FROM activity_events WHERE user_id=?').get(a.id).n;
+  for(const entry of [expense,income,refund,transfer]){
+    for(const method of ['PUT','DELETE']){
+      const response=await api(path(entry),{method,auth:a.cookie,body:{...entry,expression:'42',version:entry.version}});
+      assert.equal(response.status,409,response.text);assert.equal(response.value.error,'finance_entry_locked');
+    }
+  }
+  assert.deepEqual(await ledger(a.cookie),before);
+  assert.equal(db.prepare('SELECT count(*) n FROM activity_events WHERE user_id=?').get(a.id).n,events);
+  legacyDeletion(a.id,income.id);
+  const restore=await api(path(income)+'/restore',{method:'POST',auth:a.cookie,body:{version:2}});
+  assert.equal(restore.status,409,restore.text);assert.equal(restore.value.error,'finance_entry_locked');
+  assert.equal((await ledger(a.cookie)).summary.incomeCents,0);
+  assert.ok((await ledger(a.cookie,'&deleted=1')).entries.find(item=>item.id===income.id).deletedAt);
 });
 
 test('refunds are owned, bounded and atomic; income and transfers have distinct summary semantics',async()=>{
@@ -71,9 +86,8 @@ test('refunds are owned, bounded and atomic; income and transfers have distinct 
   assert.equal((await api('/api/finance/entries/'+expense.id,{method:'PUT',auth:a.cookie,body:{...expense,expression:'39',version:1}})).status,409);
   const current=await ledger(a.cookie);assert.deepEqual(current.summary,{incomeCents:50000,expenseCents:10000,refundCents:4000,netExpenseCents:6000,balanceCents:44000,count:4});
   assert.equal(current.categoryTotals.find(item=>item.categoryId==='food').cents,6000);assert.deepEqual(current.expenseCategoryTotals,[{categoryId:'food',name:'餐饮',cents:10000}]);
-  assert.equal((await api('/api/finance/entries/'+refund.id,{method:'DELETE',auth:a.cookie,body:{version:1}})).status,200);
-  assert.equal((await api('/api/finance/entries/'+expense.id,{method:'DELETE',auth:a.cookie,body:{version:1}})).status,200);
-  assert.equal((await api('/api/finance/entries/'+refund.id+'/restore',{method:'POST',auth:a.cookie,body:{version:2}})).status,400,'cannot restore a refund of deleted expense');
+  assert.equal(current.entries.find(item=>item.id===refund.id).refundOf,expense.id);
+  assert.deepEqual(current.entries.find(item=>item.id===expense.id),expense);
 });
 
 test('custom categories archive rather than remove historic labels, with exact versions',async()=>{
@@ -175,14 +189,14 @@ test('daily zero is explicit, and paging/search do not truncate monthly aggregat
   assert.equal((await api('/api/finance?month='+month+'&cursor='+randomUUID(),{auth:a.cookie})).status,404);
 });
 
-test('daily completion captures server ledger snapshot, blocks pending input and keeps it locked after corrections',async()=>{
+test('daily completion captures server ledger snapshot, blocks pending input and keeps the snapshot after later entries',async()=>{
   const a=await account(),expense=await create(a.cookie),me=await api('/api/me',{auth:a.cookie});assert.equal(me.value.stage.reviewTemplates.daily.financeEnabled,true);
   const data={answers:{today:['真实发生的事']},action:'执行具体行动',ifCondition:'遇到阻碍',ifThen:'先做第一步',verifyDate:today,financeDraft:{expression:'2',purpose:'待确认'},financeSnapshot:{expenseCents:999999999},templateSnapshot:{version:1,review:me.value.stage.reviewTemplates.daily,action:me.value.stage.actionTemplate}};
   let saved=await api('/api/records',{method:'PUT',auth:a.cookie,body:{type:'daily',period:today,data}});assert.equal(saved.status,200,saved.text);assert.equal(saved.value.record.data.financeSnapshot,undefined);
   assert.equal((await api('/api/records/'+saved.value.record.id+'/complete',{method:'POST',auth:a.cookie})).status,400);
   saved=await api('/api/records',{method:'PUT',auth:a.cookie,body:{id:saved.value.record.id,version:saved.value.record.version,type:'daily',period:today,data:{...data,financeDraft:{}}}});assert.equal(saved.status,200,saved.text);
   const completed=await api('/api/records/'+saved.value.record.id+'/complete',{method:'POST',auth:a.cookie});assert.equal(completed.status,200,completed.text);assert.equal(completed.value.record.data.financeSnapshot.expenseCents,2300);assert.equal(completed.value.record.data.financeSnapshot.entries[0].id,expense.id);
-  await api('/api/finance/entries/'+expense.id,{method:'PUT',auth:a.cookie,body:{...expense,expression:'42',version:1}});
+  await create(a.cookie,{expression:'19'});
   const history=await api('/api/records/'+saved.value.record.id,{auth:a.cookie});assert.equal(history.value.record.data.financeSnapshot.expenseCents,2300);assert.equal((await ledger(a.cookie)).summary.expenseCents,4200);
   const b=await account(),otherMe=await api('/api/me',{auth:b.cookie}),review={...otherMe.value.stage.reviewTemplates.daily};delete review.financeEnabled;
   const old=await api('/api/records',{method:'PUT',auth:b.cookie,body:{type:'daily',period:today,data:{...data,financeDraft:{},templateSnapshot:{version:1,review,action:otherMe.value.stage.actionTemplate}}}});assert.equal(old.status,200,old.text);assert.equal(old.value.record.data.templateSnapshot.review.financeEnabled,false);
@@ -225,7 +239,7 @@ test('personal backups preserve ledger tombstones, reject corrupt graph atomical
   const a=await account();await api('/api/backup/password',{method:'POST',auth:a.cookie,body:{password:backupPassword}});
   const old=await api('/api/backup/export',{method:'POST',auth:a.cookie,body:{}});assert.equal(old.status,200,old.text);assert.equal(clearBackup(old.text).entries.some(item=>item.kind==='finance'),false);
   const entry=await create(a.cookie),exported=await api('/api/backup/export',{method:'POST',auth:a.cookie,body:{}});assert.equal(exported.status,200,exported.text);const clear=clearBackup(exported.text);assert.ok(clear.entries.find(item=>item.kind==='finance'));
-  await api('/api/finance/entries/'+entry.id,{method:'DELETE',auth:a.cookie,body:{version:1}});
+  legacyDeletion(a.id,entry.id);
   const restored=await api('/api/data/import',{method:'POST',auth:a.cookie,body:{encryptedBackup:exported.text,password:backupPassword,mode:'merge'}});assert.equal(restored.status,200,restored.text);assert.equal((await ledger(a.cookie)).entries.length,0);assert.equal((await ledger(a.cookie,'&deleted=1')).entries[0].version,2);
   const legacy=await api('/api/data/import',{method:'POST',auth:a.cookie,body:{encryptedBackup:old.text,password:backupPassword,mode:'replace',confirmation:'RESTORE'}});assert.equal(legacy.status,200,legacy.text);assert.equal((await ledger(a.cookie,'&deleted=1')).entries.length,1);
   const tampered=structuredClone(clear);tampered.entries.find(item=>item.kind==='finance').value.entries[0].amountCents++;
@@ -255,15 +269,16 @@ test('completion size limits include finance snapshots and preserve the draft, l
   assert.equal((await ledger(a.cookie)).summary.expenseCents,4*2300);assert.equal(db.prepare("SELECT count(*) n FROM activity_events WHERE user_id=? AND action='review_completed'").get(a.id).n,before);
 });
 
-test('backups retain deleted refund history after correcting the original expense kind',async()=>{
+test('backups retain historical deleted refunds whose original was corrected before locking',async()=>{
   const a=await account(),expense=await create(a.cookie,{expression:'100'}),refund=await create(a.cookie,{kind:'refund',expression:'20',refundOf:expense.id});
-  assert.equal((await api('/api/finance/entries/'+refund.id,{method:'DELETE',auth:a.cookie,body:{version:1}})).status,200);
-  const corrected=await api('/api/finance/entries/'+expense.id,{method:'PUT',auth:a.cookie,body:{...expense,kind:'income',version:1}});assert.equal(corrected.status,200,corrected.text);
   await api('/api/backup/password',{method:'POST',auth:a.cookie,body:{password:backupPassword}});
   const exported=await api('/api/backup/export',{method:'POST',auth:a.cookie,body:{}});assert.equal(exported.status,200,exported.text);
-  const imported=await api('/api/data/import',{method:'POST',auth:a.cookie,body:{encryptedBackup:exported.text,password:backupPassword,mode:'replace',confirmation:'RESTORE'}});assert.equal(imported.status,200,imported.text);
+  const oldBackup=clearBackup(exported.text),entries=oldBackup.entries.find(item=>item.kind==='finance').value.entries,time=new Date().toISOString();
+  Object.assign(entries.find(item=>item.id===expense.id),{kind:'income',version:2,updatedAt:time});
+  Object.assign(entries.find(item=>item.id===refund.id),{deletedAt:time,updatedAt:time,version:2});
+  const imported=await api('/api/data/import',{method:'POST',auth:a.cookie,body:{encryptedBackup:sealBackup(exported.text,oldBackup),password:backupPassword,mode:'replace',confirmation:'RESTORE'}});assert.equal(imported.status,200,imported.text);
   const current=await ledger(a.cookie,'&deleted=1');assert.equal(current.entries.length,2);assert.ok(current.entries.find(item=>item.id===refund.id).deletedAt);assert.equal(current.summary.incomeCents,10000);
-  assert.equal((await api('/api/finance/entries/'+refund.id+'/restore',{method:'POST',auth:a.cookie,body:{version:2}})).status,400);
+  assert.equal((await api('/api/finance/entries/'+refund.id+'/restore',{method:'POST',auth:a.cookie,body:{version:2}})).value.error,'finance_entry_locked');
 });
 
 test('storage CSP origins belong only to the current session and login requests a document reload',async()=>{
@@ -300,6 +315,51 @@ test('backup merge validates retained local receipt links and rolls back a confl
   const row=db.prepare('SELECT ready,version FROM finance_receipts WHERE id=? AND user_id=?').get(id,a.id);assert.equal(row.ready,1);assert.equal(row.version,2);assert.deepEqual((await ledger(a.cookie)).entries[0].receiptIds,[id]);
 });
 
+test('a saved receipt is exclusive across entries while exact retries and legacy links still work',async()=>{
+  const a=await account(),foreign=await account();
+  await create(a.cookie);
+  await api('/api/backup/password',{method:'POST',auth:a.cookie,body:{password:backupPassword}});
+  const exported=await api('/api/backup/export',{method:'POST',auth:a.cookie,body:{}});
+  const clear=clearBackup(exported.text),finance=clear.entries.find(item=>item.kind==='finance').value;
+  const hash=value=>createHash('sha256').update(value).digest('hex'),time=new Date().toISOString();
+  // A ready duplicate returns before contacting storage.
+  const config={endpoint:'https://93.184.216.34',bucket:'images',region:'auto',directory:'receipts',pathStyle:true,accessKey:'fixture-access',secretKey:'fixture-secret'};
+  const receipt=(suffix)=>{
+    const id=randomUUID(),prefix=['receipts',hash('shendu-receipts:'+a.username).slice(0,32),id,randomUUID()].join('/');
+    return {id,hash:hash('original-'+suffix),ready:1,version:2,createdAt:time,updatedAt:time,data:{
+      storageIdentity:receiptStorageIdentity(config),keys:{image:prefix+'/image.webp',thumb:prefix+'/thumb.webp'},
+      variants:{image:{bytes:20,type:'image/webp',sha256:hash('image-'+suffix)},thumb:{bytes:10,type:'image/webp',sha256:hash('thumb-'+suffix)}}
+    }};
+  };
+  const historical=receipt('old'),available=receipt('new');
+  finance.receipts={version:1,storage:{version:1,config},receipts:[historical,available]};
+  finance.entries[0].receiptIds=[historical.id];
+  const legacyId=randomUUID();
+  finance.entries.push({...finance.entries[0],id:legacyId,version:2,updatedAt:time,deletedAt:time});
+  const restored=await api('/api/data/import',{method:'POST',auth:a.cookie,body:{encryptedBackup:sealBackup(exported.text,clear),password:backupPassword,mode:'replace',confirmation:'RESTORE'}});
+  assert.equal(restored.status,200,restored.text);
+  assert.equal((await ledger(a.cookie,'&deleted=1')).entries.filter(row=>row.receiptIds.includes(historical.id)).length,2);
+  legacyDeletion(a.id,finance.entries[0].id);
+  const post=(body,auth=a.cookie)=>api('/api/finance/entries',{method:'POST',auth,body});
+  const prepare=record=>api('/api/finance/receipts/prepare',{method:'POST',auth:a.cookie,body:{id:randomUUID(),hash:record.hash,variants:record.data.variants}});
+  const before=await prepare(available);assert.equal(before.status,200,before.text);assert.equal(before.value.ready,true);assert.equal(before.value.inUse,undefined);
+  const bodies=[input({receiptIds:[available.id]}),input({receiptIds:[available.id],purpose:'不应重复入账',categoryId:''})];
+  const writes=await Promise.all(bodies.map(body=>post(body)));
+  assert.deepEqual(writes.map(result=>result.status).sort(),[201,409]);
+  assert.equal(writes.find(result=>result.status===409).value.error,'finance_receipt_in_use');
+  const committed=bodies[writes.findIndex(result=>result.status===201)];
+  const retry=await post(committed);assert.equal(retry.status,200,retry.text);assert.equal(retry.value.duplicate,true);
+  assert.equal((await prepare(available)).value.inUse,true);
+  assert.equal((await prepare(historical)).value.inUse,true);
+  for(const id of [historical.id,available.id]){
+    const rejection=await post(input({receiptIds:[id],purpose:'拒绝时不建分类',categoryId:''}));assert.equal(rejection.value.error,'finance_receipt_in_use');
+    assert.equal((await post(input({receiptIds:[id]}),foreign.cookie)).value.error,'finance_receipt_invalid');
+  }
+  const current=await ledger(a.cookie);assert.equal(current.entries.filter(row=>row.receiptIds.includes(available.id)).length,1);
+  assert.equal(current.categories.some(row=>row.name==='拒绝时不建分类'),false);
+  assert.equal(db.prepare("SELECT count(*) n FROM activity_events WHERE user_id=? AND action='finance_entry_created'").get(a.id).n,2);
+});
+
 test('account deletion cascades finance data and administrator cannot read another personal ledger',async()=>{
   const a=await account();await create(a.cookie);await api('/api/finance/day',{method:'POST',auth:a.cookie,body:{date:'2026-01-01',state:'zero'}});await api('/api/finance/categories',{method:'POST',auth:a.cookie,body:{id:randomUUID(),name:'私人类别',keywords:[]}});
   assert.equal((await ledger(ownerCookie,'&userId='+a.id)).entries.length,0);
@@ -317,16 +377,17 @@ test('a revoked session during a slow finance write cannot commit an entry or ac
 });
 
 test('whole-site backup restores financial rows atomically and older site files preserve matching accounts finances',async()=>{
-  const a=await account(),entry=await create(a.cookie),exported=await api('/api/admin/site-backup/export',{method:'POST',body:{currentPassword:password,backupPassword}});assert.equal(exported.status,200,exported.text);
+  const a=await account();await create(a.cookie);
+  const exported=await api('/api/admin/site-backup/export',{method:'POST',body:{currentPassword:password,backupPassword}});assert.equal(exported.status,200,exported.text);
   const clear=clearBackup(exported.text),bundle=clear.finance.find(item=>item.user_id===a.id);assert.equal(bundle.value.entries[0].amountCents,2300);assert.equal(clear.schemaVersion,9);
-  await api('/api/finance/entries/'+entry.id,{method:'PUT',auth:a.cookie,body:{...entry,expression:'77',version:1}});
+  await create(a.cookie,{expression:'54'});
   const forged=structuredClone(clear);forged.finance.find(item=>item.user_id===a.id).value.entries[0].kind='not-a-kind';
   const invalid=await api('/api/admin/site-backup/restore',{method:'POST',body:{currentPassword:password,backupPassword,confirmation:'RESTORE_SITE',encryptedBackup:sealBackup(exported.text,forged)}});assert.equal(invalid.status,400,invalid.text);assert.equal((await ledger(a.cookie)).summary.expenseCents,7700);
   const restored=await api('/api/admin/site-backup/restore',{method:'POST',body:{currentPassword:password,backupPassword,confirmation:'RESTORE_SITE',encryptedBackup:exported.text}});assert.equal(restored.status,200,restored.text);
   assert.equal((await api('/api/finance',{auth:a.cookie})).status,401);
   let login=await api('/api/auth/login',{method:'POST',auth:'',body:{username:'finance_owner',password}});assert.equal(login.status,200,login.text);ownerCookie=login.cookie;
   login=await api('/api/auth/login',{method:'POST',auth:'',body:{username:a.username,password}});assert.equal(login.status,200,login.text);a.cookie=login.cookie;assert.equal((await ledger(a.cookie)).summary.expenseCents,2300);
-  await api('/api/finance/entries/'+entry.id,{method:'PUT',auth:a.cookie,body:{...entry,expression:'55',version:1}});
+  await create(a.cookie,{expression:'32'});
   const legacy=structuredClone(clear);delete legacy.finance;
   const oldRestore=await api('/api/admin/site-backup/restore',{method:'POST',body:{currentPassword:password,backupPassword,confirmation:'RESTORE_SITE',encryptedBackup:sealBackup(exported.text,legacy)}});assert.equal(oldRestore.status,200,oldRestore.text);
   login=await api('/api/auth/login',{method:'POST',auth:'',body:{username:a.username,password}});assert.equal(login.status,200,login.text);a.cookie=login.cookie;assert.equal((await ledger(a.cookie)).summary.expenseCents,5500);
@@ -354,8 +415,8 @@ test('automatic categories are account-owned, encrypted, idempotent, atomic and 
   const rollbackBody=input({purpose:'事务失败不得留下分类',categoryId:''});
   db.exec(`CREATE TRIGGER fail_auto_entry BEFORE INSERT ON finance_entries WHEN NEW.id='${rollbackBody.id}' BEGIN SELECT RAISE(ABORT,'test entry failure'); END`);
   try{const failed=await api('/api/finance/entries',{method:'POST',auth:a.cookie,body:rollbackBody});assert.equal(failed.status,500);assert.equal((await ledger(a.cookie)).categories.some(row=>row.name===rollbackBody.purpose),false,'category must roll back with failed entry');}finally{db.exec('DROP TRIGGER fail_auto_entry')}
-  const changed=await api('/api/finance/entries/'+second.id,{method:'PUT',auth:a.cookie,body:{...second,purpose:'修伞',categoryId:'',version:second.version}});assert.equal(changed.status,200,changed.text);
-  assert.equal((await ledger(a.cookie)).categories.find(row=>row.id===changed.value.entry.categoryId).name,'修伞');
+  const different=await create(a.cookie,{purpose:'修伞',categoryId:''});
+  assert.equal((await ledger(a.cookie)).categories.find(row=>row.id===different.categoryId).name,'修伞');
   await api('/api/backup/password',{method:'POST',auth:a.cookie,body:{password:backupPassword}});
   const exported=await api('/api/backup/export',{method:'POST',auth:a.cookie,body:{}});assert.equal(exported.status,200,exported.text);
   const restored=await api('/api/data/import',{method:'POST',auth:a.cookie,body:{encryptedBackup:exported.text,password:backupPassword,mode:'replace',confirmation:'RESTORE'}});assert.equal(restored.status,200,restored.text);

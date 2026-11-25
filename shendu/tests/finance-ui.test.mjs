@@ -136,13 +136,21 @@ test('obsolete reads and writes cannot replace a newer account surface or clear 
 
 test('refund creation from the daily widget keeps original association and does not consume its unfinished entry',async()=>{
   const f=fixture({daily:true,initialEntries:[{id:'expense-id',date:'2026-11-15',kind:'expense',expression:'50',amountCents:5000,purpose:'午餐',categoryId:'food',version:2,receiptIds:[]}]});await flush();
-  const original=$('[data-finance-create]',f.root);input(original,'text','8 还没记的早餐');$('[data-entry-action="refund"]',f.root).click();const form=$('#finance-edit-form');assert.ok(form.elements.kind);assert.equal(form.elements.kind.value,'refund');assert.equal(form.elements.refundOf.value,'expense-id');input(form,'expression','10');submit(form);await flush();
-  const write=f.calls.find(call=>call.path==='/api/finance/entries');assert.equal(write.args.body.kind,'refund');assert.equal(write.args.body.refundOf,'expense-id');assert.equal(original.elements.text.value,'8 还没记的早餐');assert.equal(controller.hasPendingDraft(),true);assert.equal($('#finance-edit-form'),null);
+  const original=$('[data-finance-create]',f.root);input(original,'text','8 还没记的早餐');$('[data-entry-action="refund"]',f.root).click();const form=$('#finance-refund-form');assert.ok(form.elements.kind);assert.equal(form.elements.kind.value,'refund');assert.equal(form.elements.refundOf.value,'expense-id');input(form,'expression','10');submit(form);await flush();
+  const write=f.calls.find(call=>call.path==='/api/finance/entries');assert.equal(write.args.body.kind,'refund');assert.equal(write.args.body.refundOf,'expense-id');assert.equal(original.elements.text.value,'8 还没记的早餐');assert.equal(controller.hasPendingDraft(),true);assert.equal($('#finance-refund-form'),null);
 });
 
-test('delete and restore keep the selected version and truthful deleted state',async()=>{
-  const f=fixture({initialEntries:[{id:'delete-id',date:'2026-11-15',kind:'expense',expression:'8',amountCents:800,purpose:'早餐',categoryId:'food',version:3,receiptIds:[]}]});await flush();$('[data-entry-action="delete"]',f.root).click();submit($('#finance-delete-form'));await flush();
-  const deletion=f.calls.find(call=>call.args.method==='DELETE');assert.deepEqual(deletion.args.body,{version:3});assert.ok($('.finance-entry.is-deleted',f.root));$('[data-entry-action="restore"]',f.root).click();await flush();const restoration=f.calls.find(call=>call.path.endsWith('/restore'));assert.deepEqual(restoration.args.body,{version:4});assert.equal($('.finance-entry.is-deleted',f.root),null);
+test('the finance page and daily ledger render locked records and preserve receipts',async()=>{
+  const entries=[photoEntry,{...photoEntry,id:'legacy-deleted',deletedAt:'2026-11-15T12:00:00Z',receiptIds:['old-photo']}];
+  for(const daily of [false,true]){
+    const f=fixture({daily,initialEntries:entries});await flush();
+    assert.ok($('[data-entry-id="photo-entry"] [data-receipt-open]',f.root));
+    assert.ok($('[data-entry-id="photo-entry"] [data-entry-action="refund"]',f.root));
+    assert.equal($('[data-entry-action="edit"],[data-entry-action="delete"],[data-entry-action="restore"]',f.root),null);
+    assert.match($('[data-entry-id="legacy-deleted"]',f.root).textContent,/已删除/);
+    assert.equal($('[data-entry-id="legacy-deleted"] [data-entry-action]',f.root),null);
+    assert.equal(f.calls.some(call=>call.args.method==='PUT'||call.args.method==='DELETE'),false);
+  }
 });
 
 test('category management is removed and failed storage save preserves inputs for retry',async()=>{
@@ -157,8 +165,8 @@ test('screenshot candidates require confirmation, skip guessed refunds and survi
 });
 
 test('late modal saves do not close or unprotect a replacement reauthentication surface',async()=>{
-  let finishWrite;const f=fixture({initialEntries:[{id:'old-entry',date:'2026-11-15',kind:'expense',expression:'8',amountCents:800,purpose:'早餐',categoryId:'food',version:1,receiptIds:[]}],handler:(path,args)=>path==='/api/finance/entries/old-entry'&&args.method==='PUT'?new Promise(resolve=>{finishWrite=resolve}):undefined});await flush();
-  $('[data-entry-action="edit"]',f.root).click();const form=$('#finance-edit-form');input(form,'expression','9');submit(form);await flush();assert.equal($('#modal-root').dataset.persistent,'1');
+  let finishWrite;const f=fixture({handler:(path,args)=>path==='/api/finance/entries'&&args.method==='POST'?new Promise(resolve=>{finishWrite=resolve}):undefined});await flush();
+  $('[data-finance-detail]',f.root).click();const form=$('#finance-detail-form');input(form,'expression','9');input(form,'purpose','工资');submit(form);await flush();assert.equal($('#modal-root').dataset.persistent,'1');
   ui.renderMarkup($('#modal-root'),'<section class="modal" id="replacement-reauth"><h2>重新登录</h2><input type="password" value="留在当前表单"></section>');$('#modal-root').dataset.persistent='1';
   finishWrite({entry:{}});await flush();assert.ok($('#replacement-reauth'));assert.equal($('#modal-root').dataset.persistent,'1');assert.equal($('input',$('#replacement-reauth')).value,'留在当前表单');assert.equal(f.notices.length,0);
 });
@@ -291,12 +299,12 @@ test('textarea composition preserves the active native node, caret and draft wit
   const f=fixture({daily:true,draft:{text:'8+8-1 早餐'}});await flush();const form=$('[data-finance-create]',f.root),field=form.elements.text;field.focus();field.dispatchEvent(new win.Event('compositionstart',{bubbles:true}));field.value='60 打车\n50 吃';field.setSelectionRange(9,9);field.dispatchEvent(new win.InputEvent('input',{bubbles:true,isComposing:true}));assert.equal(f.drafts.at(-1).text,field.value);assert.equal(document.activeElement,field);assert.equal(form.elements.text,field);assert.equal(field.selectionStart,9);submit(form);await flush();assert.equal(f.calls.filter(call=>call.args.method==='POST').length,0);field.value='60 打车\n50 吃饭';field.dispatchEvent(new win.Event('compositionend',{bubbles:true}));assert.match($('[data-finance-calculation]',form).textContent,/110\.00/);assert.equal(controller.hasPendingDraft(),true);
 });
 
-test('ledger shows the amount only on the right and preserves original expressions in edit forms',async()=>{
+test('ledger shows the amount only on the right and keeps refunds as separate entries',async()=>{
   const f=fixture({initialEntries:[{id:'vegetables',date:'2026-11-15',kind:'expense',expression:'8+8-1',amountCents:1500,purpose:'买菜',categoryId:'food',note:'晚饭用',receiptIds:[],version:1},{id:'refund',date:'2026-11-15',kind:'refund',expression:'2',amountCents:200,purpose:'退菜',categoryId:'food',refundOf:'vegetables',receiptIds:[],version:1}]});await flush();
   const row=$('[data-entry-id="vegetables"]',f.root),copy=$('.finance-entry-copy',row);
   assert.match(copy.textContent,/买菜/);assert.match(copy.textContent,/晚饭用/);assert.doesNotMatch(copy.textContent,/8\+8-1|15\.00/);
   assert.equal($('.finance-entry-amount',row).textContent,'−¥15.00');assert.match($('[data-entry-id="refund"] .finance-entry-copy',f.root).textContent,/已关联原支出/);
-  $('[data-entry-action="edit"]',row).click();assert.equal($('#finance-edit-form').elements.expression.value,'8+8-1');
+  $('[data-entry-action="refund"]',row).click();assert.equal($('#finance-refund-form').elements.expression.value,'15.00');
 });
 
 
@@ -392,11 +400,11 @@ test('unknown quick-entry purposes show their own classification and save automa
   submit(form);await flush();const write=f.calls.find(call=>call.path==='/api/finance/entries');assert.equal(write.args.body.categoryId,'');assert.equal(write.args.body.purpose,'修鞋');assert.match($('[data-finance-entries]',f.root).textContent,/修鞋/);assert.equal(f.calls.some(call=>call.path.includes('/categories')),false);
 });
 
-test('editing an old category lets the user resume automatic classification and then choose a manual category',async()=>{
+test('registering a refund lets the user resume automatic classification and then choose a manual category',async()=>{
   const f=fixture({initialEntries:[{id:'older-meal',date:'2026-11-15',kind:'expense',expression:'8',amountCents:800,purpose:'买面条',categoryId:'shopping',version:1,receiptIds:[]}]});
   await flush();
-  $('[data-entry-action="edit"]',f.root).click();
-  const form=$('#finance-edit-form');
+  $('[data-entry-action="refund"]',f.root).click();
+  const form=$('#finance-refund-form');
   assert.equal(form.elements.categoryId.value,'shopping');
   change(form,'categoryId','');
   assert.equal(form.elements.categoryId.value,'food');
@@ -409,7 +417,7 @@ test('editing an old category lets the user resume automatic classification and 
   assert.match($('[data-category-hint]',form).textContent,/餐饮/);
   change(form,'categoryId','');
   dispatchSubmit(form);await flush();
-  const write=f.calls.find(call=>call.path==='/api/finance/entries/older-meal');
+  const write=f.calls.find(call=>call.path==='/api/finance/entries'&&call.args.body?.kind==='refund');
   assert.equal(write.args.body.categoryId,'food');
 });
 
@@ -507,8 +515,8 @@ test('ledger receipt count links open the private image and upload explicitly aw
 });
 
 
-test('income and historical edits keep their separate category and draft ownership',async()=>{
- const entry={id:'prior',date:'2026-11-15',kind:'expense',expression:'8',amountCents:800,purpose:'早餐',categoryId:'shopping',receiptIds:[],version:1};const f=fixture({initialEntries:[entry]});await flush();const quick=$('[data-finance-create]',f.root),field=input(quick,'text','12 修鞋');$('[data-finance-detail]',f.root).click();let form=$('#finance-detail-form');assert.equal(form.elements.purpose.value,'');input(form,'expression','20');input(form,'purpose','工资');submit(form);await flush();assert.equal(field.value,'12 修鞋');$('[data-entry-id="prior"] [data-entry-action="edit"]',f.root).click();form=$('#finance-edit-form');assert.equal(form.elements.categoryId.value,'shopping');input(form,'purpose','早餐修改');assert.equal(form.elements.categoryId.value,'shopping');submit(form);await flush();assert.equal(f.calls.find(call=>call.args.method==='PUT').args.body.categoryId,'shopping');assert.equal(field.value,'12 修鞋');
+test('income and refunds keep their separate category and draft ownership',async()=>{
+ const entry={id:'prior',date:'2026-11-15',kind:'expense',expression:'8',amountCents:800,purpose:'早餐',categoryId:'shopping',receiptIds:[],version:1};const f=fixture({initialEntries:[entry]});await flush();const quick=$('[data-finance-create]',f.root),field=input(quick,'text','12 修鞋');$('[data-finance-detail]',f.root).click();let form=$('#finance-detail-form');assert.equal(form.elements.purpose.value,'');input(form,'expression','20');input(form,'purpose','工资');submit(form);await flush();assert.equal(field.value,'12 修鞋');$('[data-entry-id="prior"] [data-entry-action="refund"]',f.root).click();form=$('#finance-refund-form');assert.equal(form.elements.categoryId.value,'shopping');input(form,'purpose','早餐修改');assert.equal(form.elements.categoryId.value,'shopping');submit(form);await flush();assert.equal(f.calls.find(call=>call.args.body?.kind==='refund').args.body.categoryId,'shopping');assert.equal(field.value,'12 修鞋');
 });
 
 const storedImageConfig={configured:true,version:4,receiptCount:2,disconnected:false,config:{endpoint:'https://private.example.com',region:'auto',bucket:'photos',directory:'receipts',accessKey:'access-id',pathStyle:true},targets:[]};
@@ -552,16 +560,62 @@ test('failed configured screenshot processing opens no normal confirmation and p
   const f=fixture({receiptClient:{processReceiptFiles:async()=>{throw Object.assign(new Error('图片未能保存，本批次尚未入账'),{code:'receipt_upload_failed'})}}});await flush();const quick=$('[data-finance-create]',f.root),field=input(quick,'text','7 原手填草稿');selectScreenshot(f);await flush();assert.equal($('#finance-import-form'),null);assert.equal(field.value,'7 原手填草稿');assert.match($('[data-finance-status]',f.root).textContent,/未能保存/);assert.equal(f.calls.some(call=>call.path==='/api/finance/entries'),false);
 });
 
-test('supplemental screenshots attach only when saving the existing entry and never replace OCR-sensitive fields',async()=>{
-  const entry={...photoEntry,id:'repair-entry',version:7,receiptIds:['old-photo']};const f=fixture({initialEntries:[entry],receiptClient:{loadReceiptUrls:async()=>({}),processReceiptFiles:async()=>({receiptIds:['new-photo'],imageStatus:'stored',candidates:[{expression:'999',purpose:'OCR误判'}]})}});await flush();$('[data-entry-action="edit"]',f.root).click();await flush();const form=$('#finance-edit-form');assert.ok(form.closest('.finance-detail-dialog'));input(form,'expression','28.2');input(form,'note','保留手改备注');setFiles($('[data-attach-files]',form));await flush();
-  assert.equal(form.elements.expression.value,'28.2');assert.equal(form.elements.purpose.value,'早餐');assert.equal(form.elements.note.value,'保留手改备注');assert.match($('[data-attach-status]',form).textContent,/保存修改/);assert.equal(f.calls.some(call=>call.args.method==='POST'||call.args.method==='PUT'),false);
-  submit(form);await flush();const edit=f.calls.find(call=>call.path==='/api/finance/entries/repair-entry');assert.equal(edit.args.method,'PUT');assert.equal(edit.args.body.version,7);assert.equal(edit.args.body.expression,'28.2');assert.equal(edit.args.body.purpose,'早餐');assert.deepEqual(edit.args.body.receiptIds,['old-photo','new-photo']);assert.equal(f.calls.some(call=>call.path==='/api/finance/entries'&&call.args.method==='POST'),false);
+test('same-amount receipts can be assigned once and releasing a choice re-enables the other row',async()=>{
+  const screenshots={imageStatus:'stored',receiptIds:['a','b'],candidates:[
+    {expression:'8',purpose:'早餐',kind:'expense',receiptIds:['a']},
+    {expression:'8',purpose:'午餐',kind:'expense',receiptIds:['b']}
+  ]};
+  const f=fixture({receiptClient:{processReceiptFiles:async()=>screenshots}});await flush();
+  input($('[data-finance-create]',f.root),'text','8 早餐\n8 午餐');
+  selectScreenshot(f);await flush();const form=$('#finance-match-form'),rows=$$('[data-match-row]',form);
+  const box=(row,id)=>$('input[value="'+id+'"]',rows[row]),visible=(row,id)=>$('[data-slot="checkbox"]',box(row,id).closest('label'));
+  assert.equal($$('input[type="checkbox"]:checked',form).length,0);
+  visible(0,'a').click();await flush();
+  assert.equal(box(0,'a').checked,true);assert.equal(box(1,'a').disabled,true);assert.equal(visible(1,'a').disabled,true);
+  assert.match(box(1,'a').closest('label').textContent,/已选给第 1 笔/);
+  visible(1,'a').click();assert.equal(box(1,'a').checked,false);
+  visible(0,'a').click();await flush();assert.equal(visible(1,'a').disabled,false);
+  visible(1,'a').click();await flush();visible(0,'b').click();await flush();
+  dispatchSubmit(form);await flush();
+  assert.deepEqual(f.calls.filter(call=>call.path==='/api/finance/entries').map(call=>call.args.body.receiptIds),[['b'],['a']]);
 });
 
-test('unconfigured supplement errors preserve existing receipts, amount and edit retry',async()=>{
-  const f=fixture({initialEntries:[{...photoEntry,receiptIds:['old-photo']}],receiptClient:{loadReceiptUrls:async()=>({}),processReceiptFiles:async()=>({receiptIds:[],imageStatus:'not_stored'})}});await flush();$('[data-entry-action="edit"]',f.root).click();await flush();const form=$('#finance-edit-form');input(form,'expression','12');setFiles($('[data-attach-files]',form));await flush();assert.match($('[data-form-error]',form).textContent,/截图尚未保存/);assert.equal(form.elements.expression.value,'12');assert.equal($('fieldset',form).disabled,false);submit(form);await flush();assert.deepEqual(f.calls.find(call=>call.path==='/api/finance/entries/photo-entry').args.body.receiptIds,['old-photo']);
+test('competing OCR candidates require an exclusive selection and already posted images stay disabled',async()=>{
+  const f=fixture({receiptClient:{processReceiptFiles:async()=>({
+    imageStatus:'stored',receiptIds:['photo','used'],usedReceiptIds:['used'],
+    candidates:[
+      {kind:'expense',expression:'12',purpose:'早餐',receiptIds:['photo']},
+      {kind:'expense',expression:'18',purpose:'午餐',receiptIds:['photo']},
+      {kind:'expense',expression:'25',purpose:'晚餐',receiptIds:['used']}
+    ]
+  })}});await flush();selectScreenshot(f);await flush();
+  const form=$('#finance-import-form'),rows=$$('[data-import-index]',form),choice=i=>form.elements['select-'+i];
+  const visible=i=>$('[data-slot="checkbox"]',choice(i).closest('label'));
+  assert.equal(choice(0).checked,false);assert.equal(choice(1).checked,false);assert.equal(visible(2).disabled,true);
+  visible(0).click();await flush();assert.equal(visible(1).disabled,true);
+  assert.match($('[data-import-conflict]',rows[1]).textContent,/第 1 笔/);
+  visible(0).click();await flush();assert.equal(visible(1).disabled,false);
+  visible(1).click();await flush();assert.equal(visible(0).disabled,true);
+  dispatchSubmit(form);await flush();
+  const writes=f.calls.filter(call=>call.path==='/api/finance/entries');
+  assert.equal(writes.length,1);assert.equal(writes[0].args.body.purpose,'午餐');assert.deepEqual(writes[0].args.body.receiptIds,['photo']);
 });
 
-test('canceling supplement releases its owner and ignores a delayed receipt result',async()=>{
-  let finish,signal;const f=fixture({initialEntries:[{...photoEntry,receiptIds:[]}],receiptClient:{processReceiptFiles:async(files,args)=>{signal=args.signal;return new Promise(resolve=>{finish=resolve})},disposeReceiptWorker(){}}});await flush();$('[data-entry-action="edit"]',f.root).click();await flush();const form=$('#finance-edit-form');setFiles($('[data-attach-files]',form));await flush();assert.equal(f.pending(),true);assert.equal($('[data-cancel-attach]').hidden,false);$('[data-cancel-attach]').click();await flush();assert.equal(signal.aborted,true);assert.equal(f.pending(),false);assert.match($('[data-attach-status]',form).textContent,/已取消/);finish({receiptIds:['stale-photo'],imageStatus:'stored'});await flush();submit(form);await flush();assert.deepEqual(f.calls.find(call=>call.path==='/api/finance/entries/photo-entry').args.body.receiptIds,[]);
+test('an image claimed elsewhere during confirmation stays blocked and the user can use another',async()=>{
+  let first=true;
+  const f=fixture({receiptClient:{processReceiptFiles:async()=>({
+    imageStatus:'stored',receiptIds:['first','replacement'],
+    candidates:[{kind:'expense',expression:'8',purpose:'早餐',receiptIds:['first']}]
+  })},handler:path=>{
+    if(path!=='/api/finance/entries'||!first)return;first=false;
+    throw Object.assign(new Error('截图已用于入账'),{status:409,code:'finance_receipt_in_use'});
+  }});
+  await flush();input($('[data-finance-create]',f.root),'text','8 早餐');selectScreenshot(f);await flush();
+  const form=$('#finance-match-form');form.elements['acknowledge-unused'].checked=true;
+  dispatchSubmit(form);await flush();
+  const previous=$('input[value="first"]',form),replacement=$('input[value="replacement"]',form);
+  assert.match($('[data-form-error]',form).textContent,/已用于入账/);assert.equal(previous.checked,false);assert.equal(previous.disabled,true);
+  assert.equal($('[data-finance-create]',f.root).elements.text.readOnly,false);
+  replacement.click();dispatchSubmit(form);await flush();
+  assert.deepEqual(f.calls.filter(call=>call.path==='/api/finance/entries').map(call=>call.args.body.receiptIds),[['first'],['replacement']]);
 });

@@ -31,13 +31,22 @@ test('multiple saved images with one matching amount do not arbitrarily select t
   assert.deepEqual(matched.unmatchedReceiptIds,['photo-b','photo-a']);
 });
 
-test('repeated OCR detections within one image deduplicate while distinct amounts may share that image',()=>{
+test('repeated OCR detections deduplicate, and an image matching different rows requires a manual choice',()=>{
   const matched=matchFinanceReceipts([row('a',800),row('b',1600)],result(['long-photo','long-photo'],[
     candidate('long-photo','16'),candidate('long-photo','8'),candidate('long-photo','8.00'),candidate('long-photo','16.00',{duplicate:true})
   ]));
   assert.deepEqual(matched.receipts,[{id:'long-photo',index:0,amounts:[800,1600],duplicate:true}]);
-  assert.deepEqual(matched.rows.map(item=>item.receiptIds),[['long-photo'],['long-photo']]);
-  assert.ok(matched.rows.every(item=>item.matchReason==='amount'));assert.deepEqual(matched.unmatchedReceiptIds,[]);
+  assert.deepEqual(matched.rows.map(item=>item.receiptIds),[[],[]]);
+  assert.ok(matched.rows.every(item=>item.matchReason==='multiple-rows'));assert.deepEqual(matched.unmatchedReceiptIds,['long-photo']);
+});
+
+test('prior manual choices and posted receipts are reserved before automatic matching',()=>{
+  const matched=matchFinanceReceipts([row('first',800,{receiptIds:['manual']}),row('second',300),row('third',700)],{
+    ...result(['manual','posted','available'],[candidate('manual','3'),candidate('posted','7'),candidate('available','8')]),
+    usedReceiptIds:['posted']
+  });
+  assert.deepEqual(matched.rows.map(item=>item.receiptIds),[['manual'],[],[]]);
+  assert.deepEqual(matched.unmatchedReceiptIds,['available']);
 });
 
 test('unknown, malformed and non-expense OCR values are not automatic expense matches',()=>{

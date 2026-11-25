@@ -68,20 +68,26 @@ export function createFinanceLedger({db,encryptData,decryptData,dataScope,now,re
     if(value.kind==='refund'&&!UUID.test(refundOf))throw problem('退款需要关联原支出','finance_refund_invalid');
     return {date:value.date,kind:value.kind,expression:value.expression.trim(),amountCents,purpose,categoryId,note:text(value.note,1000),refundOf,receiptIds,source:value.source==='daily'?'daily':'finance'};
   };
-  const assertVersion=(body,row)=>{if(!version(body.version))throw problem('请提供有效的账目版本','finance_version_invalid');if(body.version!==row.version)throw problem('这笔账已在其他设备更新，请刷新后再操作','version_conflict',409)};
   const allEntries=userId=>db.prepare('SELECT * FROM finance_entries WHERE user_id=? ORDER BY date DESC,id DESC').all(userId).map(decodeEntry);
-  const assertRefunds=(userId,entry,ownId,deleted=false)=>{
-    const rows=allEntries(userId),children=rows.filter(item=>!item.deletedAt&&item.kind==='refund'&&item.refundOf===ownId&&item.id!==ownId);
-    if(children.length&&(deleted||entry.kind!=='expense'||children.reduce((sum,item)=>sum+item.amountCents,0)>entry.amountCents))throw problem('这笔支出已有退款，请先订正关联退款','finance_refund_conflict',409);
-    if(!deleted&&entry.kind==='refund'){
-      if(entry.refundOf===ownId)throw problem('退款不能关联自身','finance_refund_invalid');
-      const original=rows.find(item=>item.id===entry.refundOf&&!item.deletedAt&&item.kind==='expense');
-      if(!original)throw problem('原支出不存在或不属于当前账户','finance_refund_invalid');
-      const paid=rows.filter(item=>item.id!==ownId&&!item.deletedAt&&item.kind==='refund'&&item.refundOf===entry.refundOf).reduce((sum,item)=>sum+item.amountCents,0);
-      if(paid+entry.amountCents>original.amountCents)throw problem('累计退款不能超过原支出','finance_refund_exceeded',409);
+  const accountEntries=db.prepare('SELECT * FROM finance_entries WHERE user_id=?');
+  const hasUsedReceipt=(userId,receiptIds)=>{
+    if(!receiptIds.length)return false;
+    const ids=new Set(receiptIds);
+    // Check the encrypted associations, including old deleted entries.
+    for(const row of accountEntries.iterate(userId)){
+      if(decodeEntry(row).receiptIds?.some(id=>ids.has(id)))return true;
     }
+    return false;
   };
-  const writeEntry=(userId,id,value,row=null,deletedAt=null,createHash=null)=>{
+  const assertRefundAllowed=(userId,entry,ownId)=>{
+    if(entry.kind!=='refund')return;
+    if(entry.refundOf===ownId)throw problem('退款不能关联自身','finance_refund_invalid');
+    const original=decodeEntry(find(userId,entry.refundOf));
+    if(!original||original.deletedAt||original.kind!=='expense')throw problem('原支出不存在或不属于当前账户','finance_refund_invalid');
+    const paid=allEntries(userId).filter(item=>!item.deletedAt&&item.kind==='refund'&&item.refundOf===entry.refundOf).reduce((sum,item)=>sum+item.amountCents,0);
+    if(paid+entry.amountCents>original.amountCents)throw problem('累计退款不能超过原支出','finance_refund_exceeded',409);
+  };
+  const writeEntry=(userId,id,value,createHash)=>{
     // Both this category and the entry belong to the caller's activity transaction.
     // Validation failures and failed receipts must never leave orphan categories.
     const list=categories(userId);
@@ -92,11 +98,10 @@ export function createFinanceLedger({db,encryptData,decryptData,dataScope,now,re
       const time=now();
       db.prepare('INSERT INTO finance_categories(user_id,id,data,version,created_at,updated_at) VALUES(?,?,?,?,?,?)').run(userId,category.id,encryptData({name:category.name,keywords:[],active:true},dataScope('finance-category',userId,category.id)),1,time,time);
     }
-    const time=now(),revision=row?row.version+1:1,data=encryptData(value,dataScope('finance-entry',userId,id));
+    const time=now(),data=encryptData(value,dataScope('finance-entry',userId,id));
     const storedBytes=db.prepare('SELECT COALESCE(SUM(length(CAST(data AS BLOB))),0) AS n FROM finance_entries WHERE user_id=?').get(userId).n;
-    if(storedBytes-Buffer.byteLength(row?.data||'')+Buffer.byteLength(data)>MAX_FINANCE_BYTES)throw problem('账目内容超过账户存储上限','finance_storage_limit',413);
-    if(row)db.prepare('UPDATE finance_entries SET date=?,data=?,version=?,updated_at=?,deleted_at=? WHERE user_id=? AND id=? AND version=?').run(value.date,data,revision,time,deletedAt,userId,id,row.version);
-    else db.prepare('INSERT INTO finance_entries(user_id,id,date,data,create_hash,version,created_at,updated_at,deleted_at) VALUES(?,?,?,?,?,1,?,?,?)').run(userId,id,value.date,data,createHash||digest(value),time,time,deletedAt);
+    if(storedBytes+Buffer.byteLength(data)>MAX_FINANCE_BYTES)throw problem('账目内容超过账户存储上限','finance_storage_limit',413);
+    db.prepare('INSERT INTO finance_entries(user_id,id,date,data,create_hash,version,created_at,updated_at) VALUES(?,?,?,?,?,1,?,?)').run(userId,id,value.date,data,createHash,time,time);
     return decodeEntry(find(userId,id));
   };
   const transact=(userId,action,date,write)=>withActivity(userId,action,{period:date},write);
@@ -148,22 +153,18 @@ export function createFinanceLedger({db,encryptData,decryptData,dataScope,now,re
         json(res,200,{entry,duplicate:true});return true;
       }
       if(db.prepare('SELECT COUNT(*) AS n FROM finance_entries WHERE user_id=?').get(user.id).n>=MAX_ENTRIES)throw problem('账目数量已达到上限','finance_entry_limit',413);
-      if(!verifyReceipts(user.id,value.receiptIds))throw problem('凭证尚未上传或不属于当前账户','finance_receipt_invalid');
-      const entry=transact(user.id,'finance_entry_created',value.date,()=>{assertRefunds(user.id,value,body.id);return writeEntry(user.id,body.id,value,null,null,hash)});
+      const entry=transact(user.id,'finance_entry_created',value.date,()=>{
+        if(!verifyReceipts(user.id,value.receiptIds))throw problem('凭证尚未上传或不属于当前账户','finance_receipt_invalid');
+        if(hasUsedReceipt(user.id,value.receiptIds))throw problem('所选截图中有已用于入账的凭证，请重新选择。','finance_receipt_in_use',409);
+        assertRefundAllowed(user.id,value,body.id);
+        return writeEntry(user.id,body.id,value,hash);
+      });
       json(res,201,{entry});return true;
     }
     const entryMatch=/^\/api\/finance\/entries\/([^/]+)(\/restore)?$/.exec(path);
-    if(entryMatch&&['PUT','DELETE','POST'].includes(method)){
-      const body=await readJson(req),id=entryMatch[1],row=find(user.id,id);if(!row)throw problem('账目不存在','finance_entry_not_found',404);
-      const previous=decodeEntry(row);assertVersion(body,row);
-      if(method==='POST'&&!entryMatch[2]||method!=='POST'&&entryMatch[2])return false;
-      const restoring=method==='POST',deleting=method==='DELETE';
-      if(restoring&&!row.deleted_at)throw problem('这笔账无需恢复','finance_not_deleted',409);
-      if(!restoring&&row.deleted_at)throw problem('这笔账已删除，请先恢复','finance_deleted',409);
-      const value=method==='PUT'?entryData(body,user.id,{allowArchived:body.categoryId===previous.categoryId,allowAutomatic:true}):entryData(previous,user.id,{allowArchived:true});
-      if(!verifyReceipts(user.id,value.receiptIds))throw problem('凭证尚未上传或不属于当前账户','finance_receipt_invalid');
-      const entry=transact(user.id,deleting?'finance_entry_deleted':restoring?'finance_entry_restored':'finance_entry_updated',value.date,()=>{assertRefunds(user.id,value,id,deleting);return writeEntry(user.id,id,value,row,deleting?now():null)});
-      json(res,200,{entry});return true;
+    if(entryMatch&&(entryMatch[2]?method==='POST':method==='PUT'||method==='DELETE')){
+      if(!find(user.id,entryMatch[1]))throw problem('账目不存在','finance_entry_not_found',404);
+      throw problem('已入账明细已锁定。','finance_entry_locked',409);
     }
     if(path==='/api/finance/categories'&&method==='POST'||/^\/api\/finance\/categories\/[^/]+$/.test(path)&&method==='PUT'){
       const body=await readJson(req),id=method==='POST'?body.id:path.split('/').at(-1),list=categories(user.id),previous=list.find(item=>item.id===id);
@@ -234,5 +235,5 @@ export function createFinanceLedger({db,encryptData,decryptData,dataScope,now,re
     validateImport(exportUser(userId));
     return clean.entries.length;
   }
-  return {handle,snapshot,exportUser,validateImport,importUser,categories};
+  return {handle,snapshot,exportUser,validateImport,importUser,categories,hasUsedReceipt};
 }
