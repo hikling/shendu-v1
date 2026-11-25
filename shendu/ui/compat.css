@@ -2,7 +2,7 @@
    Legacy CSS owns page geometry; shadcn owns native controls and interaction. */
 .sd-ui-host { display: contents; }
 /* Header links retain their text-only navigation treatment in every Button state. */
-.shendu-header :is(.header-link,.header-menu-trigger,.header-account-trigger,.header-mobile-trigger)[data-slot] {
+.shendu-header :is(.header-link,.header-menu-trigger,.header-rail-button,.header-account-trigger,.header-mobile-trigger)[data-slot] {
   background: transparent;
   border: 0;
   border-radius: 0;

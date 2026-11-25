@@ -36,8 +36,6 @@
 .workspace-settings.workspace-page .workspace-motion-form{margin-top:18px;padding:20px 24px}
 .workspace-settings.workspace-page .workspace-motion-copy label{font-size:1.06rem}
 .workspace-settings.workspace-page .workspace-motion-copy p{font-size:.74rem}
-.workspace-stage .stage-save-actions{position:sticky;bottom:14px;z-index:20;margin-top:20px;padding:14px 20px;border:1px solid var(--workspace-line);border-radius:16px;background:rgba(255,254,249,.94);backdrop-filter:blur(10px);box-shadow:0 12px 28px rgba(27,45,36,.1)}
-.backup-setup-guide{border-color:color-mix(in srgb,#175c52 30%,#d5ddd2)!important;background:#edf5f0!important;color:#1e4d43!important}
 .workspace-stage .stage-edit-fields{min-width:0;margin:0;padding:0;border:0}
 .workspace-stage .stage-edit-fields[disabled]{opacity:.72}
 .workspace-stage .field input{width:100%;min-height:46px;height:auto;padding:11px 13px;border:1px solid #bac7b5;border-radius:11px;background:#fffefa;font-size:.78rem}

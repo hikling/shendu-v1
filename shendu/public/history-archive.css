@@ -56,10 +56,6 @@
 .history-search-clear{position:absolute;right:8px;top:50%;transform:translateY(-50%);display:grid;place-items:center;width:26px;height:26px;min-width:26px;min-height:26px;padding:0;border:0;border-radius:50%;background:#e9eee4;color:#4a5d4f;font-size:.9rem;line-height:1;transition:background .15s,color .15s}
 .history-search-clear:hover{background:#d7e2d5;color:#175c52}
 .history-search-clear[hidden]{display:none!important}
-.history-status-bar{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:14px}
-.history-status-tab{min-height:34px;padding:5px 14px;border:1px solid #d4ddd0;border-radius:99px;background:#fffdf8;color:#4f6156;font:600 .72rem/1.3 "Noto Sans SC","Microsoft YaHei",sans-serif;transition:background .16s,border-color .16s,color .16s}
-.history-status-tab:hover{border-color:#175c52;color:#175c52}
-.history-status-tab.is-active{border-color:#175c52;background:#175c52;color:#fff}
 .history-page .history-search,.history-page .history-filter-select select{height:44px;border-radius:10px;border-color:#c8d3c4;background:#fffefa;font-size:.78rem;box-shadow:none}
 .history-page .history-filter-select [data-slot="native-select-wrapper"]{display:block;width:100%}
 .history-page .history-filter-select select,.history-page :is(#history-type,#history-year,#history-month){appearance:none!important;-webkit-appearance:none!important;-moz-appearance:none!important;background-image:none!important;padding-right:34px}

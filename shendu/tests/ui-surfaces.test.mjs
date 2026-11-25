@@ -391,13 +391,12 @@ test('fresh nested dialog visit avoids the parent hideOthers snapshot and restor
   child.remove();
 });
 
-test('verification calendar exposes quick-date presets respecting minimum and toaster avoids bottom occlusion',async()=>{
+test('verification calendar keeps clean navigation and toaster avoids bottom occlusion',async()=>{
   const selections=[],months=[];
   ui.showVerificationCalendar(calendar,{value:'2026-11-04',month:'2026-11',minimum:'2026-11-04',locked:false,today:'2026-11-04',onSelect:value=>selections.push(value),onMonthChange:value=>months.push(value)});
   await settle();
-  const presets=[...calendar.querySelectorAll('[data-verify-preset]')];
-  assert.deepEqual(presets.map(btn=>btn.dataset.verifyPreset),['2026-11-05','2026-11-07','2026-11-11']);
-  presets[1].click();await settle();
+  assert.equal(calendar.querySelector('[data-verify-preset]'),null);
+  calendar.querySelector('[data-verify-day="2026-11-07"]').click();await settle();
   assert.deepEqual(selections,['2026-11-07']);
   assert.equal(notifications.querySelector('[data-sonner-toaster]').dataset.yPosition,'top');
 });

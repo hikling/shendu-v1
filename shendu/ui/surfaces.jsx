@@ -63,18 +63,14 @@ function MenuSurface({trigger,items,label,className,clickActivation=false,contro
 export function showMenu(container,options){const controls={};mountComponent(container,<MenuSurface {...options} controls={controls}/>);return controls}
 
 const calendarLabels={labelDayButton:(date,modifiers)=>`${date.getFullYear()}年${date.getMonth()+1}月${date.getDate()}日 星期${'日一二三四五六'[date.getDay()]}${modifiers.today?'，今天':''}${modifiers.selected?'，已选择':''}`,labelNext:()=>'下个月',labelPrevious:()=>'上个月',labelGrid:date=>`${date.getFullYear()}年${date.getMonth()+1}月`,labelWeekday:date=>`星期${'日一二三四五六'[date.getDay()]}`};
-function shiftCalendarDate(base,days){const date=calendarDate(base);if(!date)return '';date.setUTCDate(date.getUTCDate()+days);return calendarValue(date)}
 function DateCalendar({value,month,minimum,locked,today,onSelect,onMonthChange,canSelect=()=>true}){
   const [visible,setVisible]=React.useState(monthDate(month)),[selected,setSelected]=React.useState(calendarDate(value));
   const dateLib=React.useMemo(()=>calendarDateLibrary(today),[today]);
   const Day=React.useCallback(function VerificationDay(props){const value=calendarValue(props.day.date);return <CalendarDayButton {...props} className="daily-calendar-day" data-day={value} data-verify-day={value} aria-pressed={!!props.modifiers.selected}/>},[]);
   const choose=date=>{if(!date||locked||!canSelect()||calendarValue(date)<minimum)return;setSelected(date);onSelect(calendarValue(date))};
-  const jumpTo=iso=>{const date=calendarDate(iso);if(!date)return;setVisible(monthDate(iso.slice(0,7)));onMonthChange?.(iso.slice(0,7));choose(date)};
-  const presets=[['明天',shiftCalendarDate(today,1)],['3 天后',shiftCalendarDate(today,3)],['7 天后',shiftCalendarDate(today,7)]].filter(([,date])=>date&&date>=minimum);
   return <div className="sd-surface sd-calendar sd-verification-calendar">
     <Calendar mode="single" required month={visible} selected={selected} onMonthChange={date=>{if(locked)return;setVisible(date);onMonthChange?.(calendarValue(date).slice(0,7))}} onSelect={choose} locale={zhCN} weekStartsOn={1} fixedWeeks showOutsideDays={false} today={calendarDate(today)} dateLib={dateLib} disabled={date=>locked||calendarValue(date)<minimum} disableNavigation={locked} startMonth={locked?undefined:monthDate(minimum.slice(0,7))} endMonth={monthDate('9999-12')} components={{DayButton:Day}} labels={calendarLabels} formatters={{formatCaption:date=>`${date.getFullYear()} 年 ${date.getMonth()+1} 月`,formatWeekdayName:date=>'一二三四五六日'[(date.getDay()+6)%7]}}/>
-    {presets.length>0&&<div className="daily-calendar-presets" role="group" aria-label="快捷选择验证日期">{presets.map(([label,target])=><Button key={target} type="button" variant="ghost" className="daily-calendar-preset" data-verify-preset={target} data-active={selected&&calendarValue(selected)===target?'true':'false'} disabled={locked} onClick={()=>jumpTo(target)}>{label}</Button>)}</div>}
-    <div className="daily-calendar-foot"><span className="daily-calendar-help">{locked?'日期已锁定':minimum===today?'可选择今天及以后的日期':`最早 ${minimum.replace(/-/g,' / ')}`}</span><Button type="button" variant="ghost" className="daily-calendar-today" data-verify-today disabled={locked} onClick={()=>jumpTo(minimum)}>{minimum===today?'今天':'最早可选'}</Button></div>
+    <div className="daily-calendar-foot"><span className="daily-calendar-help">{locked?'日期已锁定':minimum===today?'可选择今天及以后的日期':`最早 ${minimum.replace(/-/g,' / ')}`}</span><Button type="button" variant="ghost" className="daily-calendar-today" data-verify-today disabled={locked} onClick={()=>{const date=calendarDate(minimum);setVisible(monthDate(minimum.slice(0,7)));onMonthChange?.(minimum.slice(0,7));choose(date)}}>{minimum===today?'今天':'最早可选'}</Button></div>
   </div>;
 }
 export function showVerificationCalendar(container,options){mountComponent(container,<DateCalendar key={`${options.value}|${options.month}|${options.locked}`} {...options}/>)}

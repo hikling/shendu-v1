@@ -47,10 +47,6 @@
 .sd-verification-calendar .rdp-day button[data-selected-single="true"]{background:var(--daily-accent);color:white;border-color:var(--daily-accent)}
 .sd-verification-calendar .rdp-caption_label{color:var(--daily-ink,var(--ink))}
 .sd-verification-calendar .rdp-nav{z-index:1}
-.sd-verification-calendar .daily-calendar-presets{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;padding-top:10px;border-top:1px dashed var(--line)}
-.sd-verification-calendar .daily-calendar-preset{height:auto;min-height:30px;padding:4px 11px;border:1px solid var(--line);border-radius:99px;background:var(--daily-white,#fffdf8);color:var(--daily-ink,var(--ink));font-size:.72rem;font-weight:600;transition:background .15s,border-color .15s,color .15s}
-.sd-verification-calendar .daily-calendar-preset:hover:not(:disabled){border-color:var(--daily-accent,var(--primary));background:color-mix(in srgb,var(--daily-accent,var(--primary)) 9%,var(--daily-white,#fffdf8))}
-.sd-verification-calendar .daily-calendar-preset[data-active="true"]{border-color:var(--daily-accent,var(--primary));background:var(--daily-accent,var(--primary));color:#fff}
 .sd-verification-calendar .daily-calendar-foot button{height:auto;min-height:30px;padding:4px 10px;white-space:nowrap;font-size:.72rem}
 .sd-surface [data-sonner-toast].sd-toast{font-family:inherit;background:#fffdf8;color:#21342c;border:1px solid #d5ddd2;border-radius:14px;font-size:.8rem;box-shadow:0 12px 30px rgba(24,42,34,.14)}
 [data-sonner-toaster]{z-index:150!important}

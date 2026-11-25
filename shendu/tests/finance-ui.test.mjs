@@ -620,11 +620,11 @@ test('an image claimed elsewhere during confirmation stays blocked and the user 
   assert.deepEqual(f.calls.filter(call=>call.path==='/api/finance/entries').map(call=>call.args.body.receiptIds),[['first'],['replacement']]);
 });
 
-test('income and refund modal changes do not throw and storage readiness banner guides unconfigured users',async()=>{
+test('income and refund modal changes do not throw and storage readiness note renders cleanly',async()=>{
   const expense={id:'exp-1',date:'2026-11-15',kind:'expense',expression:'30',amountCents:3000,purpose:'午餐',categoryId:'food',receiptIds:[],version:1};
   const f=fixture({initialEntries:[expense]});await flush();
-  assert.equal($('[data-storage-banner]',f.root).dataset.storageState,'missing');
-  assert.equal($('[data-storage-setup-btn]',f.root).hidden,false);
+  assert.equal($('[data-storage-banner]',f.root),null);
+  assert.match($('[data-storage-note]',f.root).textContent,/尚未配置图片存储/);
   $('[data-finance-detail]',f.root).click();
   const detail=$('#finance-detail-form');
   assert.doesNotThrow(()=>{change(detail,'categoryId','salary');detail.elements.kind.dispatchEvent(new win.Event('change',{bubbles:true}))});
@@ -632,6 +632,5 @@ test('income and refund modal changes do not throw and storage readiness banner 
   const refund=$('#finance-refund-form');
   assert.doesNotThrow(()=>{change(refund,'categoryId','shopping');change(refund,'kind','refund')});
   const f2=fixture({initialStorage:{configured:true,config:{endpoint:'https://s3.example.com',bucket:'b'},version:1,receiptCount:0,disconnected:false,targets:[]}});await flush();
-  assert.equal($('[data-storage-banner]',f2.root).dataset.storageState,'ready');
-  assert.equal($('[data-storage-setup-btn]',f2.root).hidden,true);
+  assert.match($('[data-storage-note]',f2.root).textContent,/压缩截图保存在你配置的私有存储/);
 });
