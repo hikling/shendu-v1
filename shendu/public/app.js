@@ -1,7 +1,7 @@
 import {backupScheduleLabel} from './backup-schedule.js?v=1.0.0-backups1';
 import {normalizeReviewMetricIds,reconcileReviewMetrics} from './review-metrics.js?v=1.0.0-custom1';
 import {reviewQuestions,reviewDisabledFields} from './review-schema.js?v=1.0.0-finance1';
-import {renderMarkup,disposeUi,prepareDialogContainer,initializeToasts,showDialog,dismissDialog,showMenu,showVerificationCalendar,showStageCalendar,showFinanceMonthPicker,showFinanceDayPicker,showFinancePie,showToast} from './ui/shadcn.js?v=1.0.0-ui-audit1';
+import {renderMarkup,disposeUi,prepareDialogContainer,initializeToasts,showDialog,dismissDialog,showMenu,showVerificationCalendar,showStageCalendar,showFinanceMonthPicker,showFinanceDayPicker,showFinancePie,showToast} from './ui/shadcn.js?v=1.0.0-polish1';
 import {overviewRecordAppearances,overviewVerifiedRecords,overviewRecordExcerpt,overviewLoopMetrics,overviewRecordTitle,overviewDateParts} from './overview-reel.js?v=1.0.0-overview15';
 import {DAILY_STEPS,dailyStepIssues,dailyPrompts,dailyPromptIssues,dailyPromptNeighbor,dailyPromptOwner} from './daily-flow.js?v=1.0.0-finance-receipts1';
 import {dailyCalendarModel,dailyCalendarDateLabel} from './daily-calendar.js?v=1.0.0-art1';
@@ -11,7 +11,7 @@ import {createBrowserNavigator} from './browser-navigation.js?v=1.0.0-routes1';
 import {createReviewNavigator} from './review-navigation.js?v=1.0.0-finance1';
 import {attachReviewWheel} from './review-wheel.js?v=1.0.0-wheel1';
 import {createReviewTransition} from './review-transition.js?v=1.0.0-transition1';
-import {mountFinancePage,mountDailyFinance} from './finance-ui.js?v=1.0.0-finance-receipts1';
+import {mountFinancePage,mountDailyFinance} from './finance-ui.js?v=1.0.0-polish1';
 import {RECORD_ART,recordArtAssignments} from './record-art.js?v=1.0.0-records1';
 import {createReviewIntroPicker,reviewIntroLines,reviewIntroLayout} from './review-intros.js?v=1.0.0-intros2';
 const $ = (s, root = document) => root.querySelector(s);
@@ -187,7 +187,7 @@ function topbar(){
         ${headerLink('finance','财务收支')}
       </nav>
       <div class="header-actions">
-        <button class="header-rail-button ${state.route==='calendar'?'active':''}" type="button" id="rail-toggle" data-nav="calendar" ${state.route==='calendar'?'aria-current="page"':''}>阶段与日历</button>
+        <button class="header-rail-button ${state.route==='calendar'?'active':''}" type="button" id="rail-toggle" data-nav="calendar" aria-label="阶段与日历" ${state.route==='calendar'?'aria-current="page"':''}>阶段与日历</button>
         <div class="header-menu header-account-menu" data-ui-native>
           <button class="header-account-trigger" type="button" data-menu-trigger aria-expanded="false" aria-controls="account-menu" aria-label="账户菜单：${esc(accountName)}"><span class="header-avatar" aria-hidden="true">${esc(accountName[0])}</span><span class="header-account-name">${esc(accountName)}</span><span class="header-chevron" aria-hidden="true"></span></button>
           <div class="header-menu-panel account-menu" id="account-menu" hidden>
@@ -284,13 +284,13 @@ function overviewBurst(){
 function renderOverview(){
   const records=overviewRecords();
   const appearances=overviewRecordAppearances(records);
-  const categories=Object.entries(TYPES).map(([key,item])=>`<div class="overview-type-card type-${key}"><button class="overview-type-trigger" type="button" data-overview-type="${key}" data-nav="${key}" aria-label="进入${item.label}"><span class="overview-type-flip" aria-hidden="true"><span class="overview-type-mark overview-type-front"><img src="/assets/overview/${key}.svg?v=1.0.0-overview13" alt="" width="320" height="320"></span><span class="overview-type-back"><strong><span>${key==='quarterly'?'季度':item.label.slice(0,2)}</span><span>${key==='quarterly'?'复盘':item.label.slice(2)}</span></strong></span></span>${overviewBurst()}</button></div>`).join('');
+  const categories=Object.entries(TYPES).map(([key,item])=>`<div class="overview-type-card type-${key}"><button class="overview-type-trigger" type="button" data-overview-type="${key}" data-nav="${key}" aria-label="进入${item.label}"><span class="overview-type-flip" aria-hidden="true"><span class="overview-type-mark overview-type-front"><img src="/assets/overview/${key}.svg?v=1.0.0-overview13" alt="" width="320" height="320"></span><span class="overview-type-back"><strong><span>${key==='quarterly'?'季度':item.label.slice(0,2)}</span><span>${key==='quarterly'?'复盘':item.label.slice(2)}</span></strong></span></span>${overviewBurst()}</button><div class="overview-type-caption" aria-hidden="true"><strong>${esc(item.label)}</strong><small>${esc(item.position)}</small></div></div>`).join('');
   const cardSet=records.map((record,index)=>overviewRecordCard(record,appearances.get(record.id),false,index)).join('');
   const reel=records.length?`<div class="overview-reel" id="overview-reel">
       <div class="overview-reel-window" aria-label="已验证复盘摘要"><div class="overview-reel-track" style="--reel-count:${records.length}">${cardSet}</div></div>
     </div>`:`<section class="overview-empty" aria-labelledby="overview-empty-title"><h2 id="overview-empty-title">还没有已验证的复盘</h2><p>写下行动的实际结果后，这里会出现你的回看卡片。</p><button type="button" data-nav="actions">去行动验证 <span class="mobile-action-arrow" aria-hidden="true">↗</span></button></section>`;
   shell(`<div class="overview-page">
-    <section class="overview-hero" aria-labelledby="overview-title"><h1 id="overview-title">言寡尤，行寡悔<br><em>慎独存诚</em></h1><p>把事实、调整与验证，留成一份不会被情绪改写的记录。</p></section>
+    <section class="overview-hero" aria-labelledby="overview-title"><h1 id="overview-title">言寡尤<span class="overview-comma" aria-hidden="true">，</span><span class="sr-only">，</span>行寡悔<br><em>慎独存诚</em></h1><p>把事实、调整与验证，留成一份不会被情绪改写的记录。</p></section>
     <section class="overview-types" aria-labelledby="overview-types-title"><div class="overview-types-heading"><h2 id="overview-types-title">从哪里开始复盘？</h2></div><div class="overview-type-grid">${categories}</div></section>
     ${reel}
   </div>`);
@@ -298,7 +298,7 @@ function renderOverview(){
   bindOverviewArc();
 }
 
-const WORKSPACE_SCENES={backup:'yearly-03-year-keep',users:'daily-29-share-help',account:'decision-04-decision-risk',settings:'monthly-08-month-workspace',calendar:'daily-07-small-checklist',stage:'quarterly-04-quarter-winter',guide:'daily-05-reading-corner',activity:'daily-14-journal-page'};
+const WORKSPACE_SCENES={backup:'daily-04-desk-focus',users:'daily-29-share-help',account:'decision-04-decision-risk',settings:'monthly-08-month-workspace',calendar:'daily-07-small-checklist',stage:'quarterly-04-quarter-winter',guide:'daily-05-reading-corner',activity:'daily-14-journal-page'};
 function workspaceArt(key,className=''){return `<span class="workspace-art ${esc(className)}" aria-hidden="true"><span class="workspace-art-paper"></span><img src="/assets/records/${esc(WORKSPACE_SCENES[key])}.webp?v=1.0.0-records1" alt="" width="640" height="640" draggable="false"></span>`}
 function spacePageHead(route,{title,description,action=''}){return `<header class="workspace-hero"><div class="workspace-hero-copy"><h1 id="workspace-${esc(route)}-title">${esc(title)}</h1><p class="workspace-description">${esc(description)}</p>${action?`<div class="workspace-hero-action">${action}</div>`:''}</div>${workspaceArt(route,'workspace-hero-art')}</header>`}
 
@@ -328,13 +328,15 @@ function gaugePresentation(kind,value,target,max){
 }
 function gaugeCard(kind,label,value,target,locked){
   const sleep=kind==='sleep',max=sleep?24:100,unit=sleep?'小时':'/ 100',title=sleep?'睡眠时长':'精力分值',ticks=sleep?[0,6,12,18,24]:[0,25,50,75,100],view=gaugePresentation(kind,value,target,max),targetPct=Math.min(100,Math.max(0,Number(target)||0)/max*100),id=`daily-gauge-${kind}`;
-  return `<div class="gauge-card ${kind}" data-gauge-kind="${kind}" data-gauge-target="${esc(target)}" data-gauge-max="${max}">
-    <div class="gauge-reading"><label class="gauge-number-field" for="${id}"><input id="${id}" type="number" data-simple="${kind}" data-gauge-input min="0" max="${max}" step="${sleep?'.5':'5'}" value="${esc(value??'')}" style="--gauge-input-width:${view.inputCh}ch" ${locked?'disabled':''} aria-label="${title}，${label}" aria-describedby="${id}-hint ${id}-status" placeholder="${sleep?'输入时长':'输入分值'}"><span class="gauge-unit" aria-hidden="true">${unit}</span></label></div>
+  const presets=sleep?[['6 小时','6'],['7 小时','7'],['8 小时','8'],['9 小时','9']]:[['40 分','40'],['60 分','60'],['80 分','80'],['90 分','90']],stepAmt=sleep?.5:5;
+  return `<div class="gauge-card ${kind}" data-gauge-kind="${kind}" data-gauge-target="${esc(target)}" data-gauge-max="${max}" data-gauge-step="${stepAmt}">
+    <div class="gauge-reading"><label class="gauge-number-field" for="${id}"><input id="${id}" type="number" data-simple="${kind}" data-gauge-input min="0" max="${max}" step="${stepAmt}" value="${esc(value??'')}" style="--gauge-input-width:${view.inputCh}ch" ${locked?'disabled':''} aria-label="${title}，${label}" aria-describedby="${id}-hint ${id}-status" placeholder="${sleep?'输入时长':'输入分值'}"><span class="gauge-unit" aria-hidden="true">${unit}</span></label></div>
     <div class="gauge-state" id="${id}-status"><strong data-gauge-reading>${view.reading}</strong><span data-gauge-status>${esc(view.status)}</span></div>
     <div class="gauge-reference"><div class="gauge-reference-head"><span>${sleep?'时长参考（小时）':'精力参考'}</span><span class="gauge-baseline"><i aria-hidden="true"></i>个人基线 ${esc(target)}${sleep?' 小时':' 分'}</span></div>
-      <div class="gauge" aria-hidden="true"><span data-gauge-fill style="width:${view.pct}%" ${view.hasValue?'':'hidden'}></span>${ticks.map((_,index)=>`<em class="gauge-tick" style="left:${index*25}%"></em>`).join('')}<i style="left:${targetPct}%"></i><b data-gauge-knob style="left:${view.pct}%" ${view.hasValue?'':'hidden'}></b></div>
+      <div class="gauge ${locked?'is-locked':''}" data-gauge-track aria-hidden="true"><span data-gauge-fill style="width:${view.pct}%" ${view.hasValue?'':'hidden'}></span>${ticks.map((_,index)=>`<em class="gauge-tick" style="left:${index*25}%"></em>`).join('')}<i style="left:${targetPct}%"></i><b data-gauge-knob style="left:${view.pct}%" ${view.hasValue?'':'hidden'}></b></div>
       <div class="gauge-scale" aria-hidden="true">${ticks.map((tick,index)=>`<span style="left:${index*25}%">${tick}</span>`).join('')}</div>
-    </div><p class="gauge-input-hint" id="${id}-hint">${sleep?'可输入 0—24 小时':'可输入 0—100 分'}，刻度仅作对照。</p>
+      <div class="gauge-quick-controls" data-ui-skip role="group" aria-label="快捷调整${title}"><button type="button" class="gauge-step-btn" data-gauge-delta="${-stepAmt}" ${locked?'disabled':''} aria-label="减少 ${stepAmt} ${sleep?'小时':'分'}">−${stepAmt}</button><div class="gauge-presets">${presets.map(([tag,val])=>`<button type="button" class="gauge-preset-btn" data-gauge-preset="${val}" data-active="${String(value??'').trim()===val}" ${locked?'disabled':''}>${tag}</button>`).join('')}</div><button type="button" class="gauge-step-btn" data-gauge-delta="${stepAmt}" ${locked?'disabled':''} aria-label="增加 ${stepAmt} ${sleep?'小时':'分'}">＋${stepAmt}</button></div>
+    </div><p class="gauge-input-hint" id="${id}-hint">${sleep?'可输入 0—24 小时':'可输入 0—100 分'}，支持直接点按/拖动刻度或点选快捷值。</p>
   </div>`;
 }
 function updateGauge(input){
@@ -343,6 +345,7 @@ function updateGauge(input){
   input.style.setProperty('--gauge-input-width',`${view.inputCh}ch`);
   fill.hidden=!view.hasValue;fill.style.width=`${view.pct}%`;knob.hidden=!view.hasValue;knob.style.left=`${view.pct}%`;
   $('[data-gauge-reading]',card).textContent=view.reading;$('[data-gauge-status]',card).textContent=view.status;
+  card.querySelectorAll('[data-gauge-preset]').forEach(btn=>{btn.dataset.active=String(input.value.trim()===btn.dataset.gaugePreset)});
 }
 function dailyEvidence(data,locked,template={}){const metrics=data.metrics||[];return `<section class="card section-card folio-card daily-evidence-card">
   <div class="daily-prompt" data-daily-prompt="sleep" hidden>${gaugeCard('sleep','昨夜睡眠测度',data.sleep,state.stage.sleepTarget,locked)}</div>
@@ -389,10 +392,10 @@ function dailyReviewHtml(period,locked,data,templates){
   const quote=quoteFor('daily'),{lines,columns,density}=reviewIntroLayout(quote);
   return `<div class="daily-flow daily-art-flow" data-daily-scene="intro" data-daily-side="right" data-daily-current-prompt="intro">${dailySceneArt()}
     <header class="daily-flow-head"><div class="daily-stage"><span class="daily-stage-label" id="daily-current-group" hidden></span></div><time datetime="${esc(period)}">${esc(formatDate(period))}</time><div class="daily-top-actions"><button type="button" class="daily-exit" data-daily-exit>退出复盘 <span class="mobile-action-arrow" aria-hidden="true">↗</span></button></div></header>
-    <section class="daily-intro" id="daily-intro" aria-label="每日复盘引导"><div class="daily-intro-copy" data-intro-length="${density}" style="--daily-intro-columns:${columns}"><p class="daily-intro-kicker">把这一刻，留给自己。</p><p id="daily-intro-text"><span class="sr-only">${esc(quote)}</span><span class="daily-typewriter" aria-hidden="true">${lines.map(line=>`<span class="daily-intro-line">${Array.from(line).map(character=>`<span class="daily-glyph">${esc(character)}</span>`).join('')}</span>`).join('')}</span></p><button type="button" class="btn btn-primary" id="daily-start"><span data-start-label>${locked?'查看复盘':state.current.id||state.dirty?'继续复盘':'开始复盘'}</span> <span aria-hidden="true">→</span></button></div></section>
+    <section class="daily-intro" id="daily-intro" aria-label="每日复盘引导"><div class="daily-intro-copy" data-intro-length="${density}" style="--daily-intro-columns:${columns}"><p class="daily-intro-kicker">把这一刻，留给自己。</p><p id="daily-intro-text"><span class="sr-only">${esc(quote)}</span><span class="daily-typewriter" aria-hidden="true">${lines.map(line=>`<span class="daily-intro-line">${Array.from(line).map(character=>`<span class="daily-glyph">${esc(character)}</span>`).join('')}</span>`).join('')}</span></p><div class="daily-intro-actions"><button type="button" class="btn btn-primary" id="daily-start"><span data-start-label>${locked?'查看复盘':state.current.id||state.dirty?'继续复盘':'开始复盘'}</span> <span aria-hidden="true">→</span></button>${locked?'<button type="button" class="btn btn-ghost" id="daily-jump-end">直达结论与验证</button>':''}</div></div></section>
     <section class="daily-editor" id="daily-editor" aria-labelledby="daily-flow-title" data-daily-locked="${locked}" hidden><h1 class="sr-only" id="daily-flow-title">每日复盘</h1>
       <p class="sr-only" id="daily-step-status" aria-live="polite"></p>
-      <div class="daily-editor-content"><div class="daily-question-heading"><h2 id="daily-prompt-title" tabindex="-1"></h2><p id="daily-prompt-description"></p></div>
+      <div class="daily-editor-content"><nav class="review-step-rail" data-review-steps data-ui-skip aria-label="复盘进度导航"></nav><div class="daily-question-heading"><h2 id="daily-prompt-title" tabindex="-1"></h2><p id="daily-prompt-description"></p></div>
       <p class="daily-flow-error" id="daily-flow-error" role="alert" hidden></p>
       ${DAILY_STEPS.map((step,index)=>`<div class="daily-pane" data-daily-pane="${step.id}" hidden>${panes[index]}${step.id===lastPrompt.step?`<div class="daily-afterword" data-review-afterword hidden>${reviewAfterword(locked,data,templates.action)}</div>`:''}</div>`).join('')}
       <div class="daily-step-note"><span id="daily-step-hint"></span>${locked?`<span class="status-chip done">${STATUS[state.current.status]}</span>`:''}</div>
@@ -419,9 +422,9 @@ function extendedReviewHtml(type,period,locked,data,templates){
   const saved=locked?(period!==defaultPeriod(type)?'非当前周期，仅可查看':'这份复盘已锁定'):state.dirty?'有未保存内容':state.current.updated_at?`${beijingTime(state.current.updated_at)} 草稿已保存`:'草稿尚未保存';
   return `<div class="daily-flow daily-art-flow extended-review-flow type-${type}" data-review-type="${type}" data-review-phase="${type}-${config.stages[0].id}" data-daily-scene="extended" data-daily-side="right" data-daily-current-prompt="intro">${extendedSceneArt(type)}
     <header class="daily-flow-head"><div class="daily-stage"><span class="daily-stage-label" id="daily-current-group" hidden></span></div><time>${esc(formatDate(period))}</time><div class="daily-top-actions"><button type="button" class="daily-exit" data-daily-exit>退出复盘 <span class="mobile-action-arrow" aria-hidden="true">↗</span></button></div></header>
-    <section class="daily-intro" id="daily-intro" aria-label="${esc(TYPES[type].label)}引导"><div class="daily-intro-copy" data-intro-length="${density}" style="--daily-intro-columns:${columns}"><p class="daily-intro-kicker">给这段时间，一页纸。</p><p id="daily-intro-text"><span class="sr-only">${esc(quote)}</span><span class="daily-typewriter" aria-hidden="true">${lines.map(line=>`<span class="daily-intro-line">${Array.from(line).map(character=>`<span class="daily-glyph">${esc(character)}</span>`).join('')}</span>`).join('')}</span></p><button type="button" class="btn btn-primary" id="daily-start"><span data-start-label>${locked?'查看复盘':state.current.id||state.dirty?'继续复盘':'开始复盘'}</span> <span aria-hidden="true">→</span></button></div></section>
+    <section class="daily-intro" id="daily-intro" aria-label="${esc(TYPES[type].label)}引导"><div class="daily-intro-copy" data-intro-length="${density}" style="--daily-intro-columns:${columns}"><p class="daily-intro-kicker">给这段时间，一页纸。</p><p id="daily-intro-text"><span class="sr-only">${esc(quote)}</span><span class="daily-typewriter" aria-hidden="true">${lines.map(line=>`<span class="daily-intro-line">${Array.from(line).map(character=>`<span class="daily-glyph">${esc(character)}</span>`).join('')}</span>`).join('')}</span></p><div class="daily-intro-actions"><button type="button" class="btn btn-primary" id="daily-start"><span data-start-label>${locked?'查看复盘':state.current.id||state.dirty?'继续复盘':'开始复盘'}</span> <span aria-hidden="true">→</span></button>${locked?'<button type="button" class="btn btn-ghost" id="daily-jump-end">直达结论与验证</button>':''}</div></div></section>
     <section class="daily-editor" id="daily-editor" aria-labelledby="daily-flow-title" data-daily-locked="${locked}" hidden><h1 class="sr-only" id="daily-flow-title">${esc(TYPES[type].label)}</h1><p class="sr-only" id="daily-step-status" aria-live="polite"></p>
-      <div class="daily-editor-content"><div class="daily-question-heading"><h2 id="daily-prompt-title" tabindex="-1"></h2><p id="daily-prompt-description"></p></div><p class="daily-flow-error" id="daily-flow-error" role="alert" hidden></p>
+      <div class="daily-editor-content"><nav class="review-step-rail" data-review-steps data-ui-skip aria-label="复盘进度导航"></nav><div class="daily-question-heading"><h2 id="daily-prompt-title" tabindex="-1"></h2><p id="daily-prompt-description"></p></div><p class="daily-flow-error" id="daily-flow-error" role="alert" hidden></p>
       ${config.stages.map(stage=>`<div class="daily-pane" data-daily-pane="${stage.id}" hidden><section class="card section-card folio-card">${prompts.filter(prompt=>prompt.stage===stage.id).map(prompt=>extendedPromptHtml(prompt,data,locked,templates.review)).join('')}</section>${stage===config.stages.at(-1)?`<div class="daily-afterword" data-extended-afterword hidden>${reviewAfterword(locked,data,templates.action)}</div>`:''}</div>`).join('')}
       <div class="daily-step-note"><span id="daily-step-hint"></span>${locked?`<span class="status-chip done">${STATUS[state.current.status]}</span>`:''}</div>
       </div><footer class="daily-flow-footer"><button type="button" class="btn btn-ghost" data-daily-back>上一步</button><p class="save-state" role="status">${saved}</p><div class="daily-flow-actions">${state.current.status==='draft'?'<button type="button" class="btn review-delete-draft" id="delete-draft" hidden>删除草稿</button>':''}${!locked?`<button type="button" class="btn toolbar-save" id="save-draft">保存草稿</button><button type="button" class="btn btn-red" id="complete-record" hidden>完成并锁定</button>`:`<button type="button" class="btn btn-ghost" id="daily-finish" data-nav="history" hidden>回到历史记录</button>`}<button type="button" class="btn btn-primary" data-daily-next>下一题 <span aria-hidden="true">→</span></button></div></footer>
@@ -504,7 +507,11 @@ function showDailyPrompt(promptId,focus=false){
     $('#daily-step-status').textContent=`${DAILY_STEPS[group].label}，${copy.title}`;
     const required=reviewQuestions('daily',templatesForRecord(state.current).review).find(item=>item.id===prompt.id)?.required||['action','ifCondition','ifThen','verifyDate'].includes(prompt.id);
     $('[data-review-afterword]')?.toggleAttribute('hidden',!last);
-    $('#daily-step-hint').textContent=locked?'这份记录只供查看。':required?'填写这一题后继续。':last?'这一题选填，留空也可以完成。':'这一题选填，可以直接继续。';
+    const rail=$('[data-review-steps]');
+    if(rail){
+      rail.innerHTML=`<div class="review-step-stages">${DAILY_STEPS.map((step,si)=>{const first=prompts.find(p=>p.step===step.id);return `<button type="button" class="review-step-stage ${step.id===prompt.step?'is-active':si<group?'is-done':''}" data-step-jump="${esc(first?.id||'')}">${String(si+1).padStart(2,'0')} ${esc(step.label)}</button>`}).join('')}</div><div class="review-step-dots"><span class="review-step-counter">第 ${index+1} / ${prompts.length} 题</span><div class="review-step-pips">${prompts.map((item,pi)=>`<button type="button" class="review-step-pip ${pi===index?'is-active':pi<index?'is-done':''}" data-step-jump="${esc(item.id)}" aria-label="第 ${pi+1} 题" ${pi===index?'aria-current="step"':''}></button>`).join('')}</div></div>`;
+    }
+    $('#daily-step-hint').textContent=locked?'这份记录只供查看，点击上方步骤可快速定位。':required?'填写这一题后继续（Ctrl + Enter 下一题）。':last?'这一题选填，留空也可以完成。':'这一题选填，可以直接继续（Ctrl + Enter 下一题）。';
     if(promptId==='verifyDate')renderDailyCalendar($('#daily-verification-calendar').dataset.verifyMonthValue);
     if(focus){$('#daily-prompt-title').focus({preventScroll:true});$('.daily-flow-head').scrollIntoView({block:'start',behavior:'auto'})}
   }else{startDailyTypewriter();if(focus){$('#daily-start').focus({preventScroll:true});$('.daily-flow-head').scrollIntoView({block:'start',behavior:'auto'});$('#daily-start').scrollIntoView({block:'nearest',behavior:'auto'})}}
@@ -527,6 +534,8 @@ function bindDailyFlow(){
   bindDailyCalendar();
   const move=moveReviewPrompt;
   $('#daily-start').addEventListener('click',()=>move(currentDailyPrompts()[0].id));
+  $('#daily-jump-end')?.addEventListener('click',()=>move(currentDailyPrompts().at(-1).id));
+  $('[data-review-steps]')?.addEventListener('click',event=>{const button=event.target.closest('[data-step-jump]');if(button?.dataset.stepJump)move(button.dataset.stepJump)});
   $('[data-daily-exit]').addEventListener('click',()=>reviewNavigation.exit());
   $('[data-daily-back]').addEventListener('click',()=>move(dailyPromptNeighbor(currentDailyPrompts(),state.dailyPrompt,-1)));
   $('[data-daily-next]').addEventListener('click',()=>{if(state.saving||$('.daily-flow')?.reviewTransition?.busy)return;if($('#daily-editor').dataset.dailyLocked!=='true'){collectCurrent();const issues=dailyPromptIssues(state.current.data,state.dailyPrompt,today(),templatesForRecord(state.current).review);if(issues.length){showDailyIssues(issues);return}}const next=dailyPromptNeighbor(currentDailyPrompts(),state.dailyPrompt,1);if(next)move(next)});
@@ -565,7 +574,11 @@ function showExtendedPrompt(promptId,focus=false){
     $('#daily-current-group').textContent=`${String(prompt.stageIndex+1).padStart(2,'0')} · ${stage.label}`;
     setExtendedPromptHeading(copy.title,prompt);$('#daily-prompt-description').textContent=copy.description;
     $('#daily-step-status').textContent=`${stage.label}，${String(copy.title??'')}`;
-    $('#daily-step-hint').textContent=locked?'这份记录只供查看。':prompt.required?'填写这一题后继续。':last?'这一题选填，留空也可以完成。':'这一题选填，可以直接继续。';
+    const rail=$('[data-review-steps]');
+    if(rail){
+      rail.innerHTML=`<div class="review-step-stages">${config.stages.map((st,si)=>{const first=prompts.find(p=>p.stage===st.id);return `<button type="button" class="review-step-stage ${st.id===prompt.stage?'is-active':si<prompt.stageIndex?'is-done':''}" data-step-jump="${esc(first?.id||'')}">${String(si+1).padStart(2,'0')} ${esc(st.label)}</button>`}).join('')}</div><div class="review-step-dots"><span class="review-step-counter">第 ${index+1} / ${prompts.length} 题</span><div class="review-step-pips">${prompts.map((item,pi)=>`<button type="button" class="review-step-pip ${pi===index?'is-active':pi<index?'is-done':''}" data-step-jump="${esc(item.id)}" aria-label="第 ${pi+1} 题" ${pi===index?'aria-current="step"':''}></button>`).join('')}</div></div>`;
+    }
+    $('#daily-step-hint').textContent=locked?'这份记录只供查看，点击上方步骤可快速定位。':prompt.required?'填写这一题后继续（Ctrl + Enter 下一题）。':last?'这一题选填，留空也可以完成。':'这一题选填，可以直接继续（Ctrl + Enter 下一题）。';
     if(promptId==='verifyDate')renderDailyCalendar($('#daily-verification-calendar').dataset.verifyMonthValue);
     if(focus){$('#daily-prompt-title').focus({preventScroll:true});$('.daily-flow-head').scrollIntoView({block:'start',behavior:'auto'})}
   }else{startDailyTypewriter();if(focus){$('#daily-start').focus({preventScroll:true});$('.daily-flow-head').scrollIntoView({block:'start',behavior:'auto'});$('#daily-start').scrollIntoView({block:'nearest',behavior:'auto'})}}
@@ -591,6 +604,8 @@ function bindExtendedFlow(){
   bindDailyCalendar();
   const move=moveReviewPrompt;
   $('#daily-start').addEventListener('click',()=>move(currentExtendedPrompts()[0].id));
+  $('#daily-jump-end')?.addEventListener('click',()=>move(currentExtendedPrompts().at(-1).id));
+  $('[data-review-steps]')?.addEventListener('click',event=>{const button=event.target.closest('[data-step-jump]');if(button?.dataset.stepJump)move(button.dataset.stepJump)});
   $('[data-daily-exit]').addEventListener('click',()=>reviewNavigation.exit());
   $('[data-daily-back]').addEventListener('click',()=>move(extendedPromptNeighbor(currentExtendedPrompts(),state.extendedPrompt,-1)));
   $('[data-daily-next]').addEventListener('click',()=>{
@@ -645,11 +660,54 @@ function bindReviewWheel(){
 }
 function bindReview(){
   const mark=()=>{if(state.current.status==='draft'){state.dirty=true;$('.save-state')&&($('.save-state').textContent='有未保存内容')}};
-  $$('.main input,.main textarea,.main select').forEach(el=>el.addEventListener('input',()=>{mark();clearDailyIssues();if(el.matches('textarea')){const preview=$('[data-answer-preview]',el.closest('[data-daily-answer]')||el);if(preview)preview.textContent=dailyAnswerPreview(el.value)}if(el.matches('[data-gauge-input]'))updateGauge(el);if(el.dataset.simple==='journal')$('#journal-count').textContent=`${el.value.length} 字`}));
-  $$('[data-daily-answer]').forEach(entry=>entry.addEventListener('toggle',()=>{if(entry.open)openDailyAnswer($('textarea',entry))}));
+  const previewText=value=>{const text=String(value).trim().replace(/\s+/g,' '),chars=Array.from(text);return chars.length>72?`${chars.slice(0,72).join('')}…`:text||'尚未填写'};
+  const bindQuestionControls=root=>{
+    $$('input,textarea,select',root).forEach(el=>el.addEventListener('input',()=>{mark();clearDailyIssues();if(el.matches('textarea')){const preview=$('[data-answer-preview]',el.closest('[data-daily-answer]')||el);if(preview)preview.textContent=previewText(el.value)}if(el.matches('[data-gauge-input]'))updateGauge(el);if(el.dataset.simple==='journal')$('#journal-count').textContent=`${el.value.length} 字`}));
+    $$('[data-daily-answer]',root).forEach(entry=>entry.addEventListener('toggle',()=>{if(entry.open)$$('[data-daily-answer]',entry.closest('.item-list')).forEach(row=>{row.open=row===entry})}));
+    $$('[data-add-item],[data-remove-item]',root).forEach(b=>b.addEventListener('click',()=>{
+      collectCurrent();
+      const remove=b.hasAttribute('data-remove-item'),k=remove?b.dataset.removeItem:b.dataset.addItem,removeIndex=remove?Number(b.dataset.index):-1;
+      const list=state.current.data.answers[k]=(state.current.data.answers[k]||['']).slice(0,5);
+      if(remove){if(list.length>1)list.splice(removeIndex,1);else list[0]=''}else if(list.length<5)list.push('');
+      state.dirty=true;mark();
+      const box=b.closest('[data-question]')||$(`[data-question="${k}"]`,$('#daily-editor'));
+      if(!box){renderReviewFromCurrent();focusDailyAnswer($(`[data-answer="${k}"][data-index="${remove?Math.max(0,removeIndex-1):list.length-1}"]`));return}
+      const locked=$('#daily-editor')?.dataset.dailyLocked==='true',accordion=Boolean(box.querySelector('[data-daily-answer]'));
+      const baseLabel=($('[data-answer]',box)?.getAttribute('aria-label')||k).replace(/（补充 \d+）$/,'');
+      const targetIndex=remove?Math.min(Math.max(0,removeIndex-1),list.length-1):list.length-1;
+      const rowHtml=(v,i)=>`<div class="item-row"><textarea class="control" aria-label="${esc(baseLabel)}${i?`（补充 ${i+1}）`:''}" data-answer="${esc(k)}" data-index="${i}" maxlength="6000" ${locked?'readonly':''} placeholder="先写事实，再写判断。">${esc(v)}</textarea>${i?`<button class="remove-btn" aria-label="删除这一项" type="button" data-remove-item="${esc(k)}" data-index="${i}" ${locked?'disabled':''}>×</button>`:''}</div>`;
+      const bodyHtml=accordion?`<div class="item-list">${list.map((v,i)=>`<details class="daily-answer" data-daily-answer ${i===targetIndex?'open':''}><summary><span class="daily-answer-number">记录 ${String(i+1).padStart(2,'0')}</span><span class="daily-answer-preview" data-answer-preview>${esc(previewText(v))}</span><span class="daily-answer-toggle"><span class="answer-open-copy">收起</span><span class="answer-closed-copy">${locked?'查看':'修改'}</span><i aria-hidden="true"></i></span></summary>${rowHtml(v,i)}</details>`).join('')}</div>${list.length<5&&!locked?`<button class="add-item" type="button" data-add-item="${esc(k)}">＋ 再补充一项</button>`:''}`:`<div class="item-list">${list.map(rowHtml).join('')}</div>${list.length<5&&!locked?`<button class="add-item" type="button" data-add-item="${esc(k)}">＋ 再补充一项</button>`:''}`;
+      const existingHead=box.querySelector('.question-label')?.outerHTML||'';
+      renderMarkup(box,`${existingHead}${bodyHtml}`);bindQuestionControls(box);
+      const nextInput=$(`[data-answer="${k}"][data-index="${targetIndex}"]`,box);
+      focusDailyAnswer(nextInput);nextInput?.focus();
+    }));
+  };
+  bindQuestionControls($('.main'));
+  $$('[data-gauge-kind]').forEach(card=>{
+    const input=$('[data-gauge-input]',card),track=$('[data-gauge-track]',card);if(!input)return;
+    const applyValue=num=>{if(input.disabled)return;const max=Number(card.dataset.gaugeMax||100),step=Number(card.dataset.gaugeStep||1),clamped=Math.min(max,Math.max(0,Math.round(num/step)*step));input.value=String(Number(clamped.toFixed(2)));input.dispatchEvent(new Event('input',{bubbles:true}))};
+    const applyClientX=clientX=>{if(!track||track.classList.contains('is-locked')||input.disabled)return;const rect=track.getBoundingClientRect();if(rect.width>0){const ratio=Math.min(1,Math.max(0,(clientX-rect.left)/rect.width));applyValue(ratio*Number(card.dataset.gaugeMax||100))}};
+    card.addEventListener('click',event=>{
+      const preset=event.target.closest('[data-gauge-preset]');if(preset&&!preset.disabled){applyValue(Number(preset.dataset.gaugePreset));return}
+      const delta=event.target.closest('[data-gauge-delta]');if(delta&&!delta.disabled){const base=input.value.trim()===''?Number(card.dataset.gaugeTarget||0):Number(input.value);applyValue((Number.isFinite(base)?base:0)+Number(delta.dataset.gaugeDelta));return}
+      if(event.target.closest('[data-gauge-track]'))applyClientX(event.clientX);
+    });
+    if(track){
+      let dragging=false;
+      track.addEventListener('pointerdown',event=>{if(input.disabled||track.classList.contains('is-locked'))return;dragging=true;track.classList.add('is-dragging');try{track.setPointerCapture(event.pointerId)}catch{}applyClientX(event.clientX)});
+      track.addEventListener('pointermove',event=>{if(dragging)applyClientX(event.clientX)});
+      const stopDrag=event=>{if(!dragging)return;dragging=false;track.classList.remove('is-dragging');try{track.releasePointerCapture(event.pointerId)}catch{}};
+      track.addEventListener('pointerup',stopDrag);track.addEventListener('pointercancel',stopDrag);
+    }
+  });
+  $('#daily-editor')?.addEventListener('keydown',event=>{
+    if(state.saving||event.isComposing||$('.daily-flow')?.reviewTransition?.busy)return;
+    if((event.ctrlKey||event.metaKey)&&event.key==='Enter'){const next=$('[data-daily-next]');if(next&&!next.hidden&&!next.disabled){event.preventDefault();next.click()}return}
+    if(event.altKey&&event.key==='ArrowLeft'){const back=$('[data-daily-back]');if(back&&!back.hidden&&!back.disabled){event.preventDefault();back.click()}return}
+    if(event.altKey&&event.key==='ArrowRight'){const next=$('[data-daily-next]');if(next&&!next.hidden&&!next.disabled){event.preventDefault();next.click()}}
+  });
   $('#example-toggle')?.addEventListener('click',()=>$('#example-panel').classList.toggle('hidden'));
-  $$('[data-add-item]').forEach(b=>b.addEventListener('click',()=>{collectCurrent();const k=b.dataset.addItem;state.current.data.answers[k]=state.current.data.answers[k]||[''];if(state.current.data.answers[k].length<5)state.current.data.answers[k].push('');state.dirty=true;renderReviewFromCurrent();focusDailyAnswer($(`[data-answer="${k}"][data-index="${state.current.data.answers[k].length-1}"]`))}));
-  $$('[data-remove-item]').forEach(b=>b.addEventListener('click',()=>{collectCurrent();const k=b.dataset.removeItem,index=Number(b.dataset.index);state.current.data.answers[k].splice(index,1);state.dirty=true;renderReviewFromCurrent();focusDailyAnswer($(`[data-answer="${k}"][data-index="${Math.max(0,index-1)}"]`))}));
   $('#save-draft')?.addEventListener('click',()=>saveCurrent().catch(()=>{}));
   $('#complete-record')?.addEventListener('click',completeCurrent);
   $('#delete-draft')?.addEventListener('click',()=>deleteDraftRecord(state.current));
@@ -743,20 +801,56 @@ function renderHistory(filter=state.historyFilter,focusSearch=false){
   const active={q:String(filter.q||''),type:filter.type||'all',year:filter.year||'all',month:filter.month||'all'};
   if(active.year==='all')active.month='all';
   state.historyFilter={...active};
+  let statusFilter='all',composingSearch=false;
   const years=[...new Set([today().slice(0,4),...state.records.map(historyYear).filter(Boolean)])].sort((a,b)=>b.localeCompare(a));
-  const rows=state.records.filter(r=>(active.type==='all'||r.type===active.type)&&(active.year==='all'||historyYear(r)===active.year)&&(active.month==='all'||historyMonth(r)===`${active.year}-${active.month}`)&&(!active.q||`${r.title} ${JSON.stringify(r.data)}`.toLowerCase().includes(active.q.toLowerCase()))).sort((a,b)=>b.period.localeCompare(a.period));
-  const hasFilter=Boolean(active.q)||active.type!=='all'||active.year!=='all'||active.month!=='all';
+  const filterRows=(cur,status)=>{const q=cur.q.trim().toLowerCase();return state.records.filter(r=>(status==='all'||r.status===status)&&(cur.type==='all'||r.type===cur.type)&&(cur.year==='all'||historyYear(r)===cur.year)&&(cur.month==='all'||historyMonth(r)===`${cur.year}-${cur.month}`)&&(!q||`${r.title} ${JSON.stringify(r.data)}`.toLowerCase().includes(q))).sort((a,b)=>b.period.localeCompare(a.period))};
+  const gridHtml=(rows,hasFilter)=>rows.length?rows.map(record=>historyCardHtml(record,artwork.get(record.id))).join(''):`<div class="history-empty"><img src="/assets/daily/journal.webp?v=1.0.0-overview26" alt="" width="1254" height="1254" aria-hidden="true"><div><h3>${hasFilter?'这一页，暂时没有找到。':'还没有写下的记录。'}</h3><p>${hasFilter?'试试其他关键词、类型、状态或日期。':'从今天发生的一件事开始，给未来的自己留一页。'}</p>${hasFilter?'<button type="button" class="history-write" id="history-empty-reset">清除筛选 <span class="mobile-action-arrow" aria-hidden="true">↗</span></button>':'<button type="button" class="history-write" data-nav="daily">开始每日复盘 <span class="mobile-action-arrow" aria-hidden="true">↗</span></button>'}</div></div>`;
+  const statusTabs=[['all','全部'],['draft','草稿'],['completed','已完成'],['verified','已验证']];
+  const rows=filterRows(active,statusFilter),hasFilter=Boolean(active.q)||active.type!=='all'||active.year!=='all'||active.month!=='all';
   shell(`<section class="history-page" aria-labelledby="history-title"><header class="history-hero"><div class="history-hero-copy"><h1 id="history-title">历史复盘</h1><p class="history-hero-note">把写下的事实，留成往前的线索。</p><div class="history-hero-actions"><button class="history-write" data-nav="daily">写今天的复盘 <span class="mobile-action-arrow" aria-hidden="true">↗</span></button></div></div>${historyArchiveArt(state.records.length)}</header>
-  <div class="filters history-filters"><label class="history-search-field"><span class="history-filter-caption">关键词</span><input class="history-search" id="history-search" value="${esc(active.q)}" placeholder="搜索标题、正文或行动" aria-label="搜索历史复盘"></label><label class="history-filter-select history-type-filter"><span class="history-filter-caption">复盘类型</span><select id="history-type"><option value="all">全部类型</option>${Object.entries(TYPES).map(([key,value])=>`<option value="${key}" ${active.type===key?'selected':''}>${value.label}</option>`).join('')}</select><span class="select-chevron" aria-hidden="true"></span></label><label class="history-filter-select history-year-filter"><span class="history-filter-caption">年份</span><select id="history-year"><option value="all">全部年份</option>${years.map(year=>`<option value="${year}" ${active.year===year?'selected':''}>${year} 年</option>`).join('')}</select><span class="select-chevron" aria-hidden="true"></span></label><label class="history-filter-select history-month-filter"><span class="history-filter-caption">月份</span><select id="history-month" ${active.year==='all'?'disabled':''}><option value="all">${active.year==='all'?'先选年份':'全年'}</option>${Array.from({length:12},(_,index)=>String(index+1).padStart(2,'0')).map(month=>`<option value="${month}" ${active.month===month?'selected':''}>${Number(month)} 月</option>`).join('')}</select><span class="select-chevron" aria-hidden="true"></span></label></div>
-  <header class="history-results-head archive-section-head archive-section-history"><div class="archive-section-main"><div class="archive-section-copy"><div class="archive-section-title-row"><div class="archive-section-label"><h2 id="history-records-title">${hasFilter?'筛选结果':'全部记录'}</h2><div class="archive-section-count" aria-label="${rows.length} 篇复盘"><strong>${rows.length}</strong><span>篇复盘</span></div></div></div><p>${hasFilter?'当前筛选条件下的复盘记录。':'按时间归档，随时翻开原记录。'}</p></div></div>${hasFilter?'<button type="button" class="history-reset" id="history-reset">清除筛选 <span aria-hidden="true">↺</span></button>':''}</header><div class="history-record-grid">${rows.length?rows.map(record=>historyCardHtml(record,artwork.get(record.id))).join(''):`<div class="history-empty"><img src="/assets/daily/journal.webp?v=1.0.0-overview26" alt="" width="1254" height="1254" aria-hidden="true"><div><h3>${hasFilter?'这一页，暂时没有找到。':'还没有写下的记录。'}</h3><p>${hasFilter?'试试其他关键词、类型或日期。':'从今天发生的一件事开始，给未来的自己留一页。'}</p>${hasFilter?'<button type="button" class="history-write" id="history-empty-reset">清除筛选 <span class="mobile-action-arrow" aria-hidden="true">↗</span></button>':'<button class="history-write" data-nav="daily">开始每日复盘 <span class="mobile-action-arrow" aria-hidden="true">↗</span></button>'}</div></div>`}</div></section>`);
-  $('#history-reset')?.addEventListener('click',()=>renderHistory({}));
-  $('#history-empty-reset')?.addEventListener('click',()=>renderHistory({}));
-  const nextFilter=()=>({q:$('#history-search').value,type:$('#history-type').value,year:$('#history-year').value,month:$('#history-month').value});
-  $('#history-search').addEventListener('input',e=>renderHistory({...nextFilter(),q:e.target.value},true));
-  $('#history-type').addEventListener('change',e=>renderHistory({...nextFilter(),type:e.target.value}));
-  $('#history-year').addEventListener('change',e=>renderHistory({...nextFilter(),year:e.target.value,month:e.target.value==='all'?'all':$('#history-month').value}));
-  $('#history-month').addEventListener('change',e=>renderHistory({...nextFilter(),month:e.target.value}));
-  if(focusSearch){const input=$('#history-search');input.focus();input.setSelectionRange(input.value.length,input.value.length)}
+  <div class="filters history-filters"><label class="history-search-field"><span class="history-filter-caption">关键词</span><span class="history-search-input-wrap"><input class="history-search" id="history-search" value="${esc(active.q)}" placeholder="搜索标题、正文或行动" aria-label="搜索历史复盘"><button type="button" class="history-search-clear" id="history-search-clear" aria-label="清空搜索词" ${active.q?'':'hidden'}>×</button></span></label><label class="history-filter-select history-type-filter"><span class="history-filter-caption">复盘类型</span><select id="history-type"><option value="all">全部类型</option>${Object.entries(TYPES).map(([key,value])=>`<option value="${key}" ${active.type===key?'selected':''}>${value.label}</option>`).join('')}</select><span class="select-chevron" aria-hidden="true"></span></label><label class="history-filter-select history-year-filter"><span class="history-filter-caption">年份</span><select id="history-year"><option value="all">全部年份</option>${years.map(year=>`<option value="${year}" ${active.year===year?'selected':''}>${year} 年</option>`).join('')}</select><span class="select-chevron" aria-hidden="true"></span></label><label class="history-filter-select history-month-filter"><span class="history-filter-caption">月份</span><select id="history-month" ${active.year==='all'?'disabled':''}><option value="all">${active.year==='all'?'先选年份':'全年'}</option>${Array.from({length:12},(_,index)=>String(index+1).padStart(2,'0')).map(month=>`<option value="${month}" ${active.month===month?'selected':''}>${Number(month)} 月</option>`).join('')}</select><span class="select-chevron" aria-hidden="true"></span></label></div>
+  <div class="history-status-bar" role="group" aria-label="按状态筛选">${statusTabs.map(([key,label])=>`<button type="button" class="history-status-tab ${statusFilter===key?'is-active':''}" data-history-status="${key}" aria-pressed="${statusFilter===key}">${label}</button>`).join('')}</div>
+  <header class="history-results-head archive-section-head archive-section-history"><div class="archive-section-main"><div class="archive-section-copy"><div class="archive-section-title-row"><div class="archive-section-label"><h2 id="history-records-title">${hasFilter?'筛选结果':'全部记录'}</h2><div class="archive-section-count" aria-label="${rows.length} 篇复盘"><strong>${rows.length}</strong><span>篇复盘</span></div></div></div><p id="history-results-desc">${hasFilter?'当前筛选条件下的复盘记录。':'按时间归档，随时翻开原记录。'}</p></div></div><span id="history-reset-host" style="display:contents">${hasFilter?'<button type="button" class="history-reset" id="history-reset">清除筛选 <span aria-hidden="true">↺</span></button>':''}</span></header><div class="history-record-grid" id="history-record-grid">${rows.length?rows.map(record=>historyCardHtml(record,artwork.get(record.id))).join(''):`<div class="history-empty"><img src="/assets/daily/journal.webp?v=1.0.0-overview26" alt="" width="1254" height="1254" aria-hidden="true"><div><h3>${hasFilter?'这一页，暂时没有找到。':'还没有写下的记录。'}</h3><p>${hasFilter?'试试其他关键词、类型或日期。':'从今天发生的一件事开始，给未来的自己留一页。'}</p>${hasFilter?'<button type="button" class="history-write" id="history-empty-reset">清除筛选 <span class="mobile-action-arrow" aria-hidden="true">↗</span></button>':'<button class="history-write" data-nav="daily">开始每日复盘 <span class="mobile-action-arrow" aria-hidden="true">↗</span></button>'}</div></div>`}</div></section>`);
+  const updateInPlace=()=>{
+    const cur={q:$('#history-search').value,type:$('#history-type').value,year:$('#history-year').value,month:$('#history-year').value==='all'?'all':$('#history-month').value};
+    state.historyFilter={...cur};
+    const filtered=Boolean(cur.q)||cur.type!=='all'||cur.year!=='all'||cur.month!=='all'||statusFilter!=='all';
+    const nextRows=filterRows(cur,statusFilter);
+    $('#history-search-clear').hidden=!cur.q;
+    $('#history-records-title').textContent=filtered?'筛选结果':'全部记录';
+    const countBox=$('.archive-section-count');
+    if(countBox){countBox.setAttribute('aria-label',`${nextRows.length} 篇复盘`);$('strong',countBox).textContent=String(nextRows.length)}
+    $('#history-results-desc').textContent=filtered?'当前筛选条件下的复盘记录。':'按时间归档，随时翻开原记录。';
+    const resetHost=$('#history-reset-host');
+    if(resetHost){renderMarkup(resetHost,filtered?'<button type="button" class="history-reset" id="history-reset">清除筛选 <span aria-hidden="true">↺</span></button>':'');$('#history-reset')?.addEventListener('click',resetAll)}
+    const grid=$('#history-record-grid');renderMarkup(grid,gridHtml(nextRows,filtered));
+    $('#history-empty-reset')?.addEventListener('click',resetAll);
+    $$('[data-nav]',grid).forEach(button=>button.addEventListener('click',()=>attemptNavigate(()=>navigate(button.dataset.nav))));
+    bindRecordOpen();
+  };
+  const resetAll=()=>{statusFilter='all';renderHistory({})};
+  $('#history-reset')?.addEventListener('click',resetAll);
+  $('#history-empty-reset')?.addEventListener('click',resetAll);
+  $('#history-search-clear')?.addEventListener('click',()=>{const input=$('#history-search');input.value='';updateInPlace();input.focus()});
+  const search=$('#history-search');
+  search.addEventListener('compositionstart',()=>{composingSearch=true});
+  search.addEventListener('compositionend',()=>{composingSearch=false;updateInPlace()});
+  search.addEventListener('input',e=>{if(composingSearch||e.isComposing){$('#history-search-clear').hidden=!search.value;return}updateInPlace()});
+  $('#history-type').addEventListener('change',updateInPlace);
+  $('#history-year').addEventListener('change',e=>{
+    const month=$('#history-month'),all=e.target.value==='all';
+    month.disabled=all;
+    month.options[0].textContent=all?'先选年份':'全年';
+    if(all)month.value='all';
+    updateInPlace();
+  });
+  $('#history-month').addEventListener('change',updateInPlace);
+  $$('[data-history-status]').forEach(btn=>btn.addEventListener('click',()=>{
+    statusFilter=btn.dataset.historyStatus;
+    $$('[data-history-status]').forEach(other=>{const on=other===btn;other.classList.toggle('is-active',on);other.setAttribute('aria-pressed',String(on))});
+    updateInPlace();
+  }));
+  if(focusSearch){search.focus();search.setSelectionRange(search.value.length,search.value.length)}
   bindRecordOpen()
 }
 function bindRecordOpen(){$$('[data-open-record]').forEach(button=>button.addEventListener('click',()=>{const record=state.records.find(item=>item.id===button.dataset.openRecord);if(record)enterReview(record.type,record.period,false,record)}))}
@@ -787,7 +881,7 @@ function verificationTiming(r,t=templatesForRecord(r).action){const expected=r.d
 function verificationTimes(r,t=templatesForRecord(r).action,fullWeekday=false){const expected=r.data?.verifyDate||'',actual=verificationActualAt(r),timing=verificationTiming(r,t);return `<div class="verification-times"><div><small>${esc(t.expectedDateLabel)}</small><strong>${expected?esc(fullWeekday?dailyCalendarDateLabel(expected):formatDate(expected)):esc(t.expectedMissingText)}</strong></div><div><small>${esc(t.actualDateLabel)}</small><strong>${actual?esc(beijingDateTime(actual)):esc(t.actualMissingText)}</strong></div>${timing?`<span class="badge ${timing.kind}">${esc(timing.label)}</span>`:''}</div>`}
 function actionCard(r,art=RECORD_ART[r.type][0]){
   const pending=r.status==='completed',t=templatesForRecord(r).action,b=pending?dueBadge(r,t):[t.verifiedStatus,'verified'],v=r.verification||{},earliest=pending?earliestActualVerification(r):'',tooEarly=pending&&today()<earliest;
-  const type=TYPES[r.type],day=overviewDateParts(r.period),date=day?`${day.calendarDate} ${day.weekday}`:formatDate(r.period),heading=overviewRecordTitle({...r,title:r.title||r.data.action||t.pageTitle},date,type.label);
+  const type=TYPES[r.type],day=overviewDateParts(r.period),date=day?`${day.calendarDate} ${day.weekday}`:formatDate(r.period),heading=overviewRecordTitle(r,date,type.label);
   return `<article class="action-archive-card type-${esc(r.type)}" aria-labelledby="action-title-${esc(r.id)}"><div class="action-archive-top"><span class="history-category"><span aria-hidden="true">${TYPE_ICONS[r.type]}</span>${esc(type.label)}</span><span class="action-state ${esc(b[1])}"><i aria-hidden="true"></i>${esc(b[0])}</span></div>
   <div class="action-archive-body"><div class="action-archive-copy">${heading.showDate?`<p class="action-record-period">${esc(date)}</p>`:''}<h3 id="action-title-${esc(r.id)}">${esc(heading.title)}</h3></div>${verificationTimes(r,t,true)}<div class="action-archive-art" aria-hidden="true"><span></span><img src="${esc(art.src)}" alt="" width="1254" height="1254" loading="lazy" draggable="false"></div></div>
   <div class="action-reading">
@@ -799,8 +893,14 @@ function actionCard(r,art=RECORD_ART[r.type][0]){
 function renderActions(){
   const artwork=recordArtAssignments(state.records),pending=state.records.filter(r=>r.status==='completed').sort((a,b)=>String(a.data.verifyDate).localeCompare(String(b.data.verifyDate))),verified=state.records.filter(r=>r.status==='verified').sort((a,b)=>String(verificationActualAt(b)).localeCompare(String(verificationActualAt(a)))),t=currentActionTemplate();
   shell(`<section class="actions-page" aria-labelledby="actions-title"><header class="history-hero actions-hero"><div class="history-hero-copy"><h1 id="actions-title">${esc(t.pageTitle)}</h1><p class="history-hero-note">${esc(t.pageIntro)}</p><button type="button" class="history-write" data-nav="history">${esc(t.historyButton)} <span class="mobile-action-arrow" aria-hidden="true">↗</span></button></div><div class="history-hero-art actions-hero-art" aria-hidden="true"><span class="history-hero-orbit"></span><img src="/assets/daily/action.webp?v=1.0.0-overview26" alt="" width="1254" height="1254"></div></header>
-  <section class="actions-section actions-section-pending" aria-labelledby="actions-pending-title"><header class="actions-section-head archive-section-head archive-section-pending"><div class="archive-section-main"><div class="archive-section-copy"><div class="archive-section-title-row"><div class="archive-section-label"><h2 id="actions-pending-title">${esc(t.pendingTitle)}</h2><div class="archive-section-count" aria-label="${esc(t.pendingTitle)} ${pending.length} 项"><strong>${pending.length}</strong><span>项行动</span></div></div></div><p>${esc(t.pendingIntro)}</p></div></div></header><div class="actions-pending-surface"><div class="action-archive-grid">${pending.length?pending.map(r=>actionCard(r,artwork.get(r.id))).join(''):`<div class="actions-empty"><img src="/assets/daily/calendar.webp?v=1.0.0-overview26" alt="" width="1254" height="1254" loading="lazy" aria-hidden="true"><div><h3>${esc(t.pendingEmptyTitle)}</h3><p>${esc(t.pendingEmptyText)}</p></div></div>`}</div></div></section>
-  <section class="actions-section" aria-labelledby="actions-verified-title"><header class="actions-section-head archive-section-head archive-section-verified"><div class="archive-section-main"><div class="archive-section-copy"><div class="archive-section-title-row"><div class="archive-section-label"><h2 id="actions-verified-title">${esc(t.verifiedTitle)}</h2><div class="archive-section-count" aria-label="${esc(t.verifiedTitle)} ${verified.length} 项"><strong>${verified.length}</strong><span>项行动</span></div></div></div><p>${esc(t.verifiedIntro)}</p></div></div></header><div class="action-archive-grid">${verified.length?verified.map(r=>actionCard(r,artwork.get(r.id))).join(''):`<div class="actions-empty"><img src="/assets/extended/decision-review.webp?v=1.0.0-palette2" alt="" width="1254" height="1254" loading="lazy" aria-hidden="true"><div><h3>${esc(t.verifiedEmptyTitle)}</h3><p>${esc(t.verifiedEmptyText)}</p></div></div>`}</div></section></section>`);
+  <div class="actions-filter-bar" role="group" aria-label="筛选行动状态"><button type="button" class="actions-filter-tab is-active" data-actions-filter="all" aria-pressed="true">全部 (${pending.length+verified.length})</button><button type="button" class="actions-filter-tab" data-actions-filter="pending" aria-pressed="false">${esc(t.pendingTitle)} (${pending.length})</button><button type="button" class="actions-filter-tab" data-actions-filter="verified" aria-pressed="false">${esc(t.verifiedTitle)} (${verified.length})</button></div>
+  <section class="actions-section actions-section-pending" data-actions-section="pending" aria-labelledby="actions-pending-title"><header class="actions-section-head archive-section-head archive-section-pending"><div class="archive-section-main"><div class="archive-section-copy"><div class="archive-section-title-row"><div class="archive-section-label"><h2 id="actions-pending-title">${esc(t.pendingTitle)}</h2><div class="archive-section-count" aria-label="${esc(t.pendingTitle)} ${pending.length} 项"><strong>${pending.length}</strong><span>项行动</span></div></div></div><p>${esc(t.pendingIntro)}</p></div></div></header><div class="actions-pending-surface"><div class="action-archive-grid">${pending.length?pending.map(r=>actionCard(r,artwork.get(r.id))).join(''):`<div class="actions-empty"><img src="/assets/daily/calendar.webp?v=1.0.0-overview26" alt="" width="1254" height="1254" loading="lazy" aria-hidden="true"><div><h3>${esc(t.pendingEmptyTitle)}</h3><p>${esc(t.pendingEmptyText)}</p></div></div>`}</div></div></section>
+  <section class="actions-section" data-actions-section="verified" aria-labelledby="actions-verified-title"><header class="actions-section-head archive-section-head archive-section-verified"><div class="archive-section-main"><div class="archive-section-copy"><div class="archive-section-title-row"><div class="archive-section-label"><h2 id="actions-verified-title">${esc(t.verifiedTitle)}</h2><div class="archive-section-count" aria-label="${esc(t.verifiedTitle)} ${verified.length} 项"><strong>${verified.length}</strong><span>项行动</span></div></div></div><p>${esc(t.verifiedIntro)}</p></div></div></header><div class="action-archive-grid">${verified.length?verified.map(r=>actionCard(r,artwork.get(r.id))).join(''):`<div class="actions-empty"><img src="/assets/extended/decision-review.webp?v=1.0.0-palette2" alt="" width="1254" height="1254" loading="lazy" aria-hidden="true"><div><h3>${esc(t.verifiedEmptyTitle)}</h3><p>${esc(t.verifiedEmptyText)}</p></div></div>`}</div></section></section>`);
+  $$('[data-actions-filter]').forEach(btn=>btn.addEventListener('click',()=>{
+    const mode=btn.dataset.actionsFilter;
+    $$('[data-actions-filter]').forEach(other=>{const on=other===btn;other.classList.toggle('is-active',on);other.setAttribute('aria-pressed',String(on))});
+    $$('[data-actions-section]').forEach(sec=>{sec.hidden=mode!=='all'&&sec.dataset.actionsSection!==mode});
+  }));
   bindRecordOpen();
 }
 function bindActionButtons(root=document){$$('[data-open-action]',root).forEach(b=>b.addEventListener('click',()=>openVerification(b.dataset.openAction)))}
@@ -851,7 +951,7 @@ async function renderBackup(){
   try{
     const [status,targets]=await Promise.all([request('/api/backup/status',{},current),request('/api/backup/targets',{},current)]);
     if(!current())return;
-    renderMarkup($('#backup-content'),`<div class="workspace-backup-grid"><section class="card workspace-panel workspace-personal-backup"><div class="workspace-panel-head"><div><h2>个人加密备份</h2></div><span class="badge ${status.configured?'completed':status.available?'':'overdue'}">${status.configured?'密码已设置':status.available?'尚未设置密码':'内部密钥待恢复'}</span></div><p class="workspace-panel-description">给复盘留一份只有自己能打开的副本，换一台设备，也能接着记录。</p>${status.error?`<div class="backup-notice">${esc(status.error)}</div>`:''}<div class="button-row workspace-panel-actions"><button class="btn btn-primary" id="backup-export" ${status.configured?'':'disabled'}>导出 .shendu</button><label class="btn btn-ghost">恢复备份<input class="hidden" id="backup-file" type="file" accept=".shendu"></label><button class="btn btn-soft" id="backup-password" ${status.available?'':'disabled'}>${status.configured?'修改备份密码':'设置备份密码'}</button></div><section class="workspace-details" aria-labelledby="backup-ownership-title"><h3 id="backup-ownership-title">加密方式与账户归属</h3><p>整包 PBKDF2-HMAC-SHA-256（600,000 次）与 AES-256-GCM 加密。远端只会收到加密整包。</p><p>新版备份会在密文中写入所属用户名；跨账户恢复必须再次输入原用户名与该文件的备份密码，旧版加密包仍会尽量读取原 profile 进行归属校验。</p></section></section>${siteBackupSection()}
+    renderMarkup($('#backup-content'),`<div class="workspace-backup-grid"><section class="card workspace-panel workspace-personal-backup"><div class="workspace-panel-head"><div><h2>个人加密备份</h2></div><span class="badge ${status.configured?'completed':status.available?'':'overdue'}">${status.configured?'密码已设置':status.available?'尚未设置密码':'内部密钥待恢复'}</span></div><p class="workspace-panel-description">给复盘留一份只有自己能打开的副本，换一台设备，也能接着记录。</p>${!status.configured&&status.available?'<div class="backup-notice backup-setup-guide"><strong>第一步：先设置备份密码</strong>，随后即可导出 .shendu 加密包或添加 S3 / WebDAV 外部自动备份。</div>':''}${status.error?`<div class="backup-notice">${esc(status.error)}</div>`:''}<div class="button-row workspace-panel-actions"><button class="btn ${status.configured?'btn-primary':'btn-ghost'}" id="backup-export" ${status.configured?'':'disabled'}>导出 .shendu</button><label class="btn btn-ghost">恢复备份<input class="hidden" id="backup-file" type="file" accept=".shendu"></label><button class="btn ${status.configured?'btn-soft':'btn-primary'}" id="backup-password" ${status.available?'':'disabled'}>${status.configured?'修改备份密码':'设置备份密码'}</button></div><section class="workspace-details" aria-labelledby="backup-ownership-title"><h3 id="backup-ownership-title">加密方式与账户归属</h3><p>整包 PBKDF2-HMAC-SHA-256（600,000 次）与 AES-256-GCM 加密。远端只会收到加密整包。</p><p>新版备份会在密文中写入所属用户名；跨账户恢复必须再次输入原用户名与该文件的备份密码，旧版加密包仍会尽量读取原 profile 进行归属校验。</p></section></section>${siteBackupSection()}
     <section class="card workspace-panel workspace-external-backup"><div class="workspace-panel-head"><div><h2>S3 / WebDAV 外部备份</h2><p class="workspace-panel-description">最多 8 个目标，支持手动备份，或指定每天、每周的北京时间。</p></div><button class="btn btn-primary" id="add-target" ${status.configured?'':'disabled'}>新增目标</button></div><div class="list">${targets.targets.length?targets.targets.map(t=>`<div class="backup-target"><div><strong>${esc(t.name)}</strong> <span class="badge">${esc(backupTargetKindLabel(t.kind))}</span><p>${esc(backupScheduleLabel(t))} · ${t.last_success_at?`上次成功 ${beijingDateTime(t.last_success_at)}`:'尚未成功备份'}${t.last_error?` · ${esc(t.last_error)}`:''}</p></div><div class="backup-actions"><button class="btn btn-ghost" data-target-edit="${esc(t.id)}">编辑</button><button class="btn btn-ghost" data-target-test="${esc(t.id)}">测试</button><button class="btn btn-soft" data-target-run="${esc(t.id)}">立即备份</button><button class="btn btn-danger" data-target-delete="${esc(t.id)}">删除</button></div></div>`).join(''):`<div class="workspace-empty">${workspaceArt('guide','workspace-empty-art')}<div><h3>还没有外部目标</h3><p>可以连接 WebDAV、Cloudflare R2、AWS S3、MinIO 等服务。</p></div></div>`}</div></section>
     <section class="card workspace-panel workspace-backup-runs"><div class="workspace-panel-head"><div><h2>最近运行记录</h2><p class="workspace-panel-description">最近十天（北京时间），仅记录备份成功和失败；连接测试不计入。</p></div></div><div class="table-wrap"><table class="table backup-runs-table"><thead><tr><th>时间</th><th>备份目标</th><th>执行方式</th><th>结果</th><th>说明</th></tr></thead><tbody>${backupRunRows(targets.runs)}</tbody></table></div></section></div>`);
     bindBackup(status,targets.targets);
@@ -991,7 +1091,7 @@ async function targetAction(id,action,button){const page=$('#backup-content'),ac
 
 function accountSecurityHtml(){
   const user=state.user,role=user.role==='superadmin'?'超级管理员':user.role==='admin'?'管理员':'成员';
-  return `<div class="workspace-account-grid"><section class="workspace-panel workspace-identity-panel" aria-labelledby="account-identity-title"><h2 id="account-identity-title">${esc(user.displayName||user.username)}</h2><dl class="workspace-identity-details"><div><dt>用户名</dt><dd>${esc(user.username)}</dd></div><div><dt>账户角色</dt><dd>${role}</dd></div></dl>${workspaceArt('account','workspace-identity-art')}<div class="workspace-signout-panel"><p class="workspace-panel-description">如有未保存的复盘，请先保存或放弃修改再退出。</p><button class="btn btn-danger" id="logout" type="button">安全退出</button></div></section><form id="password-form" class="workspace-panel workspace-password-panel"><h2>更新登录密码</h2><p class="workspace-panel-description">新密码至少 15 个字符，修改后需要重新登录。</p><fieldset><div class="field"><label for="account-current-password">当前密码</label><input id="account-current-password" name="currentPassword" type="password" required autocomplete="current-password"></div><div class="field"><label for="account-new-password">新密码</label><input id="account-new-password" name="newPassword" type="password" minlength="15" maxlength="128" required autocomplete="new-password"></div><button class="btn btn-primary" type="submit">修改密码</button></fieldset></form></div>`;
+  return `<div class="workspace-account-grid"><section class="workspace-panel workspace-identity-panel" aria-labelledby="account-identity-title"><h2 id="account-identity-title">${esc(user.displayName||user.username)}</h2><dl class="workspace-identity-details"><div><dt>用户名</dt><dd>${esc(user.username)}</dd></div><div><dt>账户角色</dt><dd>${role}</dd></div></dl>${workspaceArt('account','workspace-identity-art')}<div class="workspace-signout-panel"><p class="workspace-panel-description">如有未保存的复盘，请先保存或放弃修改再退出。</p><button class="btn btn-danger" id="logout" type="button">安全退出</button></div></section><form id="password-form" class="workspace-panel workspace-password-panel"><h2>更新登录密码</h2><p class="workspace-panel-description">新密码至少 15 个字符，修改后需要重新登录。</p><fieldset><div class="field"><label for="account-current-password">当前密码</label><span class="password-input-wrap"><input id="account-current-password" name="currentPassword" type="password" required autocomplete="current-password"><button type="button" class="password-toggle-btn" data-toggle-password aria-label="显示当前密码">显示</button></span></div><div class="field"><label for="account-new-password">新密码</label><span class="password-input-wrap"><input id="account-new-password" name="newPassword" type="password" minlength="15" maxlength="128" required autocomplete="new-password"><button type="button" class="password-toggle-btn" data-toggle-password aria-label="显示新密码">显示</button></span></div><button class="btn btn-primary" type="submit">修改密码</button></fieldset></form></div>`;
 }
 async function renderUsers(q=''){
   const admin=['admin','superadmin'].includes(state.user.role);
@@ -1247,6 +1347,7 @@ function bindAccountSecurity(){
   const current=()=>form.isConnected&&state.user===account;
   const busy=value=>{pending=value;if(value){state.accountWriteOwner=form;state.saving=true;form.setAttribute('aria-busy','true')}else{if(state.accountWriteOwner===form){state.saving=false;delete state.accountWriteOwner}form.removeAttribute('aria-busy')}$('fieldset',form).disabled=value;logout.disabled=value};
   const finish=()=>{if(current())busy(false);else if(state.accountWriteOwner===form){state.saving=false;delete state.accountWriteOwner}};
+  form.addEventListener('click',event=>{const toggle=event.target.closest('[data-toggle-password]');if(!toggle||pending)return;const input=$('input',toggle.closest('.password-input-wrap'));if(!input)return;const show=input.type==='password';input.type=show?'text':'password';toggle.textContent=show?'隐藏':'显示';toggle.setAttribute('aria-label',show?'隐藏密码':'显示密码')});
   form.addEventListener('submit',async event=>{
     event.preventDefault();if(pending||!current())return;
     const body=Object.fromEntries(new FormData(form));busy(true);

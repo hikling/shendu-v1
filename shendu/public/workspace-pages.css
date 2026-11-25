@@ -1,10 +1,10 @@
 /* Personal workspace: one paper/illustration family, with local page ownership. */
-.workspace-page,.workspace-dialog{--workspace-tone:#5d467c;--workspace-soft:#f2edf6;--workspace-ink:#28392f;--workspace-muted:#5c695f;--workspace-line:#d9dfd2;color:var(--workspace-ink);font-family:"Noto Sans SC","Microsoft YaHei",sans-serif}
-.workspace-users{--workspace-tone:#15584e;--workspace-soft:#edf4ed}
-.workspace-account{--workspace-tone:#455f34;--workspace-soft:#eef3e7}
-.workspace-settings{--workspace-tone:#875b21;--workspace-soft:#f8f0dd}
-.workspace-stage{--workspace-tone:#345585;--workspace-soft:#edf1f8}
-.workspace-guide{--workspace-tone:#15584e;--workspace-soft:#edf4ed}
+.workspace-page,.workspace-dialog{--workspace-tone:#175c52;--workspace-soft:#edf4ef;--workspace-ink:#24372f;--workspace-muted:#57675d;--workspace-line:#d9dfd2;color:var(--workspace-ink);font-family:"Noto Sans SC","Microsoft YaHei",sans-serif}
+.workspace-users{--workspace-tone:#175c52;--workspace-soft:#edf4ef}
+.workspace-account{--workspace-tone:#175c52;--workspace-soft:#edf4ef}
+.workspace-settings{--workspace-tone:#175c52;--workspace-soft:#edf4ef}
+.workspace-stage{--workspace-tone:#2c527a;--workspace-soft:#edf2f8}
+.workspace-guide{--workspace-tone:#175c52;--workspace-soft:#edf4ef}
 .workspace:has(.workspace-page){width:100%;max-width:var(--content-width);margin-inline:auto;grid-template-columns:minmax(0,1fr)}
 .main:has(.workspace-page){width:100%;max-width:none;margin-inline:auto;padding-inline:var(--content-gutter)}
 .workspace-page{min-width:0;padding-bottom:36px}
@@ -25,16 +25,19 @@
 .workspace-page .workspace-panel{display:flex;flex-direction:column;gap:0}
 .workspace-page .workspace-return{height:auto;min-height:32px;margin:0;padding:0;border:0;border-radius:0;background:transparent;box-shadow:none;color:var(--workspace-tone);font-size:.72rem;text-align:left}
 .workspace-page .workspace-return:hover{background:transparent;text-decoration:underline;text-underline-offset:5px}
-.workspace-settings.workspace-page .workspace-settings-menu{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px;border:0}
-.workspace-settings.workspace-page .settings-menu-item{display:grid;min-height:244px;grid-template-columns:minmax(0,1fr) 168px;grid-template-rows:auto;align-items:center;gap:12px;padding:26px 22px}
-.workspace-settings.workspace-page .settings-menu-item strong{font-size:1.4rem;line-height:1.45}
-.workspace-settings.workspace-page .settings-menu-item small{font-size:.78rem;line-height:1.8}
-.workspace-settings.workspace-page .workspace-setting-enter{font-size:.64rem}
-.workspace-settings.workspace-page .workspace-setting-art{width:168px;align-self:center;margin:0}
-.workspace-settings.workspace-page [data-settings-target="guide"]{grid-column:auto;min-height:244px}
-.workspace-settings.workspace-page .workspace-motion-form{margin-top:24px;padding:23px 26px}
-.workspace-settings.workspace-page .workspace-motion-copy label{font-size:1.18rem}
-.workspace-settings.workspace-page .workspace-motion-copy p{font-size:.73rem}
+.workspace-settings.workspace-page .workspace-settings-menu{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;border:0}
+.workspace-settings.workspace-page .settings-menu-item{display:grid;min-height:148px;grid-template-columns:minmax(0,1fr) 108px;grid-template-rows:auto;align-items:center;gap:12px;padding:18px 18px 18px 22px;transition:transform .18s,box-shadow .18s,border-color .18s}
+.workspace-settings.workspace-page .settings-menu-item:hover{transform:translateY(-2px);border-color:color-mix(in srgb,var(--workspace-tone) 38%,#cfd8cc);box-shadow:0 10px 24px rgba(27,45,36,.08)}
+.workspace-settings.workspace-page .settings-menu-item strong{font-size:1.25rem;line-height:1.4}
+.workspace-settings.workspace-page .settings-menu-item small{font-size:.76rem;line-height:1.65}
+.workspace-settings.workspace-page .workspace-setting-enter{margin-top:10px;font-size:.7rem;color:var(--workspace-tone)}
+.workspace-settings.workspace-page .workspace-setting-art{width:108px;align-self:center;margin:0}
+.workspace-settings.workspace-page [data-settings-target="guide"]{grid-column:auto;min-height:148px}
+.workspace-settings.workspace-page .workspace-motion-form{margin-top:18px;padding:20px 24px}
+.workspace-settings.workspace-page .workspace-motion-copy label{font-size:1.06rem}
+.workspace-settings.workspace-page .workspace-motion-copy p{font-size:.74rem}
+.workspace-stage .stage-save-actions{position:sticky;bottom:14px;z-index:20;margin-top:20px;padding:14px 20px;border:1px solid var(--workspace-line);border-radius:16px;background:rgba(255,254,249,.94);backdrop-filter:blur(10px);box-shadow:0 12px 28px rgba(27,45,36,.1)}
+.backup-setup-guide{border-color:color-mix(in srgb,#175c52 30%,#d5ddd2)!important;background:#edf5f0!important;color:#1e4d43!important}
 .workspace-stage .stage-edit-fields{min-width:0;margin:0;padding:0;border:0}
 .workspace-stage .stage-edit-fields[disabled]{opacity:.72}
 .workspace-stage .field input{width:100%;min-height:46px;height:auto;padding:11px 13px;border:1px solid #bac7b5;border-radius:11px;background:#fffefa;font-size:.78rem}
@@ -106,21 +109,24 @@
 .workspace-page :focus-visible,.workspace-dialog :focus-visible{outline:2px solid #48634b;outline-offset:3px}
 
 /* Account management brings personal security and permitted member tools together. */
-.workspace-users .workspace-account-grid{grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:24px;margin-bottom:34px}
-.workspace-users.workspace-page .workspace-identity-panel{position:relative;isolation:isolate;min-width:0;overflow:hidden;display:flex;flex-direction:column;min-height:355px;padding-right:45%}
+.workspace-users .workspace-account-grid{grid-template-columns:minmax(0,.95fr) minmax(0,1.05fr);align-items:start;gap:22px;margin-bottom:32px}
+.workspace-users.workspace-page .workspace-identity-panel{position:relative;isolation:isolate;min-width:0;overflow:hidden;display:flex;flex-direction:column;min-height:0;padding:24px 172px 24px 25px}
 .workspace-users .workspace-identity-panel h2{overflow-wrap:anywhere}
-.workspace-identity-details{display:grid;gap:15px;margin:20px 0 22px;font-family:"Noto Sans SC","Microsoft YaHei",sans-serif}
+.workspace-identity-details{display:grid;gap:14px;margin:18px 0 20px;font-family:"Noto Sans SC","Microsoft YaHei",sans-serif}
 .workspace-identity-details>div{display:grid;gap:4px;min-width:0}
-.workspace-identity-details dt{color:var(--workspace-muted);font-size:.65rem;line-height:1.6}
-.workspace-identity-details dd{margin:0;color:var(--workspace-ink);font-size:.82rem;font-weight:650;line-height:1.7;overflow-wrap:anywhere}
-.workspace-users .workspace-identity-art{position:absolute;z-index:-1;right:5px;top:46px;width:45%;max-width:225px}
-.workspace-users .workspace-signout-panel{margin-top:auto}
-.workspace-users .workspace-signout-panel .workspace-panel-description{font-size:.66rem}
+.workspace-identity-details dt{color:var(--workspace-muted);font-size:.7rem;line-height:1.6}
+.workspace-identity-details dd{margin:0;color:var(--workspace-ink);font-size:.84rem;font-weight:650;line-height:1.65;overflow-wrap:anywhere}
+.workspace-users .workspace-identity-art{position:absolute;z-index:-1;right:14px;top:22px;width:144px;max-width:144px;opacity:.92}
+.workspace-users .workspace-signout-panel{margin-top:16px;padding-top:16px;border-top:1px solid var(--workspace-line)}
+.workspace-users .workspace-signout-panel .workspace-panel-description{font-size:.72rem;margin-bottom:12px}
 .workspace-users .workspace-password-panel fieldset{margin:0;padding:0;border:0;min-width:0}
-.workspace-users .workspace-password-panel .field{margin-bottom:20px}
-.workspace-users .workspace-password-panel .field label{font-size:.72rem;color:var(--workspace-ink)}
-.workspace-users .workspace-password-panel .field input{width:100%;min-height:46px;background:#fffefa;border:1px solid #b9c9b7;border-radius:11px;padding:11px 13px;font-size:.8rem}
-.workspace-users .workspace-password-panel button{margin-top:2px}
+.workspace-users .workspace-password-panel .field{margin-bottom:16px}
+.workspace-users .workspace-password-panel .field label{font-size:.74rem;color:var(--workspace-ink)}
+.password-input-wrap{position:relative;display:block;width:100%}
+.workspace-users .workspace-password-panel .field input{width:100%;min-height:46px;background:#fffefa;border:1px solid #b9c9b7;border-radius:11px;padding:11px 58px 11px 13px;font-size:.8rem}
+.password-toggle-btn{position:absolute;right:8px;top:50%;transform:translateY(-50%);min-height:30px;padding:4px 9px;border:0;border-radius:7px;background:transparent;color:var(--workspace-tone);font:600 .7rem/1.2 "Noto Sans SC","Microsoft YaHei",sans-serif}
+.password-toggle-btn:hover{background:color-mix(in srgb,var(--workspace-tone) 8%,transparent)}
+.workspace-users .workspace-password-panel button[type="submit"]{margin-top:4px}
 .workspace-users .workspace-members{padding-top:27px;border-top:1px solid var(--workspace-line)}
 .workspace-users .workspace-members-head{display:flex;align-items:center;justify-content:space-between;gap:22px;margin:0 4px 21px}
 .workspace-users .workspace-members-head h2{margin:0;color:var(--workspace-ink);font:900 1.65rem/1.4 "SimSun","宋体","Noto Serif SC",serif;letter-spacing:.03em}
@@ -128,14 +134,14 @@
 .workspace-users #users-content[aria-busy="true"]{opacity:.7}
 @media(max-width:820px){
  .workspace-users .workspace-account-grid{grid-template-columns:minmax(0,1fr);gap:18px}
- .workspace-users.workspace-page .workspace-identity-panel{min-height:290px;padding-right:47%}
- .workspace-users .workspace-identity-art{width:210px;max-width:43%;top:28px;right:13px}
+ .workspace-users.workspace-page .workspace-identity-panel{min-height:0;padding:22px 156px 22px 22px}
+ .workspace-users .workspace-identity-art{width:136px;max-width:136px;top:20px;right:12px}
  .workspace-users .workspace-members-head{align-items:flex-start;flex-wrap:wrap;margin-inline:0;gap:15px}
 }
-@media(max-width:390px){
- .workspace-users.workspace-page .workspace-identity-panel{padding-right:18px}
- .workspace-users .workspace-identity-details{padding-right:38%}
- .workspace-users .workspace-identity-art{width:125px;right:5px;top:70px}
+@media(max-width:480px){
+ .workspace-users.workspace-page .workspace-identity-panel{padding:20px 18px}
+ .workspace-users .workspace-identity-details{padding-right:108px}
+ .workspace-users .workspace-identity-art{width:96px;max-width:96px;right:10px;top:46px}
  .workspace-users .workspace-signout-panel{max-width:100%}
 }
 
@@ -317,10 +323,10 @@ body.reduce-motion .workspace-page *,body.reduce-motion .workspace-dialog *{anim
 
 /* Operation dialogs keep their existing forms, confirmations and handlers. */
 .sd-dialog.modal:has(form:is(#backup-pass-form,#restore-password-form,#site-export-form,#site-inspect-form,#site-restore-form,#target-form,#delete-user-form,#user-form)){
-  --workspace-tone:#5d467c;--workspace-soft:#f2edf6;--workspace-ink:#28392f;--workspace-muted:#5c695f;--workspace-line:#d9dfd2;
+  --workspace-tone:#175c52;--workspace-soft:#edf4ef;--workspace-ink:#24372f;--workspace-muted:#57675d;--workspace-line:#d9dfd2;
   padding:25px 28px;border:1px solid #d4ddca;border-radius:24px;background:linear-gradient(145deg,#fffef9 45%,var(--workspace-soft));color:var(--workspace-ink);font-family:"Noto Sans SC","Microsoft YaHei",sans-serif;box-shadow:0 25px 70px #162b2633;
 }
-.sd-dialog.modal:has(form:is(#delete-user-form,#user-form)){--workspace-tone:#15584e;--workspace-soft:#edf4ed}
+.sd-dialog.modal:has(form:is(#delete-user-form,#user-form)){--workspace-tone:#175c52;--workspace-soft:#edf4ef}
 .sd-dialog.modal:has(form:is(#backup-pass-form,#restore-password-form,#site-export-form,#site-inspect-form,#site-restore-form,#target-form,#delete-user-form,#user-form)) .modal-head{gap:18px;margin-bottom:21px;padding-bottom:18px;border-bottom:1px solid var(--workspace-line)}
 .sd-dialog.modal:has(form:is(#backup-pass-form,#restore-password-form,#site-export-form,#site-inspect-form,#site-restore-form,#target-form,#delete-user-form,#user-form)) .modal-head h2{margin:0;color:var(--workspace-ink);font:900 clamp(1.45rem,3vw,1.8rem)/1.45 "SimSun","宋体","Noto Serif SC",serif;letter-spacing:.025em;overflow-wrap:anywhere}
 .sd-dialog.modal:has(form:is(#backup-pass-form,#restore-password-form,#site-export-form,#site-inspect-form,#site-restore-form,#target-form,#delete-user-form,#user-form)) .modal-head p{margin:10px 0 0;color:var(--workspace-muted);font-size:.72rem;line-height:1.85;overflow-wrap:anywhere}

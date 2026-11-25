@@ -6,12 +6,12 @@
 .sd-dialog.modal{position:fixed;z-index:100;left:50%;top:50%;transform:translate(-50%,-50%);display:block;max-width:calc(100vw - 32px);width:min(620px,calc(100vw - 32px));max-height:88dvh;overflow:auto;outline:none;gap:0}
 .sd-dialog.modal.wide{width:min(900px,calc(100vw - 32px))}
 .sd-menu[data-slot="dropdown-menu-content"]{z-index:110;position:relative;min-width:220px;max-width:min(360px,calc(100vw - 24px));padding:8px;border:1px solid var(--line);border-radius:15px;background:var(--sheet);box-shadow:0 18px 40px #231c1426;font:inherit}
-.sd-menu .header-menu-item{display:flex;position:relative;min-height:44px;width:100%;white-space:normal;border:0;border-radius:9px;padding:9px 12px;background:transparent;cursor:pointer;font:inherit;font-size:.76rem;color:var(--ink);outline-offset:-2px}
-.sd-menu .header-menu-item:is(:hover,[data-highlighted],:focus){background:transparent;border-color:transparent;box-shadow:none;transform:none;color:var(--ink);text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:5px}
-.sd-menu .header-menu-item:is(.active,[aria-current="page"]){background:transparent;border-color:transparent;box-shadow:none;transform:none;color:var(--ink);font-weight:750;text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:5px}
+.sd-menu .header-menu-item{display:flex;position:relative;min-height:42px;width:100%;white-space:normal;border:0;border-radius:10px;padding:9px 12px;background:transparent;cursor:pointer;font:inherit;font-size:.78rem;color:var(--ink);outline-offset:-2px;transition:background .16s,color .16s}
+.sd-menu .header-menu-item:is(:hover,[data-highlighted],:focus){background:color-mix(in srgb,var(--primary) 7%,transparent);border-color:transparent;box-shadow:none;transform:none;color:var(--primary);text-decoration:none}
+.sd-menu .header-menu-item:is(.active,[aria-current="page"]){background:color-mix(in srgb,var(--primary) 10%,transparent);border-color:transparent;box-shadow:none;transform:none;color:var(--primary);font-weight:750;text-decoration:none}
 .sd-menu .header-menu-item:focus-visible{outline:2px solid var(--ink-2);outline-offset:-2px}
 .sd-menu .header-menu-item:focus-visible,.shendu-header [data-slot="dropdown-menu-trigger"]:focus-visible{outline-color:var(--ink-2)}
-.sd-menu .header-menu-caption{display:block;padding:8px 12px;font-size:.62rem;color:var(--ink-2)}
+.sd-menu .header-menu-caption{display:block;padding:8px 12px;font-size:.69rem;font-weight:650;letter-spacing:.06em;color:var(--ink-2)}
 .sd-menu-mobile .header-menu-item{font-size:.85rem}
 /* Mobile rows own their layout; desktop header-link centering must not leak in. */
 @media(max-width:960px){
@@ -47,9 +47,14 @@
 .sd-verification-calendar .rdp-day button[data-selected-single="true"]{background:var(--daily-accent);color:white;border-color:var(--daily-accent)}
 .sd-verification-calendar .rdp-caption_label{color:var(--daily-ink,var(--ink))}
 .sd-verification-calendar .rdp-nav{z-index:1}
-.sd-verification-calendar .daily-calendar-foot button{height:auto;min-height:30px;padding:4px 9px;white-space:nowrap;font-size:.65rem}
-.sd-surface [data-sonner-toast].sd-toast{font-family:inherit;background:var(--sheet);color:var(--ink);border-color:var(--line);border-radius:15px;font-size:.78rem}
+.sd-verification-calendar .daily-calendar-presets{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;padding-top:10px;border-top:1px dashed var(--line)}
+.sd-verification-calendar .daily-calendar-preset{height:auto;min-height:30px;padding:4px 11px;border:1px solid var(--line);border-radius:99px;background:var(--daily-white,#fffdf8);color:var(--daily-ink,var(--ink));font-size:.72rem;font-weight:600;transition:background .15s,border-color .15s,color .15s}
+.sd-verification-calendar .daily-calendar-preset:hover:not(:disabled){border-color:var(--daily-accent,var(--primary));background:color-mix(in srgb,var(--daily-accent,var(--primary)) 9%,var(--daily-white,#fffdf8))}
+.sd-verification-calendar .daily-calendar-preset[data-active="true"]{border-color:var(--daily-accent,var(--primary));background:var(--daily-accent,var(--primary));color:#fff}
+.sd-verification-calendar .daily-calendar-foot button{height:auto;min-height:30px;padding:4px 10px;white-space:nowrap;font-size:.72rem}
+.sd-surface [data-sonner-toast].sd-toast{font-family:inherit;background:#fffdf8;color:#21342c;border:1px solid #d5ddd2;border-radius:14px;font-size:.8rem;box-shadow:0 12px 30px rgba(24,42,34,.14)}
 [data-sonner-toaster]{z-index:150!important}
+[data-sonner-toaster][data-y-position="top"]{top:72px!important}
 @media(max-width:620px){.sd-calendar .rdp-month_grid{border-spacing:2px 3px}.sd-calendar .rdp-day button{width:30px;height:30px}.sd-calendar .rdp-day{height:32px}}
 
 .sd-mobile-menu-host{display:contents}

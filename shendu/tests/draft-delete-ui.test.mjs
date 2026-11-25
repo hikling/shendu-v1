@@ -149,5 +149,43 @@ test('ordinary workspace page headings remain title-first',()=>{
   f.state.records=[];f.renderActions();assert.equal($('.history-hero-copy').firstElementChild,$('#actions-title'));assert.equal($('.history-kicker,.actions-section-kicker'),null);
   for(const route of ['backup','users','settings','calendar','stage','guide']){ui.renderMarkup($('#app'),f.spacePageHead(route,{title:'实际标题',description:'有意义的功能说明'}));assert.equal($(`#workspace-${route}-title`).parentElement.firstElementChild,$(`#workspace-${route}-title`));assert.equal($('.workspace-kicker'),null)}
 });
+
+test('history live search and status tabs filter in-place while preserving search input node and historyFilter shape',()=>{
+  const records=[record('daily','draft',{title:'早起复盘'}),record('weekly','completed',{title:'周度总结'}),record('monthly','verified',{title:'月度复盘'})],f=fixture({records});
+  f.renderHistory();
+  const search=$('#history-search');
+  search.value='周度';search.dispatchEvent(new win.Event('input',{bubbles:true}));
+  assert.equal($('#history-search'),search,'live search updates grid in-place without rebuilding input');
+  assert.equal($('.archive-section-count strong').textContent,'1');
+  assert.equal($('#history-search-clear').hidden,false);
+  assert.ok($('#history-reset'));
+  $('#history-search-clear').click();
+  assert.equal($('#history-search'),search);
+  assert.equal($('.archive-section-count strong').textContent,'3');
+  assert.equal($('#history-reset'),null);
+  $('[data-history-status="verified"]').click();
+  assert.equal($('.archive-section-count strong').textContent,'1');
+  assert.deepEqual({...f.state.historyFilter},{q:'',type:'all',year:'all',month:'all'});
+});
+
+test('review step rail, gauge presets, and in-place answer item add/remove work without full-page rebuild',()=>{
+  const f=fixture();f.openReview();
+  f.go('sleep');
+  assert.ok($('[data-review-steps] [data-step-jump]'));
+  const sleepInput=$('[data-gauge-input]');
+  $('[data-gauge-preset="8"]').click();
+  assert.equal(sleepInput.value,'8');
+  $('[data-gauge-delta="0.5"]').click();
+  assert.equal(sleepInput.value,'8.5');
+  f.go('today');
+  const editor=$('#daily-editor');
+  $('[data-add-item="today"]').click();
+  assert.equal($('#daily-editor'),editor,'adding an answer item updates only the question container in-place');
+  assert.equal($$('[data-answer="today"]').length,2);
+  $('[data-remove-item="today"][data-index="1"]').click();
+  assert.equal($('#daily-editor'),editor);
+  assert.equal($$('[data-answer="today"]').length,1);
+});
+
 test.afterEach(()=>{ui.dismissDialog($('#modal-root'));ui.disposeUi($('#app'));$('#app').replaceChildren()});
 test.after(()=>dom.window.close());

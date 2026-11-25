@@ -69,8 +69,10 @@
 .legacy-dialog .modal-actions{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;margin-top:20px;padding-top:18px;border-top:1px solid var(--legacy-line)}
 .legacy-dialog .btn-ghost{background:#fffefa;border-color:#cbd7c2;color:#465849}
 .legacy-dialog .btn-ghost:hover{background:#fffefa;text-decoration:underline;text-underline-offset:4px}
-.legacy-dialog .btn:is(.btn-red,.btn-danger){background:#fff2eb;border-color:#d4b3a6;color:#963b2d}
-.legacy-dialog .btn:is(.btn-red,.btn-danger):hover{background:#fff2eb;border-color:#b27561;text-decoration:underline;text-underline-offset:4px}
+.legacy-dialog .btn.btn-red{background:linear-gradient(135deg,#b5382f,#8e231c);border-color:#8e231c;color:#fff;box-shadow:0 6px 14px rgba(142,35,28,.22)}
+.legacy-dialog .btn.btn-red:hover{background:linear-gradient(135deg,#a32e25,#7c1d17);border-color:#7c1d17;text-decoration:none}
+.legacy-dialog .btn.btn-danger{background:#fff2eb;border-color:#d4b3a6;color:#963b2d}
+.legacy-dialog .btn.btn-danger:hover{background:#ffe8dd;border-color:#b27561;text-decoration:none}
 .legacy-dialog .field input[readonly]{background:#f1f4ea;color:#596956;border-color:#d5ddcb}
 .legacy-reauth .modal-head{padding-right:0}
 .legacy-reauth #reauth-form>.field:first-child{margin-bottom:17px}

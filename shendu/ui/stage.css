@@ -6,13 +6,13 @@
 .calendar-context{display:grid;grid-template-rows:auto minmax(min-content,1fr);gap:20px;min-width:0;min-height:0;align-self:stretch}
 .workspace-calendar .calendar-paper{padding:24px 30px 20px}
 .workspace-calendar .calendar-paper-heading{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:8px 14px;margin-bottom:18px}
-.workspace-calendar .calendar-paper-heading .calendar-paper-note{grid-column:1;grid-row:2;margin:0;color:#68736b;font:500 .59rem/1.7 "Microsoft YaHei",sans-serif;text-align:left}
+.workspace-calendar .calendar-paper-heading .calendar-paper-note{grid-column:1;grid-row:2;margin:0;color:#627067;font:500 .7rem/1.6 "Microsoft YaHei",sans-serif;text-align:left}
 .workspace-calendar .calendar-paper-heading>h2{grid-column:1;grid-row:1;margin:0}
 .workspace-calendar .calendar-paper-heading .stage-calendar-legend{grid-column:2;grid-row:1 / span 2;align-self:center}
 .stage-panel{min-width:0}
 .workspace-calendar .stage-panel-current{display:flex;flex-direction:column;min-height:0}
-.workspace-page.workspace-calendar .stage-panel-current{padding-block:18px}
-.workspace-calendar .stage-panel-pending{display:flex;flex-direction:column;padding:22px 26px 14px;min-height:320px}
+.workspace-page.workspace-calendar .stage-panel-current{padding-block:20px}
+.workspace-calendar .stage-panel-pending{display:flex;flex-direction:column;padding:22px 26px 16px;min-height:0;flex:1}
 .workspace-calendar .stage-pending-header h2{font-size:1.05rem}
 .workspace-calendar .stage-current-progress{margin-top:16px}
 .workspace-calendar .stage-panel-current>h2{margin:8px 0 5px;font-size:1.6rem}
@@ -47,26 +47,27 @@
 .stage-calendar.sd-calendar .rdp-disabled{opacity:1}
 .stage-calendar.sd-calendar .stage-calendar-cell .stage-day:disabled{opacity:1;color:#687267;background:transparent;cursor:default}
 .stage-calendar .stage-day-number{font:500 1rem/1.1 "Microsoft YaHei",sans-serif;opacity:1!important}
-.stage-calendar .stage-day-lunar{max-width:100%;font:400 .56rem/1.25 "Microsoft YaHei",sans-serif;white-space:nowrap;color:#6b7567;opacity:1!important;letter-spacing:.015em}
+.stage-calendar .stage-day-lunar{max-width:100%;font:400 .66rem/1.25 "Microsoft YaHei",sans-serif;white-space:nowrap;color:#667264;opacity:1!important;letter-spacing:.01em}
 .stage-calendar .stage-day-term .stage-day-lunar{color:#936032;font-weight:650}
-.stage-calendar .stage-day-mark{position:absolute;right:5px;top:5px;display:block;width:7px;height:7px;font:800 7px/7px "Microsoft YaHei",sans-serif;text-align:center;opacity:1!important}
+.stage-calendar .stage-day-mark{position:absolute;right:5px;top:5px;display:block;width:8px;height:8px;font:800 8px/8px "Microsoft YaHei",sans-serif;text-align:center;opacity:1!important}
 .stage-calendar.sd-calendar .stage-calendar-cell .stage-day-draft{background:#f6ebd5;color:#805c25;border-color:#e7d6b1}
 .stage-calendar.sd-calendar .stage-calendar-cell .stage-day-completed{background:#e3eee4;color:#28513c;border-color:#c5d8c8}
-.stage-calendar.sd-calendar .stage-calendar-cell .stage-day-verified{background:#2e5745;color:#fff;border-color:#2e5745}
-.stage-calendar .stage-day-verified .stage-day-lunar{color:#f1f4e9}
+.stage-calendar.sd-calendar .stage-calendar-cell .stage-day-verified{background:#175c52;color:#fff;border-color:#175c52}
+.stage-calendar .stage-day-verified .stage-day-lunar{color:#eaf3ef}
 .stage-calendar .stage-day-draft .stage-day-lunar{color:#77592d}
-.stage-calendar .stage-day-completed .stage-day-lunar{color:#42624d}
+.stage-calendar .stage-day-completed .stage-day-lunar{color:#3c5e49}
 .stage-calendar.sd-calendar .stage-calendar-cell .stage-day-today{outline:1.5px solid #ad513c;outline-offset:0;font-weight:750}
-.stage-calendar.sd-calendar .stage-calendar-cell .stage-day:not(:disabled):hover{outline:1px solid #6b7f6c;outline-offset:0;transform:none;box-shadow:none}
+.stage-calendar.sd-calendar .stage-calendar-cell .stage-day:not(:disabled):hover{background:color-mix(in srgb,#175c52 8%,transparent);outline:1px solid #4c7a6b;outline-offset:0;transform:none;box-shadow:none}
+.stage-calendar.sd-calendar .stage-calendar-cell .stage-day-verified:not(:disabled):hover{background:#124941;outline-color:#124941}
 .stage-calendar.sd-calendar .stage-calendar-cell .stage-day:focus-visible{outline:2px solid #1c4432;outline-offset:1px}
-.stage-calendar .stage-calendar-foot{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:10px;min-height:30px}
-.stage-calendar .stage-calendar-foot>p{margin:0;color:#68736b;font:500 .62rem/1.5 "Microsoft YaHei",sans-serif}
-.stage-calendar .stage-calendar-foot strong{margin:0 3px;color:#354f42;font-weight:800}
-.stage-calendar .stage-return-month{height:auto;min-height:30px;padding:0;border:0;border-radius:0;background:transparent;box-shadow:none;color:#6a6254;font:550 .61rem/1.4 "Microsoft YaHei",sans-serif;gap:6px}
-.stage-calendar .stage-return-month:disabled{opacity:.45;cursor:default}
-.stage-calendar .stage-return-month:not(:disabled):hover{background:transparent;color:#9c4936;text-decoration:underline;text-underline-offset:4px}
+.stage-calendar .stage-calendar-foot{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:12px;min-height:32px}
+.stage-calendar .stage-calendar-foot>p{margin:0;color:#5e6c63;font:500 .72rem/1.5 "Microsoft YaHei",sans-serif}
+.stage-calendar .stage-calendar-foot strong{margin:0 3px;color:#213d32;font-weight:800}
+.stage-calendar .stage-return-month{height:auto;min-height:32px;padding:4px 10px;border:1px solid #d6ddd1;border-radius:99px;background:#fffdf8;box-shadow:none;color:#3d5549;font:600 .7rem/1.4 "Microsoft YaHei",sans-serif;gap:5px}
+.stage-calendar .stage-return-month:disabled{opacity:.42;cursor:default}
+.stage-calendar .stage-return-month:not(:disabled):hover{background:#eef4ef;border-color:#175c52;color:#175c52;text-decoration:none}
 .stage-calendar .stage-return-month:focus-visible{outline:2px solid #354e42;outline-offset:2px}
-.stage-calendar-legend{display:flex;align-items:center;justify-content:flex-end;flex-wrap:wrap;gap:12px;margin:0;color:#68736b;font:500 .59rem/1.4 "Microsoft YaHei",sans-serif}
+.stage-calendar-legend{display:flex;align-items:center;justify-content:flex-end;flex-wrap:wrap;gap:12px;margin:0;color:#5e6c63;font:500 .69rem/1.4 "Microsoft YaHei",sans-serif}
 .stage-calendar-legend>span{display:inline-flex;align-items:center;gap:5px;white-space:nowrap}
 .stage-calendar-legend i{display:inline-grid;place-items:center;width:13px;height:13px;border-radius:50%;font:700 6px/1 "Microsoft YaHei",sans-serif;font-style:normal}
 .stage-calendar-legend .stage-legend-today{width:11px;height:11px;margin:1px;border:1px solid #ad513c;background:transparent}
