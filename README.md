@@ -107,11 +107,11 @@ sh /opt/shendu-v1/update.sh
 
 Releases 保留按发布时间最新的四个完整版本。更早下载包不再提供，Git 标签和源码保留；需要长期回退某版时，请提前另存镜像与校验文件，并单独备份数据库、原主密钥和配置。已在本机加载的对应镜像仍可复用；从更早源码部署需明确选择源码构建，操作前先阅读迁移与回退说明。
 
-最终版完成构建、双架构容器及公开下载检查后，`.agents/skills`、`.codex`、`.github/workflows` 和 `.trellis` 只在维护者本地保留，不再跟踪到 GitHub；应用运行不依赖这些目录。公开仓库不再自动构建后续推送，现有安装／更新仍使用与应用目录版本对应的已验证 Release。以后若更改 `shendu/`，须另行构建并发布对应镜像，或明确选择源码构建。
+`.agents/skills`、`.codex` 和 `.trellis` 只在维护者本地保留，不再跟踪到 GitHub；应用运行不依赖这些目录。`.github/workflows/verify.yml` 已在公开仓库启用：向 `main` 分支推送代码时会自动完成双架构（`linux/amd64`、`linux/arm64`）测试、镜像构建与公开下载验证，并发布对应 `deploy-<应用目录版本>` 的 GitHub Release（同时仍支持显式源码构建部署）。
 
 [安全、备份与部署检查记录](docs/security-audit.md)
 
-本次最终版已通过双架构构建、安装更新、容器和下载验证：[检查结果](https://github.com/hikling/shendu-v1/actions/runs/44228462928) · [对应发布包](https://github.com/hikling/shendu-v1/releases/tag/deploy-78926ee6983e4205bb40417bd1baba0b19ee3910)。上方更新命令会按当前应用源码自动选择对应镜像。
+构建状态与最新双架构发布包见 [GitHub Actions](https://github.com/hikling/shendu-v1/actions) · [Releases](https://github.com/hikling/shendu-v1/releases)。上方安装与更新命令会按当前应用源码自动选择对应镜像。
 
 ## 开发与检查
 

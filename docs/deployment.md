@@ -100,7 +100,7 @@ docker compose ps
 
 默认部署耗时主要是首次 Docker/Caddy/应用镜像下载与启动；网络慢仍可能等待，但不再受服务器编译能力限制。最终版的准确镜像由 [Releases](https://github.com/hikling/shendu-v1/releases) 提供，不要换成与源码不一致的版本。
 
-最终版发布验证完成后，自动工作流配置仅保留在维护者本地，公开仓库后续推送不再自动构建。已验证镜像仍按 `deploy-<应用tree>` 下载；README或本地工具目录整理不会改变应用tree。未来修改 `shendu/` 后，需要维护者另行发布对应镜像，或明确选择下述源码构建方式。
+仓库中的 `.github/workflows/verify.yml` 会在向 `main` 推送或手动触发时自动完成双架构（`linux/amd64`、`linux/arm64`）测试、构建和公开下载验证，并发布对应 `deploy-<应用tree>` Release；仅 README、文档等应用目录外的改动会保持原应用 tree，复用既有镜像。需要自行构建时仍可使用下述源码路径。
 
 需要自行编译时可明确执行 `SHENDU_BUILD_FROM_SOURCE=1 sh scripts/prepare-image.sh`，再 `docker compose up -d`；这是可选的源码路径。基于源码的 Docker 构建仍需联网和足够内存，耗时不会由预构建路径保证。
 
