@@ -39,7 +39,7 @@ test('members see their own security fields without any admin request, and heade
   const current=$('#account-current-password'),next=$('#account-new-password');
   assert.equal(current.required,true);assert.equal(current.autocomplete,'current-password');
   assert.equal(next.required,true);assert.equal(next.minLength,15);assert.equal(next.maxLength,128);assert.equal(next.autocomplete,'new-password');
-  const topbar=new Function('state','currentActionTemplate','headerLink','headerBrandContent','navIcon','esc',`${owner('topbar')}\nreturn topbar;`)({...f.state,stats:{}},()=>({pageTitle:'行动验证'}),()=>'',()=>'',()=>'',escape);
+  const topbar=new Function('state','currentActionTemplate','headerLink','headerBrandContent','navIcon','esc',`${owner('pendingBadge')}\n${owner('topbar')}\nreturn topbar;`)({...f.state,stats:{}},()=>({pageTitle:'行动验证'}),()=>'',()=>'',()=>'',escape);
   const template=document.createElement('template');template.innerHTML=topbar();
   assert.equal(template.content.querySelectorAll('[data-nav="users"]').length,2,'one desktop and one mobile destination');
   assert.equal(template.content.querySelector('[data-modal="account"]'),null);

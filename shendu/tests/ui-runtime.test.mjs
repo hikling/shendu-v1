@@ -140,6 +140,20 @@ test('status, stage progress, table and loading feedback use semantic shadcn com
   assert.equal(region.querySelector('td button').dataset.slot, 'button');
 });
 
+test('finance capsules and a refreshed action count use Badge while retaining the navigation control', () => {
+  renderMarkup(region, '<button id="actions" type="button">行动验证<span data-header-action-count></span></button><div class="finance-entry-heading"><span class="finance-entry-tag kind-expense">支出</span><span class="finance-entry-tag finance-entry-tag-category">餐饮</span></div>');
+  const action = region.querySelector('#actions');
+  const count = action.querySelector('[data-header-action-count]');
+  assert.deepEqual([...region.querySelectorAll('.finance-entry-tag')].map(node => node.dataset.slot), ['badge', 'badge']);
+  renderMarkup(count, '<span class="header-count">2</span>');
+  assert.equal(count.querySelector('[data-slot="badge"]').textContent, '2');
+  renderMarkup(count, '<span class="header-count">1</span>');
+  assert.equal(count.querySelector('[data-slot="badge"]').textContent, '1');
+  renderMarkup(count, '');
+  assert.equal(count.childElementCount, 0);
+  assert.equal(region.querySelector('#actions'), action);
+});
+
 test('external surface update cleans enhanced raw children then recreates unchanged markup safely', () => {
   disposeUi(region); region.replaceChildren();
   const html = '<label>问题<textarea name="answer">初始内容</textarea></label>';

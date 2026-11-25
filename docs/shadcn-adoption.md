@@ -31,6 +31,8 @@
 
 复杂交互在 `ui/surfaces.jsx` 中显式组合。Dialog、DropdownMenu、RadioGroup 和 DayPicker 各自负责键盘与焦点行为，原有重复处理已移除。组件控件仍使用原始 ID、name 和 data 属性；没有数据模型迁移。
 
+财务明细及凭证预览中的收支类型和分类标签、顶部待验证数量均使用 Badge。更新待验证数量时只重挂角标，继续保留导航按钮和当前编辑器。
+
 应用、功能确认框、通知分别挂在 body 下的 `#app`、`#modal-root`、`#toast-root`；兼容 `#rail-root` 不再挂载页面。`syncOverlayBackground()` 只在实际功能 Dialog 存在时管理应用 inert。新一轮弹框替换空挂载容器，避免旧 Radix 隐藏快照；不手动修改 aria-hidden 或增加 Tab 陷阱。完整登录重置清理功能弹框；持久重认证保留编辑内容。
 
 Sonner 在初始化业务界面前挂载，使其既有 polite live region 在首个弹框及嵌套弹框中保持可用。编辑器日期、保存等状态有局部播报，不为整个应用添加 aria-live。Calendar 使用中文、固定六周和原 YYYY-MM-DD 字段；浏览月份不改值，显式选择才派发一次输入事件，锁定历史保留原月并禁止导航。

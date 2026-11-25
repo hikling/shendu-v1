@@ -199,10 +199,14 @@ function createWorkspace(container,options,daily){
     }
     dayPicker?.setDisabled?.(pending);return loadDailyChart();
   }
+  function resetPagination(){
+    cursor=null;
+    const more=$('[data-finance-more]',container);if(more)more.hidden=true;
+  }
   async function load(append=false){
-    if(!alive())return;const owner={};loadOwner=owner;const current=()=>alive()&&loadOwner===owner;
-    if(!append){cursor=null;const more=$('[data-finance-more]',container);if(more)more.hidden=true;}
-    const params=query();if(append&&cursor)params.set('cursor',cursor);status(append?'正在读取更早的账目…':'正在整理账目…');
+    if(!alive()||(append&&!cursor))return;const owner={};loadOwner=owner;const current=()=>alive()&&loadOwner===owner;
+    if(!append){clearTimeout(searchTimer);resetPagination()}
+    const params=query();if(append)params.set('cursor',cursor);status(append?'正在读取更早的账目…':'正在整理账目…');
     try{const byDay=!daily&&filters.range==='day';const [result,monthly]=await Promise.all([request(`/api/finance?${params}`,{},current),byDay?request(`/api/finance?month=${encodeURIComponent(filters.month)}`,{},current):Promise.resolve(null)]);if(!current())return;data=monthly||result;categories=result.categories||categories;entries=append?[...entries,...(result.entries||[])]:result.entries||[];cursor=result.nextCursor||null;renderSummary();renderEntries();syncDailyChart();
       if(!noFormLoss()){const host=$('[data-finance-form]',container);mountQuickEntry(host)}else updateCategories();refreshQuick?.();
       status(daily?'确认入账后，账目已保存；复盘仍可保留为草稿。':`明细显示 ${byDay?filters.date:filters.month+' 整月'}；上方总计与月度饼图仍按整月计算。`);
@@ -282,7 +286,16 @@ function createWorkspace(container,options,daily){
       $('[data-match-unused-copy]',form).textContent=`截图 ${unused.map(receipt=>receipt.index+1).join('、')} 未关联本次账目，我确认暂不用于入账。`;
       return unused;
     };
-    form.addEventListener('change',event=>{if(live()&&!pending&&event.target.name.startsWith('match-')){const row=rows[Number(event.target.name.slice(6))];if(row&&!row.attemptedBody)row.matchReason='manual';form.elements['acknowledge-unused'].checked=false;update()}});
+    form.addEventListener('change',event=>{
+      if(!live()||pending||!event.target.name?.startsWith('match-'))return;
+      const row=rows[Number(event.target.name.slice(6))];if(row&&!row.attemptedBody)row.matchReason='manual';
+      const acknowledgment=form.elements['acknowledge-unused'];
+      if(acknowledgment.checked){
+        acknowledgment.checked=false;
+        acknowledgment.dispatchEvent(new Event('change',{bubbles:true}));
+      }
+      update();
+    });
     const previewOwners=new Map();
     form.addEventListener('click',async event=>{
       const button=event.target.closest('[data-match-preview]');if(!button||!live()||pending)return;const receiptId=button.dataset.matchPreview,host=$(`[data-match-image="${receiptId}"]`,form),owner={};previewOwners.set(receiptId,owner);
@@ -402,7 +415,13 @@ function createWorkspace(container,options,daily){
       $('[data-finance-day-retry]',container)?.addEventListener('click',()=>{if(alive()&&!pending)loadDailyChart()});
     }
     const filterForm=$('[data-finance-filters]',container);let composingSearch=false;
-    const applySearch=()=>{if(!filterForm||pending)return;filters.q=filterForm.elements.q.value;$('[data-finance-clear-search]',filterForm).hidden=!filters.q;clearTimeout(searchTimer);searchTimer=setTimeout(()=>load(),220)};
+    const applySearch=()=>{
+      if(!filterForm||pending)return;
+      const value=filterForm.elements.q.value;
+      $('[data-finance-clear-search]',filterForm).hidden=!value;
+      filters.q=value;loadOwner=null;resetPagination();
+      clearTimeout(searchTimer);searchTimer=setTimeout(()=>load(),220);
+    };
     filterForm?.addEventListener('submit',event=>{event.preventDefault();if(pending||composingSearch||event.isComposing)return;clearTimeout(searchTimer);filters.q=filterForm.elements.q.value;load()});
     filterForm?.addEventListener('change',event=>{if(pending)return;const values=new FormData(filterForm);filters.kind=String(values.get('kind')||'');filters.deleted=values.get('deleted')==='on';filters.range=values.get('range')==='day'?'day':'month';$('[data-finance-ledger-date-row]',container).hidden=filters.range!=='day';if(event.target.name!=='q')load()});
     filterForm?.addEventListener('compositionstart',event=>{if(event.target.name==='q'){composingSearch=true;clearTimeout(searchTimer)}});

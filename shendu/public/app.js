@@ -1,7 +1,7 @@
 import {backupScheduleLabel} from './backup-schedule.js?v=1.0.0-backups1';
 import {normalizeReviewMetricIds,reconcileReviewMetrics} from './review-metrics.js?v=1.0.0-custom1';
 import {reviewQuestions,reviewDisabledFields} from './review-schema.js?v=1.0.0-finance1';
-import {renderMarkup,disposeUi,prepareDialogContainer,initializeToasts,showDialog,dismissDialog,showMenu,showVerificationCalendar,showStageCalendar,showFinanceMonthPicker,showFinanceDayPicker,showFinancePie,showToast} from './ui/shadcn.js?v=1.0.0-finance17';
+import {renderMarkup,disposeUi,prepareDialogContainer,initializeToasts,showDialog,dismissDialog,showMenu,showVerificationCalendar,showStageCalendar,showFinanceMonthPicker,showFinanceDayPicker,showFinancePie,showToast} from './ui/shadcn.js?v=1.0.0-ui-audit1';
 import {overviewRecordAppearances,overviewVerifiedRecords,overviewRecordExcerpt,overviewLoopMetrics,overviewRecordTitle,overviewDateParts} from './overview-reel.js?v=1.0.0-overview15';
 import {DAILY_STEPS,dailyStepIssues,dailyPrompts,dailyPromptIssues,dailyPromptNeighbor,dailyPromptOwner} from './daily-flow.js?v=1.0.0-finance2';
 import {dailyCalendarModel,dailyCalendarDateLabel} from './daily-calendar.js?v=1.0.0-art1';
@@ -11,7 +11,7 @@ import {createBrowserNavigator} from './browser-navigation.js?v=1.0.0-routes1';
 import {createReviewNavigator} from './review-navigation.js?v=1.0.0-finance1';
 import {attachReviewWheel} from './review-wheel.js?v=1.0.0-wheel1';
 import {createReviewTransition} from './review-transition.js?v=1.0.0-transition1';
-import {mountFinancePage,mountDailyFinance} from './finance-ui.js?v=1.0.0-finance19';
+import {mountFinancePage,mountDailyFinance} from './finance-ui.js?v=1.0.0-ui-audit1';
 import {RECORD_ART,recordArtAssignments} from './record-art.js?v=1.0.0-records1';
 import {createReviewIntroPicker,reviewIntroLines,reviewIntroLayout} from './review-intros.js?v=1.0.0-intros2';
 const $ = (s, root = document) => root.querySelector(s);
@@ -172,6 +172,7 @@ function renderAuth(info={}){
 }
 
 function headerLink(route,label,extra=''){return `<button class="header-link ${state.route===route?'active':''}" type="button" data-nav="${route}" ${state.route===route?'aria-current="page"':''}>${esc(label)}${extra}</button>`}
+function pendingBadge(count){return count>0?`<span class="header-count">${Number(count)}</span>`:''}
 function headerBrandContent(){return '<span class="seal header-seal" aria-hidden="true">慎</span><span class="brand-cn header-wordmark">慎獨</span>'}
 function topbar(){
   const actionLabel=currentActionTemplate().pageTitle;
@@ -182,7 +183,7 @@ function topbar(){
       <nav class="header-nav" aria-label="主导航">
         ${headerLink('overview','概览')}
         ${headerLink('history','历史复盘')}
-        ${headerLink('actions',actionLabel,state.stats.pending?`<span class="header-count">${Number(state.stats.pending)}</span>`:'')}
+        ${headerLink('actions',actionLabel,`<span data-header-action-count>${pendingBadge(state.stats.pending)}</span>`)}
         ${headerLink('finance','财务收支')}
       </nav>
       <div class="header-actions">
@@ -716,8 +717,8 @@ async function completeCurrent(){
       const statsCurrent=()=>state.user===account&&state.current===locked&&statsEditor?.isConnected&&$('#daily-editor')===statsEditor&&statsPage?.isConnected&&root.isConnected&&$('#modal-root')===root&&$('.modal',root)===statsModal;
       void request('/api/stats',{},statsCurrent).then(stats=>{
         if(!statsCurrent())return;state.stats=stats;
-        const link=$('.header-nav [data-nav="actions"]'),badge=link?$('.header-count',link):null;
-        if(stats.pending){if(badge)badge.textContent=String(Number(stats.pending));else if(link){const count=document.createElement('span');count.className='header-count';count.textContent=String(Number(stats.pending));link.append(count)}}else badge?.remove();
+        const badgeHost=$('[data-header-action-count]');
+        if(badgeHost)renderMarkup(badgeHost,pendingBadge(stats.pending));
       }).catch(()=>{});
     }catch(e){if(current()&&(!state.saving||owns())){toast(e.message,'error');if(e.code==='version_conflict'&&owns())try{if(await refreshData(owns))account=state.user}catch{}}}
     finally{finish();pending=false;if(modal.isConnected&&!state.saving){delete modal.dataset.reviewLockBusy;modal.removeAttribute('aria-busy');$$('[data-close]',modal).forEach(control=>control.removeAttribute('aria-disabled'));button.disabled=false;button.textContent='确认完成并锁定'}}

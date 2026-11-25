@@ -8,6 +8,9 @@
   border-radius: 0;
   box-shadow: none;
 }
+[data-header-action-count] { display: contents; }
+.shendu-header .header-count[data-slot="badge"] { border: 0; }
+.finance-entry-tag[data-slot="badge"] { white-space: normal; }
 :where(.sd-surface) .sd-ui:focus-visible { outline-color: var(--ink-2); }
 .sd-ui[data-slot="input"], .sd-ui[data-slot="native-select"] { height: auto; }
 .sd-ui[data-slot="textarea"] { field-sizing: fixed; }

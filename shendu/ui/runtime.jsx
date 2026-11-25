@@ -104,13 +104,19 @@ function NativeCheckbox({initial, nativeProps}) {
   const native = useRef(null);
   const visible = useRef(null);
   const [checked, setChecked] = useState(initial);
+  const [disabled, setDisabled] = useState(Boolean(nativeProps.disabled));
   useEffect(() => {
     const input = native.current;
     const sync = () => setChecked(input.checked);
     const reset = () => queueMicrotask(sync);
+    const syncDisabled = () => setDisabled(input.disabled);
+    const attributes = new MutationObserver(syncDisabled);
+    attributes.observe(input, {attributes: true, attributeFilter: ['disabled']});
+    syncDisabled();
     input.addEventListener('change', sync);
     input.form?.addEventListener('reset', reset);
     return () => {
+      attributes.disconnect();
       input.removeEventListener('change', sync);
       input.form?.removeEventListener('reset', reset);
     };
@@ -120,12 +126,13 @@ function NativeCheckbox({initial, nativeProps}) {
     <input {...nativeProps} ref={native} type="checkbox" defaultChecked={initial}
       className={`sd-checkbox-native ${nativeProps.className || ''}`} tabIndex={-1}
       aria-hidden="true" onFocus={() => visible.current?.focus()}/>
-    <Checkbox ref={visible} checked={checked} disabled={nativeProps.disabled}
+    <Checkbox ref={visible} checked={checked} disabled={disabled}
       aria-label={label} aria-labelledby={nativeProps['aria-labelledby']}
       aria-describedby={nativeProps['aria-describedby']} aria-invalid={nativeProps['aria-invalid']}
       className="sd-ui sd-checkbox" data-ui-component="" data-ui-checkbox-for={nativeProps.id || nativeProps.name || ''}
       onCheckedChange={value => {
         const input = native.current;
+        if (input.matches(':disabled')) return;
         input.checked = value === true;
         setChecked(input.checked);
         input.dispatchEvent(new Event('input', {bubbles: true}));
@@ -218,6 +225,8 @@ function selectLabel(node){
   return labels.map(label=>{const copy=label.cloneNode(true);copy.querySelectorAll('select,.select-chevron').forEach(child=>child.remove());return copy.textContent.trim();}).join(' ').replace(/\s+/g,' ') || node.title || '选择';
 }
 
+const badgeSelector = '.badge,.status-chip,.history-status,.action-state,.header-count,.finance-entry-tag';
+
 function componentFor(node) {
   const props = propsOf(node);
   const tag = node.tagName.toLowerCase();
@@ -255,12 +264,12 @@ function componentFor(node) {
     return <Progress {...props} value={Math.max(0, Math.min(100, value))} aria-label={props['aria-label'] || '阶段进度'}/>;
   }
   if (node.classList.contains('skeleton')) return <Skeleton {...props} {...raw(node)}/>;
-  if (node.matches('.badge,.status-chip,.history-status,.action-state')) return <Badge {...props} variant="outline" {...raw(node)}/>;
+  if (node.matches(badgeSelector)) return <Badge {...props} variant={node.matches('.header-count') ? 'default' : 'outline'} {...raw(node)}/>;
   if (node.matches('[role="alert"],.error-text')) return <Alert {...props} className={`${props.className} block p-0 border-0 shadow-none`} {...raw(node)}/>;
   return <Card {...props} as={tag} className={`${props.className} block gap-0 p-0`} {...raw(node)}/>;
 }
 
-const candidates = 'button,input:not([type="hidden"]):not([type="radio"]),textarea,select,label,table,hr,progress,.progress,.skeleton,.badge,.status-chip,.history-status,.action-state,[role="alert"],.error-text,.card,.auth-card,.action-archive-card';
+const candidates = `button,input:not([type="hidden"]):not([type="radio"]),textarea,select,label,table,hr,progress,.progress,.skeleton,${badgeSelector},[role="alert"],.error-text,.card,.auth-card,.action-archive-card`;
 const authored = '.overview-type-trigger,.overview-record-card,.header-brand,.daily-intro-title,.daily-prompt-heading';
 
 function eligible(node) {

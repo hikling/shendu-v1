@@ -27,7 +27,7 @@ function owner(name){
   return source.slice(start,next?start+1+next.index:source.length).split('\ndocument.addEventListener')[0];
 }
 const constants=source.slice(source.indexOf('const TYPES ='),source.indexOf('const TYPE_ICONS ='))+'\n'+source.match(/const TYPE_ICONS = [^\n]+/)[0]+'\n'+source.match(/const STATUS = [^\n]+/)[0]+'\n'+source.slice(source.indexOf('const QUESTIONS ='),source.indexOf('function mergeReviewTemplate('));
-const renderers=['dailyAnswerPreview','answerItemRow','answerAddButton','dailyAnswerInputs','gaugePresentation','gaugeCard','dailyEvidence','dailyReflection','dailyActionFields','dailyJournal','reviewAfterword','dailySceneArt','dailyReviewHtml','extendedSceneArt','extendedPromptCopy','extendedPromptHtml','extendedReviewHtml','verificationRead','currentDailyPrompts','dailyPromptCopy','setReviewPromptHeading','setDailyPromptHeading','showDailyPrompt','currentExtendedPrompts','setExtendedPromptHeading','showExtendedPrompt','bindReview','bindReviewWheel','clearDailyIssues','openDailyAnswer'];
+const renderers=['pendingBadge','dailyAnswerPreview','answerItemRow','answerAddButton','dailyAnswerInputs','gaugePresentation','gaugeCard','dailyEvidence','dailyReflection','dailyActionFields','dailyJournal','reviewAfterword','dailySceneArt','dailyReviewHtml','extendedSceneArt','extendedPromptCopy','extendedPromptHtml','extendedReviewHtml','verificationRead','currentDailyPrompts','dailyPromptCopy','setReviewPromptHeading','setDailyPromptHeading','showDailyPrompt','currentExtendedPrompts','setExtendedPromptHeading','showExtendedPrompt','bindReview','bindReviewWheel','clearDailyIssues','openDailyAnswer'];
 function record(type='daily',overrides={}){
   const periods={daily:'2026-11-12',weekly:'2026-W46',monthly:'2026-11',quarterly:'2026-11-01',yearly:'2026',decision:'2026-11-12'};
   return {id:`${type}-draft`,type,status:'draft',period:periods[type],version:3,title:'私人记录',data:{answers:{today:['事实'],wins:['事实']},metrics:[],action:'继续行动',ifCondition:'遇到阻碍',ifThen:'及时调整',journal:'私人日记',verifyDate:'2027-11-12'},...overrides};
@@ -226,8 +226,9 @@ test('accepted completion statistics update the header count without remounting 
     let finishStats;const draft=record(),completed={...draft,status:'completed',version:4};
     const f=fixture({draft,dirty:false,impl:path=>path.endsWith('/complete')?Promise.resolve({record:completed}):new Promise(resolve=>{finishStats=resolve})});
     confirm(f);await settle();const editor=$('#daily-editor');
-    $('#app').insertAdjacentHTML('afterbegin',`<nav class="header-nav"><button data-nav="actions">行动验证${pending?'':'<span class="header-count">2</span>'}</button></nav>`);
-    finishStats({total:1,pending});await settle();assert.equal($('#daily-editor'),editor);assert.equal(f.state.current.status,'completed');assert.equal(f.state.stats.pending,pending);assert.equal($('.header-count')?.textContent,pending?'7':undefined);
+    $('#app').insertAdjacentHTML('afterbegin',`<nav class="header-nav"><button data-nav="actions">行动验证<span data-header-action-count>${pending?'':'<span class="header-count">2</span>'}</span></button></nav>`);
+    ui.enhanceUi($('.header-nav'));
+    finishStats({total:1,pending});await settle();assert.equal($('#daily-editor'),editor);assert.equal(f.state.current.status,'completed');assert.equal(f.state.stats.pending,pending);assert.equal($('.header-count[data-slot="badge"]')?.textContent,pending?'7':undefined);
   }
 });
 

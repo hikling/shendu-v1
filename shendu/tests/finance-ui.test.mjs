@@ -369,6 +369,23 @@ test('a stale day-list response cannot overwrite a newer month view or its pagin
   assert.doesNotMatch($('[data-finance-entries]',f.root).textContent,/过期单日记录/);assert.equal($('[data-finance-more]',f.root).hidden,true);assert.equal(filters.elements.range.value,'month');
 });
 
+test('typing a new ledger search invalidates the previous result cursor immediately',async()=>{
+  const f=fixture();await flush();
+  f.setCursor('unfiltered-page');
+  $('[data-finance-refresh]',f.root).click();await flush();
+  const more=$('[data-finance-more]',f.root),before=f.calls.length;
+  assert.equal(more.hidden,false);
+  f.setCursor(null);
+  input($('[data-finance-filters]',f.root),'q','早餐');
+  more.click();
+  assert.equal(more.hidden,true);
+  assert.equal(f.calls.length,before,'the old cursor must not query the new search');
+  await new Promise(resolve=>setTimeout(resolve,260));await flush();
+  const searches=f.calls.slice(before).filter(call=>new URL(call.path,'https://shendu.test').searchParams.has('q'));
+  assert.equal(searches.length,1);
+  assert.equal(new URL(searches[0].path,'https://shendu.test').searchParams.has('cursor'),false);
+});
+
 test('unknown quick-entry purposes show their own classification and save automatically without category writes',async()=>{
   const f=fixture();await flush();const form=$('[data-finance-create]',f.root);input(form,'text','60 修鞋');
   assert.match($('[data-finance-line-preview]',form).textContent,/自动分类：修鞋/);assert.equal(f.calls.some(call=>call.args.method==='POST'),false);
@@ -378,6 +395,55 @@ test('unknown quick-entry purposes show their own classification and save automa
 
 test('unused images require an explicit acknowledgment and never create extra ledger entries',async()=>{
  const f=fixture({receiptClient:{processReceiptFiles:async()=>({imageStatus:'stored',receiptIds:['meal','extra'],candidates:[{kind:'expense',expression:'8',receiptIds:['meal']},{kind:'expense',expression:'99',receiptIds:['extra']}]})}});await flush();const quick=$('[data-finance-create]',f.root);input(quick,'text','8 早餐');dispatchSubmit(quick);selectScreenshot(f);await flush();const match=$('#finance-match-form');dispatchSubmit(match);await flush();assert.equal(f.calls.some(call=>call.path==='/api/finance/entries'),false);assert.match($('[data-form-error]',match).textContent,/还有截图未关联/);change(match,'acknowledge-unused',true);dispatchSubmit(match);await flush();const writes=f.calls.filter(call=>call.path==='/api/finance/entries');assert.equal(writes.length,1);assert.deepEqual(writes[0].args.body.receiptIds,['meal']);
+});
+
+test('changing a screenshot match clears the visible and native unused-image confirmation',async()=>{
+  const f=fixture({receiptClient:{processReceiptFiles:async()=>({
+    imageStatus:'stored',receiptIds:['meal','extra'],
+    candidates:[{kind:'expense',expression:'8',receiptIds:['meal']},{kind:'expense',expression:'99',receiptIds:['extra']}]
+  })}});
+  await flush();
+  input($('[data-finance-create]',f.root),'text','8 早餐');
+  selectScreenshot(f);await flush();
+  const match=$('#finance-match-form');
+  const acknowledgment=match.elements['acknowledge-unused'];
+  const visible=$('[data-ui-checkbox-for="acknowledge-unused"]',match);
+  const extra=$('input[name="match-0"][value="extra"]',match);
+  const extraBox=$('[data-slot="checkbox"]',extra.closest('.sd-checkbox-adapter'));
+  visible.click();await flush();
+  assert.equal(acknowledgment.checked,true);
+  assert.equal(visible.getAttribute('aria-checked'),'true');
+  extraBox.click();await flush();
+  extraBox.click();await flush();
+  assert.equal(acknowledgment.checked,false);
+  assert.equal(visible.getAttribute('aria-checked'),'false');
+  dispatchSubmit(match);await flush();
+  assert.equal(f.calls.some(call=>call.path==='/api/finance/entries'),false);
+  visible.click();await flush();
+  dispatchSubmit(match);await flush();
+  assert.equal(f.calls.filter(call=>call.path==='/api/finance/entries').length,1);
+});
+
+test('a pending match retry locks the visible receipt choices until the result is known',async()=>{
+  let attempts=0;
+  const f=fixture({handler:(path)=>{
+    if(path==='/api/finance/entries'&&++attempts===1)return Promise.reject(new Error('响应中断'));
+  }});
+  await flush();
+  input($('[data-finance-create]',f.root),'text','8 早餐');
+  selectScreenshot(f);await flush();
+  const match=$('#finance-match-form'),native=$('input[name="match-0"]',match);
+  const visible=$('[data-ui-checkbox-for="match-0"]',match);
+  dispatchSubmit(match);await flush();
+  assert.equal(native.disabled,true);
+  assert.equal(visible.disabled,true);
+  visible.click();await flush();
+  assert.equal(native.checked,true);
+  assert.equal(visible.getAttribute('aria-checked'),'true');
+  dispatchSubmit(match);await flush();
+  const posts=f.calls.filter(call=>call.path==='/api/finance/entries');
+  assert.equal(posts.length,2);
+  assert.deepEqual(posts[1].args.body,posts[0].args.body);
 });
 
 test('manual matching enforces the per-entry ten-image bound before any write',async()=>{
