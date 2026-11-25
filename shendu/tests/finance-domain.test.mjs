@@ -233,6 +233,7 @@ test('receipt OCR produces editable drafts with warnings, excludes balances and 
   const drafts=parseReceiptText('商户名称：早餐铺\n支付金额 ¥23.00\n2026年11月15日\n账户余额 ¥500.00',{date:'2026-11-15'});
   assert.equal(drafts.length,1);assert.equal(drafts[0].expression,'23.00');assert.equal(drafts[0].categoryId,'food');assert.equal(drafts[0].date,'2026-11-15');assert.ok(drafts[0].warnings.length);
   const list=parseReceiptText('¥8.00 早餐\n¥8.00 早餐\n余额 ¥200.00',{date:'2026-11-15'});assert.equal(list.length,2);
+  assert.deepEqual(parseReceiptText('早餐8.50元\n商店￥38').map(item=>item.expression),['8.50','38.00']);
   assert.deepEqual(parseReceiptText('没有金额的文字'),[]);
   const refund=parseReceiptText('退款金额 ¥12.00',{date:'2026-11-15'})[0];assert.equal(refund.kind,'refund');assert.equal(refund.expression,'12.00');
 });

@@ -250,7 +250,7 @@ function receiptMerchant(lines){
 
 function receiptAmount(line,label=''){
   const value=label?line.slice(line.indexOf(label)+label.length):line;
-  const numberTokens=/(?<![\p{L}\d.,:])(?:¥\s*)?([-+]?\s*(?:\d{1,3}(?:,\d{3})+|\d{1,9})(?:\s*\.\s*\d{1,2})?)(?:\s*元)?(?![\d.,:])/gu;
+  const numberTokens=/(?:¥\s*|(?<![A-Za-z\d.,:]))([-+]?\s*(?:\d{1,3}(?:,\d{3})+|\d{1,9})(?:\s*\.\s*\d{1,2})?)(?:\s*元)?(?![\d.,:])/g;
   const matches=[...value.matchAll(numberTokens)],chosen=matches.find(match=>match[0].includes('¥'))||matches.find(match=>match[1].includes('.'))||(label?matches[0]:null);
   if(!chosen)return null;
   const signed=chosen[1].replace(/[\s,]/g,''),expression=signed.replace(/^[-+]/,'');
