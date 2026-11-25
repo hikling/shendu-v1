@@ -1,6 +1,6 @@
-import {parseMoneyExpression,parseFinanceLines,formatFinanceMoney,DEFAULT_FINANCE_CATEGORIES,FINANCE_KINDS,suggestFinanceCategory,financeCategoryLabel} from './finance-domain.js?v=1.0.0-finance17';
+import {parseMoneyExpression,parseFinanceLines,formatFinanceMoney,DEFAULT_FINANCE_CATEGORIES,FINANCE_KINDS,suggestFinanceCategory,financeCategoryLabel} from './finance-domain.js?v=1.0.0-finance-category1';
 
-import {matchFinanceReceipts} from './finance-receipt-matching.js';
+import {matchFinanceReceipts} from './finance-receipt-matching.js?v=1.0.0-finance-category1';
 
 const $=(selector,root)=>root.querySelector(selector),$$=(selector,root)=>[...root.querySelectorAll(selector)];
 const esc=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
@@ -105,10 +105,30 @@ function createWorkspace(container,options,daily){
       try{const amount=parseMoneyExpression(text);output.textContent=amount>0?`合计 ¥${money(amount)}`:'入账金额需要大于 0';output.classList.toggle('is-error',amount<=0)}catch{output.textContent=text?'请检查算式，只支持数字、小数、加减。':'输入金额，自动计算合计';output.classList.toggle('is-error',Boolean(text))}
     };
     const capture=()=>{if(extra.edit||extra.modal&&!extra.consumeDraft)return;draft={...draft,text:`${form.elements.expression.value} ${form.elements.purpose.value}`.trim(),expression:form.elements.expression.value,purpose:form.elements.purpose.value,categoryId:form.elements.categoryId.value,note:form.elements.note.value,receiptIds:[...(draft.receiptIds||[])]};const quick=$('[data-finance-create]',container);if(quick){quick.elements.text.value=draft.text;quickRows=[];refreshQuick?.()}changed()};
-    const suggest=()=>{if(categoryChosen)return;const kind=form.elements.kind?.value||'expense',suggested=automaticCategory(form.elements.purpose.value,categories,kind);form.elements.categoryId.value=suggested||'';form.elements.categoryId.dispatchEvent(new Event('change',{bubbles:true}));const hint=$('[data-category-hint]',form);if(hint)hint.textContent=form.elements.purpose.value.trim()?`自动分类：${financeCategoryLabel(form.elements.purpose.value,categories,kind)}`:'常见用途归入对应类别，其他用途直接作为分类。'};
     let suggesting=false;
-    form.addEventListener('input',event=>{if(!alive()||pending)return;if(event.target.name==='purpose'){suggesting=true;suggest();suggesting=false}refreshCalculation();capture()});
-    form.addEventListener('change',event=>{if(!alive()||pending)return;if(event.target.name==='categoryId'&&!suggesting)categoryChosen=true;if(event.target.name==='kind'){const source=$('[data-refund-source]',form);if(source)source.hidden=event.target.value!=='refund';suggesting=true;suggest();suggesting=false}capture()});
+    const refreshSuggestion=()=>{
+      const kind=form.elements.kind?.value||'expense',purpose=form.elements.purpose.value;
+      const hint=$('[data-category-hint]',form);
+      if(hint)hint.textContent=purpose.trim()?`自动分类：${financeCategoryLabel(purpose,categories,kind)}`:'常见用途归入对应类别，其他用途直接作为分类。';
+      if(categoryChosen)return;
+      suggesting=true;
+      form.elements.categoryId.value=automaticCategory(purpose,categories,kind);
+      form.elements.categoryId.dispatchEvent(new Event('change',{bubbles:true}));
+      suggesting=false;
+    };
+    form.addEventListener('input',event=>{if(!alive()||pending)return;if(event.target.name==='purpose')refreshSuggestion();refreshCalculation();capture()});
+    form.addEventListener('change',event=>{
+      if(!alive()||pending||suggesting)return;
+      if(event.target.name==='categoryId'){
+        categoryChosen=Boolean(event.target.value);
+        if(!categoryChosen)refreshSuggestion();
+      }
+      if(event.target.name==='kind'){
+        const source=$('[data-refund-source]',form);if(source)source.hidden=event.target.value!=='refund';
+        refreshSuggestion();
+      }
+      capture();
+    });
     $('[data-clear-entry]',form).addEventListener('click',()=>{if(pending)return;if(extra.edit||extra.modal){options.closeModal?.();return}draft=blank();createId=id();entryId=createId;categoryChosen=false;form.reset();form.elements.expression.value='';form.elements.purpose.value='';form.elements.categoryId.value='';form.elements.note.value='';$('[data-receipt-count]',form).textContent='';$('[data-form-error]',form).textContent='';refreshCalculation();changed()});
     form.addEventListener('submit',event=>{
       event.preventDefault();if(pending||!alive())return;
@@ -141,7 +161,7 @@ function createWorkspace(container,options,daily){
       try{await write(form,async current=>{
         const active=()=>current()&&!owner.signal.aborted;
         try{
-          message.textContent='正在保存补传截图…';receiptModule=options.receiptClient||await import('./receipt-client.js?v=1.0.0-finance17');if(!active())return;
+          message.textContent='正在保存补传截图…';receiptModule=options.receiptClient||await import('./receipt-client.js?v=1.0.0-finance-category1');if(!active())return;
           const task=receiptModule.processReceiptFiles(files,{request,isCurrent:active,signal:owner.signal,categories,date:form.elements.date.value,upload:true,onProgress:progress=>{if(active())message.textContent=typeof progress==='string'?progress:progress?.message||'正在保存截图…'}});
           const result=await Promise.race([task,new Promise((_,reject)=>{onAbort=()=>reject(new DOMException('已取消截图处理','AbortError'));owner.signal.addEventListener('abort',onAbort,{once:true});if(owner.signal.aborted)onAbort()})]);if(!active())return;
           const uploaded=[...new Set(result.receiptIds||[])];if(!uploaded.length||result.imageStatus==='not_stored')throw new Error('截图尚未保存，未关联到账目。请先在图片存储设置中配置并测试S3，再重新补传。');
@@ -229,7 +249,7 @@ function createWorkspace(container,options,daily){
       render(host,`<img alt="${esc(title)}的${esc(kind)}凭证，第${index+1}张" hidden>`);const image=$('img',host);
       const failed=error=>{if(!accepted()||!image.isConnected)return;image.hidden=true;message.hidden=false;message.textContent=error?.message||'截图加载失败，可能是授权已过期或网络暂时不可用。请重新读取。';retry.hidden=false;retry.disabled=false};
       image.addEventListener('error',()=>failed(),{once:true});image.addEventListener('load',()=>{if(accepted()&&image.isConnected){message.hidden=true;image.hidden=false}},{once:true});
-      try{const {loadReceiptUrls}=options.receiptClient||await import('./receipt-client.js?v=1.0.0-finance17');if(!accepted())return;const urls=await loadReceiptUrls([receiptId],'image',{request,isCurrent:accepted});if(!accepted())return;const url=safeImageUrl(urls[receiptId]);if(!url)throw new Error('这张截图暂时无法读取，请检查凭证存储后重试。');message.textContent='正在载入截图…';image.src=url;image.hidden=false}
+      try{const {loadReceiptUrls}=options.receiptClient||await import('./receipt-client.js?v=1.0.0-finance-category1');if(!accepted())return;const urls=await loadReceiptUrls([receiptId],'image',{request,isCurrent:accepted});if(!accepted())return;const url=safeImageUrl(urls[receiptId]);if(!url)throw new Error('这张截图暂时无法读取，请检查凭证存储后重试。');message.textContent='正在载入截图…';image.src=url;image.hidden=false}
       catch(error){failed(error)}finally{if(accepted()){loading=false;retry.disabled=false}}
     }
     function changeImage(offset){
@@ -301,7 +321,7 @@ function createWorkspace(container,options,daily){
       const button=event.target.closest('[data-match-preview]');if(!button||!live()||pending)return;const receiptId=button.dataset.matchPreview,host=$(`[data-match-image="${receiptId}"]`,form),owner={};previewOwners.set(receiptId,owner);
       if(!host.hidden){host.hidden=true;return}host.hidden=false;render(host,'<p class="help" role="status">正在读取截图…</p>');
       const current=()=>live()&&!host.hidden&&previewOwners.get(receiptId)===owner;
-      try{const module=options.receiptClient||await import('./receipt-client.js?v=1.0.0-finance17');if(!current())return;const urls=await module.loadReceiptUrls([receiptId],'image',{request,isCurrent:current});if(!current())return;const url=safeImageUrl(urls[receiptId]);if(!url)throw new Error('截图暂时无法读取，请点击重新查看。');render(host,`<img src="${esc(url)}" alt="截图 ${number(receiptId)}，用于核对花销" loading="lazy">`);const image=$('img',host);image.addEventListener('error',()=>{if(current())render(host,'<p class="help">图片未能载入，请收起后重新查看。</p>')},{once:true})}
+      try{const module=options.receiptClient||await import('./receipt-client.js?v=1.0.0-finance-category1');if(!current())return;const urls=await module.loadReceiptUrls([receiptId],'image',{request,isCurrent:current});if(!current())return;const url=safeImageUrl(urls[receiptId]);if(!url)throw new Error('截图暂时无法读取，请点击重新查看。');render(host,`<img src="${esc(url)}" alt="截图 ${number(receiptId)}，用于核对花销" loading="lazy">`);const image=$('img',host);image.addEventListener('error',()=>{if(current())render(host,'<p class="help">图片未能载入，请收起后重新查看。</p>')},{once:true})}
       catch(error){if(current())render(host,`<p class="help" role="status">${esc(error.message||'截图读取失败，请重试。')}</p>`)}
     });
     update();
@@ -338,9 +358,27 @@ function createWorkspace(container,options,daily){
     const refreshCalculation=section=>{const index=Number(section.dataset.importIndex),text=form.elements[`expression-${index}`].value.trim(),output=$('[data-import-calculation]',section);try{const amount=parseMoneyExpression(text);output.textContent=amount>0?`合计 ¥${money(amount)}`:'入账金额需要大于 0';output.classList.toggle('is-error',amount<=0)}catch{output.textContent=text?'请检查算式，只支持数字、小数、加减。':'输入金额，自动计算合计';output.classList.toggle('is-error',Boolean(text))}};
     const updateRowActions=()=>{const count=rows.filter(row=>!row.removed).length;for(const section of $$('[data-import-index]',form))$('[data-import-remove]',section).disabled=count<=1||rows[Number(section.dataset.importIndex)].done===true};
     let suggesting=false;
-    const suggestRow=(index)=>{if(rows[index].categoryChosen)return;const select=form.elements[`category-${index}`];select.value=automaticCategory(form.elements[`purpose-${index}`].value,categories,form.elements[`kind-${index}`].value)||'';const hint=$('[data-import-category-hint]',select.closest('[data-import-index]'));if(hint)hint.textContent=`自动分类：${financeCategoryLabel(form.elements[`purpose-${index}`].value,categories,form.elements[`kind-${index}`].value)}`;suggesting=true;select.dispatchEvent(new Event('change',{bubbles:true}));suggesting=false};
+    const suggestRow=(index)=>{
+      const select=form.elements[`category-${index}`],purpose=form.elements[`purpose-${index}`].value,kind=form.elements[`kind-${index}`].value;
+      const hint=$('[data-import-category-hint]',select.closest('[data-import-index]'));
+      if(hint)hint.textContent=purpose.trim()?`自动分类：${financeCategoryLabel(purpose,categories,kind)}`:'根据用途自动分类';
+      if(rows[index].categoryChosen)return;
+      suggesting=true;
+      select.value=automaticCategory(purpose,categories,kind);
+      select.dispatchEvent(new Event('change',{bubbles:true}));
+      suggesting=false;
+    };
     form.addEventListener('input',event=>{if(!editable())return;const section=event.target.closest('[data-import-index]');if(!section)return;const index=Number(section.dataset.importIndex);if(event.target.name===`purpose-${index}`)suggestRow(index);refreshCalculation(section)});
-    form.addEventListener('change',event=>{if(!editable()||suggesting)return;const section=event.target.closest('[data-import-index]');if(!section)return;const index=Number(section.dataset.importIndex);if(event.target.name===`category-${index}`)rows[index].categoryChosen=true;if(event.target.name===`kind-${index}`)suggestRow(index)});
+    form.addEventListener('change',event=>{
+      if(!editable()||suggesting)return;
+      const section=event.target.closest('[data-import-index]');if(!section)return;
+      const index=Number(section.dataset.importIndex);
+      if(event.target.name===`category-${index}`){
+        rows[index].categoryChosen=Boolean(event.target.value);
+        if(!rows[index].categoryChosen)suggestRow(index);
+      }
+      if(event.target.name===`kind-${index}`)suggestRow(index);
+    });
     form.addEventListener('click',event=>{
       if(!editable())return;const button=event.target.closest('button');
 
@@ -374,7 +412,7 @@ function createWorkspace(container,options,daily){
     try{await write(anchor,async current=>{
       const active=()=>current()&&!owner.signal.aborted;
       try{
-        status('正在本地读取截图…');receiptModule=options.receiptClient||await import('./receipt-client.js?v=1.0.0-finance17');if(!active())return;
+        status('正在本地读取截图…');receiptModule=options.receiptClient||await import('./receipt-client.js?v=1.0.0-finance-category1');if(!active())return;
         const task=receiptModule.processReceiptFiles(files,{request,isCurrent:active,signal:owner.signal,categories,date:day,upload:true,onProgress:progress=>{if(active())status(typeof progress==='string'?progress:progress?.message||'正在本地识别截图…')}});
         const result=await Promise.race([task,new Promise((_,reject)=>{onAbort=()=>reject(new DOMException('已取消图片处理','AbortError'));owner.signal.addEventListener('abort',onAbort,{once:true});if(owner.signal.aborted)onAbort()})]);if(!active())return;
         if(result.imageStatus!=='stored'||!result.receiptIds?.length)throw new Error('截图尚未保存，不能确认支出。请先在图片存储设置中配置并测试S3，再重新上传。');

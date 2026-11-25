@@ -130,7 +130,8 @@ test('screenshot food and colloquial shopping keep their expanded categories, or
     ['买面条','food'],['买东西','shopping'],['买点东西','shopping'],['买些东西','shopping'],['天猫买东西','shopping'],
     ['在网上买点东西','shopping'],['买点吃的','food'],['买 面 条','food'],['买　东　西','shopping'],
     ['抖音商城买面条','food'],['买东西买退烧药','health'],['天猫买字帖','learning'],['超市买面条机','shopping'],
-    ['快递费','transport'],['水管维修','housing'],['腾讯视频会员','entertainment'],['全勤奖','salary'],['稿费','other-income']
+    ['快递费','transport'],['水管维修','housing'],['腾讯视频会员','entertainment'],['上网','entertainment'],
+    ['网吧上机','entertainment'],['上网课','learning'],['家庭宽带续费','housing'],['全勤奖','salary'],['稿费','other-income']
   ]){
     const body=input({purpose,categoryId:''}),created=await api('/api/finance/entries',{method:'POST',auth:a.cookie,body});
     assert.equal(created.status,201,created.text);assert.equal(created.value.entry.categoryId,expected,purpose);assert.equal(created.value.entry.purpose,purpose,'matching does not rewrite stored purpose');
@@ -141,6 +142,25 @@ test('screenshot food and colloquial shopping keep their expanded categories, or
   const repeated=await create(a.cookie,{purpose:'修补 老式 装裱',categoryId:''});assert.equal(repeated.categoryId,unknown.categoryId);
   const view=await ledger(a.cookie);assert.equal(view.entries.find(entry=>entry.id===historic.id).categoryId,old[0].id);
   for(const category of old){const saved=view.categories.find(row=>row.id===category.id);assert.equal(saved.version,1);assert.equal(saved.name,category.name);assert.deepEqual(saved.keywords,[])}
+});
+
+test('an automatic entry retry preserves the saved category when the suggestion changes',async()=>{
+  const a=await account(),purpose='自助餐临时用途样本',body=input({purpose,categoryId:''});
+  const post=value=>api('/api/finance/entries',{method:'POST',auth:a.cookie,body:value});
+  const original=await post(body);
+  assert.equal(original.status,201,original.text);
+  assert.equal(original.value.entry.categoryId,'food');
+  const categoryId=randomUUID(),configured=await api('/api/finance/categories',{method:'POST',auth:a.cookie,body:{id:categoryId,name:purpose,keywords:[purpose]}});
+  assert.equal(configured.status,201,configured.text);
+  const retry=await post(body);
+  assert.equal(retry.status,200,retry.text);
+  assert.equal(retry.value.duplicate,true);
+  assert.equal(retry.value.entry.categoryId,'food');
+  assert.equal((await post({...body,expression:'99'})).status,409);
+  assert.equal((await post({...body,categoryId})).status,409);
+  const next=await post({...body,id:randomUUID()});
+  assert.equal(next.status,201,next.text);
+  assert.equal(next.value.entry.categoryId,categoryId);
 });
 
 test('daily zero is explicit, and paging/search do not truncate monthly aggregate',async()=>{

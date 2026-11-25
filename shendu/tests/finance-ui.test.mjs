@@ -392,6 +392,45 @@ test('unknown quick-entry purposes show their own classification and save automa
   submit(form);await flush();const write=f.calls.find(call=>call.path==='/api/finance/entries');assert.equal(write.args.body.categoryId,'');assert.equal(write.args.body.purpose,'修鞋');assert.match($('[data-finance-entries]',f.root).textContent,/修鞋/);assert.equal(f.calls.some(call=>call.path.includes('/categories')),false);
 });
 
+test('editing an old category lets the user resume automatic classification and then choose a manual category',async()=>{
+  const f=fixture({initialEntries:[{id:'older-meal',date:'2026-11-15',kind:'expense',expression:'8',amountCents:800,purpose:'买面条',categoryId:'shopping',version:1,receiptIds:[]}]});
+  await flush();
+  $('[data-entry-action="edit"]',f.root).click();
+  const form=$('#finance-edit-form');
+  assert.equal(form.elements.categoryId.value,'shopping');
+  change(form,'categoryId','');
+  assert.equal(form.elements.categoryId.value,'food');
+  assert.match($('[data-category-hint]',form).textContent,/餐饮/);
+  input(form,'purpose','上网');
+  assert.equal(form.elements.categoryId.value,'entertainment');
+  change(form,'categoryId','shopping');
+  input(form,'purpose','买菜');
+  assert.equal(form.elements.categoryId.value,'shopping');
+  assert.match($('[data-category-hint]',form).textContent,/餐饮/);
+  change(form,'categoryId','');
+  dispatchSubmit(form);await flush();
+  const write=f.calls.find(call=>call.path==='/api/finance/entries/older-meal');
+  assert.equal(write.args.body.categoryId,'food');
+});
+
+test('screenshot review returns to automatic classification after a manual choice is cleared',async()=>{
+  const f=fixture({receiptClient:{processReceiptFiles:async()=>({
+    imageStatus:'stored',receiptIds:['new-screenshot'],candidates:[{kind:'expense',expression:'5',purpose:'买面条',receiptIds:['new-screenshot']}]
+  })}});
+  await flush();
+  selectScreenshot(f);await flush();
+  const form=$('#finance-import-form');
+  assert.equal(form.elements['category-0'].value,'food');
+  change(form,'category-0','shopping');
+  input(form,'purpose-0','上网');
+  assert.equal(form.elements['category-0'].value,'shopping');
+  change(form,'category-0','');
+  assert.equal(form.elements['category-0'].value,'entertainment');
+  assert.match($('[data-import-category-hint]',form).textContent,/娱乐/);
+  dispatchSubmit(form);await flush();
+  assert.equal(f.calls.find(call=>call.path==='/api/finance/entries').args.body.categoryId,'entertainment');
+});
+
 
 test('unused images require an explicit acknowledgment and never create extra ledger entries',async()=>{
  const f=fixture({receiptClient:{processReceiptFiles:async()=>({imageStatus:'stored',receiptIds:['meal','extra'],candidates:[{kind:'expense',expression:'8',receiptIds:['meal']},{kind:'expense',expression:'99',receiptIds:['extra']}]})}});await flush();const quick=$('[data-finance-create]',f.root);input(quick,'text','8 早餐');dispatchSubmit(quick);selectScreenshot(f);await flush();const match=$('#finance-match-form');dispatchSubmit(match);await flush();assert.equal(f.calls.some(call=>call.path==='/api/finance/entries'),false);assert.match($('[data-form-error]',match).textContent,/还有截图未关联/);change(match,'acknowledge-unused',true);dispatchSubmit(match);await flush();const writes=f.calls.filter(call=>call.path==='/api/finance/entries');assert.equal(writes.length,1);assert.deepEqual(writes[0].args.body.receiptIds,['meal']);

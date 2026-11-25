@@ -138,7 +138,15 @@ export function createFinanceLedger({db,encryptData,decryptData,dataScope,now,re
     if(path==='/api/finance/entries'&&method==='POST'){
       const body=await readJson(req);if(!UUID.test(String(body.id||'')))throw problem('账目编号无效');
       const existing=find(user.id,body.id),value=entryData(body,user.id,{allowArchived:Boolean(existing),allowAutomatic:true}),hash=digest(value);
-      if(existing){if(existing.create_hash!==hash)throw problem('这笔账的编号已被使用，请刷新后再试','finance_id_conflict',409);json(res,200,{entry:decodeEntry(existing),duplicate:true});return true}
+      if(existing){
+        const entry=decodeEntry(existing);
+        if(existing.create_hash!==hash){
+          // The original automatic choice can differ from today's suggestion.
+          const automatic=body.categoryId==null||typeof body.categoryId==='string'&&!body.categoryId.trim();
+          if(!automatic||existing.create_hash!==digest({...value,categoryId:entry.categoryId}))throw problem('这笔账的编号已被使用，请刷新后再试','finance_id_conflict',409);
+        }
+        json(res,200,{entry,duplicate:true});return true;
+      }
       if(db.prepare('SELECT COUNT(*) AS n FROM finance_entries WHERE user_id=?').get(user.id).n>=MAX_ENTRIES)throw problem('账目数量已达到上限','finance_entry_limit',413);
       if(!verifyReceipts(user.id,value.receiptIds))throw problem('凭证尚未上传或不属于当前账户','finance_receipt_invalid');
       const entry=transact(user.id,'finance_entry_created',value.date,()=>{assertRefunds(user.id,value,body.id);return writeEntry(user.id,body.id,value,null,null,hash)});

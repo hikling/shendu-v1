@@ -1,4 +1,4 @@
-import {parseMoneyExpression} from './finance-domain.js?v=1.0.0-finance17';
+import {parseMoneyExpression} from './finance-domain.js?v=1.0.0-finance-category1';
 
 const array=value=>Array.isArray(value)?value:[];
 const validAmount=value=>Number.isSafeInteger(value)&&value>0;

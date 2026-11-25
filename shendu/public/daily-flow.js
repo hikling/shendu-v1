@@ -1,5 +1,5 @@
 import {reviewQuestions,reviewDisabledFields,reviewFinanceEnabled} from './review-schema.js?v=1.0.0-finance1';
-import {hasPendingFinanceDraft} from './finance-domain.js?v=1.0.0-finance2';
+import {hasPendingFinanceDraft} from './finance-domain.js?v=1.0.0-finance-category1';
 
 export const DAILY_STEPS=[
   {id:'evidence',label:'今日证据',optional:true},

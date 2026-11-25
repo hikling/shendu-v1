@@ -3,7 +3,7 @@ import {normalizeReviewMetricIds,reconcileReviewMetrics} from './review-metrics.
 import {reviewQuestions,reviewDisabledFields} from './review-schema.js?v=1.0.0-finance1';
 import {renderMarkup,disposeUi,prepareDialogContainer,initializeToasts,showDialog,dismissDialog,showMenu,showVerificationCalendar,showStageCalendar,showFinanceMonthPicker,showFinanceDayPicker,showFinancePie,showToast} from './ui/shadcn.js?v=1.0.0-ui-audit1';
 import {overviewRecordAppearances,overviewVerifiedRecords,overviewRecordExcerpt,overviewLoopMetrics,overviewRecordTitle,overviewDateParts} from './overview-reel.js?v=1.0.0-overview15';
-import {DAILY_STEPS,dailyStepIssues,dailyPrompts,dailyPromptIssues,dailyPromptNeighbor,dailyPromptOwner} from './daily-flow.js?v=1.0.0-finance2';
+import {DAILY_STEPS,dailyStepIssues,dailyPrompts,dailyPromptIssues,dailyPromptNeighbor,dailyPromptOwner} from './daily-flow.js?v=1.0.0-finance-category1';
 import {dailyCalendarModel,dailyCalendarDateLabel} from './daily-calendar.js?v=1.0.0-art1';
 import {EXTENDED_FLOW,extendedPrompts,extendedPromptNeighbor,extendedPromptIssues,extendedReviewIssues} from './extended-flow.js?v=1.0.0-custom1';
 import {verificationMinimum} from './verification-policy.js?v=1.0.0-verification2';
@@ -11,7 +11,7 @@ import {createBrowserNavigator} from './browser-navigation.js?v=1.0.0-routes1';
 import {createReviewNavigator} from './review-navigation.js?v=1.0.0-finance1';
 import {attachReviewWheel} from './review-wheel.js?v=1.0.0-wheel1';
 import {createReviewTransition} from './review-transition.js?v=1.0.0-transition1';
-import {mountFinancePage,mountDailyFinance} from './finance-ui.js?v=1.0.0-ui-audit1';
+import {mountFinancePage,mountDailyFinance} from './finance-ui.js?v=1.0.0-finance-category1';
 import {RECORD_ART,recordArtAssignments} from './record-art.js?v=1.0.0-records1';
 import {createReviewIntroPicker,reviewIntroLines,reviewIntroLayout} from './review-intros.js?v=1.0.0-intros2';
 const $ = (s, root = document) => root.querySelector(s);

@@ -156,6 +156,37 @@ test('OCR spacing and fullwidth glyphs affect matching only, with custom rules a
   const old={id:'old-unknown',name:unknown,keywords:[],active:true};assert.equal(suggestFinanceCategory(unknown,[...DEFAULT_FINANCE_CATEGORIES,old]),old.id);
 });
 
+test('colloquial activities and products keep their meaning across purchasing channels',()=>{
+  const cases={
+    food:['下班在超市买了点菜','拎了点菜','菜场称了两斤菜','超市买一袋面','上网买了点菜','京东买手擀面','买面条','盒马鲜生','美团买菜'],
+    shopping:['买东西','昨晚在超市买了几样东西','上网买东西','上网购物','上网下单','买洗衣凝珠','逛街买日常用品','山姆会员','盒马鲜生买洗衣凝珠','菜市场买了一把菜刀','超市买了点面膜','淘宝买蔬菜种子','买了一台面条机','买一个篮球'],
+    transport:['叫车接送机','高铁改签','寄包裹'],
+    housing:['交宽带上网费','家里的网络账单','手机宽带','开通上网流量包','手机上网费','租房押金','酒店订房'],
+    health:['拼多多取药','线上问诊','血糖试纸'],
+    learning:['上网课','网课会员','网购买菜谱','上辅导课'],
+    entertainment:['上网','上网费','网咖上机','网吧交网费','电玩城包夜','上网看电影','游戏订阅','追番'],
+    social:['同事结婚随份','给父母生活费','探亲送礼'],
+    salary:['补发工资','公司发绩效奖金'],
+    'other-income':['兼职结算','租金收款','理财分红','回收闲置']
+  };
+  const oldPurposes=['买东西','买面条','上网','昨晚在超市买了几样东西','下班在超市买了点菜']
+    .map((name,index)=>({id:`old-purpose-${index}`,name,keywords:[],active:true}));
+  const categories=[...DEFAULT_FINANCE_CATEGORIES,...oldPurposes];
+  for(const [category,purposes] of Object.entries(cases)){
+    for(const purpose of purposes)assert.equal(suggestFinanceCategory(purpose,categories),category,purpose);
+  }
+  for(const purpose of ['微信支付','支付宝付款','定制工牌','便利店','修鞋','稿酬']){
+    assert.equal(financeCategoryLabel(purpose,categories),purpose);
+  }
+  const rows=parseFinanceLines('11 上网\n12 买面条\n13 买东西',{categories}).rows;
+  assert.deepEqual(rows.map(row=>row.categoryId),['entertainment','food','shopping']);
+  const receipt=parseReceiptText('商户名称：網咖 网 咖 上 机\n支付金额 ¥11.00',{categories});
+  assert.equal(receipt[0].categoryId,'entertainment');
+  const custom={id:'custom-net',name:'个人网络',keywords:['上网'],active:true};
+  assert.equal(suggestFinanceCategory('上网',[...categories,custom]),custom.id);
+  assert.equal(suggestFinanceCategory('上网',[...categories,{...custom,active:false}]),'entertainment');
+});
+
 test('line entry normalizes only safe fullwidth amount characters and respects current account categories',()=>{
   const categories=[...DEFAULT_FINANCE_CATEGORIES,{id:'custom',name:'咖啡',keywords:['星巴克'],active:true}];
   const parsed=parseFinanceLines('１２．５０ ＋ ６ − ０．０１　星巴克 Ａ店',{categories});

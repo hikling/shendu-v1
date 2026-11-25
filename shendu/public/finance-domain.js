@@ -1,5 +1,69 @@
 export const FINANCE_KINDS=Object.freeze({expense:'支出',income:'收入',refund:'退款',transfer:'不计收支'});
 
+const DAILY_PURPOSE_KEYWORDS={
+  food:[
+    '生鲜超市','叮咚买菜','美团买菜','多多买菜','盒马鲜生',
+    '面线','刀削面','手擀面','手工鲜面','面片','面皮','拌面','凉面','烩面','馄饨皮','饺子皮','水饺','汤圆',
+    '早点','稀饭','盖饭','煲仔饭','寿司','烤鱼','烤串','牛排','麻辣香锅','酸辣粉','凉皮','凉菜','熟食',
+    '牛腩','五花肉','里脊','鸡翅','鸡爪','豆干','腐竹','贝类','鲈鱼','鲫鱼','西兰花','生菜','小白菜','金针菇',
+    '豆角','茭白','秋葵','莴笋','洋葱','生姜','莲藕','芹菜','大葱','西瓜','香蕉','葡萄','橘子','柚子','草莓','橙子',
+    '花生油','菜籽油','橄榄油','蚝油','料酒','火锅底料','食品采购','餐馆','下馆子','下饭店','餐饮消费','点餐','点外卖','外卖会员',
+    '蛋挞','泡芙','面包店','蛋糕店','烘焙食品','拿铁','美式咖啡','酸奶饮品','咖啡店','奶茶店','鲜榨果汁'
+  ],
+  transport:[
+    '打个车','叫车','接送机','机场大巴','机场快线','机场接送','班车','长途客车','长途汽车','路桥费','桥费',
+    '停车缴费','代泊车','车位费','临时停车','汽车加油','摩托车加油','汽车充电费','换刹车片','车辆保养费',
+    '交通卡','公共自行车','高铁改签','机票改签','铁路车票','往返车票','火车站接送','寄包裹','托运费','行李托运','快递邮费'
+  ],
+  shopping:[
+    '日用百货','百货杂货','家用百货','生活杂货','日常用品','家用物品','家居用品','购置用品','换电脑','电脑升级',
+    '牛仔外套','打底裤','打底衫','四件套','鞋垫','鞋带','行李箱','旅行箱','拉杆箱','手提袋','购物袋',
+    '洗衣粉','洗衣凝珠','抽纸','卷纸','厨房纸','一次性手套','塑料袋','密封罐','茶具','儿童玩具','模型玩具',
+    '砧板','菜板','剁肉刀','切菜刀','擀面杖','煮面锅','洗菜篮','洗碗机','面食机','压面机','切菜机','搅拌机',
+    '电压力锅','电磁灶','电陶炉','净水器','加湿器','吹风机','挂烫机','空调遥控器','相机','运动相机','游戏手柄',
+    '家用水管','网络设备','网线','无线鼠标','机械键盘','随身充电器','U盘','固态硬盘','电脑内存','摄影配件',
+    '盆栽','种子','蔬菜种子','菜籽','园艺工具','健身器材','羽毛球拍','乒乓球拍','网球拍','运动装备','瑜伽垫',
+    '超市会员','商场会员','山姆会员','盒马会员','超市买单'
+  ],
+  housing:[
+    '房租续费','房租押金','租房押金','公寓租金','租房中介费','房贷利息','水电缴费','交水电','生活缴费','电表充值','水表充值',
+    '交燃气','煤气罐','加煤气','缴物业','小区物业','供暖缴费','宽带费','开通宽带','安装宽带','宽带安装','宽带账单',
+    '家庭网费','家庭上网费','家用网络费','手机上网费','宽带上网费','上网流量','数据流量','手机流量','购买流量','流量充值','流量续费',
+    '缴话费','电话充值','电信缴费','移动缴费','联通缴费','网线安装费','清洗空调','清洗油烟机','上门保洁','钟点清洁','管道疏通','维修门锁',
+    '酒店预订','民宿预订','旅店','客栈','宾馆住宿','酒店住宿','入住酒店','酒店订房','住宿押金'
+  ],
+  health:[
+    '取药','购药','配药','续药','药钱','药物','健康体检','体检套餐','检查身体','门诊挂号','在线问诊','线上问诊',
+    '就医','就诊','看医生','看牙','复查','复诊检查','过敏药','退热药','眼膏','止泻药','耳温枪','血压计',
+    '血糖仪','血糖试纸','病历复印','诊疗套餐','超声检查','B超','拍片','输液','针灸','推拿理疗','医生问诊'
+  ],
+  learning:[
+    '上网课','网课会员','学英语','家教费','学费缴纳','考务费','证书考试','考研资料','考试资料','练习题','试卷',
+    '词典','字典','买菜谱','烹饪书','电子书','教辅书','在线讲座','知识课程','付费课程','职业技能培训','网课续费','买题库',
+    '自习室会员','打印论文','论文装订','文献下载','学习软件','课程资料','补课费','上辅导课','教育培训'
+  ],
+  entertainment:[
+    '上网','上网费','上网费用','网咖','电竞馆','网络会所','电玩城','游戏厅','街机','包夜','网吧会员','网咖会员',
+    '游戏点卡','买皮肤','游戏皮肤','买游戏','云游戏','游戏订阅','steam余额','steam充值','游戏通行证','番茄小说',
+    '追番','看番','动漫展','漫展','观影','影城','电影兑换券','观影券','音乐订阅','视频平台会员','大会员','听歌',
+    '投屏会员','影音会员','看直播','直播打赏','景区年卡','游园','动物园','水上乐园','海洋馆','滑雪票','卡丁车',
+    '泡温泉','汗蒸','按摩体验','健身会籍','健身月卡','健身年卡','跳操课','练瑜伽','球场租用','打篮球','打羽毛球',
+    '打网球','打台球','玩桌游','看展','看话剧','演唱会购票','话剧票','看演出','看比赛'
+  ],
+  social:[
+    '随个礼','包红包','发红包','节日红包','生日礼','伴手礼','回礼','拜年礼','探病礼','结婚随礼','结婚份子',
+    '婚礼随份','婚礼份子','同事随礼','人情红包','支援亲友','探亲送礼','给父母生活费','孝顺父母','慈善募捐','救助捐款'
+  ],
+  salary:[
+    '工资转入','到账工资','工资发放','补发工资','补发薪水','岗位津贴','公司工资','公司奖金','项目奖金',
+    '奖金到账','绩效奖金','绩效奖','计件工资','扣完税的工资','股权激励工资'
+  ],
+  'other-income':[
+    '兼职结算','兼职费','接单报酬','租金收款','兼职收入','接单收入','利息到账','存款利息','理财分红',
+    '理财收益','基金分红','股息','股票分红','回收闲置','卖废品','卖出二手','出让闲置','报销入账','收回垫付款','现金返利'
+  ]
+};
+
 export const DEFAULT_FINANCE_CATEGORIES=Object.freeze([
   {id:'food',name:'餐饮',keywords:['早餐','早饭','午餐','午饭','晚餐','晚饭','吃饭','聚餐','团建','餐厅','餐饮','饭店','外卖','夜宵','宵夜','火锅','烧烤','自助餐','小吃','零食','饮料','咖啡','奶茶','水果','超市食品','买菜','菜钱','菜市场','菜场','蔬菜','食材','生鲜','猪肉','牛肉','羊肉','鸡肉','鸭肉','鸡蛋','海鲜','水产','大米','面粉','食用油','调味料','酱油','牛奶','酸奶','面包','蛋糕','甜品','饼干','坚果','饮用水','矿泉水','盒饭','便当','食堂','餐费','饭钱','面馆','快餐','麻辣烫','米线','螺蛳粉','包子','饺子','汉堡','披萨','炸鸡','烤肉','面条','米饭','炒饭','炒面','炒粉','米粉','河粉','粉条','方便面','泡面','挂面','面食','拉面','牛肉面','馄饨','馒头','花卷','烧饼','煎饼','饭团','肠粉','油条','豆浆','豆腐','豆制品','土豆','番茄','西红柿','黄瓜','青菜','白菜','萝卜','菠菜','茄子','辣椒','蘑菇','玉米','红薯','鸡腿','排骨','鱼肉','鱼虾','虾仁','香肠','火腿肠','肉丸','冷冻食品','速冻食品','食用盐','白糖','醋调料','调料','粮油','早餐店','早餐铺','便利店早餐','买点吃的','买吃的','吃点东西','吃东西','喝粥','买粥','粥店','买早点','早茶','下午茶','茶饮','饮品','甜点','冰淇淋','雪糕','可乐','果汁','啤酒','白酒','餐酒','纯净水','桶装水','电解质水','外卖餐费','肯德基','麦当劳','华莱士','蜜雪冰城','瑞幸','喜茶','奈雪','茶百道','霸王茶姬','星巴克']},
   {id:'transport',name:'交通',keywords:['打车','滴滴','出租车','网约车','地铁','公交','高铁','火车','机票','加油','停车','通行费','过路费','车票','交通费','路费','打的','顺风车','代驾','共享单车','骑行费','公交卡','地铁卡','充电桩','汽车充电','电动车充电','高速费','高速通行','停车场','停车费','洗车','修车','保养车','车辆保养','汽车保养','汽车维修','打摩的','摩的','轮渡','船票','客运','客车','大巴','巴士','动车','动车票','飞机票','航空票','汽车票','租车','租车费','代步车','出行费','网约单车','单车月卡','骑车费用','补胎','换轮胎','轮胎','车险','年检费','车辆年检','汽车美容','汽车清洗','换机油','机油','充电费','公交充值','交通卡充值','快递费','邮寄','寄件','寄快递','寄东西','运费','配送费','搬运费','顺丰快递','菜鸟裹裹']},
@@ -12,21 +76,35 @@ export const DEFAULT_FINANCE_CATEGORIES=Object.freeze([
   {id:'salary',name:'工资',keywords:['工资','薪资','薪水','奖金','绩效','年终奖','加班费','基本工资','提成','发薪','薪酬','月薪','底薪','基本薪资','工资到账','工资入账','出勤奖','全勤奖','年终奖金','年中奖金','业绩提成','销售提成','餐补到账','交通补贴到账']},
   {id:'other-income',name:'其他收入',keywords:['兼职','收入','报酬','利息','分红','收益','收租','租金收入','报销到账','补贴到账','出售闲置','卖闲置','二手转卖','劳务费','酬劳','稿费','佣金','项目款','服务费收入','交易返现','返利到账','政府补贴','报销款','助学金','奖学金','意外收入','捡到的钱','闲置出售','卖二手','二手出售','租金到账']},
   {id:'uncategorized',name:'待分类',keywords:[]}
-].map(category=>Object.freeze({...category,keywords:Object.freeze(category.keywords),active:true,version:1})));
+].map(category=>Object.freeze({...category,keywords:Object.freeze([...new Set([...category.keywords,...(DAILY_PURPOSE_KEYWORDS[category.id]||[])])]),active:true,version:1})));
 
 const MAX_CENTS=99_999_999_999;
-const BUILTIN_CATEGORY_IDS=new Set(DEFAULT_FINANCE_CATEGORIES.map(category=>category.id));
+const BUILTIN_CATEGORIES=new Map(DEFAULT_FINANCE_CATEGORIES.map(category=>[category.id,category]));
 // Shopping channels and vague purchases are fallbacks; the actual item wins.
-const SHOPPING_PURPOSE_KEYWORDS=new Set(['购物','买东西','网购','买点东西','购买东西','买些东西','买点小东西','买了东西','买杂物','日常采购','日常购物','商场购物','超市购物','网购下单','网上购物','网上买','实体店购物','线下购物','逛街购物']);
+const SHOPPING_PURPOSE_KEYWORDS=new Set(['购物','买东西','网购','买点东西','购买东西','买些东西','买点小东西','买了东西','买杂物','日常采购','日常购物','商场购物','超市购物','网购下单','网上购物','网上买','实体店购物','线下购物','逛街购物','逛街买东西','下单购物','线上购物','超市采购','网上下单','上网下单']);
 const SHOPPING_CHANNEL_KEYWORDS=['淘宝','京东','拼多多','天猫','抖音商城','小红书商城','唯品会','苏宁易购','得物'];
 const GENERAL_SHOPPING_KEYWORDS=new Set([...SHOPPING_PURPOSE_KEYWORDS,...SHOPPING_CHANNEL_KEYWORDS]);
 // Matching tolerates OCR spacing/fullwidth glyphs; stored purpose/custom names stay intact.
 const categoryMatchText=value=>String(value??'').normalize('NFKC').trim().toLowerCase().replace(/[\s\u200b\ufeff]+/g,'');
+const SHOPPING_PHRASE='(?:买|购买|选购|购置|添置)(?:了)?(?:一点儿?|点儿?|一些|些|几样|几件|一件|几个|一个|两样|两件)?(?:小?东西|物品|杂货|日用百货|家用百货)';
+const SHOPPING_HINT=new RegExp(SHOPPING_PHRASE,'u');
+const COMPLETE_SHOPPING_PURPOSE=new RegExp(`^${SHOPPING_PHRASE}(?:回来|回家|了)?$`,'u');
+const GROCERY_CHANNELS=['生鲜超市','叮咚买菜','美团买菜','多多买菜','盒马鲜生'];
+const GROCERY_CHANNEL_PATTERN=new RegExp(GROCERY_CHANNELS.join('|'),'gu');
+const CATEGORY_PURPOSE_PATTERNS=new Map([
+  // Quantities can split common grocery phrases. Require a complete item so
+  // 菜刀 and 面膜 still match their own shopping meanings.
+  ['food',/(?:买|采买|采购|拎|挑|囤|带|称|捎)(?:了)?(?:一点儿?|点儿?|一些|些|几样|一袋|一把|半斤|[一两二三四五六七八九十\d]+斤)?[菜米面肉鱼虾](?=$|[、，,。！!？?；;和跟与]|回来|回家|回去|做饭|烧饭|炒菜)/u],
+  ['shopping',/(?:买|换|购买|选购)(?:了)?(?:新|一把|一个|一台|一套|一张|几把|几件)?(?:菜刀|水果刀|菜板|砧板|面条机|面包机|咖啡机|豆浆机|羽毛球拍|乒乓球拍|网球拍|篮球|足球)/u],
+  ['housing',/(?:家庭|家用|家里|宽带|手机)(?:的)?(?:上网|网络|网)(?:账单|费|缴费|套餐)/u],
+  // Venue charges and household/mobile bills use the same word 网费.
+  ['entertainment',/(?:网吧|网咖|电竞馆|电玩城)(?:里|内)?(?:充值|续费|包夜|上网|上机|交网费|网费|机时|开卡|网卡|费用)/u]
+]);
 function isShoppingPurpose(text){
   if(SHOPPING_PURPOSE_KEYWORDS.has(text))return true;
-  let purpose=text.replace(/^(?:在|去)/,'');
-  for(const channel of [...SHOPPING_CHANNEL_KEYWORDS,'商场','超市','实体店','网上','线下']){if(purpose.startsWith(channel)){purpose=purpose.slice(channel.length).replace(/^上/,'');break}}
-  return SHOPPING_PURPOSE_KEYWORDS.has(purpose);
+  let purpose=text.replace(/^(?:今天|昨天|刚才|昨晚|下班后?|周末)?(?:给家里|帮家里)?(?:在|去)?/,'');
+  for(const channel of [...SHOPPING_CHANNEL_KEYWORDS,'商场','超市','实体店','网上','上网','线下']){if(purpose.startsWith(channel)){purpose=purpose.slice(channel.length).replace(/^上/,'');break}}
+  return SHOPPING_PURPOSE_KEYWORDS.has(purpose)||COMPLETE_SHOPPING_PURPOSE.test(purpose);
 }
 
 export function hasPendingFinanceDraft(draft){
@@ -89,32 +167,49 @@ export function formatFinanceMoney(cents){
   return `${cents<0?'-':''}${whole}.${String(amount%100).padStart(2,'0')}`;
 }
 
+function categoryMatchScore(category,text,matchedText,builtin){
+  const pattern=builtin?CATEGORY_PURPOSE_PATTERNS.get(category.id):undefined;
+  let wordsText=builtin?matchedText:text;
+  if(category.id==='food')wordsText=wordsText.replace(GROCERY_CHANNEL_PATTERN,'');
+  // 上网 is an activity by itself and a channel in “上网买东西”.
+  if(category.id==='entertainment')wordsText=wordsText.replace(/上网(?=买|购买|选购|购置|购物|下单)/gu,'');
+  // A grocery merchant supports the default suggestion when the receipt does
+  // not give an item. Its name cannot outweigh a named non-food product.
+  let score=pattern?.exec(wordsText)?.[0].length||0;
+  if(category.id==='food'&&wordsText!==matchedText)score=Math.max(score,1);
+  if(category.id==='shopping'&&(isShoppingPurpose(matchedText)||SHOPPING_HINT.test(matchedText)))score=Math.max(score,1);
+  const words=[category.name,...(Array.isArray(category.keywords)?category.keywords:[]),...(BUILTIN_CATEGORIES.get(category.id)?.keywords||[])];
+  for(const word of words){
+    const keyword=builtin?categoryMatchText(word):String(word).trim().toLowerCase();
+    if(!keyword||!wordsText.includes(keyword))continue;
+    const weight=category.id==='shopping'&&GENERAL_SHOPPING_KEYWORDS.has(keyword)?1:keyword.length;
+    score=Math.max(score,weight);
+  }
+  return score;
+}
+
 export function suggestFinanceCategory(purpose,categories=DEFAULT_FINANCE_CATEGORIES,kind='expense'){
   const text=String(purpose??'').trim().toLowerCase(),matchedText=categoryMatchText(text),active=categories.filter(category=>category.active!==false);
   if(!text)return kind==='income'&&active.some(category=>category.id==='other-income')?'other-income':'uncategorized';
-  const purposeOnly=category=>!BUILTIN_CATEGORY_IDS.has(category.id)&&!(Array.isArray(category.keywords)&&category.keywords.length);
+  const purposeOnly=category=>!BUILTIN_CATEGORIES.has(category.id)&&!(Array.isArray(category.keywords)&&category.keywords.length);
   const exact=active.find(category=>String(category.name).toLowerCase()===text);
   if(exact&&!purposeOnly(exact))return exact.id;
   // Empty-keyword custom names are purpose fallbacks, regardless of provenance.
   // A concrete built-in intent wins over both exact and substring fallback names.
   if(active.some(purposeOnly)){
-    const builtins=active.filter(category=>BUILTIN_CATEGORY_IDS.has(category.id)),recognized=suggestFinanceCategory(text,builtins,'expense');
+    const builtins=active.filter(category=>BUILTIN_CATEGORIES.has(category.id)),recognized=suggestFinanceCategory(text,builtins,'expense');
     let concrete=recognized!=='uncategorized';
     if(recognized==='shopping'){
       const shopping=builtins.find(category=>category.id==='shopping');
-      const shoppingWords=[shopping?.name,...(shopping?.keywords||[]),...DEFAULT_FINANCE_CATEGORIES.find(category=>category.id==='shopping').keywords];
-      concrete=isShoppingPurpose(matchedText)||shoppingWords.some(word=>{const keyword=categoryMatchText(word);return keyword&&!GENERAL_SHOPPING_KEYWORDS.has(keyword)&&matchedText.includes(keyword)});
+      concrete=isShoppingPurpose(matchedText)||categoryMatchScore(shopping,text,matchedText,true)>1;
     }
     if(concrete)return suggestFinanceCategory(text,active.filter(category=>!purposeOnly(category)),kind);
   }
   if(exact)return exact.id;
   let best=null,score=0,bestCustomRule=false;
   for(const category of active){
-    const builtin=BUILTIN_CATEGORY_IDS.has(category.id),customRule=!builtin&&Array.isArray(category.keywords)&&category.keywords.length>0,words=[category.name,...(Array.isArray(category.keywords)?category.keywords:[]),...(DEFAULT_FINANCE_CATEGORIES.find(item=>item.id===category.id)?.keywords||[])];
-    for(const word of words){
-      const keyword=builtin?categoryMatchText(word):String(word).trim().toLowerCase(),weight=category.id==='shopping'&&GENERAL_SHOPPING_KEYWORDS.has(keyword)?1:keyword.length;
-      if(keyword&&(builtin?matchedText:text).includes(keyword)&&(weight>score||weight===score&&customRule&&!bestCustomRule)){best=category.id;score=weight;bestCustomRule=customRule}
-    }
+    const builtin=BUILTIN_CATEGORIES.has(category.id),customRule=!builtin&&Array.isArray(category.keywords)&&category.keywords.length>0,weight=categoryMatchScore(category,text,matchedText,builtin);
+    if(weight&&(weight>score||weight===score&&customRule&&!bestCustomRule)){best=category.id;score=weight;bestCustomRule=customRule}
   }
   return best||(kind==='income'&&active.some(category=>category.id==='other-income')?'other-income':'uncategorized');
 }
