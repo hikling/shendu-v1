@@ -725,3 +725,23 @@ test('daily card progress bars reflect share of the monthly total rather than ma
   assert.equal($('.finance-day-card-bar>i',c10).style.width,'75%');
   assert.match($('.finance-day-card-share',c10).textContent,/占本月收入.*75\.0%/);
 });
+
+test('annual finance section displays yearly totals, pie breakdown, 12-month rhythm and switches year or month cleanly',async()=>{
+  const year2026={categories:DEFAULT_FINANCE_CATEGORIES,entries:[],summary:{incomeCents:120000,expenseCents:35000,refundCents:2000,netExpenseCents:33000,balanceCents:87000,count:8},expenseCategoryTotals:[{categoryId:'food',name:'餐饮',cents:21000},{categoryId:'transport',name:'交通',cents:14000}],trend:[{date:'2026-08-03',expenseCents:15000,spendingCents:15000,incomeCents:0},{date:'2026-11-15',expenseCents:18000,spendingCents:20000,incomeCents:120000}]};
+  const year2025={categories:DEFAULT_FINANCE_CATEGORIES,entries:[],summary:{incomeCents:50000,expenseCents:9000,refundCents:0,netExpenseCents:9000,balanceCents:41000,count:2},expenseCategoryTotals:[{categoryId:'shopping',name:'购物',cents:9000}],trend:[{date:'2025-12-20',expenseCents:9000,spendingCents:9000,incomeCents:50000}]};
+  const f=fixture({handler:path=>path==='/api/finance?year=2026'?year2026:path==='/api/finance?year=2025'?year2025:undefined});await flush();
+  assert.match($('[data-finance-year-summary]',f.root).textContent,/年度净支出.*¥330\.00.*年度收入.*¥1,200\.00.*年度收支差额.*\+¥870\.00.*月均净支出.*¥165\.00/);
+  assert.match($('[data-finance-year-pie]',f.root).textContent,/餐饮.*¥210\.00.*交通.*¥140\.00/);
+  assert.equal($$('[data-finance-year-month]',f.root).length,12);
+  assert.equal($('[data-finance-year-month="2026-11"]',f.root).classList.contains('is-active'),true);
+  assert.match($('[data-finance-year-rhythm]',f.root).textContent,/峰值 11月 · ¥180\.00/);
+  $('[data-finance-year-prev]',f.root).click();await flush();
+  assert.equal($('[data-finance-year-label]',f.root).textContent,'2025年');
+  assert.equal($('[data-finance-year-current]',f.root).hidden,false);
+  assert.match($('[data-finance-year-pie]',f.root).textContent,/购物.*¥90\.00/);
+  $('[data-finance-year-current]',f.root).click();await flush();
+  assert.equal($('[data-finance-year-label]',f.root).textContent,'2026年');
+  $('[data-finance-year-month="2026-08"]',f.root).click();await flush();
+  assert.ok(f.calls.some(call=>call.path==='/api/finance?month=2026-08'));
+  assert.equal($('[data-finance-year-month="2026-08"]',f.root).classList.contains('is-active'),true);
+});
