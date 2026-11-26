@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {Pie,PieChart} from 'recharts';
+import {Cell,Pie,PieChart} from 'recharts';
 import {ChartContainer,ChartTooltip,ChartTooltipContent} from './components/ui/chart';
 import {mountComponent,disposeUi} from './runtime';
 import {formatFinanceMoney} from '../public/finance-domain';
@@ -27,12 +27,66 @@ export function financePieData(totals=[]){
 }
 function FinancePie({totals=[],refundCents=0,netExpenseCents=0,title='分类花销',loading=false,error=''}){
   const {categories,total,slices,remainder}=financePieData(totals),config=Object.fromEntries(slices.map(row=>[row.key,{label:row.name,color:row.fill}]));
+  const [activeId,setActiveId]=React.useState(null);
   const plotKey=slices.map(row=>`${row.categoryId}:${row.cents}`).join('|'),totalLabel=money(total);
-  const listRow=row=> <li key={row.categoryId}><span className="finance-pie-dot" style={{background:row.fill||neutralColor}} aria-hidden="true"/><span className="finance-pie-category">{row.name}</span><strong>{money(row.cents)}</strong><span className="finance-pie-percent">{percentage(row.cents,total)}</span></li>;
+  React.useEffect(()=>{setActiveId(null)},[plotKey]);
+  const activeSlice=activeId?slices.find(row=>row.categoryId===activeId)||null:null;
+  const centerLabel=activeSlice?activeSlice.name:'支出合计';
+  const centerAmount=activeSlice?money(activeSlice.cents):totalLabel;
+  const centerSub=activeSlice?`占比 ${activeSlice.percentage}`:`${categories.length} 个分类`;
+  const listRow=(row,interactive=true)=>{
+    const sharePct=total>0?Math.max(4,Math.min(100,Math.round(row.cents/total*100))):0;
+    const isActive=interactive&&activeId===row.categoryId;
+    const isDimmed=interactive&&Boolean(activeId)&&activeId!==row.categoryId;
+    return <li key={row.categoryId} className={`${isActive?'is-active':''}${isDimmed?' is-dimmed':''}`.trim()||undefined}
+      onMouseEnter={interactive?()=>setActiveId(row.categoryId):undefined}
+      onMouseLeave={interactive?()=>setActiveId(null):undefined}>
+      <span className="finance-pie-dot" style={{background:row.fill||neutralColor}} aria-hidden="true"/>
+      <span className="finance-pie-category">{row.name}</span>
+      <strong>{money(row.cents)}</strong>
+      <span className="finance-pie-percent">{percentage(row.cents,total)}</span>
+      <span className="finance-pie-row-bar" aria-hidden="true"><i style={{width:`${sharePct}%`,background:row.fill||neutralColor}}/></span>
+    </li>;
+  };
   return <figure className="finance-pie-figure" aria-label={title} aria-busy={loading}>
     {loading?<p className="finance-pie-state" role="status">正在读取花销…</p>:error?<p className="finance-pie-state is-error" role="status">{error}</p>:<>
-      {total>0?<div className="finance-pie-body"><div className="finance-pie-plot" key={plotKey}><ChartContainer config={config} className="finance-pie-chart" role="img" aria-label={`${title}，共${totalLabel}，${categories.length}个分类；分类金额及占比见下方`}><PieChart accessibilityLayer><ChartTooltip cursor={false} content={<ChartTooltipContent formatter={value=>money(value)}/>}/><Pie data={slices} dataKey="cents" nameKey="name" cx="50%" cy="50%" innerRadius="65%" outerRadius="91%" paddingAngle={slices.length>1?3:0} cornerRadius={slices.length>1?5:0} stroke="var(--workspace-canvas, #faf8f2)" strokeWidth={2} isAnimationActive={false}/></PieChart></ChartContainer><div className={`finance-pie-total${totalLabel.length>12?' is-long':''}`}><span>支出合计</span><strong>{totalLabel}</strong></div></div><div className="finance-pie-list-col"><ul className="finance-pie-legend" aria-label={`${title}分类金额和占比`}>{slices.map(listRow)}</ul>{remainder.length?<details className="finance-pie-breakdown"><summary>展开其他 {remainder.length} 个分类</summary><ul className="finance-pie-legend">{remainder.map(listRow)}</ul></details>:null}</div></div>:<div className="finance-pie-empty"><span aria-hidden="true"/><p>这段时间没有支出</p><small>{refundCents>0?'已收到的退款列在下方。':'记下花销后，这里会显示分类占比。'}</small></div>}
-      <p className="finance-pie-note"><span>退款 <strong>{money(Math.max(0,refundCents))}</strong></span><span>净支出 <strong>{netExpenseCents<0?'−':''}{money(Math.abs(netExpenseCents))}</strong></span><small>饼图按实际支出分类，退款单独计算。</small></p>
+      {total>0?<div className="finance-pie-body">
+        <div className="finance-pie-plot" key={plotKey}>
+          <div className="finance-pie-dial" aria-hidden="true"/>
+          <ChartContainer config={config} className="finance-pie-chart" role="img" aria-label={`${title}，共${totalLabel}，${categories.length}个分类；分类金额及占比见下方`}>
+            <PieChart accessibilityLayer>
+              <ChartTooltip cursor={false} content={<ChartTooltipContent formatter={value=>money(value)}/>}/>
+              <Pie data={slices} dataKey="cents" nameKey="name" cx="50%" cy="50%" startAngle={90} endAngle={-270}
+                innerRadius="64%" outerRadius="92%" paddingAngle={slices.length>1?2.5:0} cornerRadius={slices.length>1?6:0}
+                stroke="#fffefa" strokeWidth={2.5} isAnimationActive={false}
+                onMouseEnter={(_,index)=>setActiveId(slices[index]?.categoryId||null)}
+                onMouseLeave={()=>setActiveId(null)}>
+                {slices.map(slice=><Cell key={slice.categoryId} fill={slice.fill} fillOpacity={activeId&&activeId!==slice.categoryId?0.28:1}/>)}
+              </Pie>
+            </PieChart>
+          </ChartContainer>
+          <div className={`finance-pie-total${centerAmount.length>11?' is-long':''}${activeSlice?' is-focused':''}`}>
+            <span className="finance-pie-total-label">{activeSlice?<i style={{background:activeSlice.fill}} aria-hidden="true"/>:null}{centerLabel}</span>
+            <strong>{centerAmount}</strong>
+            <small>{centerSub}</small>
+          </div>
+        </div>
+        <div className="finance-pie-list-col">
+          <ul className="finance-pie-legend" aria-label={`${title}分类金额和占比`}>{slices.map(row=>listRow(row,true))}</ul>
+          {remainder.length?<details className="finance-pie-breakdown"><summary>展开其他 {remainder.length} 个分类</summary><ul className="finance-pie-legend is-sub">{remainder.map(row=>listRow(row,false))}</ul></details>:null}
+        </div>
+      </div>:<div className="finance-pie-empty">
+        <div className="finance-pie-empty-ring" aria-hidden="true"><span>¥</span></div>
+        <p>这段时间没有支出</p>
+        <small>{refundCents>0?'已收到的退款列在下方。':'记下花销后，这里会显示分类占比。'}</small>
+      </div>}
+      <p className="finance-pie-note">
+        <span className="finance-pie-note-pills">
+          <span className="finance-pie-note-pill">退款 <strong>{money(Math.max(0,refundCents))}</strong></span>
+          <span className="finance-pie-note-pill is-net">净支出 <strong>{netExpenseCents<0?'−':''}{money(Math.abs(netExpenseCents))}</strong></span>
+        </span>
+        <small>饼图按实际支出分类，退款单独计算。</small>
+      </p>
     </>}
   </figure>;
 }

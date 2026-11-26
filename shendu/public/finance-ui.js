@@ -29,6 +29,19 @@ function clearReceiptChoice(checkbox){
 }
 const WEEKDAY_SHORT=['日','一','二','三','四','五','六'];
 const WEEKDAY_FULL=['星期日','星期一','星期二','星期三','星期四','星期五','星期六'];
+const CATEGORY_ACCENTS=new Map(Object.entries({
+  food:'#2f8f79',transport:'#d4943f',shopping:'#5b89b8',housing:'#cf7267',
+  health:'#79a86b',learning:'#8a79b8',entertainment:'#d48653',social:'#4ea3b0',
+  salary:'#6d84c2','other-income':'#b97ea8'
+}));
+const CATEGORY_PALETTE=[...CATEGORY_ACCENTS.values()];
+function categoryAccent(id){
+  const key=String(id||'');
+  if(!key||key==='uncategorized')return '#a9b6ac';
+  if(CATEGORY_ACCENTS.has(key))return CATEGORY_ACCENTS.get(key);
+  let hash=2166136261;for(const char of key)hash=Math.imul(hash^char.codePointAt(0),16777619);
+  return CATEGORY_PALETTE[(hash>>>0)%CATEGORY_PALETTE.length];
+}
 function dayCardParts(isoDate){
   const match=/^(\d{4})-(\d{2})-(\d{2})$/.exec(String(isoDate||''));
   if(!match)return {year:'',month:'',dayNum:String(isoDate||''),shortMonthDay:'',weekdayShort:'',fullTitle:String(isoDate||'')};
@@ -36,15 +49,27 @@ function dayCardParts(isoDate){
   const weekday=new Date(Date.UTC(year,month-1,dayNum)).getUTCDay();
   return {year:String(year),month:String(month),dayNum:String(dayNum),shortMonthDay:`${month}月`,weekdayShort:`周${WEEKDAY_SHORT[weekday]}`,fullTitle:`${year}年${month}月${dayNum}日 ${WEEKDAY_FULL[weekday]}`};
 }
-function summarizeDayRows(rows){
+function summarizeDayRows(rows,nameOf){
   let expenseCents=0,refundCents=0,incomeCents=0,activeCount=0;
+  const catTotals=new Map();
   for(const row of rows){
     if(row.deletedAt)continue;
     activeCount++;
-    if(row.kind==='expense')expenseCents+=row.amountCents;
+    if(row.kind==='expense'){
+      expenseCents+=row.amountCents;
+      const cid=String(row.categoryId||'uncategorized');
+      catTotals.set(cid,(catTotals.get(cid)||0)+row.amountCents);
+    }
     if(row.kind==='refund')refundCents+=row.amountCents;
-    if(row.kind==='income')incomeCents+=row.amountCents;
+    if(row.kind==='income'){
+      incomeCents+=row.amountCents;
+      if(!expenseCents){
+        const cid=String(row.categoryId||'other-income');
+        catTotals.set(cid,(catTotals.get(cid)||0)+row.amountCents);
+      }
+    }
   }
+  const topCategories=[...catTotals.entries()].sort((a,b)=>b[1]-a[1]).slice(0,2).map(([cid])=>({id:cid,name:nameOf?nameOf(cid):'',color:categoryAccent(cid)})).filter(item=>item.name);
   const netExpenseCents=expenseCents-refundCents,totalCount=rows.length;
   let label='当日记录',amountText='¥0.00',tone='is-neutral',subline='';
   if(expenseCents>0||refundCents>0){
@@ -57,7 +82,7 @@ function summarizeDayRows(rows){
     amountText=`+¥${money(incomeCents)}`;
     tone='is-income';
   }
-  return {expenseCents,refundCents,incomeCents,netExpenseCents,activeCount,totalCount,label,amountText,tone,subline};
+  return {expenseCents,refundCents,incomeCents,netExpenseCents,activeCount,totalCount,label,amountText,tone,subline,topCategories};
 }
 
 function createWorkspace(container,options,daily){
@@ -188,9 +213,9 @@ function createWorkspace(container,options,daily){
   }
 
   function entryHtml(entry){
-    const deleted=Boolean(entry.deletedAt),title=entry.purpose||categoryName(entry.categoryId),receiptIds=entry.receiptIds||[],amount=money(entry.amountCents);
-    const actions=!deleted&&entry.kind==='expense'?`<button type="button" class="link-button" data-entry-action="refund" data-id="${esc(entry.id)}">登记退款</button>`:'';
-    return `<article class="finance-entry ${amount.length>10?'has-long-amount':''} ${deleted?'is-deleted':''}" data-entry-id="${esc(entry.id)}"><div class="finance-entry-copy"><div class="finance-entry-heading"><h3>${esc(title)}</h3><span class="finance-entry-tag kind-${esc(entry.kind)}">${esc(FINANCE_KINDS[entry.kind]||'账目')}</span><span class="finance-entry-tag finance-entry-tag-category">${esc(categoryName(entry.categoryId))}</span>${deleted?'<span class="finance-entry-tag">已删除</span>':''}</div>${entry.note?`<p>${esc(entry.note)}</p>`:''}${entry.refundOf?'<small>已关联原支出</small>':''}</div><div class="finance-entry-end"><strong class="finance-entry-amount kind-${esc(entry.kind)}">${entryMoney(entry)}</strong></div><div class="finance-entry-footer">${receiptIds.length?`<button type="button" class="link-button finance-receipt-link" data-receipt-open="${esc(receiptIds[0])}">查看截图 · ${receiptIds.length} 张</button>`:'<span class="finance-entry-no-receipt">未附截图</span>'}<div class="finance-entry-actions">${actions}</div></div></article>`;
+    const deleted=Boolean(entry.deletedAt),title=entry.purpose||categoryName(entry.categoryId),receiptIds=entry.receiptIds||[],amount=money(entry.amountCents),accent=categoryAccent(entry.categoryId);
+    const actions=!deleted&&entry.kind==='expense'?`<button type="button" class="link-button finance-entry-refund-btn" data-entry-action="refund" data-id="${esc(entry.id)}">登记退款</button>`:'';
+    return `<article class="finance-entry kind-${esc(entry.kind)} ${amount.length>10?'has-long-amount':''} ${deleted?'is-deleted':''}" style="--entry-accent:${esc(accent)}" data-entry-id="${esc(entry.id)}"><div class="finance-entry-copy"><div class="finance-entry-heading"><span class="finance-entry-dot" aria-hidden="true"></span><h3>${esc(title)}</h3><div class="finance-entry-tags"><span class="finance-entry-tag kind-${esc(entry.kind)}">${esc(FINANCE_KINDS[entry.kind]||'账目')}</span><span class="finance-entry-tag finance-entry-tag-category">${esc(categoryName(entry.categoryId))}</span>${deleted?'<span class="finance-entry-tag">已删除</span>':''}</div></div>${entry.note?`<p>${esc(entry.note)}</p>`:''}${entry.refundOf?'<small>已关联原支出</small>':''}</div><div class="finance-entry-end"><strong class="finance-entry-amount kind-${esc(entry.kind)}">${entryMoney(entry)}</strong></div><div class="finance-entry-footer">${receiptIds.length?`<button type="button" class="link-button finance-receipt-link" data-receipt-open="${esc(receiptIds[0])}">查看截图 · ${receiptIds.length} 张</button>`:'<span class="finance-entry-no-receipt">未附截图</span>'}<div class="finance-entry-actions">${actions}</div></div></article>`;
   }
   function renderEntries(){
     const list=$('[data-finance-entries]',container),groups=new Map();for(const entry of entries){if(!groups.has(entry.date))groups.set(entry.date,[]);groups.get(entry.date).push(entry)}
@@ -207,7 +232,7 @@ function createWorkspace(container,options,daily){
       const more=$('[data-finance-more]',container);if(more)more.hidden=!cursor;
       return;
     }
-    const daySummaries=[...groups].map(([date,rows])=>({date,rows,parts:dayCardParts(date),info:summarizeDayRows(rows)}));
+    const daySummaries=[...groups].map(([date,rows])=>({date,rows,parts:dayCardParts(date),info:summarizeDayRows(rows,categoryName)}));
     const activeDate=expandedLedgerDay&&groups.has(expandedLedgerDay)?expandedLedgerDay:null;
     expandedLedgerDay=activeDate;
     const selected=activeDate?daySummaries.find(item=>item.date===activeDate):null;
@@ -215,15 +240,16 @@ function createWorkspace(container,options,daily){
     const cardsHtml=daySummaries.map(item=>{
       const ratioPct=maxSpend>0&&item.info.netExpenseCents>0?Math.max(12,Math.round(item.info.netExpenseCents/maxSpend*100)):item.info.incomeCents>0?28:0;
       const isSelected=item.date===activeDate;
-      return `<button type="button" class="finance-day-card ${item.info.tone}${isSelected?' is-selected':''}" data-finance-day-card="${esc(item.date)}" aria-expanded="${isSelected?'true':'false'}"><span class="finance-day-card-head"><span class="finance-day-card-date"><strong>${esc(item.parts.dayNum)}</strong><span>${esc(item.parts.shortMonthDay)} · ${esc(item.parts.weekdayShort)}${item.date===options.today()?'<em class="finance-day-today">今</em>':''}</span></span><span class="finance-day-card-count">${item.info.totalCount} 笔</span></span><span class="finance-day-card-amount"><small>${esc(item.info.label)}</small><strong>${esc(item.info.amountText)}</strong>${item.info.subline?`<span class="finance-day-card-sub">${esc(item.info.subline)}</span>`:''}</span><span class="finance-day-card-bar" aria-hidden="true"><i style="width:${ratioPct}%"></i></span></button>`;
+      const catsHtml=item.info.topCategories.length?`<span class="finance-day-card-cats">${item.info.topCategories.map(cat=>`<span><i style="background:${esc(cat.color)}" aria-hidden="true"></i>${esc(cat.name)}</span>`).join('')}</span>`:'';
+      return `<button type="button" class="finance-day-card ${item.info.tone}${isSelected?' is-selected':''}" data-finance-day-card="${esc(item.date)}" aria-expanded="${isSelected?'true':'false'}"><span class="finance-day-card-head"><span class="finance-day-card-stamp"><strong>${esc(item.parts.dayNum)}</strong><span class="finance-day-card-meta"><span>${esc(item.parts.shortMonthDay)}</span><span>${esc(item.parts.weekdayShort)}${item.date===options.today()?'<em class="finance-day-today">今</em>':''}</span></span></span><span class="finance-day-card-count">${item.info.totalCount} 笔</span></span>${catsHtml}<span class="finance-day-card-foot"><span class="finance-day-card-amount"><small>${esc(item.info.label)}</small><strong>${esc(item.info.amountText)}</strong>${item.info.subline?`<span class="finance-day-card-sub">${esc(item.info.subline)}</span>`:''}</span><span class="finance-day-card-bar" aria-hidden="true"><i style="width:${ratioPct}%"></i></span></span></button>`;
     }).join('');
     let detailHtml='';
     if(selected){
       const stripParts=[];
-      if(selected.info.expenseCents>0||selected.info.refundCents>0)stripParts.push(`<span>净支出 <strong>${selected.info.netExpenseCents<0?'−':''}¥${money(Math.abs(selected.info.netExpenseCents))}</strong></span>`);
-      if(selected.info.incomeCents>0)stripParts.push(`<span>收入 <strong>+¥${money(selected.info.incomeCents)}</strong></span>`);
-      if(selected.info.refundCents>0)stripParts.push(`<span>含退款 <strong>¥${money(selected.info.refundCents)}</strong></span>`);
-      detailHtml=`<aside class="finance-day-detail" data-finance-day-detail="${esc(selected.date)}" aria-label="${esc(selected.date)} 收支明细"><header class="finance-day-detail-head"><div><h3>${esc(selected.parts.month)}月${esc(selected.parts.dayNum)}日</h3><p>${esc(selected.parts.fullTitle)} · ${selected.rows.length} 笔</p></div><button type="button" class="finance-day-close" data-finance-day-close aria-label="收起当日明细">收起</button></header>${stripParts.length?`<div class="finance-day-detail-strip">${stripParts.join('')}</div>`:''}<div class="finance-day-detail-list">${selected.rows.map(entryHtml).join('')}</div></aside>`;
+      if(selected.info.expenseCents>0||selected.info.refundCents>0)stripParts.push(`<div class="finance-detail-metric is-expense"><span>当日净支出</span><strong>${selected.info.netExpenseCents<0?'−':''}¥${money(Math.abs(selected.info.netExpenseCents))}</strong></div>`);
+      if(selected.info.incomeCents>0)stripParts.push(`<div class="finance-detail-metric is-income"><span>当日收入</span><strong>+¥${money(selected.info.incomeCents)}</strong></div>`);
+      if(selected.info.refundCents>0)stripParts.push(`<div class="finance-detail-metric is-refund"><span>含退款</span><strong>¥${money(selected.info.refundCents)}</strong></div>`);
+      detailHtml=`<aside class="finance-day-detail" data-finance-day-detail="${esc(selected.date)}" aria-label="${esc(selected.date)} 收支明细"><header class="finance-day-detail-head"><div class="finance-day-detail-title"><span class="finance-detail-date-badge" aria-hidden="true"><small>${esc(selected.parts.month)}月</small><strong>${esc(selected.parts.dayNum)}</strong></span><div><h3>${esc(selected.parts.month)}月${esc(selected.parts.dayNum)}日</h3><p>${esc(selected.parts.fullTitle)} · ${selected.rows.length} 笔流水</p></div></div><button type="button" class="finance-day-close" data-finance-day-close aria-label="收起当日明细">收起</button></header>${stripParts.length?`<div class="finance-day-detail-strip">${stripParts.join('')}</div>`:''}<div class="finance-day-detail-list">${selected.rows.map(entryHtml).join('')}</div></aside>`;
     }
     render(list,`<div class="finance-ledger-board${activeDate?' has-selection':''}"><div class="finance-day-cards" data-ui-native>${cardsHtml}</div>${detailHtml}</div>`);
     const more=$('[data-finance-more]',container);if(more)more.hidden=!cursor;
