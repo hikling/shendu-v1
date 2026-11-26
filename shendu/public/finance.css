@@ -390,6 +390,12 @@ body.reduce-motion .finance-page *,body.reduce-motion .finance-dialog *,body.red
 .finance-page .finance-filters input[type="search"]{height:44px;min-height:44px;padding:8px 13px;border:1px solid #c8d3c4;border-radius:10px;background:#fffefa;font-size:.78rem;color:#263b35}
 .finance-page .finance-filters [data-slot="select-trigger"]{height:44px;min-height:44px;padding:0 12px;border:1px solid #c8d3c4;border-radius:10px;background:#fffefa;font-size:.78rem;box-shadow:none}
 .finance-page .finance-filters>.sd-ui-host>.finance-checkbox,.finance-page .finance-filters>.finance-checkbox{min-height:44px;font-size:.73rem;color:#4a5d4f}
+.finance-page .finance-filters.finance-annual-filters{display:flex;align-items:center;flex-wrap:wrap;gap:12px 24px;margin:0 0 16px;padding:11px 18px;border:1px solid var(--finance-line);border-radius:16px;background:#f5f7f0}
+.finance-page .finance-filters.finance-annual-filters>.sd-ui-host,.finance-page .finance-filters.finance-annual-filters>label{margin:0}
+.finance-page .finance-filters.finance-annual-filters>label.finance-annual-filter-kind,.finance-page .finance-filters.finance-annual-filters>.sd-ui-host>label.finance-annual-filter-kind{display:inline-flex;align-items:center;gap:10px;font-size:.73rem;font-weight:650;color:#4f6256;white-space:nowrap}
+.finance-page .finance-filters.finance-annual-filters .finance-annual-filter-kind .sd-finance-select{width:176px;flex:0 0 176px}
+.finance-page .finance-filters.finance-annual-filters [data-slot="select-trigger"]{height:38px;min-height:38px;padding:0 12px;border:1px solid #c8d3c4;border-radius:10px;background:#fffefa;font-size:.77rem;box-shadow:none}
+.finance-page .finance-filters.finance-annual-filters>.sd-ui-host>.finance-checkbox,.finance-page .finance-filters.finance-annual-filters>.finance-checkbox{min-height:38px}
 .finance-page .finance-status{margin:4px 0 18px;font-size:.73rem;color:#657466}
 
 .finance-ledger-board{display:block;min-width:0}
@@ -458,7 +464,7 @@ body.reduce-motion .finance-page *,body.reduce-motion .finance-dialog *,body.red
 
 /* ==========================================================================
    Bespoke Annual Monthly Archive Deck & Unfolded Monthly Broadsheet
-   Completely independent of /finance daily cards and side drawer.
+   Pure Chinese editorial typography — completely independent of daily cards.
    ========================================================================== */
 .finance-annual-deck{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;align-items:stretch;min-width:0}
 .finance-annual-deck[data-month-count="1"]{grid-template-columns:minmax(0,1fr)}
@@ -468,87 +474,82 @@ body.reduce-motion .finance-page *,body.reduce-motion .finance-dialog *,body.red
 .finance-annual-card:focus-visible{outline:3px solid #2c6572;outline-offset:3px}
 .finance-annual-card.is-selected{border-color:#1f515e;box-shadow:0 0 0 3px rgba(31,81,94,.11),0 20px 38px -22px rgba(21,58,68,.26)}
 
-.finance-annual-spine{position:relative;flex:0 0 112px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:20px 12px;border-right:1px solid rgba(31,70,82,.09);background:linear-gradient(175deg,#f3f7f7 0%,#e9f1f1 100%);transition:background .22s ease,border-color .22s ease}
+.finance-annual-spine{position:relative;flex:0 0 104px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:18px 10px;border-right:1px solid rgba(31,70,82,.09);background:linear-gradient(175deg,#f4f8f7 0%,#ebf2f1 100%);transition:background .22s ease,border-color .22s ease}
 .finance-annual-card.is-income .finance-annual-spine,.finance-annual-card.is-refund .finance-annual-spine{background:linear-gradient(175deg,#f2f8f5 0%,#e7f2ec 100%)}
 .finance-annual-spine::before{content:"";position:absolute;top:16px;bottom:16px;left:0;width:3px;border-radius:0 3px 3px 0;background:transparent;transition:background-color .2s ease}
 .finance-annual-card:hover .finance-annual-spine::before{background:rgba(31,81,94,.35)}
 .finance-annual-card.is-selected .finance-annual-spine{border-right-color:rgba(255,255,255,.12);background:linear-gradient(165deg,#225260 0%,#153944 100%)}
 .finance-annual-card.is-selected .finance-annual-spine::before{background:#d4a362}
 
-.finance-annual-code{font:650 .61rem/1.2 "Noto Sans SC","Microsoft YaHei",sans-serif;letter-spacing:.12em;color:#5e7880;white-space:nowrap;font-variant-numeric:tabular-nums}
-.finance-annual-card.is-selected .finance-annual-code{color:rgba(241,247,247,.72)}
-.finance-annual-num{display:inline-flex;align-items:baseline;gap:2px;font:500 2.35rem/1 Georgia,"Times New Roman",serif;letter-spacing:-.04em;color:#1a3d47;font-variant-numeric:tabular-nums}
-.finance-annual-num>small{font:500 .8rem/1 "Noto Sans SC","Microsoft YaHei",sans-serif;color:#526e75;letter-spacing:0}
+.finance-annual-year{font-size:.66rem;font-weight:600;color:#627a80;line-height:1.2;white-space:nowrap;font-variant-numeric:tabular-nums}
+.finance-annual-card.is-selected .finance-annual-year{color:rgba(241,247,247,.74)}
+.finance-annual-num{display:inline-flex;align-items:baseline;gap:2px;font:500 2.25rem/1 Georgia,"Times New Roman",serif;letter-spacing:-.04em;color:#1a3d47;font-variant-numeric:tabular-nums}
+.finance-annual-num>small{font:500 .78rem/1 "Noto Sans SC","Microsoft YaHei",sans-serif;color:#526e75;letter-spacing:0}
 .finance-annual-card.is-income .finance-annual-num,.finance-annual-card.is-refund .finance-annual-num{color:#155c4f}
 .finance-annual-card.is-selected .finance-annual-num{color:#fffefa}
 .finance-annual-card.is-selected .finance-annual-num>small{color:rgba(255,254,250,.78)}
 
-.finance-annual-spine-tag{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:99px;background:rgba(31,70,82,.075);font-style:normal;font-size:.62rem;font-weight:650;color:#46636b;line-height:1.25;white-space:nowrap}
+.finance-annual-spine-tag{display:inline-flex;align-items:center;gap:4px;margin-top:2px;padding:2px 8px;border-radius:99px;background:rgba(31,70,82,.075);font-style:normal;font-size:.62rem;font-weight:650;color:#4a666e;line-height:1.25;white-space:nowrap}
 .finance-annual-spine-tag.is-current{background:#e2f2ec;color:#145c4e}
 .finance-annual-spine-tag.is-current::before{content:"";width:5px;height:5px;border-radius:50%;background:#176759}
 .finance-annual-spine-tag.is-peak{background:#f6ebd9;color:#8e5822}
 .finance-annual-card.is-selected .finance-annual-spine-tag{background:rgba(255,255,255,.14);color:#eff6f6}
 .finance-annual-card.is-selected .finance-annual-spine-tag.is-current::before{background:#7ce0c6}
 
-.finance-annual-stage{flex:1 1 auto;display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"meta cue" "figs figs" "cats cats" "share share";gap:13px 12px;align-items:center;min-width:0;padding:19px 24px 18px}
-.finance-annual-meta{grid-area:meta;display:inline-flex;align-items:center;flex-wrap:wrap;gap:6px 8px;min-width:0;font-size:.7rem;font-weight:500;color:#62777d;font-variant-numeric:tabular-nums}
-.finance-annual-meta>i{width:3px;height:3px;border-radius:50%;background:#b6c6c8;flex-shrink:0}
-.finance-annual-meta .is-refund{color:#1b6b5c;font-weight:600}
-.finance-annual-cue{grid-area:cue;justify-self:end;flex-shrink:0;display:inline-flex;align-items:center;gap:5px;padding:4px 11px;border:1px solid #d5e1e3;border-radius:99px;background:#f5f9f9;color:#2c5b67;font-size:.66rem;font-weight:650;white-space:nowrap;transition:background-color .16s ease,border-color .16s ease,color .16s ease}
+/* Compact 2-Column Card Body */
+.finance-annual-body{flex:1 1 auto;display:grid;grid-template-columns:minmax(0,1fr);gap:14px;min-width:0;padding:19px 22px 18px}
+.finance-annual-core{display:flex;flex-direction:column;gap:4px;min-width:0}
+.finance-annual-label{font-size:.67rem;font-weight:600;color:#73868b;letter-spacing:.02em;line-height:1.3}
+.finance-annual-amount{font:500 clamp(1.52rem,2vw,1.82rem)/1.14 Georgia,"Times New Roman",serif;letter-spacing:-.025em;font-variant-numeric:tabular-nums;color:#1a3f50;white-space:nowrap}
+.finance-annual-card.is-income .finance-annual-amount,.finance-annual-card.is-refund .finance-annual-amount{color:#155c4f}
+.finance-annual-meta{display:inline-flex;align-items:center;flex-wrap:wrap;gap:4px 7px;margin-top:3px;font-size:.69rem;color:#62777d;line-height:1.4;font-variant-numeric:tabular-nums}
+.finance-annual-meta>i{width:3px;height:3px;border-radius:50%;background:#bdcbc9;flex-shrink:0}
+
+.finance-annual-breakdown{display:flex;flex-direction:column;gap:7px;min-width:0}
+.finance-annual-breakdown-title{font-size:.66rem;font-weight:600;color:#73868b;line-height:1.25}
+.finance-annual-mix-bar{display:flex;gap:2px;height:6px;width:100%;border-radius:99px;background:#eceae0;overflow:hidden}
+.finance-annual-mix-bar>i{display:block;height:100%;border-radius:2px}
+.finance-annual-cats{display:flex;align-items:center;flex-wrap:wrap;gap:4px 12px;font-size:.68rem;color:#485e63;line-height:1.4}
+.finance-annual-cat-item{display:inline-flex;align-items:center;gap:5px;white-space:nowrap}
+.finance-annual-cat-item>i{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.finance-annual-cat-item>em{font-style:normal;font-weight:600;color:#76898d;font-variant-numeric:tabular-nums}
+.finance-annual-breakdown.is-empty .finance-annual-cats{color:#91a0a1}
+
+.finance-annual-aside{display:flex;align-items:center;justify-content:space-between;gap:14px;padding-top:12px;border-top:1px solid rgba(31,70,82,.08);min-width:0}
+.finance-annual-share{flex:1 1 auto;display:flex;flex-direction:column;gap:6px;min-width:0}
+.finance-annual-share-head{display:flex;align-items:baseline;justify-content:space-between;gap:8px;font-size:.66rem;color:#708388}
+.finance-annual-share-head>em{font:600 .8rem/1.1 Georgia,"Times New Roman",serif;font-style:normal;color:#24505c;font-variant-numeric:tabular-nums}
+.finance-annual-card.is-income .finance-annual-share-head>em,.finance-annual-card.is-refund .finance-annual-share-head>em{color:#155c4f}
+.finance-annual-share-track{display:block;width:100%;height:5px;border-radius:99px;background:#ebe9e0;overflow:hidden}
+.finance-annual-share-track>i{display:block;height:100%;border-radius:99px;background:#265b69;transition:width .26s ease}
+.finance-annual-card.is-income .finance-annual-share-track>i,.finance-annual-card.is-refund .finance-annual-share-track>i{background:#196759}
+
+.finance-annual-cue{flex-shrink:0;display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border:1px solid #d2dfe1;border-radius:99px;background:#f4f8f8;color:#265561;font-size:.67rem;font-weight:650;white-space:nowrap;transition:background-color .16s ease,border-color .16s ease,color .16s ease}
 .finance-annual-cue>i{font-style:normal;font-size:.7rem;line-height:1}
-.finance-annual-card:hover .finance-annual-cue{background:#e9f3f4;border-color:#a5c5cc;color:#1a4752}
+.finance-annual-card:hover .finance-annual-cue{background:#e7f2f3;border-color:#9fc0c8;color:#17414c}
 .finance-annual-card.is-selected .finance-annual-cue{border-color:#1f515e;background:#1f515e;color:#fffefa}
 
-.finance-annual-figures{grid-area:figs;display:flex;align-items:flex-end;justify-content:space-between;gap:16px 24px;min-width:0}
-.finance-annual-primary{display:flex;flex-direction:column;gap:4px;min-width:0}
-.finance-annual-primary>small{font-size:.67rem;font-weight:600;color:#73868b;letter-spacing:.03em}
-.finance-annual-primary>strong{font:500 clamp(1.5rem,2vw,1.82rem)/1.12 Georgia,"Times New Roman",serif;letter-spacing:-.025em;font-variant-numeric:tabular-nums;color:#1b3f52;white-space:nowrap}
-.finance-annual-card.is-income .finance-annual-primary>strong,.finance-annual-card.is-refund .finance-annual-primary>strong{color:#155c4f}
-
-.finance-annual-companion{display:flex;flex-direction:column;align-items:flex-end;gap:3px;flex-shrink:0;padding-left:18px;border-left:1px solid rgba(31,70,82,.09);text-align:right}
-.finance-annual-companion>small{font-size:.64rem;font-weight:500;color:#7c8d91}
-.finance-annual-companion>strong{font:500 1.02rem/1.2 Georgia,"Times New Roman",serif;color:#446068;font-variant-numeric:tabular-nums;white-space:nowrap}
-.finance-annual-companion.is-income>strong{color:#156151}
-
-.finance-annual-cats{grid-area:cats;display:flex;align-items:center;flex-wrap:wrap;gap:6px;min-height:24px;min-width:0}
-.finance-annual-cat-chip{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border:1px solid rgba(31,70,82,.08);border-radius:8px;background:#f6f8f6;font-size:.67rem;color:#455b60;line-height:1.35;white-space:nowrap}
-.finance-annual-cat-chip>i{width:6px;height:6px;border-radius:50%;flex-shrink:0}
-.finance-annual-cat-chip>em{font-style:normal;font-weight:650;color:#6c7f84;font-variant-numeric:tabular-nums}
-
-.finance-annual-share{grid-area:share;display:flex;align-items:center;gap:12px;margin-top:auto;padding-top:12px;border-top:1px solid rgba(31,70,82,.08);min-width:0}
-.finance-annual-share-label{flex-shrink:0;font-size:.66rem;font-weight:600;color:#728489;white-space:nowrap}
-.finance-annual-share-track{flex:1 1 auto;display:block;height:6px;border-radius:99px;background:#ebe9e0;overflow:hidden;min-width:44px}
-.finance-annual-share-track>i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,#3d7785 0%,#1f515e 52%,#b57c3e 100%);transition:width .26s ease}
-.finance-annual-card.is-income .finance-annual-share-track>i,.finance-annual-card.is-refund .finance-annual-share-track>i{background:linear-gradient(90deg,#4ea38a,#165c50)}
-.finance-annual-share-pct{flex-shrink:0;font:600 .78rem/1.1 Georgia,"Times New Roman",serif;font-style:normal;color:#27525e;font-variant-numeric:tabular-nums;white-space:nowrap}
-.finance-annual-card.is-income .finance-annual-share-pct,.finance-annual-card.is-refund .finance-annual-share-pct{color:#155c4f}
-
-.finance-annual-card.is-featured .finance-annual-spine{flex-basis:140px;padding:24px 16px}
-.finance-annual-card.is-featured .finance-annual-num{font-size:2.7rem}
-.finance-annual-card.is-featured .finance-annual-stage{grid-template-columns:minmax(0,1.08fr) minmax(300px,.92fr);grid-template-areas:"meta cue" "figs cats" "figs share";gap:10px 34px;padding:24px 32px 22px;align-items:end}
-.finance-annual-card.is-featured .finance-annual-meta{align-self:start}
-.finance-annual-card.is-featured .finance-annual-cue{align-self:start}
-.finance-annual-card.is-featured .finance-annual-figures{align-self:center;padding-right:30px;border-right:1px solid rgba(31,70,82,.09)}
-.finance-annual-card.is-featured .finance-annual-primary>strong{font-size:clamp(1.78rem,2.3vw,2.15rem)}
-.finance-annual-card.is-featured .finance-annual-cats{align-self:end}
-.finance-annual-card.is-featured .finance-annual-share{margin-top:0;padding-top:10px}
+/* Single-Month Featured Horizontal 4-Chamber Strip */
+.finance-annual-card.is-featured .finance-annual-spine{flex:0 0 118px;padding:22px 12px}
+.finance-annual-card.is-featured .finance-annual-num{font-size:2.45rem}
+.finance-annual-card.is-featured .finance-annual-body{grid-template-columns:minmax(240px,1.02fr) minmax(260px,1.18fr) 224px;gap:0;padding:0;align-items:stretch}
+.finance-annual-card.is-featured .finance-annual-core{justify-content:center;padding:22px 28px;border-right:1px solid rgba(31,70,82,.08)}
+.finance-annual-card.is-featured .finance-annual-amount{font-size:clamp(1.78rem,2.2vw,2.05rem)}
+.finance-annual-card.is-featured .finance-annual-breakdown{justify-content:center;padding:22px 28px;border-right:1px solid rgba(31,70,82,.08);gap:9px}
+.finance-annual-card.is-featured .finance-annual-aside{flex-direction:column;align-items:stretch;justify-content:space-between;gap:14px;padding:20px 24px;border-top:0;background:rgba(244,248,247,.52)}
+.finance-annual-card.is-featured .finance-annual-cue{align-self:flex-end}
 
 /* Unfolded Full-Width Monthly Broadsheet */
 @keyframes financeSpreadReveal{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
 .finance-annual-spread{position:relative;grid-column:1/-1;border:1px solid rgba(31,81,94,.22);border-radius:22px;background:#fffefb;box-shadow:0 26px 56px -32px rgba(17,46,56,.26),0 3px 10px rgba(17,46,56,.045);overflow:hidden;animation:financeSpreadReveal .22s ease-out;min-width:0}
-.finance-annual-spread::before{content:"";display:block;height:3px;width:100%;background:linear-gradient(90deg,#1f515e 0%,#3c7883 56%,#bf894b 100%)}
+.finance-annual-spread::before{content:"";display:block;height:3px;width:100%;background:linear-gradient(90deg,#1f515e 0%,#3c7883 62%,#b88446 100%)}
 
-.finance-spread-head{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:24px 30px 22px;border-bottom:1px solid #e2eae7;background:linear-gradient(135deg,#f2f7f7 0%,#fafaf6 64%,#f9f5eb 100%)}
-.finance-spread-title-wrap{display:flex;align-items:center;gap:18px;min-width:0}
-.finance-spread-seal{display:flex;flex-direction:column;align-items:center;justify-content:center;width:58px;height:58px;flex-shrink:0;border-radius:16px;background:linear-gradient(155deg,#215260 0%,#143842 100%);color:#fffefa;box-shadow:0 8px 18px rgba(21,58,68,.24),inset 0 1px 0 rgba(255,255,255,.2);border:1px solid rgba(212,163,98,.32)}
-.finance-spread-seal>small{font-size:10px;line-height:1.1;letter-spacing:.08em;color:rgba(241,247,247,.76)}
-.finance-spread-seal>strong{display:inline-flex;align-items:baseline;gap:1px;font:500 1.42rem/1.05 Georgia,"Times New Roman",serif;font-variant-numeric:tabular-nums}
-.finance-spread-seal>strong>em{font-style:normal;font:500 .66rem/1 "Noto Sans SC","Microsoft YaHei",sans-serif;opacity:.82}
-
-.finance-spread-heading{min-width:0}
-.finance-spread-eyebrow{display:block;margin-bottom:3px;font-size:.64rem;font-weight:700;letter-spacing:.11em;color:#4b717a}
-.finance-spread-heading h3{margin:0;color:#17353d;font:900 1.44rem/1.26 "SimSun","宋体","Noto Serif SC",serif;letter-spacing:.03em}
-.finance-spread-heading p{margin:5px 0 0;font-size:.73rem;color:#63777c;font-variant-numeric:tabular-nums}
+.finance-spread-head{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:20px 28px 18px;border-bottom:1px solid #e2eae7;background:linear-gradient(135deg,#f4f8f8 0%,#fbfbf7 68%,#faf7ef 100%)}
+.finance-spread-heading{min-width:0;padding-left:14px;border-left:3px solid #215260}
+.finance-spread-title-row{display:flex;align-items:center;flex-wrap:wrap;gap:10px}
+.finance-spread-heading h3{margin:0;color:#17353d;font:900 1.38rem/1.25 "SimSun","宋体","Noto Serif SC",serif;letter-spacing:.03em}
+.finance-spread-year-tag{display:inline-flex;align-items:center;padding:2px 9px;border:1px solid #d5e1e3;border-radius:99px;background:#fffefb;color:#4f6b72;font-size:.66rem;font-weight:600;font-variant-numeric:tabular-nums}
+.finance-spread-heading p{margin:5px 0 0;font-size:.73rem;color:#667a7f;font-variant-numeric:tabular-nums}
 
 .finance-spread-actions{display:inline-flex;align-items:center;gap:10px;flex-shrink:0}
 .finance-spread-btn{display:inline-flex;align-items:center;gap:6px;min-height:36px;padding:6px 15px;border:1px solid rgba(31,70,82,.18);border-radius:99px;background:#fffefb;color:#3d5860;font-size:.72rem;font-weight:650;cursor:pointer;white-space:nowrap;transition:background-color .16s ease,border-color .16s ease,color .16s ease}
@@ -602,7 +603,7 @@ body.reduce-motion .finance-page *,body.reduce-motion .finance-dialog *,body.red
 .finance-spread-day-sum>small{font-size:.63rem;color:#186757;font-variant-numeric:tabular-nums}
 
 .finance-spread-day-rows{display:flex;flex-direction:column;min-width:0}
-.finance-annual-spread .finance-spread-row{position:relative;display:grid;grid-template-columns:10px minmax(0,1fr) auto auto minmax(108px,auto);align-items:center;gap:6px 16px;padding:12px 14px;margin:0 -14px;border:0;border-radius:12px;background:transparent;box-shadow:none;transition:background-color .14s ease}
+.finance-annual-spread .finance-spread-row{position:relative;display:grid;grid-template-columns:10px minmax(0,1fr) auto minmax(84px,auto) minmax(108px,auto);align-items:center;gap:6px 16px;padding:12px 14px;margin:0 -14px;border:0;border-radius:12px;background:transparent;box-shadow:none;transition:background-color .14s ease}
 .finance-annual-spread .finance-spread-row:not(:last-child)::after{content:"";position:absolute;inset:auto 14px 0 40px;height:1px;background:#edf1ea}
 .finance-annual-spread .finance-spread-row:hover{background:#f4f8f6}
 .finance-annual-spread .finance-spread-row.is-deleted{opacity:.64}
@@ -705,8 +706,10 @@ body.reduce-motion .finance-page *,body.reduce-motion .finance-dialog *,body.red
   .finance-ledger-board.has-selection{grid-template-columns:minmax(0,1fr);gap:18px}
   .finance-day-detail{position:static;order:-1;padding:20px 22px}
   .finance-annual-deck{grid-template-columns:minmax(0,1fr);gap:14px}
-  .finance-annual-card.is-featured .finance-annual-stage{grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"meta cue" "figs figs" "cats cats" "share share";gap:13px 12px;padding:19px 24px 18px;align-items:center}
-  .finance-annual-card.is-featured .finance-annual-figures{padding-right:0;border-right:0}
+  .finance-annual-card.is-featured .finance-annual-body{grid-template-columns:minmax(0,1fr);gap:14px;padding:19px 22px 18px}
+  .finance-annual-card.is-featured .finance-annual-core,.finance-annual-card.is-featured .finance-annual-breakdown{padding:0;border-right:0}
+  .finance-annual-card.is-featured .finance-annual-aside{flex-direction:row;align-items:center;padding:12px 0 0;border-top:1px solid rgba(31,70,82,.08);background:transparent}
+  .finance-annual-card.is-featured .finance-annual-cue{align-self:auto}
   .finance-spread-overview{grid-template-columns:minmax(0,1fr);gap:16px;padding:16px 22px}
   .finance-spread-mix{padding-left:0;padding-top:14px;border-left:0;border-top:1px solid #e2e8e1}
   .finance-spread-day{grid-template-columns:minmax(0,1fr);gap:10px;padding:16px 0}
@@ -756,9 +759,11 @@ body.reduce-motion .finance-page *,body.reduce-motion .finance-dialog *,body.red
   .finance-annual-card{border-radius:16px}
   .finance-annual-spine,.finance-annual-card.is-featured .finance-annual-spine{flex:0 0 82px;padding:14px 8px;gap:5px}
   .finance-annual-num,.finance-annual-card.is-featured .finance-annual-num{font-size:1.85rem}
-  .finance-annual-stage,.finance-annual-card.is-featured .finance-annual-stage{padding:14px 15px 13px;gap:10px}
+  .finance-annual-body,.finance-annual-card.is-featured .finance-annual-body{padding:14px 15px 13px;gap:11px}
   .finance-annual-cue{display:none}
-  .finance-annual-companion{padding-left:12px}
+  .finance-page .finance-annual-filters{gap:10px 14px;padding:10px 14px}
+  .finance-page .finance-annual-filters .finance-annual-filter-kind{width:100%;justify-content:space-between}
+  .finance-page .finance-annual-filters .finance-annual-filter-kind .sd-finance-select{flex:1 1 auto;width:auto}
   .finance-spread-head{flex-direction:column;align-items:flex-start;gap:14px;padding:18px 16px 16px}
   .finance-spread-actions{width:100%;justify-content:flex-end}
   .finance-spread-overview{padding:14px 16px}
