@@ -85,10 +85,18 @@ function summarizeDayRows(rows,nameOf){
   return {expenseCents,refundCents,incomeCents,netExpenseCents,activeCount,totalCount,label,amountText,tone,subline,topCategories};
 }
 
+function formatSharePct(rawPct){
+  const value=Number(rawPct)||0;
+  if(value<=0)return '0%';
+  if(value>=99.95)return '100%';
+  if(value<0.1)return '<0.1%';
+  return `${value.toFixed(1)}%`;
+}
+
 function createWorkspace(container,options,daily){
   let disposed=false,pending=false,loadOwner=null,storageOwner=null,data=null,storage=null,categories=[...DEFAULT_FINANCE_CATEGORIES],cursor=null;
   let importController=null,receiptModule=null,storageDialogOwner=null,lastMatchResult=null;
-  let entries=[],draft={...blank(),...(options.draft||{})},searchTimer,periodController=null,quickRows=[],refreshQuick=null,dayPicker=null,monthPie=null,dayPie=null,dayOwner=null,selectedDay='',chartMonth=null,expandedLedgerDay=null;
+  let entries=[],ledgerTrend=[],draft={...blank(),...(options.draft||{})},searchTimer,periodController=null,quickRows=[],refreshQuick=null,dayPicker=null,monthPie=null,dayPie=null,dayOwner=null,selectedDay='',chartMonth=null,expandedLedgerDay=null;
   if(!draft.text&&(draft.expression||draft.purpose))draft.text=`${draft.expression} ${draft.purpose}`.trim();
   const aborter=new AbortController();
   const day=options.date||options.today(),filters={month:day.slice(0,7),range:'month',q:'',kind:'',deleted:false};
@@ -236,13 +244,51 @@ function createWorkspace(container,options,daily){
     const activeDate=expandedLedgerDay&&groups.has(expandedLedgerDay)?expandedLedgerDay:null;
     expandedLedgerDay=activeDate;
     const selected=activeDate?daySummaries.find(item=>item.date===activeDate):null;
-    const maxSpend=Math.max(0,...daySummaries.map(item=>Math.max(0,item.info.netExpenseCents)));
-    const maxIncome=Math.max(0,...daySummaries.map(item=>Math.max(0,item.info.incomeCents)));
+    const trendMonthTotals=new Map();
+    for(const point of ledgerTrend){
+      const mk=String(point?.date||'').slice(0,7);if(!mk)continue;
+      const acc=trendMonthTotals.get(mk)||{netExpenseCents:0,expenseCents:0,incomeCents:0,refundCents:0};
+      const dayNet=Number(point.expenseCents)||0,dayGross=Math.max(0,Number(point.spendingCents)||0),dayInc=Math.max(0,Number(point.incomeCents)||0);
+      acc.netExpenseCents+=dayNet;acc.expenseCents+=dayGross;acc.incomeCents+=dayInc;acc.refundCents+=Math.max(0,dayGross-dayNet);
+      trendMonthTotals.set(mk,acc);
+    }
+    const visibleMonthTotals=new Map();
+    for(const item of daySummaries){
+      const mk=item.date.slice(0,7);
+      const acc=visibleMonthTotals.get(mk)||{netExpenseCents:0,positiveNetExpenseCents:0,expenseCents:0,incomeCents:0,refundCents:0};
+      acc.netExpenseCents+=item.info.netExpenseCents;
+      if(item.info.netExpenseCents>0)acc.positiveNetExpenseCents+=item.info.netExpenseCents;
+      acc.expenseCents+=item.info.expenseCents;acc.incomeCents+=item.info.incomeCents;acc.refundCents+=item.info.refundCents;
+      visibleMonthTotals.set(mk,acc);
+    }
+    const summaryTotals=data?.summary||{};
     const cardsHtml=daySummaries.map(item=>{
-      const ratioPct=maxSpend>0&&item.info.netExpenseCents>0?Math.max(10,Math.round(item.info.netExpenseCents/maxSpend*100)):maxIncome>0&&item.info.incomeCents>0?Math.max(14,Math.round(item.info.incomeCents/maxIncome*100)):0;
+      const mk=item.date.slice(0,7),inCurrentMonth=mk===filters.month;
+      const trendAcc=trendMonthTotals.get(mk),visibleAcc=visibleMonthTotals.get(mk)||{netExpenseCents:0,positiveNetExpenseCents:0,expenseCents:0,incomeCents:0,refundCents:0};
+      const monthNetExpense=inCurrentMonth&&summaryTotals.netExpenseCents!=null?Number(summaryTotals.netExpenseCents)||0:(trendAcc?trendAcc.netExpenseCents:visibleAcc.netExpenseCents);
+      const monthGrossExpense=inCurrentMonth&&summaryTotals.expenseCents!=null?Math.max(0,Number(summaryTotals.expenseCents)||0):(trendAcc?trendAcc.expenseCents:visibleAcc.expenseCents);
+      const monthIncome=inCurrentMonth&&summaryTotals.incomeCents!=null?Math.max(0,Number(summaryTotals.incomeCents)||0):(trendAcc?trendAcc.incomeCents:visibleAcc.incomeCents);
+      const monthRefund=inCurrentMonth&&summaryTotals.refundCents!=null?Math.max(0,Number(summaryTotals.refundCents)||0):(trendAcc?trendAcc.refundCents:visibleAcc.refundCents);
+      const periodPrefix=filters.range==='year'?`${Number(item.parts.month)||''}月`:'本月';
+      let rawPct=0,shareLabel=`占${periodPrefix}支出`;
+      if(item.info.tone==='is-expense'&&item.info.netExpenseCents>0){
+        const denom=monthNetExpense>0&&monthNetExpense>=item.info.netExpenseCents?monthNetExpense:Math.max(monthGrossExpense,visibleAcc.positiveNetExpenseCents,item.info.netExpenseCents);
+        rawPct=denom>0?Math.min(100,item.info.netExpenseCents/denom*100):0;
+      }else if(item.info.tone==='is-income'&&item.info.incomeCents>0){
+        const denom=monthIncome>0?monthIncome:visibleAcc.incomeCents;
+        rawPct=denom>0?Math.min(100,item.info.incomeCents/denom*100):0;
+        shareLabel=`占${periodPrefix}收入`;
+      }else if(item.info.tone==='is-refund'&&item.info.netExpenseCents<0){
+        const netRefund=Math.abs(item.info.netExpenseCents);
+        const denom=monthRefund>0&&monthRefund>=netRefund?monthRefund:Math.max(visibleAcc.refundCents,netRefund);
+        rawPct=denom>0?Math.min(100,netRefund/denom*100):0;
+        shareLabel=`占${periodPrefix}退款`;
+      }
+      const barWidth=rawPct>0?Math.max(2,Number(rawPct.toFixed(1))):0;
+      const pctText=formatSharePct(rawPct);
       const isSelected=item.date===activeDate;
       const catsHtml=item.info.topCategories.length?`<span class="finance-day-card-cats">${item.info.topCategories.map(cat=>`<span><i style="background:${esc(cat.color)}" aria-hidden="true"></i>${esc(cat.name)}</span>`).join('<em class="finance-day-cat-sep" aria-hidden="true">·</em>')}</span>`:'<span class="finance-day-card-cats is-empty" aria-hidden="true"></span>';
-      return `<button type="button" class="finance-day-card ${item.info.tone}${isSelected?' is-selected':''}" data-finance-day-card="${esc(item.date)}" aria-expanded="${isSelected?'true':'false'}"><span class="finance-day-card-head"><span class="finance-day-card-stamp"><strong>${esc(item.parts.dayNum)}</strong><span class="finance-day-card-meta"><span>${esc(item.parts.shortMonthDay)} · ${esc(item.parts.weekdayShort)}</span>${item.date===options.today()?'<em class="finance-day-today">今天</em>':''}</span></span><span class="finance-day-card-count">${item.info.totalCount} 笔</span></span>${catsHtml}<span class="finance-day-card-foot"><span class="finance-day-card-amount"><small>${esc(item.info.label)}</small><strong>${esc(item.info.amountText)}</strong>${item.info.subline?`<span class="finance-day-card-sub">${esc(item.info.subline)}</span>`:''}</span><span class="finance-day-card-bar" aria-hidden="true"><i style="width:${ratioPct}%"></i></span></span></button>`;
+      return `<button type="button" class="finance-day-card ${item.info.tone}${isSelected?' is-selected':''}" data-finance-day-card="${esc(item.date)}" aria-expanded="${isSelected?'true':'false'}"><span class="finance-day-card-head"><span class="finance-day-card-stamp"><strong>${esc(item.parts.dayNum)}</strong><span class="finance-day-card-meta"><span>${esc(item.parts.shortMonthDay)} · ${esc(item.parts.weekdayShort)}</span>${item.date===options.today()?'<em class="finance-day-today">今天</em>':''}</span></span><span class="finance-day-card-count">${item.info.totalCount} 笔</span></span>${catsHtml}<span class="finance-day-card-foot"><span class="finance-day-card-amount"><small>${esc(item.info.label)}</small><strong>${esc(item.info.amountText)}</strong>${item.info.subline?`<span class="finance-day-card-sub">${esc(item.info.subline)}</span>`:''}</span><span class="finance-day-card-meter"><span class="finance-day-card-bar" aria-hidden="true"><i style="width:${barWidth}%"></i></span><span class="finance-day-card-share"><span>${esc(shareLabel)}</span><em>${esc(pctText)}</em></span></span></span></button>`;
     }).join('');
     let detailHtml='';
     if(selected){
@@ -309,7 +355,7 @@ function createWorkspace(container,options,daily){
     if(!alive()||(append&&!cursor))return;const owner={};loadOwner=owner;const current=()=>alive()&&loadOwner===owner;
     if(!append){clearTimeout(searchTimer);resetPagination()}
     const params=query();if(append)params.set('cursor',cursor);status(append?'正在读取更早的账目…':'正在整理账目…');
-    try{const byYear=!daily&&filters.range==='year';const [result,monthly]=await Promise.all([request(`/api/finance?${params}`,{},current),byYear?request(`/api/finance?month=${encodeURIComponent(filters.month)}`,{},current):Promise.resolve(null)]);if(!current())return;data=monthly||result;categories=result.categories||categories;entries=append?[...entries,...(result.entries||[])]:result.entries||[];cursor=result.nextCursor||null;renderSummary();renderEntries();syncDailyChart();
+    try{const byYear=!daily&&filters.range==='year';const [result,monthly]=await Promise.all([request(`/api/finance?${params}`,{},current),byYear?request(`/api/finance?month=${encodeURIComponent(filters.month)}`,{},current):Promise.resolve(null)]);if(!current())return;data=monthly||result;ledgerTrend=result.trend||[];categories=result.categories||categories;entries=append?[...entries,...(result.entries||[])]:result.entries||[];cursor=result.nextCursor||null;renderSummary();renderEntries();syncDailyChart();
       if(!noFormLoss()){const host=$('[data-finance-form]',container);mountQuickEntry(host)}refreshQuick?.();
       const dayCount=new Set(entries.map(item=>item.date)).size,yearLabel=filters.month.slice(0,4);
       status(daily?'确认入账后，账目已保存；复盘仍可保留为草稿。':byYear?(entries.length?`明细显示 ${yearLabel} 年全年（共 ${dayCount} 天有记录）· 点击日期卡牌展开当日明细；上方总计与月度图表按所选月份计算。`:`明细显示 ${yearLabel} 年全年；上方总计与月度图表按所选月份计算。`):entries.length?`共 ${dayCount} 天有记录 · 点击日期卡牌展开当日明细；上方总计与月度图表按整月计算。`:`明细显示 ${filters.month} 整月；上方总计与月度图表按整月计算。`);

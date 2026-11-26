@@ -702,3 +702,26 @@ test('all three summary cards render data bars and the split quick composer togg
   assert.equal(emptyDesk.hidden,false);
   assert.equal($$('.finance-line-row',form).length,0);
 });
+
+test('daily card progress bars reflect share of the monthly total rather than max single day',async()=>{
+  const initialEntries=[
+    {id:'d-1',date:'2026-11-25',kind:'expense',expression:'200',amountCents:20000,purpose:'车费',categoryId:'transport',receiptIds:[],version:1},
+    {id:'d-2',date:'2026-11-20',kind:'expense',expression:'100',amountCents:10000,purpose:'晚餐',categoryId:'food',receiptIds:[],version:1},
+    {id:'d-3',date:'2026-11-18',kind:'expense',expression:'200',amountCents:20000,purpose:'采购',categoryId:'shopping',receiptIds:[],version:1},
+    {id:'d-4',date:'2026-11-15',kind:'income',expression:'1000',amountCents:100000,purpose:'稿酬',categoryId:'salary',receiptIds:[],version:1},
+    {id:'d-5',date:'2026-11-10',kind:'income',expression:'3000',amountCents:300000,purpose:'工资',categoryId:'salary',receiptIds:[],version:1}
+  ];
+  const f=fixture({initialEntries});await flush();
+  const c25=$('[data-finance-day-card="2026-11-25"]',f.root);
+  const c20=$('[data-finance-day-card="2026-11-20"]',f.root);
+  const c15=$('[data-finance-day-card="2026-11-15"]',f.root);
+  const c10=$('[data-finance-day-card="2026-11-10"]',f.root);
+  assert.equal($('.finance-day-card-bar>i',c25).style.width,'40%');
+  assert.match($('.finance-day-card-share',c25).textContent,/占本月支出.*40\.0%/);
+  assert.equal($('.finance-day-card-bar>i',c20).style.width,'20%');
+  assert.match($('.finance-day-card-share',c20).textContent,/占本月支出.*20\.0%/);
+  assert.equal($('.finance-day-card-bar>i',c15).style.width,'25%');
+  assert.match($('.finance-day-card-share',c15).textContent,/占本月收入.*25\.0%/);
+  assert.equal($('.finance-day-card-bar>i',c10).style.width,'75%');
+  assert.match($('.finance-day-card-share',c10).textContent,/占本月收入.*75\.0%/);
+});
