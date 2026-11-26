@@ -7,11 +7,11 @@ import {DAILY_STEPS,dailyStepIssues,dailyPrompts,dailyPromptIssues,dailyPromptNe
 import {dailyCalendarModel,dailyCalendarDateLabel} from './daily-calendar.js?v=1.0.0-art1';
 import {EXTENDED_FLOW,extendedPrompts,extendedPromptNeighbor,extendedPromptIssues,extendedReviewIssues} from './extended-flow.js?v=1.0.0-audit1';
 import {verificationMinimum} from './verification-policy.js?v=1.0.0-verification2';
-import {createBrowserNavigator} from './browser-navigation.js?v=1.0.0-routes1';
+import {createBrowserNavigator} from './browser-navigation.js?v=1.0.0-routes2';
 import {createReviewNavigator} from './review-navigation.js?v=1.0.0-finance1';
 import {attachReviewWheel} from './review-wheel.js?v=1.0.0-wheel1';
 import {createReviewTransition} from './review-transition.js?v=1.0.0-transition1';
-import {mountFinancePage,mountDailyFinance} from './finance-ui.js?v=1.0.0-finance-polish6';
+import {mountFinancePage,mountFinanceAnnualPage,mountDailyFinance} from './finance-ui.js?v=1.0.0-finance-polish7';
 import {RECORD_ART,recordArtAssignments} from './record-art.js?v=1.0.0-records1';
 import {createReviewIntroPicker,reviewIntroLines,reviewIntroLayout} from './review-intros.js?v=1.0.0-intros2';
 const $ = (s, root = document) => root.querySelector(s);
@@ -92,7 +92,7 @@ function templatesForRecord(record){
 }
 function currentTemplateSnapshot(type){return{version:1,review:clone(currentReviewTemplate(type)),action:clone(currentActionTemplate())}}
 
-const state = { user:null, stage:null, theme:null, records:[], stats:{week:0,pending:0,total:0}, route:'overview', current:null, dirty:false, saving:false, navOpen:false, reauthOpen:false, calendarMonth:null, dailySection:'intro', dailyPrompt:null, extendedPrompt:null, historyFilter:{q:'',type:'all',year:'all',month:'all'} };
+const state = { user:null, stage:null, theme:null, records:[], stats:{week:0,pending:0,total:0}, route:'overview', current:null, dirty:false, saving:false, navOpen:false, reauthOpen:false, calendarMonth:null, financeMonth:null, financeYear:null, dailySection:'intro', dailyPrompt:null, extendedPrompt:null, historyFilter:{q:'',type:'all',year:'all',month:'all'} };
 const reviewNavigation=createReviewNavigator({
   source:()=>({route:state.route,scrollY:window.scrollY}),
   guard:next=>attemptNavigate(next),
@@ -152,7 +152,7 @@ function renderAuth(info={}){
   dismissDialog($('#rail-root'));closeModal(true);
   reviewNavigation.clear();state.historyFilter={q:'',type:'all',year:'all',month:'all'};
   const registering=info.mode==='register'||info.firstRun;
-  state.user=null;state.stage=null;state.theme=null;state.records=[];state.stats={week:0,pending:0,total:0};state.route='overview';state.current=null;state.dirty=false;state.saving=false;state.calendarMonth=null;state.settingsReturn=null;state.reauthOpen=false;if(typeof document!=='undefined')document.body?.classList?.remove('reduce-motion');renderMarkup($('#app'),`<main class="auth-shell auth-paper-shell"><div class="auth-book">
+  state.user=null;state.stage=null;state.theme=null;state.records=[];state.stats={week:0,pending:0,total:0};state.route='overview';state.current=null;state.dirty=false;state.saving=false;state.calendarMonth=null;state.financeMonth=null;state.financeYear=null;state.settingsReturn=null;state.reauthOpen=false;if(typeof document!=='undefined')document.body?.classList?.remove('reduce-motion');renderMarkup($('#app'),`<main class="auth-shell auth-paper-shell"><div class="auth-book">
     <section class="auth-art"><div class="brand-lockup"><div class="brand-row"><span class="seal header-seal" aria-hidden="true">慎</span><span class="brand-cn header-wordmark">慎獨</span></div><span class="auth-brand-note">个人成长复盘</span></div>
       <div class="auth-story"><div class="auth-quote"><span>言寡尤，行寡悔</span><span>慎独存诚</span></div><p class="auth-story-note">把经历写下，<br>把清醒留给下一步。</p></div>
       <div class="auth-scene" aria-hidden="true"><span class="auth-scene-paper"></span><img src="/assets/records/daily-01-morning-window.webp" alt="" width="640" height="640" draggable="false"></div>
@@ -171,7 +171,7 @@ function renderAuth(info={}){
   $('#auth-switch')?.addEventListener('click',()=>renderAuth({...info,mode:info.mode==='register'?'login':'register'}));
 }
 
-function headerLink(route,label,extra=''){return `<button class="header-link ${state.route===route?'active':''}" type="button" data-nav="${route}" ${state.route===route?'aria-current="page"':''}>${esc(label)}${extra}</button>`}
+function headerLink(route,label,extra=''){const active=state.route===route||(route==='finance'&&state.route==='finance-annual');return `<button class="header-link ${active?'active':''}" type="button" data-nav="${route}" ${active?'aria-current="page"':''}>${esc(label)}${extra}</button>`}
 function pendingBadge(count){return count>0?`<span class="header-count">${Number(count)}</span>`:''}
 function headerBrandContent(){return '<span class="seal header-seal" aria-hidden="true">慎</span><span class="brand-cn header-wordmark">慎獨</span>'}
 function topbar(){
@@ -1222,7 +1222,21 @@ function financeUiOptions(container,extra={}){
   };
 }
 function renderFinance(){
-  shell('<div id="finance-workspace"></div>');const container=$('#finance-workspace');container.financeController=mountFinancePage(container,financeUiOptions(container));
+  const initialMonth=state.financeMonth;state.financeMonth=null;
+  shell('<div id="finance-workspace"></div>');const container=$('#finance-workspace');
+  container.financeController=mountFinancePage(container,financeUiOptions(container,{
+    initialMonth,
+    onOpenAnnual:year=>attemptNavigate(()=>{state.financeYear=year||null;navigate('finance-annual')})
+  }));
+}
+function renderFinanceAnnual(){
+  const initialYear=state.financeYear;state.financeYear=null;
+  shell('<div id="finance-workspace"></div>');const container=$('#finance-workspace');
+  container.financeController=mountFinanceAnnualPage(container,financeUiOptions(container,{
+    initialYear,
+    onBackToFinance:()=>attemptNavigate(()=>navigate('finance')),
+    onSelectMonth:month=>attemptNavigate(()=>{state.financeMonth=month||null;navigate('finance')})
+  }));
 }
 function renderSettings(){
   const items=[['stage','阶段设置','目标与复盘问题'],['activity','使用日志','哪天 · 谁 · 做了什么'],['guide','使用指南','记录与验证方法']];
@@ -1398,9 +1412,9 @@ function navigate(route){
  if(TYPES[route])return enterReview(route,defaultPeriod(route),route==='decision');
  browserNavigation.commit({route});
  reviewNavigation.clear();state.route=route;state.navOpen=false;
- document.title=`${({overview:'概览',history:'历史复盘',actions:currentActionTemplate().pageTitle,finance:'财务收支',backup:'数据备份',users:'账户管理',settings:'设置',calendar:'阶段与日历','stage-settings':'阶段与内容设置',guide:'使用指南',activity:'使用日志'}[route]||'慎独')} · 慎独`;
- const render={overview:renderOverview,history:renderHistory,actions:renderActions,finance:renderFinance,backup:renderBackup,users:renderUsers,settings:renderSettings,calendar:renderCalendar,'stage-settings':renderStageSettings,guide:renderGuide,activity:renderActivity}[route];
- if(render){const result=render();if(['settings','calendar','stage-settings','guide','activity','finance'].includes(route)){const heading=$('main h1');if(heading){heading.tabIndex=-1;heading.focus({preventScroll:true})}window.scrollTo({top:0,behavior:'instant'})}return result}
+ document.title=`${({overview:'概览',history:'历史复盘',actions:currentActionTemplate().pageTitle,finance:'财务收支','finance-annual':'年度开销',backup:'数据备份',users:'账户管理',settings:'设置',calendar:'阶段与日历','stage-settings':'阶段与内容设置',guide:'使用指南',activity:'使用日志'}[route]||'慎独')} · 慎独`;
+ const render={overview:renderOverview,history:renderHistory,actions:renderActions,finance:renderFinance,'finance-annual':renderFinanceAnnual,backup:renderBackup,users:renderUsers,settings:renderSettings,calendar:renderCalendar,'stage-settings':renderStageSettings,guide:renderGuide,activity:renderActivity}[route];
+ if(render){const result=render();if(['settings','calendar','stage-settings','guide','activity','finance','finance-annual'].includes(route)){const heading=$('main h1');if(heading){heading.tabIndex=-1;heading.focus({preventScroll:true})}window.scrollTo({top:0,behavior:'instant'})}return result}
  renderReview('daily');
 }
 

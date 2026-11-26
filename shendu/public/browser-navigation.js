@@ -1,4 +1,4 @@
-const PAGES=new Set(['overview','history','actions','finance','backup','users','settings','calendar','stage-settings','guide','activity']);
+const PAGES=new Set(['overview','history','actions','finance','finance-annual','backup','users','settings','calendar','stage-settings','guide','activity']);
 const REVIEWS=new Set(['daily','weekly','monthly','quarterly','yearly','decision']);
 const UUID=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const overview=()=>({route:'overview'});

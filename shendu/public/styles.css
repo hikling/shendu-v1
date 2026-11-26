@@ -527,6 +527,7 @@ body.reduce-motion *,body.reduce-motion *:before,body.reduce-motion *:after{anim
 .app-shell{--header-height:60px;--overview-bg:#f6f3ec;--overview-surface:#fffdf8;--overview-ink:#202f2b;--overview-muted:#5c6c65;--overview-line:#dcd8cc;padding-left:0}
 .main h1[tabindex="-1"]:focus,.main h1[tabindex="-1"]:focus-visible{outline:none}
 .shendu-header{left:0;right:0;top:0;height:var(--header-height);padding:0;z-index:80;background:rgba(250,247,241,.92);border-bottom:1px solid var(--overview-line);backdrop-filter:blur(14px);box-shadow:0 1px 0 rgba(255,255,255,.7)}
+body[data-scroll-locked] .shendu-header{padding-right:var(--removed-body-scroll-bar-size,0px)}
 .header-inner{height:100%;width:100%;max-width:1560px;margin:auto;padding:0 clamp(18px,3.4vw,54px);display:flex;align-items:center;gap:clamp(18px,2.6vw,44px)}
 .header-brand{display:flex;align-items:center;gap:11px;flex:0 0 auto;min-height:42px;border:0;background:transparent;padding:3px;color:#1e1c19;font-family:"Noto Serif SC","Songti SC","STSong","Source Han Serif SC",serif}
 .header-seal{width:36px;height:36px;border-radius:12px;font-size:1.2rem;letter-spacing:0;transform:none}

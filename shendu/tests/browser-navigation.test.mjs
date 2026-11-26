@@ -18,7 +18,7 @@ function fixture(path='/overview'){
 }
 
 test('page and review addresses whitelist navigation identity and validate civil periods',()=>{
-  for(const route of ['overview','history','actions','finance','settings','backup','users','calendar','stage-settings','guide','activity'])assert.deepEqual(parseBrowserRoute('/'+route+'?private=omitted'),{route});
+  for(const route of ['overview','history','actions','finance','finance-annual','settings','backup','users','calendar','stage-settings','guide','activity'])assert.deepEqual(parseBrowserRoute('/'+route+'?private=omitted'),{route});
   const id=randomUUID();assert.deepEqual(parseBrowserRoute('/review/'+id),{route:'review',id});
   for(const [type,period] of [['daily','2028-02-29'],['quarterly','2026-11-16'],['decision','2026-11-16'],['monthly','2026-11'],['weekly','2026-W53'],['yearly','0001']]){
     const target={route:'review',type,period};assert.deepEqual(parseBrowserRoute(browserRoutePath(target)),target);

@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {JSDOM} from 'jsdom';
 import {readFileSync} from 'node:fs';
-import {mountFinancePage,mountDailyFinance} from '../public/finance-ui.js';
+import {mountFinancePage,mountFinanceAnnualPage,mountDailyFinance} from '../public/finance-ui.js';
 import {DEFAULT_FINANCE_CATEGORIES,parseMoneyExpression,parseFinanceLines,suggestFinanceCategory} from '../public/finance-domain.js';
 
 const dom=new JSDOM('<main id="app"></main><div id="modal-root"></div>',{url:'https://shendu.test',pretendToBeVisual:true}),win=dom.window;
@@ -15,7 +15,7 @@ const ui=await import('../public/ui/shadcn.js');
 const $=(selector,root=document)=>root.querySelector(selector),$$=(selector,root=document)=>[...root.querySelectorAll(selector)],flush=async()=>{for(let i=0;i<16;i++)await new Promise(resolve=>setImmediate(resolve))};
 let controller,completeQuickUpload;
 
-function fixture({daily=false,readonly=false,snapshot,draft,handler,receiptClient,initialEntries=[],initialStorage}={}){
+function fixture({daily=false,annual=false,readonly=false,snapshot,draft,handler,receiptClient,initialEntries=[],initialStorage,initialMonth,initialYear,onOpenAnnual,onBackToFinance,onSelectMonth}={}){
   ui.disposeUi($('#app'));ui.disposeUi($('#modal-root'));$('#app').replaceChildren();$('#modal-root').replaceChildren();
   const root=document.createElement('section');$('#app').append(root);let current=true,pending=false;
   const calls=[],notices=[],drafts=[],dirty=[],ended=[];let savedStorage=initialStorage||{configured:false,config:{},version:0,receiptCount:0,disconnected:false,targets:[{id:'storage-target',name:'自己的S3'}]};let entries=structuredClone(initialEntries),categories=DEFAULT_FINANCE_CATEGORIES.map(category=>({...category,version:0})),nextCursor=null;
@@ -43,8 +43,8 @@ function fixture({daily=false,readonly=false,snapshot,draft,handler,receiptClien
     if(originalReceipt?.processReceiptFiles){const result=await originalReceipt.processReceiptFiles(...args);return result.imageStatus===undefined&&result.receiptIds?.length?{...result,imageStatus:'stored'}:result}
     const parsed=parseFinanceLines($('[data-finance-create]',root).elements.text.value),receiptIds=parsed.rows.map(()=>globalThis.crypto.randomUUID());return {imageStatus:'stored',receiptIds,candidates:parsed.rows.map((row,index)=>({...row,kind:'expense',receiptIds:[receiptIds[index]]}))};
   }};
-  const options={request,renderMarkup:ui.renderMarkup,today:()=> '2026-11-15',isCurrent:()=>current,toast:(...args)=>notices.push(args),setDirty:value=>dirty.push(value),onDraftChange:value=>drafts.push(value),beginWrite:()=>{if(pending)return null;pending=true;return {}},endWrite:token=>{pending=false;ended.push(token)},showMonthPicker:ui.showFinanceMonthPicker,showFinanceDayPicker:ui.showFinanceDayPicker,showFinancePie:ui.showFinancePie,openModal:(html,className='')=>ui.renderMarkup($('#modal-root'),`<section class="modal ${className}">${html}</section>`),closeModal:force=>{if($('#modal-root').dataset.persistent==='1'&&!force)return;ui.disposeUi($('#modal-root'));$('#modal-root').replaceChildren();$('#modal-root').dataset.persistent='0'},receiptClient:receiptAdapter};
-  controller=daily?mountDailyFinance(root,{...options,date:'2026-11-15',readonly,snapshot,draft}):mountFinancePage(root,options);
+  const options={request,renderMarkup:ui.renderMarkup,today:()=> '2026-11-15',isCurrent:()=>current,toast:(...args)=>notices.push(args),setDirty:value=>dirty.push(value),onDraftChange:value=>drafts.push(value),beginWrite:()=>{if(pending)return null;pending=true;return {}},endWrite:token=>{pending=false;ended.push(token)},showMonthPicker:ui.showFinanceMonthPicker,showFinanceDayPicker:ui.showFinanceDayPicker,showFinancePie:ui.showFinancePie,initialMonth,initialYear,onOpenAnnual,onBackToFinance,onSelectMonth,openModal:(html,className='')=>ui.renderMarkup($('#modal-root'),`<section class="modal ${className}">${html}</section>`),closeModal:force=>{if($('#modal-root').dataset.persistent==='1'&&!force)return;ui.disposeUi($('#modal-root'));$('#modal-root').replaceChildren();$('#modal-root').dataset.persistent='0'},receiptClient:receiptAdapter};
+  controller=daily?mountDailyFinance(root,{...options,date:'2026-11-15',readonly,snapshot,draft}):annual?mountFinanceAnnualPage(root,options):mountFinancePage(root,options);
   let pickerRequested=false;$('[data-finance-files]',root)?.addEventListener('click',()=>{pickerRequested=true});
   completeQuickUpload=async form=>{
     // Tests of other behavior explicitly walk the real upload+matching path.
@@ -366,31 +366,30 @@ test('historical months default to latest spending date or actual month end, and
 });
 
 
-test('ledger month/year scope omits day scope and hero counter while keeping monthly totals, paging and mounted drafts',async()=>{
+test('monthly finance ledger omits range selector and links cleanly to the dedicated annual page',async()=>{
   const make=(id,date,amountCents)=>({id,date,kind:'expense',categoryId:'food',purpose:id,amountCents,expression:String(amountCents/100),receiptIds:[],version:1});
-  const f=fixture({initialEntries:[make('今天早餐','2026-11-15',800),make('昨天面条','2026-11-14',1200),make('夏季冷饮','2026-08-03',1500),make('去年记录','2025-12-20',5000)]});await flush();
+  const opened=[];
+  const f=fixture({initialEntries:[make('今天早餐','2026-11-15',800),make('昨天面条','2026-11-14',1200),make('夏季冷饮','2026-08-03',1500),make('去年记录','2025-12-20',5000)],onOpenAnnual:year=>opened.push(year)});await flush();
   const form=$('[data-finance-create]',f.root),field=input(form,'text','30 尚未入账'),filters=$('[data-finance-filters]',f.root),summary=$('[data-finance-summary]',f.root);
   assert.equal($('[data-finance-hero-count]',f.root),null);
   assert.equal($('[data-finance-ledger-date-row]',f.root),null);
-  assert.deepEqual([...filters.elements.range.options].map(option=>option.value),['month','year']);
-  assert.equal(filters.elements.range.value,'month');assert.equal($$('.finance-day-card',f.root).length,2);assert.equal($$('.finance-entry',f.root).length,0);
+  assert.equal(filters.elements.range,undefined,'annual ledger range moved to the dedicated annual page');
+  assert.equal($('[data-finance-year-pie]',f.root),null,'monthly page stays focused on monthly and daily charts');
+  assert.equal($$('.finance-day-card',f.root).length,2);assert.equal($$('.finance-entry',f.root).length,0);
+  assert.match(summary.textContent,/20\.00/);assert.match($('[data-finance-month-pie]',f.root).textContent,/20\.00/);assert.match($('[data-finance-day-pie]',f.root).textContent,/8\.00/);
   $('[data-finance-day-card="2026-11-15"]',f.root).click();assert.equal($$('.finance-entry',f.root).length,1);assert.match($('[data-finance-day-detail="2026-11-15"]',f.root).textContent,/今天早餐/);
-  change(filters,'range','year');await flush();
-  assert.equal($$('.finance-day-card',f.root).length,3);assert.equal($$('.finance-entry',f.root).length,0);
-  assert.equal($('[data-finance-day-card="2025-12-20"]',f.root),null);
-  assert.match(summary.textContent,/20\.00/);assert.match($('[data-finance-month-pie]',f.root).textContent,/20\.00/);
-  assert.match($('[data-finance-day-pie]',f.root).textContent,/8\.00/,'yearly ledger view keeps independent monthly and daily charts');
-  $('[data-finance-day-card="2026-08-03"]',f.root).click();assert.match($('[data-finance-day-detail="2026-08-03"]',f.root).textContent,/夏季冷饮/);
   $('[data-finance-day-close]',f.root).click();assert.equal($('[data-finance-day-detail]',f.root),null);
-  f.setCursor('next-year-page');$('[data-finance-refresh]',f.root).click();await flush();$('[data-finance-more]',f.root).click();await flush();assert.ok(f.calls.some(call=>call.path.includes('year=2026')&&call.path.includes('cursor=next-year-page')));
-  change(filters,'range','month');await flush();assert.equal($$('.finance-day-card',f.root).length,2);assert.equal($$('.finance-entry',f.root).length,0);assert.equal(form.elements.text,field);assert.equal(field.value,'30 尚未入账');assert.equal(f.calls.some(call=>call.args.method==='POST'),false);
+  $('[data-finance-open-annual]',f.root).click();
+  assert.deepEqual(opened,['2026']);
+  assert.equal(form.elements.text,field);assert.equal(field.value,'30 尚未入账');assert.equal(f.calls.some(call=>call.args.method==='POST'),false);
 });
 
-test('a stale year-list response cannot overwrite a newer month view or its pagination',async()=>{
-  let resolveYear;const f=fixture({handler:path=>path==='/api/finance?year=2026&kind=income'?new Promise(resolve=>{resolveYear=resolve}):undefined});await flush();const filters=$('[data-finance-filters]',f.root);
-  change(filters,'kind','income');await flush();change(filters,'range','year');await flush();assert.equal(typeof resolveYear,'function');change(filters,'range','month');await flush();
-  resolveYear({...f.result(),entries:[{id:'stale',date:'2026-08-15',kind:'income',purpose:'过期整年记录',amountCents:99900,categoryId:'salary',receiptIds:[]}],nextCursor:'stale-cursor'});await flush();
-  assert.doesNotMatch($('[data-finance-entries]',f.root).textContent,/过期整年记录/);assert.equal($('[data-finance-more]',f.root).hidden,true);assert.equal(filters.elements.range.value,'month');
+test('a stale annual-list response cannot overwrite a newer year or filter view',async()=>{
+  let resolveOld;const f=fixture({annual:true,handler:path=>path==='/api/finance?year=2025'?new Promise(resolve=>{resolveOld=resolve}):undefined});await flush();
+  $('[data-finance-year-prev]',f.root).click();await flush();assert.equal(typeof resolveOld,'function');
+  $('[data-finance-year-current]',f.root).click();await flush();
+  resolveOld({...f.result(),entries:[{id:'stale',date:'2025-08-15',kind:'income',purpose:'过期整年记录',amountCents:99900,categoryId:'salary',receiptIds:[]}],nextCursor:'stale-cursor'});await flush();
+  assert.doesNotMatch($('[data-finance-entries]',f.root).textContent,/过期整年记录/);assert.equal($('[data-finance-more]',f.root).hidden,true);assert.equal($('[data-finance-year-label]',f.root).textContent,'2026年');
 });
 
 test('typing a new ledger search invalidates the previous result cursor immediately',async()=>{
@@ -726,22 +725,34 @@ test('daily card progress bars reflect share of the monthly total rather than ma
   assert.match($('.finance-day-card-share',c10).textContent,/占本月收入.*75\.0%/);
 });
 
-test('annual finance section displays yearly totals, pie breakdown, 12-month rhythm and switches year or month cleanly',async()=>{
-  const year2026={categories:DEFAULT_FINANCE_CATEGORIES,entries:[],summary:{incomeCents:120000,expenseCents:35000,refundCents:2000,netExpenseCents:33000,balanceCents:87000,count:8},expenseCategoryTotals:[{categoryId:'food',name:'餐饮',cents:21000},{categoryId:'transport',name:'交通',cents:14000}],trend:[{date:'2026-08-03',expenseCents:15000,spendingCents:15000,incomeCents:0},{date:'2026-11-15',expenseCents:18000,spendingCents:20000,incomeCents:120000}]};
-  const year2025={categories:DEFAULT_FINANCE_CATEGORIES,entries:[],summary:{incomeCents:50000,expenseCents:9000,refundCents:0,netExpenseCents:9000,balanceCents:41000,count:2},expenseCategoryTotals:[{categoryId:'shopping',name:'购物',cents:9000}],trend:[{date:'2025-12-20',expenseCents:9000,spendingCents:9000,incomeCents:50000}]};
-  const f=fixture({handler:path=>path==='/api/finance?year=2026'?year2026:path==='/api/finance?year=2025'?year2025:undefined});await flush();
-  assert.match($('[data-finance-year-summary]',f.root).textContent,/年度净支出.*¥330\.00.*年度收入.*¥1,200\.00.*年度收支差额.*\+¥870\.00.*月均净支出.*¥165\.00/);
+test('dedicated annual page displays yearly summary, pie, 12-month rhythm, full-year ledger cards, and navigation hooks',async()=>{
+  const entries2026=[
+    {id:'y-1',date:'2026-11-15',kind:'expense',expression:'180',amountCents:18000,purpose:'聚餐',categoryId:'food',receiptIds:[],version:1},
+    {id:'y-2',date:'2026-08-03',kind:'expense',expression:'150',amountCents:15000,purpose:'打车',categoryId:'transport',receiptIds:[],version:1}
+  ];
+  const year2026={categories:DEFAULT_FINANCE_CATEGORIES,entries:entries2026,summary:{incomeCents:120000,expenseCents:35000,refundCents:2000,netExpenseCents:33000,balanceCents:87000,count:8},expenseCategoryTotals:[{categoryId:'food',name:'餐饮',cents:21000},{categoryId:'transport',name:'交通',cents:14000}],trend:[{date:'2026-08-03',expenseCents:15000,spendingCents:15000,incomeCents:0},{date:'2026-11-15',expenseCents:18000,spendingCents:20000,incomeCents:120000}],nextCursor:'next-year-page'};
+  const year2025={categories:DEFAULT_FINANCE_CATEGORIES,entries:[{id:'y-old',date:'2025-12-20',kind:'expense',expression:'90',amountCents:9000,purpose:'冬衣',categoryId:'shopping',receiptIds:[],version:1}],summary:{incomeCents:50000,expenseCents:9000,refundCents:0,netExpenseCents:9000,balanceCents:41000,count:2},expenseCategoryTotals:[{categoryId:'shopping',name:'购物',cents:9000}],trend:[{date:'2025-12-20',expenseCents:9000,spendingCents:9000,incomeCents:50000}],nextCursor:null};
+  const back=[],jumped=[];
+  const f=fixture({annual:true,onBackToFinance:()=>back.push(true),onSelectMonth:month=>jumped.push(month),handler:path=>path==='/api/finance?year=2026'?year2026:path==='/api/finance?year=2025'?year2025:undefined});await flush();
+  assert.match($('[data-finance-summary]',f.root).textContent,/年度净支出.*330\.00.*年度收入.*1,200\.00.*年度收支差额.*870\.00.*月均净支出.*165\.00/);
   assert.match($('[data-finance-year-pie]',f.root).textContent,/餐饮.*¥210\.00.*交通.*¥140\.00/);
   assert.equal($$('[data-finance-year-month]',f.root).length,12);
-  assert.equal($('[data-finance-year-month="2026-11"]',f.root).classList.contains('is-active'),true);
-  assert.match($('[data-finance-year-rhythm]',f.root).textContent,/峰值 11月 · ¥180\.00/);
+  assert.match($('[data-finance-year-rhythm]',f.root).textContent,/峰值 11月.*¥180\.00/);
+  assert.equal($$('.finance-day-card',f.root).length,2);
+  assert.match($('[data-finance-day-card="2026-11-15"]',f.root).textContent,/占全年支出.*54\.5%/);
+  $('[data-finance-day-card="2026-08-03"]',f.root).click();
+  assert.match($('[data-finance-day-detail="2026-08-03"]',f.root).textContent,/打车/);
+  $('[data-finance-more]',f.root).click();await flush();
+  assert.ok(f.calls.some(call=>call.path.includes('year=2026')&&call.path.includes('cursor=next-year-page')));
   $('[data-finance-year-prev]',f.root).click();await flush();
   assert.equal($('[data-finance-year-label]',f.root).textContent,'2025年');
   assert.equal($('[data-finance-year-current]',f.root).hidden,false);
   assert.match($('[data-finance-year-pie]',f.root).textContent,/购物.*¥90\.00/);
+  assert.match($('[data-finance-day-card="2025-12-20"]',f.root).textContent,/冬衣|购物/);
   $('[data-finance-year-current]',f.root).click();await flush();
   assert.equal($('[data-finance-year-label]',f.root).textContent,'2026年');
-  $('[data-finance-year-month="2026-08"]',f.root).click();await flush();
-  assert.ok(f.calls.some(call=>call.path==='/api/finance?month=2026-08'));
-  assert.equal($('[data-finance-year-month="2026-08"]',f.root).classList.contains('is-active'),true);
+  $('[data-finance-year-month="2026-08"]',f.root).click();
+  assert.deepEqual(jumped,['2026-08']);
+  $('[data-finance-back]',f.root).click();
+  assert.equal(back.length,1);
 });

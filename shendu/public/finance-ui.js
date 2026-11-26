@@ -101,18 +101,22 @@ function compactMoney(cents){
   return `¥${(amount/100).toFixed(amount%100===0?0:1)}`;
 }
 
-function createWorkspace(container,options,daily){
+function createWorkspace(container,options,mode='month'){
+  const daily=mode==='daily',annual=mode==='annual';
   let disposed=false,pending=false,loadOwner=null,storageOwner=null,data=null,storage=null,categories=[...DEFAULT_FINANCE_CATEGORIES],cursor=null;
   let importController=null,receiptModule=null,storageDialogOwner=null,lastMatchResult=null;
-  let entries=[],ledgerTrend=[],draft={...blank(),...(options.draft||{})},searchTimer,periodController=null,quickRows=[],refreshQuick=null,dayPicker=null,monthPie=null,dayPie=null,yearPie=null,dayOwner=null,yearOwner=null,selectedDay='',chartMonth=null,chartYear=null,selectedYear='',expandedLedgerDay=null;
+  let entries=[],draft={...blank(),...(options.draft||{})},searchTimer,periodController=null,quickRows=[],refreshQuick=null,dayPicker=null,monthPie=null,dayPie=null,yearPie=null,dayOwner=null,selectedDay='',chartMonth=null,expandedLedgerDay=null;
   if(!draft.text&&(draft.expression||draft.purpose))draft.text=`${draft.expression} ${draft.purpose}`.trim();
   const aborter=new AbortController();
-  const day=options.date||options.today(),filters={month:day.slice(0,7),range:'month',q:'',kind:'',deleted:false};
+  const day=options.date||options.today();
+  const initialMonth=/^\d{4}-(0[1-9]|1[0-2])$/.test(String(options.initialMonth||''))?options.initialMonth:day.slice(0,7);
+  const initialYear=/^\d{4}$/.test(String(options.initialYear||''))&&options.initialYear!=='0000'?options.initialYear:day.slice(0,4);
+  const filters={month:initialMonth,year:initialYear,q:'',kind:'',deleted:false};
   const alive=()=>!disposed&&container.isConnected&&(options.isCurrent?.()??true);
   const render=(node,html)=>options.renderMarkup(node,html);
   const notify=(message,type='info')=>{if(alive())options.toast?.(message,type)};
   const request=(path,args={},guard=alive)=>options.request(path,args,guard);
-  const query=()=>{const params=new URLSearchParams(daily?{date:day}:filters.range==='year'?{year:filters.month.slice(0,4)}:{month:filters.month});for(const key of ['q','kind'])if(filters[key])params.set(key,filters[key]);if(filters.deleted)params.set('deleted','1');return params};
+  const query=()=>{const params=new URLSearchParams(daily?{date:day}:annual?{year:filters.year}:{month:filters.month});for(const key of ['q','kind'])if(filters[key])params.set(key,filters[key]);if(filters.deleted)params.set('deleted','1');return params};
   const changed=()=>{options.onDraftChange?.({...draft,receiptIds:[...(draft.receiptIds||[])]});options.setDirty?.(hasDraft(draft))};
   const status=(message,error=false)=>{const node=$('[data-finance-status]',container);if(node){node.textContent=message;node.classList.toggle('is-error',error)}};
   const noFormLoss=()=>{const form=$('[data-finance-create]',container);return form?.isConnected?form:null};
@@ -122,14 +126,14 @@ function createWorkspace(container,options,daily){
     if(pending||!alive()||!anchor?.isConnected)return false;
     const token=options.beginWrite?options.beginWrite():{};if(token===null||token===false)return false;
     pending=true;
-    periodController?.setDisabled?.(true);dayPicker?.setDisabled?.(true);const range=$('[name="range"]',container);if(range)range.disabled=true;
+    periodController?.setDisabled?.(true);dayPicker?.setDisabled?.(true);
     syncYearNavState();
     const fieldset=$('fieldset',anchor),previousDisabled=fieldset?.disabled,modal=anchor.closest('.modal')?.parentElement,previousPersistent=modal?.dataset.persistent;
     if(fieldset)fieldset.disabled=true;if(modal)modal.dataset.persistent='1';anchor.setAttribute('aria-busy','true');
     const current=()=>alive()&&anchor.isConnected&&(token.isCurrent?.()??true);
     try{await operation(current);return current()}
     catch(error){if(current()){const errorNode=$('[data-form-error]',anchor);if(errorNode)errorNode.textContent=error.message||'未能保存，请重试。';else status(error.message||'未能保存，请重试。',true)}return false}
-    finally{pending=false;options.endWrite?.(token);if(alive()){periodController?.setDisabled?.(false);dayPicker?.setDisabled?.(false);if(range?.isConnected)range.disabled=false;syncYearNavState();}if(anchor.isConnected){anchor.removeAttribute('aria-busy');if(fieldset)fieldset.disabled=previousDisabled}if(modal?.isConnected&&anchor.isConnected&&modal.contains(anchor)){if(previousPersistent===undefined)delete modal.dataset.persistent;else modal.dataset.persistent=previousPersistent}}
+    finally{pending=false;options.endWrite?.(token);if(alive()){periodController?.setDisabled?.(false);dayPicker?.setDisabled?.(false);syncYearNavState();}if(anchor.isConnected){anchor.removeAttribute('aria-busy');if(fieldset)fieldset.disabled=previousDisabled}if(modal?.isConnected&&anchor.isConnected&&modal.contains(anchor)){if(previousPersistent===undefined)delete modal.dataset.persistent;else modal.dataset.persistent=previousPersistent}}
   }
 
   function mountQuickEntry(host){
@@ -253,43 +257,30 @@ function createWorkspace(container,options,daily){
     const activeDate=expandedLedgerDay&&groups.has(expandedLedgerDay)?expandedLedgerDay:null;
     expandedLedgerDay=activeDate;
     const selected=activeDate?daySummaries.find(item=>item.date===activeDate):null;
-    const trendMonthTotals=new Map();
-    for(const point of ledgerTrend){
-      const mk=String(point?.date||'').slice(0,7);if(!mk)continue;
-      const acc=trendMonthTotals.get(mk)||{netExpenseCents:0,expenseCents:0,incomeCents:0,refundCents:0};
-      const dayNet=Number(point.expenseCents)||0,dayGross=Math.max(0,Number(point.spendingCents)||0),dayInc=Math.max(0,Number(point.incomeCents)||0);
-      acc.netExpenseCents+=dayNet;acc.expenseCents+=dayGross;acc.incomeCents+=dayInc;acc.refundCents+=Math.max(0,dayGross-dayNet);
-      trendMonthTotals.set(mk,acc);
-    }
-    const visibleMonthTotals=new Map();
+    const visibleTotals={netExpenseCents:0,positiveNetExpenseCents:0,expenseCents:0,incomeCents:0,refundCents:0};
     for(const item of daySummaries){
-      const mk=item.date.slice(0,7);
-      const acc=visibleMonthTotals.get(mk)||{netExpenseCents:0,positiveNetExpenseCents:0,expenseCents:0,incomeCents:0,refundCents:0};
-      acc.netExpenseCents+=item.info.netExpenseCents;
-      if(item.info.netExpenseCents>0)acc.positiveNetExpenseCents+=item.info.netExpenseCents;
-      acc.expenseCents+=item.info.expenseCents;acc.incomeCents+=item.info.incomeCents;acc.refundCents+=item.info.refundCents;
-      visibleMonthTotals.set(mk,acc);
+      visibleTotals.netExpenseCents+=item.info.netExpenseCents;
+      if(item.info.netExpenseCents>0)visibleTotals.positiveNetExpenseCents+=item.info.netExpenseCents;
+      visibleTotals.expenseCents+=item.info.expenseCents;visibleTotals.incomeCents+=item.info.incomeCents;visibleTotals.refundCents+=item.info.refundCents;
     }
     const summaryTotals=data?.summary||{};
+    const periodNetExpense=summaryTotals.netExpenseCents!=null?Number(summaryTotals.netExpenseCents)||0:visibleTotals.netExpenseCents;
+    const periodGrossExpense=summaryTotals.expenseCents!=null?Math.max(0,Number(summaryTotals.expenseCents)||0):visibleTotals.expenseCents;
+    const periodIncome=summaryTotals.incomeCents!=null?Math.max(0,Number(summaryTotals.incomeCents)||0):visibleTotals.incomeCents;
+    const periodRefund=summaryTotals.refundCents!=null?Math.max(0,Number(summaryTotals.refundCents)||0):visibleTotals.refundCents;
+    const periodPrefix=annual?'全年':'本月';
     const cardsHtml=daySummaries.map(item=>{
-      const mk=item.date.slice(0,7),inCurrentMonth=mk===filters.month;
-      const trendAcc=trendMonthTotals.get(mk),visibleAcc=visibleMonthTotals.get(mk)||{netExpenseCents:0,positiveNetExpenseCents:0,expenseCents:0,incomeCents:0,refundCents:0};
-      const monthNetExpense=inCurrentMonth&&summaryTotals.netExpenseCents!=null?Number(summaryTotals.netExpenseCents)||0:(trendAcc?trendAcc.netExpenseCents:visibleAcc.netExpenseCents);
-      const monthGrossExpense=inCurrentMonth&&summaryTotals.expenseCents!=null?Math.max(0,Number(summaryTotals.expenseCents)||0):(trendAcc?trendAcc.expenseCents:visibleAcc.expenseCents);
-      const monthIncome=inCurrentMonth&&summaryTotals.incomeCents!=null?Math.max(0,Number(summaryTotals.incomeCents)||0):(trendAcc?trendAcc.incomeCents:visibleAcc.incomeCents);
-      const monthRefund=inCurrentMonth&&summaryTotals.refundCents!=null?Math.max(0,Number(summaryTotals.refundCents)||0):(trendAcc?trendAcc.refundCents:visibleAcc.refundCents);
-      const periodPrefix=filters.range==='year'?`${Number(item.parts.month)||''}月`:'本月';
       let rawPct=0,shareLabel=`占${periodPrefix}支出`;
       if(item.info.tone==='is-expense'&&item.info.netExpenseCents>0){
-        const denom=monthNetExpense>0&&monthNetExpense>=item.info.netExpenseCents?monthNetExpense:Math.max(monthGrossExpense,visibleAcc.positiveNetExpenseCents,item.info.netExpenseCents);
+        const denom=periodNetExpense>0&&periodNetExpense>=item.info.netExpenseCents?periodNetExpense:Math.max(periodGrossExpense,visibleTotals.positiveNetExpenseCents,item.info.netExpenseCents);
         rawPct=denom>0?Math.min(100,item.info.netExpenseCents/denom*100):0;
       }else if(item.info.tone==='is-income'&&item.info.incomeCents>0){
-        const denom=monthIncome>0?monthIncome:visibleAcc.incomeCents;
+        const denom=periodIncome>0?periodIncome:visibleTotals.incomeCents;
         rawPct=denom>0?Math.min(100,item.info.incomeCents/denom*100):0;
         shareLabel=`占${periodPrefix}收入`;
       }else if(item.info.tone==='is-refund'&&item.info.netExpenseCents<0){
         const netRefund=Math.abs(item.info.netExpenseCents);
-        const denom=monthRefund>0&&monthRefund>=netRefund?monthRefund:Math.max(visibleAcc.refundCents,netRefund);
+        const denom=periodRefund>0&&periodRefund>=netRefund?periodRefund:Math.max(visibleTotals.refundCents,netRefund);
         rawPct=denom>0?Math.min(100,netRefund/denom*100):0;
         shareLabel=`占${periodPrefix}退款`;
       }
@@ -310,6 +301,15 @@ function createWorkspace(container,options,daily){
     render(list,`<div class="finance-ledger-board${activeDate?' has-selection':''}"><div class="finance-day-cards" data-ui-native>${cardsHtml}</div>${detailHtml}</div>`);
     const more=$('[data-finance-more]',container);if(more)more.hidden=!cursor;
   }
+  function syncYearNavState(){
+    if(!annual)return;
+    const num=Number(filters.year)||Number(day.slice(0,4)),todayYear=options.today().slice(0,4);
+    const label=$('[data-finance-year-label]',container);if(label)label.textContent=`${num}年`;
+    const prev=$('[data-finance-year-prev]',container);if(prev)prev.disabled=pending||num<=1;
+    const next=$('[data-finance-year-next]',container);if(next)next.disabled=pending||num>=9999;
+    const currentBtn=$('[data-finance-year-current]',container);if(currentBtn){currentBtn.hidden=filters.year===todayYear;currentBtn.disabled=pending}
+    for(const btn of $$('[data-finance-year-month]',container))btn.disabled=pending;
+  }
   function renderSummary(){
     const summary=data?.summary||{},summaries=$('[data-finance-summary]',container);
     if(daily){
@@ -323,10 +323,44 @@ function createWorkspace(container,options,daily){
     const incomeShare=flowTotal>0?100-spendShare:0;
     const balanceState=balanceCents>0?'positive':balanceCents<0?'negative':'neutral';
     const balanceBarPct=balanceCents>0?(incomeCents>0?Math.min(100,Math.round(balanceCents/incomeCents*100)):100):balanceCents<0?(flowTotal>0?Math.min(100,Math.round(Math.abs(balanceCents)/flowTotal*100)):0):0;
-    const balanceBadge=balanceCents>0?'当月结余':balanceCents<0?'支大于收':'收支平衡';
     const balanceLeft=balanceCents>0?`结余率 ${balanceBarPct}%`:balanceCents<0?`缺口占 ${balanceBarPct}%`:'收支持平';
     const balanceRight=balanceCents>0?`净结余 ¥${money(balanceCents)}`:balanceCents<0?`净流出 ¥${money(Math.abs(balanceCents))}`:'差额归零';
     const incomeRight=incomeCents>0?(positiveSpend>0?`覆盖支出 ${Math.min(999,Math.round(incomeCents/positiveSpend*100))}%`:'纯收入入账'):'等待收入入账';
+    if(annual){
+      const year=filters.year,todayMonth=options.today().slice(0,7);
+      const months=Array.from({length:12},(_,index)=>({month:index+1,key:`${year}-${String(index+1).padStart(2,'0')}`,netExpenseCents:0,expenseCents:0,incomeCents:0}));
+      for(const point of data?.trend||[]){
+        const match=/^\d{4}-(0[1-9]|1[0-2])-\d{2}$/.exec(String(point?.date||''));
+        if(!match||!String(point.date).startsWith(`${year}-`))continue;
+        const slot=months[Number(match[1])-1];
+        slot.netExpenseCents+=Number(point.expenseCents)||0;
+        slot.expenseCents+=Math.max(0,Number(point.spendingCents)||0);
+        slot.incomeCents+=Math.max(0,Number(point.incomeCents)||0);
+      }
+      const activeSpendMonths=months.filter(slot=>slot.netExpenseCents>0);
+      const peakMonth=activeSpendMonths.reduce((best,slot)=>!best||slot.netExpenseCents>best.netExpenseCents?slot:best,null);
+      const maxMonthlySpend=peakMonth?peakMonth.netExpenseCents:0;
+      const avgMonthlyCents=activeSpendMonths.length?Math.round(positiveSpend/activeSpendMonths.length):0;
+      const activeMonthPct=Math.round(activeSpendMonths.length/12*100);
+      const balanceBadge=balanceCents>0?'年度结余':balanceCents<0?'支大于收':'收支平衡';
+      render(summaries,`<div class="finance-stat finance-stat-expense"><div class="finance-stat-top"><span class="finance-stat-kicker"><i aria-hidden="true"></i>年度净支出</span><span class="finance-stat-badge">${refundCents>0?`含退款 ¥${money(refundCents)}`:`${count} 笔流水`}</span></div><strong><small>¥</small>${money(summary.netExpenseCents)}</strong><p>${esc(year)} 年支出减去已登记退款</p><div class="finance-flow-meter" aria-hidden="true"><span class="finance-flow-track"><i class="is-expense" style="width:${spendShare}%"></i></span><span class="finance-flow-legend"><small>支出占 ${spendShare}%</small><small>总支出 ¥${money(expenseCents)}</small></span></div></div><div class="finance-stat finance-stat-income"><div class="finance-stat-top"><span class="finance-stat-kicker"><i aria-hidden="true"></i>年度收入</span><span class="finance-stat-badge">${incomeCents>0?'全年已入账':'暂无入账'}</span></div><strong><small>¥</small>${money(summary.incomeCents)}</strong><p>${count} 笔有效流水</p><div class="finance-flow-meter" aria-hidden="true"><span class="finance-flow-track"><i class="is-income" style="width:${incomeShare}%"></i></span><span class="finance-flow-legend"><small>收入占 ${incomeShare}%</small><small>${incomeRight}</small></span></div></div><div class="finance-stat finance-stat-balance is-${balanceState}"><div class="finance-stat-top"><span class="finance-stat-kicker"><i aria-hidden="true"></i>年度收支差额</span><span class="finance-stat-badge">${balanceBadge}</span></div><strong><small>¥</small>${money(summary.balanceCents)}</strong><p>全年收入减去净支出，不代表账户余额</p><div class="finance-flow-meter" aria-hidden="true"><span class="finance-flow-track"><i class="is-balance is-${balanceState}" style="width:${balanceBarPct}%"></i></span><span class="finance-flow-legend"><small>${balanceLeft}</small><small>${balanceRight}</small></span></div></div><div class="finance-stat finance-stat-average"><div class="finance-stat-top"><span class="finance-stat-kicker"><i aria-hidden="true"></i>月均净支出</span><span class="finance-stat-badge">${activeSpendMonths.length?`${activeSpendMonths.length} 个活跃月`:'暂无花销'}</span></div><strong>${activeSpendMonths.length?`<small>¥</small>${money(avgMonthlyCents)}`:'—'}</strong><p>${activeSpendMonths.length?'按全年有花销月份平均计算':'记下花销后自动统计月均花销'}</p><div class="finance-flow-meter" aria-hidden="true"><span class="finance-flow-track"><i class="is-average" style="width:${activeMonthPct}%"></i></span><span class="finance-flow-legend"><small>有花销月 ${activeSpendMonths.length}/12</small><small>${peakMonth?`峰值 ${peakMonth.month}月 ¥${money(peakMonth.netExpenseCents)}`:'暂无峰值'}</small></span></div></div>`);
+      const rhythmHost=$('[data-finance-year-rhythm]',container);
+      if(rhythmHost){
+        const colsHtml=months.map(slot=>{
+          const positive=Math.max(0,slot.netExpenseCents);
+          const barPct=maxMonthlySpend>0&&positive>0?Math.max(8,Math.round(positive/maxMonthlySpend*100)):0;
+          const isCurrentMonth=slot.key===todayMonth;
+          const isPeak=Boolean(peakMonth&&peakMonth.key===slot.key&&positive>0);
+          const tip=`${year}年${slot.month}月 · 净支出 ${slot.netExpenseCents<0?'−':''}¥${money(Math.abs(slot.netExpenseCents))}${slot.incomeCents>0?` · 收入 ¥${money(slot.incomeCents)}`:''}`;
+          return `<button type="button" class="finance-year-col${isCurrentMonth?' is-active':''}${isPeak?' is-peak':''}${positive>0?' has-value':''}" data-finance-year-month="${esc(slot.key)}" title="${esc(tip)}" aria-label="进入 ${esc(tip)}"><span class="finance-year-col-val" aria-hidden="true">${esc(compactMoney(positive))}</span><span class="finance-year-col-track" aria-hidden="true"><i style="height:${barPct}%"></i></span><span class="finance-year-col-month">${slot.month}月</span></button>`;
+        }).join('');
+        render(rhythmHost,`<div class="finance-year-bars" data-ui-native>${colsHtml}</div><p class="finance-pie-note finance-year-rhythm-foot"><span class="finance-pie-note-pills"><span class="finance-pie-note-pill">有花销月份 <strong>${activeSpendMonths.length} 个</strong></span><span class="finance-pie-note-pill is-net">${peakMonth?`峰值 ${peakMonth.month}月 <strong>¥${money(peakMonth.netExpenseCents)}</strong>`:'全年暂无支出'}</span></span><small>点击任意月份可进入对应月份账本。</small></p>`);
+      }
+      yearPie?.setData({totals:data?.expenseCategoryTotals||[],refundCents,netExpenseCents,title:`${year} 年度花销`,loading:false,error:''});
+      syncYearNavState();
+      return;
+    }
+    const balanceBadge=balanceCents>0?'当月结余':balanceCents<0?'支大于收':'收支平衡';
     render(summaries,`<div class="finance-stat finance-stat-expense"><div class="finance-stat-top"><span class="finance-stat-kicker"><i aria-hidden="true"></i>本月净支出</span><span class="finance-stat-badge">${refundCents>0?`含退款 ¥${money(refundCents)}`:`${count} 笔流水`}</span></div><strong><small>¥</small>${money(summary.netExpenseCents)}</strong><p>支出减去已登记退款</p><div class="finance-flow-meter" aria-hidden="true"><span class="finance-flow-track"><i class="is-expense" style="width:${spendShare}%"></i></span><span class="finance-flow-legend"><small>支出占 ${spendShare}%</small><small>总支出 ¥${money(expenseCents)}</small></span></div></div><div class="finance-stat finance-stat-income"><div class="finance-stat-top"><span class="finance-stat-kicker"><i aria-hidden="true"></i>本月收入</span><span class="finance-stat-badge">${incomeCents>0?'当月已入账':'暂无入账'}</span></div><strong><small>¥</small>${money(summary.incomeCents)}</strong><p>${count} 笔有效流水</p><div class="finance-flow-meter" aria-hidden="true"><span class="finance-flow-track"><i class="is-income" style="width:${incomeShare}%"></i></span><span class="finance-flow-legend"><small>收入占 ${incomeShare}%</small><small>${incomeRight}</small></span></div></div><div class="finance-stat finance-stat-balance is-${balanceState}"><div class="finance-stat-top"><span class="finance-stat-kicker"><i aria-hidden="true"></i>收支差额</span><span class="finance-stat-badge">${balanceBadge}</span></div><strong><small>¥</small>${money(summary.balanceCents)}</strong><p>收入减去净支出，不代表账户余额</p><div class="finance-flow-meter" aria-hidden="true"><span class="finance-flow-track"><i class="is-balance is-${balanceState}" style="width:${balanceBarPct}%"></i></span><span class="finance-flow-legend"><small>${balanceLeft}</small><small>${balanceRight}</small></span></div></div>`);
     monthPie?.setData({totals:data?.expenseCategoryTotals||[],refundCents:summary.refundCents||0,netExpenseCents:summary.netExpenseCents||0,title:`${filters.month} 月度花销`,loading:false,error:''});
   }
@@ -338,7 +372,7 @@ function createWorkspace(container,options,daily){
     return `${filters.month}-${String(last.getUTCDate()).padStart(2,'0')}`;
   }
   async function loadDailyChart(){
-    if(daily||!alive()||!selectedDay)return;
+    if(daily||annual||!alive()||!selectedDay)return;
     const date=selectedDay,month=filters.month,owner={};dayOwner=owner;
     const current=()=>alive()&&dayOwner===owner&&selectedDay===date&&filters.month===month;
     dayPie?.setData({loading:true,error:'',totals:[]});
@@ -347,75 +381,6 @@ function createWorkspace(container,options,daily){
       const result=await request(`/api/finance?date=${encodeURIComponent(date)}`,{},current);if(!current())return;
       dayPie?.setData({totals:result.expenseCategoryTotals||[],refundCents:result.summary?.refundCents||0,netExpenseCents:result.summary?.netExpenseCents||0,title:`${date} 每日花销`,loading:false,error:''});
     }catch(error){if(current()){dayPie?.setData({loading:false,error:error.message||'当天花销暂时未能读取。'});if(retry)retry.hidden=false}}
-  }
-  function syncYearNavState(){
-    if(daily)return;
-    const num=Number(selectedYear)||Number(filters.month.slice(0,4)),todayYear=options.today().slice(0,4);
-    const label=$('[data-finance-year-label]',container);if(label)label.textContent=`${num}年`;
-    const prev=$('[data-finance-year-prev]',container);if(prev)prev.disabled=pending||num<=1;
-    const next=$('[data-finance-year-next]',container);if(next)next.disabled=pending||num>=9999;
-    const currentBtn=$('[data-finance-year-current]',container);if(currentBtn){currentBtn.hidden=selectedYear===todayYear;currentBtn.disabled=pending}
-    for(const btn of $$('[data-finance-year-month]',container))btn.disabled=pending;
-  }
-  function renderYearlyData(year,result){
-    const summary=result?.summary||{};
-    const netExpenseCents=Number(summary.netExpenseCents)||0,expenseCents=Math.max(0,Number(summary.expenseCents)||0),refundCents=Math.max(0,Number(summary.refundCents)||0),incomeCents=Math.max(0,Number(summary.incomeCents)||0),balanceCents=Number(summary.balanceCents)||0,count=Number(summary.count)||0;
-    const months=Array.from({length:12},(_,index)=>({month:index+1,key:`${year}-${String(index+1).padStart(2,'0')}`,netExpenseCents:0,expenseCents:0,incomeCents:0}));
-    for(const point of result?.trend||[]){
-      const match=/^\d{4}-(0[1-9]|1[0-2])-\d{2}$/.exec(String(point?.date||''));
-      if(!match||!String(point.date).startsWith(`${year}-`))continue;
-      const slot=months[Number(match[1])-1];
-      slot.netExpenseCents+=Number(point.expenseCents)||0;
-      slot.expenseCents+=Math.max(0,Number(point.spendingCents)||0);
-      slot.incomeCents+=Math.max(0,Number(point.incomeCents)||0);
-    }
-    const activeSpendMonths=months.filter(slot=>slot.netExpenseCents>0);
-    const peakMonth=activeSpendMonths.reduce((best,slot)=>!best||slot.netExpenseCents>best.netExpenseCents?slot:best,null);
-    const maxMonthlySpend=peakMonth?peakMonth.netExpenseCents:0;
-    const avgMonthlyCents=activeSpendMonths.length?Math.round(Math.max(0,netExpenseCents)/activeSpendMonths.length):0;
-    const yearSummaryHost=$('[data-finance-year-summary]',container);
-    if(yearSummaryHost){
-      const balancePrefix=balanceCents>0?'+':balanceCents<0?'−':'';
-      render(yearSummaryHost,`<div class="finance-year-metric is-expense"><span>年度净支出</span><strong>${netExpenseCents<0?'−':''}¥${money(Math.abs(netExpenseCents))}</strong><small>${refundCents>0?`含退款 ¥${money(refundCents)}`:`${count} 笔有效流水`}</small></div><div class="finance-year-metric is-income"><span>年度收入</span><strong>¥${money(incomeCents)}</strong><small>${incomeCents>0?'全年已入账':'暂无收入入账'}</small></div><div class="finance-year-metric is-balance ${balanceCents>0?'is-positive':balanceCents<0?'is-negative':''}"><span>年度收支差额</span><strong>${balancePrefix}¥${money(Math.abs(balanceCents))}</strong><small>${balanceCents>0?'年度净结余':balanceCents<0?'支大于收':'收支持平'}</small></div><div class="finance-year-metric is-average"><span>月均净支出</span><strong>${activeSpendMonths.length?`¥${money(avgMonthlyCents)}`:'—'}</strong><small>${activeSpendMonths.length?`共 ${activeSpendMonths.length} 个月有花销`:'暂无花销月份'}</small></div>`);
-    }
-    const rhythmHost=$('[data-finance-year-rhythm]',container);
-    if(rhythmHost){
-      const colsHtml=months.map(slot=>{
-        const positive=Math.max(0,slot.netExpenseCents);
-        const barPct=maxMonthlySpend>0&&positive>0?Math.max(8,Math.round(positive/maxMonthlySpend*100)):0;
-        const isCurrentMonth=slot.key===filters.month;
-        const isPeak=Boolean(peakMonth&&peakMonth.key===slot.key&&positive>0);
-        const tip=`${year}年${slot.month}月 · 净支出 ${slot.netExpenseCents<0?'−':''}¥${money(Math.abs(slot.netExpenseCents))}${slot.incomeCents>0?` · 收入 ¥${money(slot.incomeCents)}`:''}`;
-        return `<button type="button" class="finance-year-col${isCurrentMonth?' is-active':''}${isPeak?' is-peak':''}${positive>0?' has-value':''}" data-finance-year-month="${esc(slot.key)}" title="${esc(tip)}" aria-label="切换到 ${esc(tip)}" aria-pressed="${isCurrentMonth?'true':'false'}"><span class="finance-year-col-val" aria-hidden="true">${esc(compactMoney(positive))}</span><span class="finance-year-col-track" aria-hidden="true"><i style="height:${barPct}%"></i></span><span class="finance-year-col-month">${slot.month}月</span></button>`;
-      }).join('');
-      render(rhythmHost,`<div class="finance-year-rhythm-head"><div><h3>${esc(year)} 月度花销节奏</h3><p>${peakMonth?`峰值 ${peakMonth.month}月 · ¥${money(peakMonth.netExpenseCents)}`:'记下花销后按月呈现支出起伏'}</p></div><span class="finance-year-rhythm-hint">点击月份切换账本</span></div><div class="finance-year-bars" data-ui-native>${colsHtml}</div>`);
-    }
-    yearPie?.setData({totals:result?.expenseCategoryTotals||[],refundCents,netExpenseCents,title:`${year} 年度花销`,loading:false,error:''});
-    syncYearNavState();
-  }
-  async function loadYearlyChart(year=selectedYear,prefetched=null){
-    if(daily||!alive()||!year)return;
-    const targetYear=String(year),owner={};yearOwner=owner;
-    const current=()=>alive()&&yearOwner===owner&&selectedYear===targetYear;
-    const retry=$('[data-finance-year-retry]',container);if(retry)retry.hidden=true;
-    syncYearNavState();
-    if(prefetched){renderYearlyData(targetYear,prefetched);return}
-    yearPie?.setData({loading:true,error:'',totals:[]});
-    try{
-      const result=await request(`/api/finance?year=${encodeURIComponent(targetYear)}`,{},current);if(!current())return;
-      renderYearlyData(targetYear,result);
-    }catch(error){
-      if(current()){
-        yearPie?.setData({loading:false,error:error.message||'年度花销暂时未能读取。'});
-        if(retry)retry.hidden=false;
-      }
-    }
-  }
-  function syncYearlyChart(prefetchedYearResult=null){
-    if(daily)return;
-    const activeYear=filters.month.slice(0,4);
-    if(chartYear!==activeYear||!selectedYear){chartYear=activeYear;selectedYear=activeYear}
-    return loadYearlyChart(selectedYear,prefetchedYearResult&&selectedYear===activeYear?prefetchedYearResult:null);
   }
   function switchMonth(nextMonth){
     if(!alive()||pending||!nextMonth||nextMonth===filters.month)return;
@@ -426,8 +391,15 @@ function createWorkspace(container,options,daily){
     monthPie?.setData({loading:true,error:'',totals:[]});
     load();
   }
+  function switchYear(nextYear){
+    if(!annual||!alive()||pending||!nextYear||nextYear===filters.year)return;
+    filters.year=nextYear;expandedLedgerDay=null;
+    yearPie?.setData({loading:true,error:'',totals:[]});
+    syncYearNavState();
+    load();
+  }
   function syncDailyChart(){
-    if(daily)return;
+    if(daily||annual)return;
     if(chartMonth!==filters.month||!selectedDay.startsWith(filters.month)){
       chartMonth=filters.month;selectedDay=defaultChartDay();
       dayPicker?.setMonth?.(filters.month);dayPicker?.setValue?.(selectedDay);
@@ -442,11 +414,14 @@ function createWorkspace(container,options,daily){
     if(!alive()||(append&&!cursor))return;const owner={};loadOwner=owner;const current=()=>alive()&&loadOwner===owner;
     if(!append){clearTimeout(searchTimer);resetPagination()}
     const params=query();if(append)params.set('cursor',cursor);status(append?'正在读取更早的账目…':'正在整理账目…');
-    try{const byYear=!daily&&filters.range==='year';const [result,monthly]=await Promise.all([request(`/api/finance?${params}`,{},current),byYear?request(`/api/finance?month=${encodeURIComponent(filters.month)}`,{},current):Promise.resolve(null)]);if(!current())return;data=monthly||result;ledgerTrend=result.trend||[];categories=result.categories||categories;entries=append?[...entries,...(result.entries||[])]:result.entries||[];cursor=result.nextCursor||null;renderSummary();renderEntries();syncDailyChart();const fullYearPrefetch=byYear&&!filters.q&&!filters.kind&&!filters.deleted?result:null;syncYearlyChart(fullYearPrefetch);
-      if(!noFormLoss()){const host=$('[data-finance-form]',container);mountQuickEntry(host)}refreshQuick?.();
-      const dayCount=new Set(entries.map(item=>item.date)).size,yearLabel=filters.month.slice(0,4);
-      status(daily?'确认入账后，账目已保存；复盘仍可保留为草稿。':byYear?(entries.length?`明细显示 ${yearLabel} 年全年（共 ${dayCount} 天有记录）· 点击日期卡牌展开当日明细；上方总计与月度图表按所选月份计算。`:`明细显示 ${yearLabel} 年全年；上方总计与月度图表按所选月份计算。`):entries.length?`共 ${dayCount} 天有记录 · 点击日期卡牌展开当日明细；上方总计与月度图表按整月计算。`:`明细显示 ${filters.month} 整月；上方总计与月度图表按整月计算。`);
-    }catch(error){if(current()){status(error.message||'账目暂时未能读取。',true);if(!daily){dayPicker?.setDisabled?.(pending);monthPie?.setData({loading:false,error:'当月花销暂时未能读取，请刷新账本重试。'});dayPie?.setData({loading:false,error:'请先重新读取当月账本。'});yearPie?.setData({loading:false,error:'请先重新读取账本。'});dayOwner=null;yearOwner=null}const list=$('[data-finance-entries]',container);if(!data)render(list,'<div class="finance-empty"><h3>暂时没有翻开账本</h3><button class="btn" type="button" data-finance-retry>重新读取</button></div>')}}
+    try{
+      const result=await request(`/api/finance?${params}`,{},current);if(!current())return;
+      data=result;categories=result.categories||categories;entries=append?[...entries,...(result.entries||[])]:result.entries||[];cursor=result.nextCursor||null;
+      renderSummary();renderEntries();syncDailyChart();
+      if(!annual){if(!noFormLoss()){const host=$('[data-finance-form]',container);if(host)mountQuickEntry(host)}refreshQuick?.()}
+      const dayCount=new Set(entries.map(item=>item.date)).size;
+      status(daily?'确认入账后，账目已保存；复盘仍可保留为草稿。':annual?(entries.length?`${filters.year} 年全年共 ${dayCount} 天有记录 · 点击日期卡牌展开当日明细；进度条显示当日占全年总额比例。`:`${filters.year} 年暂无符合条件的收支记录。`):entries.length?`共 ${dayCount} 天有记录 · 点击日期卡牌展开当日明细；上方总计与月度图表按整月计算。`:`明细显示 ${filters.month} 整月；上方总计与月度图表按整月计算。`);
+    }catch(error){if(current()){status(error.message||'账目暂时未能读取。',true);if(annual){yearPie?.setData({loading:false,error:'年度花销暂时未能读取，请刷新年度账本重试。'});syncYearNavState()}else if(!daily){dayPicker?.setDisabled?.(pending);monthPie?.setData({loading:false,error:'当月花销暂时未能读取，请刷新账本重试。'});dayPie?.setData({loading:false,error:'请先重新读取当月账本。'});dayOwner=null}const list=$('[data-finance-entries]',container);if(!data)render(list,'<div class="finance-empty"><h3>暂时没有翻开账本</h3><button class="btn" type="button" data-finance-retry>重新读取</button></div>')}}
   }
 
   async function viewReceipt(entry){
@@ -734,31 +709,34 @@ function createWorkspace(container,options,daily){
       if(expandedLedgerDay&&(globalThis.innerWidth||1200)<900)$('[data-finance-day-detail]',container)?.scrollIntoView?.({block:'nearest',behavior:'smooth'});
     }
     if(button.matches('[data-finance-day-close]')){expandedLedgerDay=null;renderEntries();}
+    if(button.matches('[data-finance-open-annual]')){options.onOpenAnnual?.(filters.month.slice(0,4))}
+    if(button.matches('[data-finance-back]')){options.onBackToFinance?.()}
     if(button.matches('[data-finance-year-prev],[data-finance-year-next]')){
       const step=button.matches('[data-finance-year-prev]')?-1:1;
-      const next=Math.min(9999,Math.max(1,(Number(selectedYear)||Number(filters.month.slice(0,4)))+step));
-      const nextStr=String(next).padStart(4,'0');
-      if(nextStr!==selectedYear){selectedYear=nextStr;loadYearlyChart(selectedYear)}
+      const next=Math.min(9999,Math.max(1,(Number(filters.year)||Number(day.slice(0,4)))+step));
+      switchYear(String(next).padStart(4,'0'));
     }
-    if(button.matches('[data-finance-year-current]')){
-      const todayYear=options.today().slice(0,4);
-      if(todayYear!==selectedYear){selectedYear=todayYear;loadYearlyChart(selectedYear)}
-    }
-    if(button.matches('[data-finance-year-retry]')){loadYearlyChart(selectedYear)}
-    if(button.matches('[data-finance-year-month]')){switchMonth(button.dataset.financeYearMonth)}
+    if(button.matches('[data-finance-year-current]')){switchYear(options.today().slice(0,4))}
+    if(button.matches('[data-finance-year-month]')){options.onSelectMonth?.(button.dataset.financeYearMonth)}
   }
   function mount(){
+    const filterStrip=`<form class="finance-filters" data-finance-filters role="search"><label>搜索用途<span class="finance-search-field"><input name="q" type="search" maxlength="160" placeholder="搜索用途或备注"><button class="link-button" type="button" data-finance-clear-search aria-label="清空用途搜索" hidden>清空</button></span></label><label>收支类型<select data-finance-compact name="kind"><option value="">全部类型</option>${Object.entries(FINANCE_KINDS).map(([key,label])=>`<option value="${key}">${esc(label)}</option>`).join('')}</select></label><label class="finance-checkbox"><input name="deleted" type="checkbox">包含已删除</label></form>`;
     if(daily){render(container,`<div class="finance-daily"><div class="finance-day-summary" data-finance-summary><span>今日净支出</span><strong>—</strong><small>正在读取当天账目</small></div><div data-finance-form class="finance-entry-form"></div><div class="finance-daily-tools"><button class="btn btn-ghost" type="button" data-finance-detail>收入记账</button><button class="btn btn-ghost" type="button" data-day-zero>今天没有花销</button><button class="link-button" type="button" data-finance-storage>图片存储设置</button></div><p class="help" data-storage-note></p><p class="finance-status" data-finance-status role="status" aria-live="polite"></p><button type="button" class="btn btn-ghost" data-cancel-import hidden>取消截图处理</button><div data-finance-entries></div><button class="btn btn-ghost" type="button" data-finance-more hidden>加载更早记录</button><input data-finance-files type="file" accept="image/png,image/jpeg,image/webp" multiple hidden></div>`)}
-    else render(container,`<section class="finance-page" aria-labelledby="finance-page-title"><header class="history-hero finance-hero"><div class="history-hero-copy finance-hero-copy"><h1 id="finance-page-title">财务收支</h1><p class="history-hero-note">把每一笔写清楚，让花销有迹可循。</p></div><div class="finance-hero-actions"><div class="finance-period-shell" data-finance-period></div><button class="history-write finance-hero-cta" type="button" data-finance-detail>收入记账 <span class="mobile-action-arrow" aria-hidden="true">↗</span></button><div class="finance-hero-links"><button class="link-button" type="button" data-finance-storage>图片存储设置</button><button class="link-button" type="button" data-finance-refresh>刷新账本</button></div></div><div class="history-hero-art finance-hero-art" aria-hidden="true"><span class="history-hero-orbit"></span><img src="/assets/finance/ledger.webp?v=1.0.0-finance2" alt="" width="640" height="640" draggable="false"></div></header><section class="finance-studio" aria-label="当月账面与快速记账"><div class="finance-summary" data-finance-summary></div><section class="finance-writing" aria-labelledby="finance-write-title"><div class="finance-writing-head finance-section-title"><div><span class="finance-writing-kicker"><i aria-hidden="true"></i>快捷入账</span><h2 id="finance-write-title">记下花销</h2></div><span class="finance-writing-date">记入 ${esc(day)} · 人民币</span></div><div data-finance-form class="finance-entry-form finance-writing-pad"></div></section></section><section class="finance-insights-section" aria-labelledby="finance-insights-title"><header class="archive-section-head finance-section-head"><div class="archive-section-main"><div class="archive-section-copy"><div class="archive-section-title-row"><div class="archive-section-label"><h2 id="finance-insights-title">支出构成</h2><span class="archive-section-count">年 · 月 · 日三层透视 · 退款单列</span></div></div><p>按全年、整月与单日三层视角对照花销结构与消费节律。</p></div></div></header><div class="finance-insights"><section class="finance-insight finance-insight-yearly"><div class="finance-chart-heading"><div><h2>年度花销</h2><span>全年收支总览、月度花销节奏与分类占比</span></div><div class="finance-year-nav" role="group" aria-label="切换年度花销年份" data-ui-native><button type="button" class="finance-year-step" data-finance-year-prev aria-label="查看上一年年度花销">‹</button><span class="finance-year-label" data-finance-year-label>${esc(filters.month.slice(0,4))}年</span><button type="button" class="finance-year-step" data-finance-year-next aria-label="查看下一年年度花销">›</button><button type="button" class="finance-year-current" data-finance-year-current hidden>回今年</button></div></div><div class="finance-year-summary" data-finance-year-summary></div><div class="finance-year-grid"><div class="finance-year-pie-pane" data-finance-year-pie></div><div class="finance-year-rhythm" data-finance-year-rhythm></div></div><button type="button" class="link-button" data-finance-year-retry hidden>重新读取年度花销</button></section><section class="finance-insight finance-insight-monthly"><div class="finance-chart-heading"><div><h2>月度花销</h2><span>按分类看整月支出</span></div></div><div data-finance-month-pie></div></section><section class="finance-insight finance-insight-daily"><div class="finance-chart-heading"><div><h2>每日花销</h2><span>选一天看明细占比</span></div><div data-finance-day-picker></div></div><div data-finance-day-pie></div><button type="button" class="link-button" data-finance-day-retry hidden>重新读取当天花销</button></section></div></section><section class="finance-ledger" aria-labelledby="finance-ledger-title"><header class="archive-section-head finance-section-head"><div class="archive-section-main"><div class="archive-section-copy"><div class="archive-section-title-row"><div class="archive-section-label"><h2 id="finance-ledger-title">收支明细</h2><span class="archive-section-count" data-finance-ledger-meta></span></div></div><p data-storage-note></p></div></div></header><form class="finance-filters" data-finance-filters role="search"><label>搜索用途<span class="finance-search-field"><input name="q" type="search" maxlength="160" placeholder="搜索用途或备注"><button class="link-button" type="button" data-finance-clear-search aria-label="清空用途搜索" hidden>清空</button></span></label><label>收支类型<select data-finance-compact name="kind"><option value="">全部类型</option>${Object.entries(FINANCE_KINDS).map(([key,label])=>`<option value="${key}">${esc(label)}</option>`).join('')}</select></label><label>显示范围<select data-finance-compact name="range"><option value="month">整月明细</option><option value="year">整年明细</option></select></label><label class="finance-checkbox"><input name="deleted" type="checkbox">包含已删除</label></form><p class="finance-status" data-finance-status role="status" aria-live="polite"></p><button type="button" class="btn btn-ghost" data-cancel-import hidden>取消截图处理</button><div data-finance-entries></div><button class="btn btn-ghost finance-more" type="button" data-finance-more hidden>加载更早记录</button></section><input data-finance-files type="file" accept="image/png,image/jpeg,image/webp" multiple hidden></section>`);
+    else if(annual){render(container,`<section class="finance-page finance-annual-page" aria-labelledby="finance-annual-title"><header class="history-hero finance-hero finance-annual-hero"><div class="history-hero-copy finance-hero-copy"><button type="button" class="finance-back-link" data-finance-back><span aria-hidden="true">←</span> 返回财务收支</button><h1 id="finance-annual-title">年度开销</h1><p class="history-hero-note">从一整年的维度回看花销结构、月度节律与全年明细。</p></div><div class="finance-hero-actions"><div class="finance-year-nav is-hero" role="group" aria-label="切换年度开销年份" data-ui-native><button type="button" class="finance-year-step" data-finance-year-prev aria-label="查看上一年年度开销">‹</button><span class="finance-year-label" data-finance-year-label>${esc(filters.year)}年</span><button type="button" class="finance-year-step" data-finance-year-next aria-label="查看下一年年度开销">›</button><button type="button" class="finance-year-current" data-finance-year-current hidden>回今年</button></div><div class="finance-hero-links"><button class="link-button" type="button" data-finance-refresh>刷新年度账本</button></div></div><div class="history-hero-art finance-hero-art" aria-hidden="true"><span class="history-hero-orbit"></span><img src="/assets/finance/ledger.webp?v=1.0.0-finance2" alt="" width="640" height="640" draggable="false"></div></header><section class="finance-studio finance-annual-studio" aria-label="年度收支总览"><div class="finance-summary finance-annual-summary" data-finance-summary></div></section><section class="finance-insights-section" aria-labelledby="finance-annual-insights-title"><header class="archive-section-head finance-section-head"><div class="archive-section-main"><div class="archive-section-copy"><div class="archive-section-title-row"><div class="archive-section-label"><h2 id="finance-annual-insights-title">年度支出构成</h2><span class="archive-section-count">全年分类 · 月度节奏</span></div></div><p>全年分类占比与 12 个月花销起伏并列对照，点击任意月份可直达当月账本。</p></div></div></header><div class="finance-insights finance-annual-insights"><section class="finance-insight finance-insight-annual-pie"><div class="finance-chart-heading"><div><h2>年度花销分类</h2><span>按分类看全年实际支出</span></div></div><div data-finance-year-pie></div></section><section class="finance-insight finance-insight-annual-rhythm"><div class="finance-chart-heading"><div><h2>12 个月花销节奏</h2><span>按月对照全年净支出起伏</span></div><span class="finance-year-rhythm-hint">点击月份进入该月</span></div><div class="finance-annual-rhythm-body" data-finance-year-rhythm></div></section></div></section><section class="finance-ledger finance-annual-ledger" aria-labelledby="finance-annual-ledger-title"><header class="archive-section-head finance-section-head"><div class="archive-section-main"><div class="archive-section-copy"><div class="archive-section-title-row"><div class="archive-section-label"><h2 id="finance-annual-ledger-title">整年收支明细</h2><span class="archive-section-count" data-finance-ledger-meta></span></div></div><p>按天归档全年全部流水，点击日期卡牌可查看当日明细、凭证截图或登记退款。</p></div></div></header>${filterStrip}<p class="finance-status" data-finance-status role="status" aria-live="polite"></p><div data-finance-entries></div><button class="btn btn-ghost finance-more" type="button" data-finance-more hidden>加载更早记录</button></section></section>`)}
+    else render(container,`<section class="finance-page" aria-labelledby="finance-page-title"><header class="history-hero finance-hero"><div class="history-hero-copy finance-hero-copy"><h1 id="finance-page-title">财务收支</h1><p class="history-hero-note">把每一笔写清楚，让花销有迹可循。</p></div><div class="finance-hero-actions"><div class="finance-period-shell" data-finance-period></div><button class="history-write finance-hero-cta" type="button" data-finance-detail>收入记账 <span class="mobile-action-arrow" aria-hidden="true">↗</span></button><button class="finance-hero-annual-btn" type="button" data-finance-open-annual>年度开销 <span class="mobile-action-arrow" aria-hidden="true">↗</span></button><div class="finance-hero-links"><button class="link-button" type="button" data-finance-storage>图片存储设置</button><button class="link-button" type="button" data-finance-refresh>刷新账本</button></div></div><div class="history-hero-art finance-hero-art" aria-hidden="true"><span class="history-hero-orbit"></span><img src="/assets/finance/ledger.webp?v=1.0.0-finance2" alt="" width="640" height="640" draggable="false"></div></header><section class="finance-studio" aria-label="当月账面与快速记账"><div class="finance-summary" data-finance-summary></div><section class="finance-writing" aria-labelledby="finance-write-title"><div class="finance-writing-head finance-section-title"><div><span class="finance-writing-kicker"><i aria-hidden="true"></i>快捷入账</span><h2 id="finance-write-title">记下花销</h2></div><span class="finance-writing-date">记入 ${esc(day)} · 人民币</span></div><div data-finance-form class="finance-entry-form finance-writing-pad"></div></section></section><section class="finance-insights-section" aria-labelledby="finance-insights-title"><header class="archive-section-head finance-section-head"><div class="archive-section-main"><div class="archive-section-copy"><div class="archive-section-title-row"><div class="archive-section-label"><h2 id="finance-insights-title">支出构成</h2><span class="archive-section-count">分类对比 · 退款单列</span></div><button type="button" class="link-button finance-section-jump" data-finance-open-annual>查看年度开销 ↗</button></div><p>整月与单日开销并列对照，方便回顾消费重心与节律。</p></div></div></header><div class="finance-insights"><section class="finance-insight finance-insight-monthly"><div class="finance-chart-heading"><div><h2>月度花销</h2><span>按分类看整月支出</span></div></div><div data-finance-month-pie></div></section><section class="finance-insight finance-insight-daily"><div class="finance-chart-heading"><div><h2>每日花销</h2><span>选一天看明细占比</span></div><div data-finance-day-picker></div></div><div data-finance-day-pie></div><button type="button" class="link-button" data-finance-day-retry hidden>重新读取当天花销</button></section></div></section><section class="finance-ledger" aria-labelledby="finance-ledger-title"><header class="archive-section-head finance-section-head"><div class="archive-section-main"><div class="archive-section-copy"><div class="archive-section-title-row"><div class="archive-section-label"><h2 id="finance-ledger-title">收支明细</h2><span class="archive-section-count" data-finance-ledger-meta></span></div><button type="button" class="link-button finance-section-jump" data-finance-open-annual>查看整年明细 ↗</button></div><p data-storage-note></p></div></div></header>${filterStrip}<p class="finance-status" data-finance-status role="status" aria-live="polite"></p><button type="button" class="btn btn-ghost" data-cancel-import hidden>取消截图处理</button><div data-finance-entries></div><button class="btn btn-ghost finance-more" type="button" data-finance-more hidden>加载更早记录</button></section><input data-finance-files type="file" accept="image/png,image/jpeg,image/webp" multiple hidden></section>`);
     container.addEventListener('click',onClick);
-    $('[data-finance-files]',container).addEventListener('change',event=>{const files=[...event.target.files];event.target.value='';importFiles(files)});
-    container.addEventListener('paste',onPaste);
+    if(!annual){
+      $('[data-finance-files]',container)?.addEventListener('change',event=>{const files=[...event.target.files];event.target.value='';importFiles(files)});
+      container.addEventListener('paste',onPaste);
+    }
     const period=$('[data-finance-period]',container);if(period&&options.showMonthPicker)periodController=options.showMonthPicker(period,{value:filters.month,today:options.today(),isCurrent:alive,onChange:value=>switchMonth(value)});
-    if(!daily){
-      yearPie=options.showFinancePie?.($('[data-finance-year-pie]',container),{title:'年度花销',loading:true});
+    if(annual){
+      yearPie=options.showFinancePie?.($('[data-finance-year-pie]',container),{title:`${filters.year} 年度花销`,loading:true});
+      syncYearNavState();
+    }else if(!daily){
       monthPie=options.showFinancePie?.($('[data-finance-month-pie]',container),{title:'月度花销',loading:true});
       dayPie=options.showFinancePie?.($('[data-finance-day-pie]',container),{title:'每日花销',loading:true});
-      selectedDay=options.today();selectedYear=filters.month.slice(0,4);
+      selectedDay=filters.month===options.today().slice(0,7)?options.today():`${filters.month}-01`;
       dayPicker=options.showFinanceDayPicker?.($('[data-finance-day-picker]',container),{value:selectedDay,month:filters.month,today:options.today(),isCurrent:alive,onChange:value=>{if(!alive()||pending||value===selectedDay||!value.startsWith(filters.month+'-'))return;selectedDay=value;loadDailyChart()}});
       $('[data-finance-day-retry]',container)?.addEventListener('click',()=>{if(alive()&&!pending)loadDailyChart()});
     }
@@ -771,24 +749,27 @@ function createWorkspace(container,options,daily){
       clearTimeout(searchTimer);searchTimer=setTimeout(()=>load(),220);
     };
     filterForm?.addEventListener('submit',event=>{event.preventDefault();if(pending||composingSearch||event.isComposing)return;clearTimeout(searchTimer);filters.q=filterForm.elements.q.value;load()});
-    filterForm?.addEventListener('change',event=>{if(pending)return;const values=new FormData(filterForm),nextRange=values.get('range')==='year'?'year':'month';if(nextRange!==filters.range)expandedLedgerDay=null;filters.kind=String(values.get('kind')||'');filters.deleted=values.get('deleted')==='on';filters.range=nextRange;if(event.target.name!=='q')load()});
+    filterForm?.addEventListener('change',event=>{if(pending)return;const values=new FormData(filterForm);filters.kind=String(values.get('kind')||'');filters.deleted=values.get('deleted')==='on';if(event.target.name!=='q')load()});
     filterForm?.addEventListener('compositionstart',event=>{if(event.target.name==='q'){composingSearch=true;clearTimeout(searchTimer)}});
     filterForm?.addEventListener('compositionend',event=>{if(event.target.name==='q'){composingSearch=false;applySearch()}});
     filterForm?.addEventListener('input',event=>{if(event.target.name!=='q'||pending)return;$('[data-finance-clear-search]',filterForm).hidden=!event.target.value;if(composingSearch||event.isComposing)return;applySearch()});
     filterForm?.addEventListener('click',event=>{if(!event.target.closest('[data-finance-clear-search]')||pending)return;composingSearch=false;clearTimeout(searchTimer);const search=filterForm.elements.q;search.value='';filters.q='';$('[data-finance-clear-search]',filterForm).hidden=true;search.focus();load()});
-    mountQuickEntry($('[data-finance-form]',container));load();loadStorage();
+    if(!annual){mountQuickEntry($('[data-finance-form]',container));loadStorage()}
+    load();
   }
   function onDragOver(event){if(!alive()||pending)return;const zone=event.target.closest?.('[data-finance-dropzone]');if(!zone||![...(event.dataTransfer?.types||[])].includes('Files'))return;event.preventDefault();zone.classList.add('is-dragover')}
   function onDragLeave(event){const zone=event.target.closest?.('[data-finance-dropzone]');if(zone&&!zone.contains(event.relatedTarget))zone.classList.remove('is-dragover')}
   function onDrop(event){const zone=event.target.closest?.('[data-finance-dropzone]');zone?.classList.remove('is-dragover');if(!zone||!alive()||pending)return;const files=[...(event.dataTransfer?.files||[])].filter(file=>file.type.startsWith('image/'));if(files.length){event.preventDefault();importFiles(files)}}
   function onPaste(event){const files=[...(event.clipboardData?.files||[])].filter(file=>file.type.startsWith('image/'));if(files.length&&!pending){event.preventDefault();importFiles(files)}}
-  container.addEventListener('dragover',onDragOver);container.addEventListener('dragleave',onDragLeave);container.addEventListener('drop',onDrop);
-  mount();return {dispose(){disposed=true;periodController?.dispose?.();dayPicker?.dispose?.();yearPie?.dispose?.();monthPie?.dispose?.();dayPie?.dispose?.();dayOwner=null;yearOwner=null;loadOwner=null;storageOwner=null;aborter.abort();receiptModule?.disposeReceiptWorker?.();clearTimeout(searchTimer);container.removeEventListener('click',onClick);container.removeEventListener('paste',onPaste);container.removeEventListener('dragover',onDragOver);container.removeEventListener('dragleave',onDragLeave);container.removeEventListener('drop',onDrop)},hasPendingDraft:()=>hasDraft(draft)};
+  if(!annual){container.addEventListener('dragover',onDragOver);container.addEventListener('dragleave',onDragLeave);container.addEventListener('drop',onDrop)}
+  mount();return {dispose(){disposed=true;periodController?.dispose?.();dayPicker?.dispose?.();yearPie?.dispose?.();monthPie?.dispose?.();dayPie?.dispose?.();dayOwner=null;loadOwner=null;storageOwner=null;aborter.abort();receiptModule?.disposeReceiptWorker?.();clearTimeout(searchTimer);container.removeEventListener('click',onClick);container.removeEventListener('paste',onPaste);container.removeEventListener('dragover',onDragOver);container.removeEventListener('dragleave',onDragLeave);container.removeEventListener('drop',onDrop)},hasPendingDraft:()=>!annual&&hasDraft(draft)};
 }
 
-export function mountFinancePage(container,options){return createWorkspace(container,options,false)}
+export function mountFinancePage(container,options){return createWorkspace(container,options,'month')}
+
+export function mountFinanceAnnualPage(container,options){return createWorkspace(container,options,'annual')}
 
 export function mountDailyFinance(container,options){
   if(options.readonly){const snapshot=options.snapshot,render=options.renderMarkup;render(container,snapshot?`<section class="finance-daily finance-day-readonly"><div class="finance-day-summary"><span>复盘时记录的净支出</span><strong>¥${money(snapshot.netExpenseCents)}</strong><small>${snapshot.state==='zero'?'当日已确认零支出':snapshot.state==='unrecorded'?'当时未记录花销':`${Number(snapshot.count)||0} 笔账目`} · 锁定后保留当时摘要</small></div>${(snapshot.entries||[]).map(entry=>`<div class="finance-snapshot-entry"><span>${esc(entry.purpose||entry.categoryName||'账目')}<small>${esc(entry.categoryName||'')} · ${esc(FINANCE_KINDS[entry.kind]||'')}</small></span><strong>${entryMoney(entry)}</strong></div>`).join('')}<p class="help">账本后续可以订正，这份复盘仍保留提交时的记录。</p></section>`:'<p class="help">这份历史复盘没有记录财务摘要。</p>');return {dispose(){},hasPendingDraft:()=>false}}
-  return createWorkspace(container,options,true);
+  return createWorkspace(container,options,'daily');
 }
