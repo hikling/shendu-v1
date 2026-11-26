@@ -653,6 +653,7 @@ test('month ledger groups entries into collapsed day cards that expand on click 
     {id:'e-3',date:'2026-11-14',kind:'income',expression:'800',amountCents:80000,purpose:'兼职稿酬',categoryId:'salary',receiptIds:[],version:1}
   ];
   const f=fixture({initialEntries});await flush();
+  assert.ok(Boolean($('.finance-insights',f.root).compareDocumentPosition($('.finance-ledger',f.root))&Node.DOCUMENT_POSITION_FOLLOWING),'ledger sits below insights at the bottom of the finance page');
   const cards=$$('.finance-day-card',f.root);
   assert.equal(cards.length,2);
   assert.equal($$('.finance-entry',f.root).length,0);
