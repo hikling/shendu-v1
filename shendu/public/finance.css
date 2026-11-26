@@ -343,103 +343,101 @@ body.reduce-motion .finance-page *,body.reduce-motion .finance-dialog *,body.red
 .finance-page .finance-status{margin:4px 0 18px;font-size:.73rem;color:#657466}
 
 .finance-ledger-board{display:block;min-width:0}
-.finance-ledger-board.has-selection{display:grid;grid-template-columns:minmax(0,1.02fr) minmax(420px,.98fr);gap:26px;align-items:start}
-.finance-day-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(214px,1fr));gap:16px;min-width:0}
-.finance-ledger-board.has-selection .finance-day-cards{grid-template-columns:repeat(auto-fill,minmax(184px,1fr));gap:14px}
+.finance-ledger-board.has-selection{display:grid;grid-template-columns:minmax(0,1fr) minmax(440px,1fr);gap:28px;align-items:start}
+.finance-day-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(216px,1fr));gap:16px;min-width:0}
+.finance-ledger-board.has-selection .finance-day-cards{grid-template-columns:repeat(auto-fill,minmax(186px,1fr));gap:14px}
 
-/* Crafted Tear-Off Calendar Folio Cards */
-.finance-day-card{position:relative;display:flex;flex-direction:column;justify-content:space-between;gap:12px;width:100%;min-width:0;padding:16px 16px 14px;border:1px solid #dbe3d5;border-radius:18px;background:linear-gradient(165deg,#fffefb 0%,#f7f8f1 100%);color:#1f382e;text-align:left;cursor:pointer;box-shadow:0 4px 14px rgba(32,56,42,.045),inset 0 1px 0 #fff;transition:transform .2s cubic-bezier(.2,.7,.3,1),border-color .2s ease,box-shadow .2s ease,background .2s ease;overflow:hidden}
-.finance-day-card::before{content:"";position:absolute;inset:0 0 auto 0;height:3px;background:linear-gradient(90deg,#a4b5a6,#d5dfd2);opacity:.7;transition:opacity .18s ease}
-.finance-day-card.is-expense{border-color:#e4ddd0;background:linear-gradient(165deg,#fffefb 0%,#fbf6ec 100%)}
-.finance-day-card.is-expense::before{background:linear-gradient(90deg,#bd8547 0%,#e2c39c 100%)}
-.finance-day-card.is-income,.finance-day-card.is-refund{border-color:#d2e2d8;background:linear-gradient(165deg,#fffefb 0%,#eff7f2 100%)}
-.finance-day-card.is-income::before,.finance-day-card.is-refund::before{background:linear-gradient(90deg,#1a6b5e 0%,#7ec0ae 100%)}
-.finance-day-card:hover{transform:translateY(-3px);border-color:#b2c4b0;box-shadow:0 14px 26px -12px rgba(24,48,38,.15),inset 0 1px 0 #fff}
-.finance-day-card:hover::before{opacity:1}
+/* Refined Editorial Stationery Daily Cards — calm surfaces, crisp typography, zero box clutter */
+.finance-day-card{position:relative;display:flex;flex-direction:column;justify-content:space-between;gap:14px;width:100%;min-width:0;padding:18px 18px 18px;border:1px solid rgba(33,58,44,.1);border-radius:17px;background:#fffefb;color:#1e372d;text-align:left;cursor:pointer;box-shadow:0 1px 2px rgba(24,48,36,.03),0 8px 22px -16px rgba(24,48,36,.14);transition:transform .2s cubic-bezier(.2,.7,.3,1),border-color .2s ease,box-shadow .2s ease,background-color .2s ease;overflow:hidden}
+.finance-day-card::before{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(120% 90% at 100% 0%,rgba(164,178,162,.1) 0%,transparent 65%)}
+.finance-day-card.is-expense::before{background:radial-gradient(120% 90% at 100% 0%,rgba(202,150,86,.11) 0%,transparent 65%)}
+.finance-day-card.is-income::before,.finance-day-card.is-refund::before{background:radial-gradient(120% 90% at 100% 0%,rgba(29,122,102,.1) 0%,transparent 65%)}
+.finance-day-card:hover{transform:translateY(-3px);border-color:rgba(28,88,72,.26);box-shadow:0 16px 32px -18px rgba(20,48,38,.2),0 2px 6px rgba(20,48,38,.04)}
 .finance-day-card:focus-visible{outline:3px solid #527761;outline-offset:3px}
-.finance-day-card.is-selected{border-color:#175c52;background:linear-gradient(155deg,#eef6f2 0%,#fffefb 64%,#f5f9f4 100%);box-shadow:0 0 0 1.5px rgba(23,92,82,.2),0 16px 30px -14px rgba(23,92,82,.24),inset 0 1px 0 #fff}
-.finance-day-card.is-selected::before{background:linear-gradient(90deg,#175c52 0%,#4fa08e 100%);opacity:1}
+.finance-day-card.is-selected{border-color:#175c52;background:linear-gradient(160deg,#f3f9f5 0%,#fffefb 58%);box-shadow:0 0 0 3px rgba(23,92,82,.09),0 18px 34px -18px rgba(23,92,82,.26)}
 
-.finance-day-card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;width:100%;min-width:0}
+.finance-day-card-head{position:relative;z-index:1;display:flex;align-items:flex-start;justify-content:space-between;gap:8px;width:100%;min-width:0}
 .finance-day-card-stamp{display:inline-flex;align-items:center;gap:10px;min-width:0}
-.finance-day-card-stamp>strong{display:inline-flex;align-items:center;justify-content:center;min-width:42px;height:42px;padding:0 6px;border-radius:12px;border:1px solid #e2e8db;background:#fffefb;font:500 1.48rem/1 Georgia,"Times New Roman",serif;color:#1d3a30;font-variant-numeric:tabular-nums;box-shadow:0 2px 6px rgba(30,54,42,.04);transition:background-color .18s ease,border-color .18s ease,color .18s ease}
-.finance-day-card.is-expense .finance-day-card-stamp>strong{border-color:#eae0cf;color:#7a4b1e}
-.finance-day-card.is-income .finance-day-card-stamp>strong,.finance-day-card.is-refund .finance-day-card-stamp>strong{border-color:#d4e5dc;color:#175c52}
-.finance-day-card.is-selected .finance-day-card-stamp>strong{border-color:#175c52;background:#175c52;color:#fff;box-shadow:0 4px 10px rgba(23,92,82,.22)}
+.finance-day-card-stamp>strong{display:inline-flex;align-items:center;justify-content:center;min-width:36px;height:36px;border-radius:11px;font:500 1.72rem/1 Georgia,"Times New Roman",serif;letter-spacing:-.03em;color:#1b382e;font-variant-numeric:tabular-nums;transition:background-color .18s ease,color .18s ease,transform .18s ease}
+.finance-day-card.is-expense .finance-day-card-stamp>strong{color:#6f431a}
+.finance-day-card.is-income .finance-day-card-stamp>strong,.finance-day-card.is-refund .finance-day-card-stamp>strong{color:#155c4f}
+.finance-day-card.is-selected .finance-day-card-stamp>strong{min-width:40px;height:40px;padding:0 6px;background:#175c52;color:#fff;font-size:1.38rem;box-shadow:0 6px 14px rgba(23,92,82,.24)}
 .finance-day-card-meta{display:flex;flex-direction:column;gap:2px;min-width:0}
-.finance-day-card-meta>span:first-child{font-size:.73rem;font-weight:700;color:#324c3e;line-height:1.25}
-.finance-day-card-meta>span:last-child{display:inline-flex;align-items:center;gap:5px;font-size:.67rem;color:#6e7d70;line-height:1.25;white-space:nowrap}
-.finance-day-today{display:inline-block;padding:1px 5px;border-radius:99px;background:#175c52;color:#fff;font-style:normal;font-size:10px;line-height:1.35;font-weight:600}
-.finance-day-card-count{flex-shrink:0;padding:3px 8px;border:1px solid #e0e7d9;border-radius:99px;background:rgba(255,254,250,.9);font-size:.64rem;font-weight:600;color:#667769;font-variant-numeric:tabular-nums;white-space:nowrap}
-.finance-day-card.is-selected .finance-day-card-count{border-color:#b7d3c8;background:#e5f2ec;color:#145249}
+.finance-day-card-meta>span{font-size:.71rem;font-weight:500;color:#627366;line-height:1.3;white-space:nowrap}
+.finance-day-today{display:inline-flex;align-items:center;gap:4px;font-style:normal;font-size:.66rem;font-weight:700;color:#175c52;line-height:1.25}
+.finance-day-today::before{content:"";width:5px;height:5px;border-radius:50%;background:#175c52}
+.finance-day-card-count{flex-shrink:0;padding:3px 8px;border-radius:99px;background:rgba(33,58,44,.055);font-size:.64rem;font-weight:600;color:#637568;font-variant-numeric:tabular-nums;white-space:nowrap}
+.finance-day-card.is-selected .finance-day-card-count{background:rgba(23,92,82,.12);color:#145249}
 
-.finance-day-card-cats{display:flex;flex-wrap:wrap;align-items:center;gap:5px;width:100%;min-width:0}
-.finance-day-card-cats>span{display:inline-flex;align-items:center;gap:5px;max-width:100%;padding:2px 8px;border-radius:99px;border:1px solid rgba(35,62,48,.07);background:rgba(255,254,250,.78);font-size:.65rem;color:#526458;line-height:1.4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.finance-day-card-cats{position:relative;z-index:1;display:flex;align-items:center;flex-wrap:wrap;gap:4px 6px;min-height:18px;width:100%;min-width:0;font-size:.69rem;color:#5c6d60;line-height:1.35}
+.finance-day-card-cats>span{display:inline-flex;align-items:center;gap:5px;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .finance-day-card-cats>span>i{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.finance-day-cat-sep{font-style:normal;color:#bcc6ba;font-size:.7rem}
 
-.finance-day-card-foot{display:flex;flex-direction:column;gap:8px;width:100%;padding-top:11px;margin-top:auto;border-top:1px dashed #e1e6d8}
-.finance-day-card.is-expense .finance-day-card-foot{border-top-color:#e8dfd0}
-.finance-day-card.is-selected .finance-day-card-foot{border-top-color:#c6dcd2}
+.finance-day-card-foot{position:relative;z-index:1;display:flex;flex-direction:column;gap:2px;width:100%;padding-top:12px;margin-top:auto;border-top:1px solid rgba(33,58,44,.07)}
+.finance-day-card.is-selected .finance-day-card-foot{border-top-color:rgba(23,92,82,.14)}
 .finance-day-card-amount{display:flex;flex-direction:column;gap:2px;width:100%;min-width:0}
-.finance-day-card-amount>small{font-size:.65rem;color:#788577;line-height:1.35}
-.finance-day-card-amount>strong{font:500 clamp(1.12rem,1.4vw,1.3rem)/1.2 Georgia,"Times New Roman",serif;letter-spacing:-.015em;font-variant-numeric:tabular-nums;color:#274034;white-space:nowrap}
-.finance-day-card.is-expense .finance-day-card-amount>strong{color:#8c5420}
-.finance-day-card.is-income .finance-day-card-amount>strong,.finance-day-card.is-refund .finance-day-card-amount>strong{color:#155d50}
-.finance-day-card-sub{font-size:.66rem;color:#1f6554;font-variant-numeric:tabular-nums;white-space:nowrap}
-.finance-day-card-bar{position:static;display:block;width:100%;height:4px;border-radius:99px;background:rgba(182,193,176,.26);overflow:hidden;pointer-events:none}
-.finance-day-card-bar>i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,#c9945a,#a86d34);opacity:.78;transition:opacity .16s ease}
+.finance-day-card-amount>small{font-size:.66rem;font-weight:500;color:#808e81;line-height:1.35;letter-spacing:.02em}
+.finance-day-card-amount>strong{font:500 clamp(1.22rem,1.5vw,1.38rem)/1.18 Georgia,"Times New Roman",serif;letter-spacing:-.02em;font-variant-numeric:tabular-nums;color:#1e3a30;white-space:nowrap}
+.finance-day-card.is-expense .finance-day-card-amount>strong{color:#8a501c}
+.finance-day-card.is-income .finance-day-card-amount>strong,.finance-day-card.is-refund .finance-day-card-amount>strong{color:#155c4f}
+.finance-day-card-sub{margin-top:2px;font-size:.66rem;color:#1d6554;font-variant-numeric:tabular-nums;white-space:nowrap}
+.finance-day-card-bar{position:absolute;inset:auto 18px 0 18px;height:2.5px;border-radius:99px 99px 0 0;background:transparent;overflow:hidden;pointer-events:none}
+.finance-day-card-bar>i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,#cc9659,#9f642b);opacity:.65;transition:opacity .18s ease}
 .finance-day-card.is-income .finance-day-card-bar>i,.finance-day-card.is-refund .finance-day-card-bar>i{background:linear-gradient(90deg,#4ea18a,#175c52)}
 .finance-day-card.is-selected .finance-day-card-bar>i{opacity:1}
 
-/* Crafted Expanded Single-Day Ledger Sheet */
-.finance-day-detail{position:sticky;top:82px;padding:22px 24px 24px;border:1px solid #cbd8c8;border-radius:22px;background:linear-gradient(165deg,#fffefb 0%,#f5f8f2 100%);box-shadow:0 20px 44px -22px rgba(20,46,36,.18),inset 0 1px 0 #fff;min-width:0;overflow:hidden}
-.finance-day-detail::before{content:"";position:absolute;inset:0 0 auto 0;height:3px;background:linear-gradient(90deg,#175c52 0%,#5aa38e 58%,#cfa06a 100%)}
-.finance-day-detail-head{display:flex;align-items:center;justify-content:space-between;gap:14px;padding-bottom:16px;border-bottom:1px solid #e2e8dc}
-.finance-day-detail-title{display:flex;align-items:center;gap:13px;min-width:0}
-.finance-detail-date-badge{display:flex;flex-direction:column;align-items:center;justify-content:center;width:48px;height:48px;flex-shrink:0;border-radius:14px;background:linear-gradient(155deg,#195f54 0%,#134840 100%);color:#fff;box-shadow:0 6px 14px rgba(23,92,82,.22)}
+/* Seamless Editorial Single-Day Folio Sheet — clean hairlines, zero box-in-box noise */
+.finance-day-detail{position:sticky;top:82px;padding:26px 28px 22px;border:1px solid rgba(23,92,82,.18);border-radius:20px;background:#fffefb;box-shadow:0 24px 48px -28px rgba(18,46,36,.2),0 2px 6px rgba(18,46,36,.04);min-width:0}
+.finance-day-detail-head{display:flex;align-items:center;justify-content:space-between;gap:14px;padding-bottom:18px}
+.finance-day-detail-title{display:flex;align-items:center;gap:14px;min-width:0}
+.finance-detail-date-badge{display:flex;flex-direction:column;align-items:center;justify-content:center;width:46px;height:46px;flex-shrink:0;border-radius:13px;background:linear-gradient(155deg,#1b6257 0%,#134840 100%);color:#fff;box-shadow:0 6px 14px rgba(23,92,82,.22),inset 0 1px 0 rgba(255,255,255,.18)}
 .finance-detail-date-badge>small{font-size:10px;line-height:1.1;opacity:.82;letter-spacing:.04em}
-.finance-detail-date-badge>strong{font:500 1.25rem/1.05 Georgia,"Times New Roman",serif;font-variant-numeric:tabular-nums}
-.finance-day-detail-head h3{margin:0;color:#1b382e;font:900 1.24rem/1.3 "SimSun","宋体","Noto Serif SC",serif;letter-spacing:.02em}
-.finance-day-detail-head p{margin:3px 0 0;font-size:.72rem;color:#667669}
-.finance-day-close{flex-shrink:0;min-height:34px;padding:5px 14px;border:1px solid #cfdacc;border-radius:99px;background:#fffefb;color:#42584b;font-size:.71rem;font-weight:600;cursor:pointer;transition:background .15s,border-color .15s,color .15s}
-.finance-day-close:hover{background:#ebf4ef;border-color:#93baa9;color:#175c52}
+.finance-detail-date-badge>strong{font:500 1.24rem/1.05 Georgia,"Times New Roman",serif;font-variant-numeric:tabular-nums}
+.finance-day-detail-head h3{margin:0;color:#19352b;font:900 1.32rem/1.28 "SimSun","宋体","Noto Serif SC",serif;letter-spacing:.025em}
+.finance-day-detail-head p{margin:3px 0 0;font-size:.72rem;color:#6c7b6e}
+.finance-day-close{flex-shrink:0;min-height:32px;padding:4px 13px;border:1px solid rgba(33,58,44,.14);border-radius:99px;background:transparent;color:#4a5f52;font-size:.71rem;font-weight:600;cursor:pointer;transition:background .15s,border-color .15s,color .15s}
+.finance-day-close:hover{background:#eef5f0;border-color:rgba(23,92,82,.3);color:#175c52}
 
-.finance-day-detail-strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;padding:14px 0 16px;margin-bottom:4px;border-bottom:1px dashed #dce3d5}
-.finance-detail-metric{display:flex;flex-direction:column;gap:3px;padding:10px 13px;border:1px solid #e3e9dc;border-radius:13px;background:#fffefb}
-.finance-detail-metric>span{font-size:.66rem;font-weight:600;color:#6f7d70}
-.finance-detail-metric>strong{font:500 1.12rem/1.25 Georgia,"Times New Roman",serif;font-variant-numeric:tabular-nums;color:#1e3a30}
-.finance-detail-metric.is-expense{border-color:#ebe1d2;background:linear-gradient(145deg,#fffefb,#fbf6ec)}
-.finance-detail-metric.is-expense>strong{color:#8c5522}
-.finance-detail-metric.is-income{border-color:#d4e5dc;background:linear-gradient(145deg,#fffefb,#eef7f2)}
-.finance-detail-metric.is-income>strong{color:#155d50}
-.finance-detail-metric.is-refund{border-color:#d8e6df;background:#f4faf7}
-.finance-detail-metric.is-refund>strong{color:#1f6858}
+.finance-day-detail-strip{display:flex;flex-wrap:wrap;align-items:stretch;gap:12px 0;padding:13px 18px;margin-bottom:8px;border-radius:14px;background:#f5f7f1}
+.finance-detail-metric{flex:1 1 120px;display:flex;flex-direction:column;gap:2px;min-width:0;padding:0 16px}
+.finance-detail-metric:first-child{padding-left:0}
+.finance-detail-metric:last-child{padding-right:0}
+.finance-detail-metric+.finance-detail-metric{border-left:1px solid #dfe6d8}
+.finance-detail-metric>span{font-size:.66rem;font-weight:600;color:#738174;letter-spacing:.02em}
+.finance-detail-metric>strong{font:500 1.2rem/1.25 Georgia,"Times New Roman",serif;letter-spacing:-.015em;font-variant-numeric:tabular-nums;color:#1c382e}
+.finance-detail-metric.is-expense>strong{color:#8a501c}
+.finance-detail-metric.is-income>strong{color:#155c4f}
+.finance-detail-metric.is-refund>strong{color:#1d6757}
 
-.finance-day-detail-list{display:flex;flex-direction:column;gap:9px;padding-top:11px}
-.finance-day-detail-list .finance-entry{position:relative;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 14px;padding:12px 15px 10px 17px;border:1px solid #e2e8db;border-radius:14px;background:#fffefb;box-shadow:0 2px 8px rgba(28,54,40,.03);transition:border-color .16s ease,box-shadow .16s ease,transform .16s ease;overflow:hidden}
-.finance-day-detail-list .finance-entry::before{content:"";position:absolute;inset:10px auto 10px 0;width:3px;border-radius:0 3px 3px 0;background:var(--entry-accent,#96a898);opacity:.85}
-.finance-day-detail-list .finance-entry:hover{border-color:#c6d5c4;box-shadow:0 8px 18px -12px rgba(24,48,38,.14)}
-.finance-day-detail-list .finance-entry:last-child{border-bottom:1px solid #e2e8db;padding-bottom:10px}
-.finance-day-detail-list .finance-entry-heading{display:flex;align-items:center;flex-wrap:wrap;gap:5px 7px}
+.finance-day-detail-list{display:flex;flex-direction:column;padding-top:4px}
+.finance-day-detail-list .finance-entry{position:relative;display:grid;grid-template-columns:10px minmax(0,1fr) auto;gap:4px 12px;align-items:start;padding:14px 12px 13px;margin:0 -12px;border:0;border-radius:12px;background:transparent;box-shadow:none;transition:background-color .15s ease}
+.finance-day-detail-list .finance-entry:not(:last-child)::after{content:"";position:absolute;inset:auto 12px 0 34px;height:1px;background:#edf1e7}
+.finance-day-detail-list .finance-entry:hover{background:#f7faf4}
+.finance-day-detail-list .finance-entry:last-child{padding-bottom:10px}
 .finance-entry-dot{display:none}
-.finance-day-detail-list .finance-entry-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--entry-accent,#8da091);flex-shrink:0}
-.finance-day-detail-list .finance-entry-heading h3{margin:0;color:#1e382d;font:650 .92rem/1.4 "Noto Sans SC","Microsoft YaHei",sans-serif;overflow-wrap:anywhere}
+.finance-day-detail-list .finance-entry-dot{display:block;grid-column:1;grid-row:1;width:8px;height:8px;margin-top:7px;border-radius:50%;background:var(--entry-accent,#8da091);box-shadow:0 0 0 3px color-mix(in srgb,var(--entry-accent,#8da091) 16%,transparent)}
+.finance-day-detail-list .finance-entry-copy{grid-column:2;min-width:0}
+.finance-day-detail-list .finance-entry-heading{display:flex;align-items:baseline;flex-wrap:wrap;gap:5px 8px}
+.finance-day-detail-list .finance-entry-heading h3{margin:0;color:#1b342b;font:650 .94rem/1.45 "Noto Sans SC","Microsoft YaHei",sans-serif;overflow-wrap:anywhere}
 .finance-entry-tags{display:inline-flex;align-items:center;flex-wrap:wrap;gap:5px}
-.finance-day-detail-list .finance-entry-tag{padding:1px 7px;border-radius:99px;font-size:11px;line-height:1.5;font-weight:500}
-.finance-day-detail-list .finance-entry-tag-category{background:#f5f8f1;border-color:#e1e8d9;color:#5a6e5e}
-.finance-day-detail-list .finance-entry-copy>p{margin:6px 0 0;padding:5px 10px;border-left:2px solid #dfe7d9;border-radius:0 8px 8px 0;background:#f8faf4;font-size:.75rem;line-height:1.6;color:#5e6e60}
-.finance-day-detail-list .finance-entry-copy>small{display:inline-flex;align-items:center;margin-top:5px;padding:1px 7px;border-radius:6px;background:#eef5f0;color:#3d6b59;font-size:.67rem}
-.finance-day-detail-list .finance-entry-end{align-self:start;padding-top:0;text-align:right}
-.finance-day-detail-list .finance-entry-amount{font:500 1.12rem/1.28 Georgia,"Times New Roman",serif;letter-spacing:-.015em;font-variant-numeric:tabular-nums;color:#175c52}
-.finance-day-detail-list .finance-entry-amount.kind-expense{color:#8c5420}
+.finance-day-detail-list .finance-entry-tag{padding:1px 7px;border:0;border-radius:6px;font-size:11px;line-height:1.55;font-weight:500}
+.finance-day-detail-list .finance-entry-tag.kind-expense{background:rgba(155,101,45,.1);color:#855221}
+.finance-day-detail-list .finance-entry-tag.kind-income,.finance-day-detail-list .finance-entry-tag.kind-refund{background:rgba(23,92,82,.1);color:#175c52}
+.finance-day-detail-list .finance-entry-tag-category{background:rgba(33,58,44,.055);color:#5c6e60}
+.finance-day-detail-list .finance-entry-copy>p{margin:5px 0 0;padding-left:9px;border-left:2px solid #dfe7d9;background:transparent;font-size:.76rem;line-height:1.65;color:#667568}
+.finance-day-detail-list .finance-entry-copy>small{display:inline-flex;align-items:center;margin-top:4px;font-size:.69rem;color:#3d6b59}
+.finance-day-detail-list .finance-entry-end{grid-column:3;align-self:start;padding-top:1px;text-align:right}
+.finance-day-detail-list .finance-entry-amount{font:500 1.15rem/1.3 Georgia,"Times New Roman",serif;letter-spacing:-.015em;font-variant-numeric:tabular-nums;color:#155c4f}
+.finance-day-detail-list .finance-entry-amount.kind-expense{color:#8a501c}
 .finance-day-detail-list .finance-entry-amount.kind-transfer{color:#6f7a6c}
-.finance-day-detail-list .finance-entry-footer{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;gap:8px;padding-top:7px;margin-top:1px;border-top:1px dashed #e9eee3}
-.finance-day-detail-list .finance-receipt-link{display:inline-flex;align-items:center;gap:5px;min-height:26px;padding:2px 10px;border:1px solid #cce0d5;border-radius:99px;background:#eff7f3;color:#175c52;font-size:.71rem;font-weight:600;text-decoration:none;transition:background .15s,border-color .15s}
-.finance-day-detail-list .finance-receipt-link:hover{background:#e1f1e9;border-color:#98c4b2}
-.finance-day-detail-list .finance-entry-no-receipt{min-height:24px;padding:0;font-size:.7rem;color:#939f91}
+.finance-day-detail-list .finance-entry-footer{grid-column:2/-1;display:flex;align-items:center;justify-content:space-between;gap:8px;padding-top:2px;margin-top:0;border-top:0}
+.finance-day-detail-list .finance-receipt-link{display:inline-flex;align-items:center;gap:4px;min-height:24px;padding:2px 9px;border:1px solid rgba(23,92,82,.2);border-radius:99px;background:#eef6f2;color:#175c52;font-size:.7rem;font-weight:600;text-decoration:none;transition:background .15s,border-color .15s}
+.finance-day-detail-list .finance-receipt-link:hover{background:#dfefe7;border-color:rgba(23,92,82,.38)}
+.finance-day-detail-list .finance-entry-no-receipt{min-height:22px;padding:0;font-size:.69rem;color:#a8b2a6}
 .finance-day-detail-list .finance-entry-actions{display:flex;align-items:center;gap:6px;margin-left:auto}
-.finance-day-detail-list .finance-entry-actions .finance-entry-refund-btn{min-height:26px;padding:2px 10px;border:1px solid transparent;border-radius:99px;color:#6c7b6c;font-size:.71rem;font-weight:500;text-decoration:none;transition:background .15s,border-color .15s,color .15s}
-.finance-day-detail-list .finance-entry-actions .finance-entry-refund-btn:hover{background:#faf2e6;border-color:#e6d4b8;color:#8c5522}
+.finance-day-detail-list .finance-entry-actions .finance-entry-refund-btn{min-height:24px;padding:2px 9px;border:1px solid transparent;border-radius:99px;color:#78877a;font-size:.7rem;font-weight:500;text-decoration:none;transition:background .15s,border-color .15s,color .15s}
+.finance-day-detail-list .finance-entry-actions .finance-entry-refund-btn:hover{background:#faf1e4;border-color:#e8d5b8;color:#8a501c}
 
 @media(max-width:1050px){
   .finance-hero{grid-template-columns:minmax(0,1fr) 236px;gap:14px 22px}
@@ -490,9 +488,10 @@ body.reduce-motion .finance-page *,body.reduce-motion .finance-dialog *,body.red
   .finance-day-card{padding:13px 12px 12px;gap:10px;border-radius:16px}
   .finance-day-card-stamp>strong{min-width:34px;height:34px;border-radius:10px;font-size:1.22rem}
   .finance-day-card-amount>strong{font-size:1.04rem}
-  .finance-day-detail{padding:18px 16px 20px;border-radius:18px}
+  .finance-day-detail{padding:18px 16px 18px;border-radius:18px}
   .finance-detail-date-badge{width:42px;height:42px;border-radius:12px}
-  .finance-day-detail-list .finance-entry{padding:12px 13px 11px 15px;border-radius:13px}
+  .finance-day-detail-strip{padding:11px 13px}
+  .finance-day-detail-list .finance-entry{margin:0 -8px;padding:12px 8px;border-radius:10px}
 }
 body.reduce-motion .finance-day-card,body.reduce-motion .finance-day-card-stamp>strong,body.reduce-motion .finance-day-detail-list .finance-entry,body.reduce-motion .finance-day-card-bar>i,body.reduce-motion .finance-flow-track>i,body.reduce-motion .finance-hero-cta,body.reduce-motion .finance-desk-empty,body.reduce-motion .finance-quick-desk{transition:none}
 @media(prefers-reduced-motion:reduce){.finance-day-card,.finance-day-card-stamp>strong,.finance-day-detail-list .finance-entry,.finance-day-card-bar>i,.finance-flow-track>i,.finance-hero-cta,.finance-desk-empty,.finance-quick-desk{transition:none}}

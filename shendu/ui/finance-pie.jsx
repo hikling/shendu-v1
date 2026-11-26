@@ -1,6 +1,6 @@
 import * as React from 'react';
 import {Cell,Pie,PieChart} from 'recharts';
-import {ChartContainer,ChartTooltip,ChartTooltipContent} from './components/ui/chart';
+import {ChartContainer} from './components/ui/chart';
 import {mountComponent,disposeUi} from './runtime';
 import {formatFinanceMoney} from '../public/finance-domain';
 import './finance-pie.css';
@@ -10,7 +10,7 @@ const categoryColors=new Map(Object.entries({
   health:'#79a86b',learning:'#8a79b8',entertainment:'#d48653',social:'#4ea3b0',
   salary:'#6d84c2','other-income':'#b97ea8'
 }));
-const palette=[...categoryColors.values()],neutralColor='#cbd3df';
+const palette=[...categoryColors.values()],neutralColor='#8d9eab';
 function categoryColor(id){
   if(id==='__others'||id==='uncategorized')return neutralColor;
   if(categoryColors.has(id))return categoryColors.get(id);
@@ -55,13 +55,12 @@ function FinancePie({totals=[],refundCents=0,netExpenseCents=0,title='分类花�
           <div className="finance-pie-dial" aria-hidden="true"/>
           <ChartContainer config={config} className="finance-pie-chart" role="img" aria-label={`${title}，共${totalLabel}，${categories.length}个分类；分类金额及占比见下方`}>
             <PieChart accessibilityLayer>
-              <ChartTooltip cursor={false} content={<ChartTooltipContent formatter={value=>money(value)}/>}/>
               <Pie data={slices} dataKey="cents" nameKey="name" cx="50%" cy="50%" startAngle={90} endAngle={-270}
                 innerRadius="64%" outerRadius="92%" paddingAngle={slices.length>1?2.5:0} cornerRadius={slices.length>1?6:0}
                 stroke="#fffefa" strokeWidth={2.5} isAnimationActive={false}
                 onMouseEnter={(_,index)=>setActiveId(slices[index]?.categoryId||null)}
                 onMouseLeave={()=>setActiveId(null)}>
-                {slices.map(slice=><Cell key={slice.categoryId} fill={slice.fill} fillOpacity={activeId&&activeId!==slice.categoryId?0.28:1}/>)}
+                {slices.map(slice=><Cell key={slice.categoryId} fill={slice.fill} fillOpacity={activeId&&activeId!==slice.categoryId?0.42:1}/>)}
               </Pie>
             </PieChart>
           </ChartContainer>
