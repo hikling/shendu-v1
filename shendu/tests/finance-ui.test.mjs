@@ -730,10 +730,10 @@ test('dedicated annual page displays yearly summary, pie, 12-month rhythm, expan
     {id:'y-1',date:'2026-11-15',kind:'expense',expression:'180',amountCents:18000,purpose:'聚餐',categoryId:'food',receiptIds:[],version:1},
     {id:'y-2',date:'2026-08-03',kind:'expense',expression:'150',amountCents:15000,purpose:'打车',categoryId:'transport',receiptIds:[],version:1}
   ];
-  const year2026={categories:DEFAULT_FINANCE_CATEGORIES,entries:entries2026,summary:{incomeCents:120000,expenseCents:35000,refundCents:2000,netExpenseCents:33000,balanceCents:87000,count:8},expenseCategoryTotals:[{categoryId:'food',name:'餐饮',cents:21000},{categoryId:'transport',name:'交通',cents:14000}],trend:[{date:'2026-08-03',expenseCents:15000,spendingCents:15000,incomeCents:0},{date:'2026-11-15',expenseCents:18000,spendingCents:20000,incomeCents:120000}],monthSummaries:[{month:'2026-11',count:5,dayCount:3,expenseCents:20000,refundCents:2000,netExpenseCents:18000,incomeCents:120000,topCategories:[{id:'food',name:'餐饮'}]},{month:'2026-08',count:3,dayCount:2,expenseCents:15000,refundCents:0,netExpenseCents:15000,incomeCents:0,topCategories:[{id:'transport',name:'交通'}]}],nextCursor:'next-year-page'};
+  const year2026={categories:DEFAULT_FINANCE_CATEGORIES,entries:entries2026,summary:{incomeCents:120000,expenseCents:35000,refundCents:2000,netExpenseCents:33000,balanceCents:87000,count:8},expenseCategoryTotals:[{categoryId:'food',name:'餐饮',cents:21000},{categoryId:'transport',name:'交通',cents:14000}],trend:[{date:'2026-08-03',expenseCents:15000,spendingCents:15000,incomeCents:0},{date:'2026-11-15',expenseCents:18000,spendingCents:20000,incomeCents:120000}],monthSummaries:[{month:'2026-11',count:5,dayCount:3,expenseCents:20000,refundCents:2000,netExpenseCents:18000,incomeCents:120000,categoryTotalCents:20000,topCategories:[{id:'food',name:'餐饮',cents:14000},{id:'transport',name:'交通',cents:6000}]},{month:'2026-08',count:3,dayCount:2,expenseCents:15000,refundCents:0,netExpenseCents:15000,incomeCents:0,categoryTotalCents:15000,topCategories:[{id:'transport',name:'交通',cents:15000}]}],nextCursor:'next-year-page'};
   const augMonth={categories:DEFAULT_FINANCE_CATEGORIES,entries:[entries2026[1]],summary:{incomeCents:0,expenseCents:15000,refundCents:0,netExpenseCents:15000,balanceCents:-15000,count:1},expenseCategoryTotals:[],trend:[],nextCursor:'next-aug-page'};
   const augMore={categories:DEFAULT_FINANCE_CATEGORIES,entries:[{id:'y-3',date:'2026-08-01',kind:'expense',expression:'40',amountCents:4000,purpose:'早茶',categoryId:'food',receiptIds:[],version:1}],summary:{incomeCents:0,expenseCents:15000,refundCents:0,netExpenseCents:15000,balanceCents:-15000,count:2},expenseCategoryTotals:[],trend:[],nextCursor:null};
-  const year2025={categories:DEFAULT_FINANCE_CATEGORIES,entries:[{id:'y-old',date:'2025-12-20',kind:'expense',expression:'90',amountCents:9000,purpose:'冬衣',categoryId:'shopping',receiptIds:[],version:1}],summary:{incomeCents:50000,expenseCents:9000,refundCents:0,netExpenseCents:9000,balanceCents:41000,count:2},expenseCategoryTotals:[{categoryId:'shopping',name:'购物',cents:9000}],trend:[{date:'2025-12-20',expenseCents:9000,spendingCents:9000,incomeCents:50000}],monthSummaries:[{month:'2025-12',count:1,dayCount:1,expenseCents:9000,refundCents:0,netExpenseCents:9000,incomeCents:50000,topCategories:[{id:'shopping',name:'购物'}]}],nextCursor:null};
+  const year2025={categories:DEFAULT_FINANCE_CATEGORIES,entries:[{id:'y-old',date:'2025-12-20',kind:'expense',expression:'90',amountCents:9000,purpose:'冬衣',categoryId:'shopping',receiptIds:[],version:1}],summary:{incomeCents:50000,expenseCents:9000,refundCents:0,netExpenseCents:9000,balanceCents:41000,count:2},expenseCategoryTotals:[{categoryId:'shopping',name:'购物',cents:9000}],trend:[{date:'2025-12-20',expenseCents:9000,spendingCents:9000,incomeCents:50000}],monthSummaries:[{month:'2025-12',count:1,dayCount:1,expenseCents:9000,refundCents:0,netExpenseCents:9000,incomeCents:50000,categoryTotalCents:9000,topCategories:[{id:'shopping',name:'购物',cents:9000}]}],nextCursor:null};
   const back=[],jumped=[];
   const f=fixture({annual:true,onBackToFinance:()=>back.push(true),onSelectMonth:month=>jumped.push(month),handler:path=>path==='/api/finance?year=2026'?year2026:path==='/api/finance?year=2025'?year2025:path==='/api/finance?month=2026-08'?augMonth:path==='/api/finance?month=2026-08&cursor=next-aug-page'?augMore:undefined});await flush();
   assert.match($('[data-finance-summary]',f.root).textContent,/年度净支出.*330\.00.*年度收入.*1,200\.00.*年度收支差额.*870\.00.*月均净支出.*165\.00/);
@@ -741,10 +741,12 @@ test('dedicated annual page displays yearly summary, pie, 12-month rhythm, expan
   assert.equal($$('[data-finance-year-month]',f.root).length,12);
   assert.match($('[data-finance-year-rhythm]',f.root).textContent,/峰值 11月.*¥180\.00/);
   assert.equal($$('[data-finance-month-card]',f.root).length,2);
+  assert.equal($$('.finance-day-card',f.root).length,0,'annual month cards use their own independent archive layout');
   assert.equal($$('.finance-entry',f.root).length,0);
-  assert.match($('[data-finance-month-card="2026-11"]',f.root).textContent,/11月.*占全年支出.*54\.5%/);
+  assert.match($('[data-finance-month-card="2026-11"]',f.root).textContent,/NOV · 2026.*11月.*餐饮70%.*占全年支出.*54\.5%/);
   $('[data-finance-month-card="2026-08"]',f.root).click();await flush();
-  assert.match($('[data-finance-month-detail="2026-08"]',f.root).textContent,/8月收支明细.*打车/);
+  assert.equal($('.finance-day-detail',f.root),null,'annual expanded month uses full-width broadsheet rather than daily drawer');
+  assert.match($('[data-finance-month-detail="2026-08"]',f.root).textContent,/8月收支明细.*月度收支差额.*打车/);
   $('[data-finance-month-more]',f.root).click();await flush();
   assert.match($('[data-finance-month-detail="2026-08"]',f.root).textContent,/早茶/);
   $('[data-finance-month-close]',f.root).click();
@@ -753,6 +755,7 @@ test('dedicated annual page displays yearly summary, pie, 12-month rhythm, expan
   assert.equal($('[data-finance-year-label]',f.root).textContent,'2025年');
   assert.equal($('[data-finance-year-current]',f.root).hidden,false);
   assert.match($('[data-finance-year-pie]',f.root).textContent,/购物.*¥90\.00/);
+  assert.equal($('[data-finance-month-card="2025-12"]',f.root).classList.contains('is-featured'),true,'single-month year elevates card to full-width featured layout');
   assert.match($('[data-finance-month-card="2025-12"]',f.root).textContent,/12月.*购物/);
   $('[data-finance-month-card="2025-12"]',f.root).click();
   assert.match($('[data-finance-month-detail="2025-12"]',f.root).textContent,/冬衣/);

@@ -29,6 +29,8 @@ function clearReceiptChoice(checkbox){
 }
 const WEEKDAY_SHORT=['日','一','二','三','四','五','六'];
 const WEEKDAY_FULL=['星期日','星期一','星期二','星期三','星期四','星期五','星期六'];
+const MONTH_CODES=['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+const MONTH_NAMES=['JANUARY','FEBRUARY','MARCH','APRIL','MAY','JUNE','JULY','AUGUST','SEPTEMBER','OCTOBER','NOVEMBER','DECEMBER'];
 const CATEGORY_ACCENTS=new Map(Object.entries({
   food:'#2f8f79',transport:'#d4943f',shopping:'#5b89b8',housing:'#cf7267',
   health:'#79a86b',learning:'#8a79b8',entertainment:'#d48653',social:'#4ea3b0',
@@ -239,24 +241,40 @@ function createWorkspace(container,options,mode='month'){
     const actions=!deleted&&entry.kind==='expense'?`<button type="button" class="link-button finance-entry-refund-btn" data-entry-action="refund" data-id="${esc(entry.id)}">登记退款</button>`:'';
     return `<article class="finance-entry kind-${esc(entry.kind)} ${amount.length>10?'has-long-amount':''} ${deleted?'is-deleted':''}" style="--entry-accent:${esc(accent)}" data-entry-id="${esc(entry.id)}"><span class="finance-entry-dot" aria-hidden="true"></span><div class="finance-entry-copy"><div class="finance-entry-heading"><h3>${esc(title)}</h3><div class="finance-entry-tags"><span class="finance-entry-tag kind-${esc(entry.kind)}">${esc(FINANCE_KINDS[entry.kind]||'账目')}</span><span class="finance-entry-tag finance-entry-tag-category">${esc(categoryName(entry.categoryId))}</span>${deleted?'<span class="finance-entry-tag">已删除</span>':''}</div></div>${entry.note?`<p>${esc(entry.note)}</p>`:''}${entry.refundOf?'<small>已关联原支出</small>':''}</div><div class="finance-entry-end"><strong class="finance-entry-amount kind-${esc(entry.kind)}">${entryMoney(entry)}</strong></div><div class="finance-entry-footer">${receiptIds.length?`<button type="button" class="link-button finance-receipt-link" data-receipt-open="${esc(receiptIds[0])}">查看截图 · ${receiptIds.length} 张</button>`:'<span class="finance-entry-no-receipt">未附截图</span>'}<div class="finance-entry-actions">${actions}</div></div></article>`;
   }
+  function annualEntryHtml(entry){
+    const deleted=Boolean(entry.deletedAt),title=entry.purpose||categoryName(entry.categoryId),receiptIds=entry.receiptIds||[],amount=money(entry.amountCents),accent=categoryAccent(entry.categoryId);
+    const refundBtn=!deleted&&entry.kind==='expense'?`<button type="button" class="link-button finance-spread-refund-btn" data-entry-action="refund" data-id="${esc(entry.id)}">登记退款</button>`:'';
+    const receiptBtn=receiptIds.length?`<button type="button" class="link-button finance-spread-receipt-btn" data-receipt-open="${esc(receiptIds[0])}">凭证 · ${receiptIds.length} 张</button>`:'';
+    const flags=[entry.refundOf?'已关联原支出':'',deleted?'已删除':''].filter(Boolean);
+    return `<article class="finance-entry finance-spread-row kind-${esc(entry.kind)} ${amount.length>10?'has-long-amount':''} ${deleted?'is-deleted':''}" style="--entry-accent:${esc(accent)}" data-entry-id="${esc(entry.id)}"><span class="finance-spread-dot" aria-hidden="true"></span><div class="finance-spread-main"><div class="finance-spread-title-line"><h4>${esc(title)}</h4>${flags.map(flag=>`<span class="finance-spread-flag">${esc(flag)}</span>`).join('')}</div>${entry.note?`<p class="finance-spread-note">${esc(entry.note)}</p>`:''}</div><div class="finance-spread-tags"><span class="finance-spread-cat"><i aria-hidden="true"></i>${esc(categoryName(entry.categoryId))}</span><span class="finance-spread-kind kind-${esc(entry.kind)}">${esc(FINANCE_KINDS[entry.kind]||'账目')}</span></div><div class="finance-spread-tools">${receiptBtn}${refundBtn}${!receiptBtn&&!refundBtn?'<span class="finance-spread-quiet" aria-hidden="true">—</span>':''}</div><div class="finance-spread-amount-col"><strong class="finance-spread-amount kind-${esc(entry.kind)}">${entryMoney(entry)}</strong></div></article>`;
+  }
   function buildAnnualMonthCards(){
+    const makeMonthMeta=(monthKey)=>{
+      const [yearNum='',monthPart='']=String(monthKey||'').split('-');
+      const mNum=Number(monthPart)||0,idx=mNum>=1&&mNum<=12?mNum-1:-1;
+      return {yearNum,monthNum:mNum?String(mNum):monthPart,monthCode:idx>=0?MONTH_CODES[idx]:'',monthName:idx>=0?MONTH_NAMES[idx]:'',quarter:idx>=0?Math.floor(idx/3)+1:0};
+    };
     const source=Array.isArray(data?.monthSummaries)?data.monthSummaries:null;
     if(source){
       return source.map(item=>{
-        const [yearNum='',monthPart='']=String(item.month||'').split('-');
+        const meta=makeMonthMeta(item.month);
         const expenseCents=Math.max(0,Number(item.expenseCents)||0),refundCents=Math.max(0,Number(item.refundCents)||0),incomeCents=Math.max(0,Number(item.incomeCents)||0);
         const netExpenseCents=item.netExpenseCents!=null?Number(item.netExpenseCents)||0:expenseCents-refundCents;
+        const dayCount=Number(item.dayCount)||0,totalCount=Number(item.count)||0,balanceCents=incomeCents-netExpenseCents;
         let label='当月记录',amountText='¥0.00',tone='is-neutral',subline='';
         if(expenseCents>0||refundCents>0){
-          label=netExpenseCents<0?'当月净退回':'当月花销';
+          label=netExpenseCents<0?'当月净退回':'当月净支出';
           amountText=`${netExpenseCents<0?'−':''}¥${money(Math.abs(netExpenseCents))}`;
           tone=netExpenseCents<0?'is-refund':'is-expense';
           subline=incomeCents>0?`收入 +¥${money(incomeCents)}`:'';
         }else if(incomeCents>0){
           label='当月收入';amountText=`+¥${money(incomeCents)}`;tone='is-income';
         }
-        const topCategories=(item.topCategories||[]).map(cat=>({id:cat.id,name:cat.name||categoryName(cat.id),color:categoryAccent(cat.id)})).filter(cat=>cat.name);
-        return {month:item.month,yearNum,monthNum:String(Number(monthPart)||monthPart),info:{expenseCents,refundCents,incomeCents,netExpenseCents,totalCount:Number(item.count)||0,dayCount:Number(item.dayCount)||0,label,amountText,tone,subline,topCategories}};
+        const topCategories=(item.topCategories||[]).map(cat=>({id:cat.id,name:cat.name||categoryName(cat.id),cents:Math.max(0,Number(cat.cents)||0),color:categoryAccent(cat.id)})).filter(cat=>cat.name);
+        const rawCatTotal=Math.max(0,Number(item.categoryTotalCents)||0);
+        const sumTopCents=topCategories.reduce((sum,cat)=>sum+cat.cents,0);
+        const categoryTotalCents=rawCatTotal>0?Math.max(rawCatTotal,sumTopCents):sumTopCents;
+        return {month:item.month,...meta,info:{expenseCents,refundCents,incomeCents,netExpenseCents,balanceCents,totalCount,dayCount,label,amountText,tone,subline,topCategories,categoryTotalCents}};
       });
     }
     const groups=new Map();
@@ -266,10 +284,20 @@ function createWorkspace(container,options,mode='month'){
       groups.get(mk).push(entry);
     }
     return [...groups].sort((a,b)=>b[0].localeCompare(a[0])).map(([mk,rows])=>{
-      const [yearNum='',monthPart='']=mk.split('-'),base=summarizeDayRows(rows,categoryName);
-      const label=base.tone==='is-refund'?'当月净退回':base.tone==='is-expense'?'当月花销':base.tone==='is-income'?'当月收入':'当月记录';
+      const meta=makeMonthMeta(mk),base=summarizeDayRows(rows,categoryName);
+      const label=base.tone==='is-refund'?'当月净退回':base.tone==='is-expense'?'当月净支出':base.tone==='is-income'?'当月收入':'当月记录';
       const dayCount=new Set(rows.map(row=>row.date)).size;
-      return {month:mk,yearNum,monthNum:String(Number(monthPart)||monthPart),info:{...base,label,dayCount}};
+      const expenseCats=new Map(),incomeCats=new Map();
+      for(const row of rows){
+        if(row.deletedAt)continue;
+        if(row.kind==='expense'){const cid=String(row.categoryId||'uncategorized');expenseCats.set(cid,(expenseCats.get(cid)||0)+row.amountCents)}
+        if(row.kind==='income'){const cid=String(row.categoryId||'other-income');incomeCats.set(cid,(incomeCats.get(cid)||0)+row.amountCents)}
+      }
+      const cats=expenseCats.size?expenseCats:incomeCats;
+      const sorted=[...cats.entries()].sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0]));
+      const categoryTotalCents=sorted.reduce((sum,[,c])=>sum+c,0);
+      const topCategories=sorted.slice(0,4).map(([cid,cents])=>({id:cid,name:categoryName(cid),cents,color:categoryAccent(cid)})).filter(cat=>cat.name);
+      return {month:mk,...meta,info:{...base,balanceCents:base.incomeCents-base.netExpenseCents,label,dayCount,topCategories,categoryTotalCents}};
     });
   }
   async function loadAnnualMonthEntries(monthKey,append=false){
@@ -315,11 +343,16 @@ function createWorkspace(container,options,mode='month'){
       }
       const activeMonth=expandedLedgerMonth&&monthCards.some(item=>item.month===expandedLedgerMonth)?expandedLedgerMonth:null;
       expandedLedgerMonth=activeMonth;
-      const selected=activeMonth?monthCards.find(item=>item.month===activeMonth):null;
+      const activeIndex=activeMonth?monthCards.findIndex(item=>item.month===activeMonth):-1;
+      const selected=activeIndex>=0?monthCards[activeIndex]:null;
       const visibleTotals={netExpenseCents:0,positiveNetExpenseCents:0,expenseCents:0,incomeCents:0,refundCents:0};
+      let peakMonthKey='',peakExpense=0;
       for(const item of monthCards){
         visibleTotals.netExpenseCents+=item.info.netExpenseCents;
-        if(item.info.netExpenseCents>0)visibleTotals.positiveNetExpenseCents+=item.info.netExpenseCents;
+        if(item.info.netExpenseCents>0){
+          visibleTotals.positiveNetExpenseCents+=item.info.netExpenseCents;
+          if(item.info.netExpenseCents>peakExpense){peakExpense=item.info.netExpenseCents;peakMonthKey=item.month}
+        }
         visibleTotals.expenseCents+=item.info.expenseCents;visibleTotals.incomeCents+=item.info.incomeCents;visibleTotals.refundCents+=item.info.refundCents;
       }
       const summaryTotals=data?.summary||{};
@@ -328,7 +361,7 @@ function createWorkspace(container,options,mode='month'){
       const periodIncome=summaryTotals.incomeCents!=null?Math.max(0,Number(summaryTotals.incomeCents)||0):visibleTotals.incomeCents;
       const periodRefund=summaryTotals.refundCents!=null?Math.max(0,Number(summaryTotals.refundCents)||0):visibleTotals.refundCents;
       const todayMonth=options.today().slice(0,7);
-      const cardsHtml=monthCards.map(item=>{
+      const shareOfMonth=(item)=>{
         let rawPct=0,shareLabel='占全年支出';
         if(item.info.tone==='is-expense'&&item.info.netExpenseCents>0){
           const denom=periodNetExpense>0&&periodNetExpense>=item.info.netExpenseCents?periodNetExpense:Math.max(periodGrossExpense,visibleTotals.positiveNetExpenseCents,item.info.netExpenseCents);
@@ -343,38 +376,94 @@ function createWorkspace(container,options,mode='month'){
           rawPct=denom>0?Math.min(100,netRefund/denom*100):0;
           shareLabel='占全年退款';
         }
-        const barWidth=rawPct>0?Math.max(2,Number(rawPct.toFixed(1))):0;
-        const pctText=formatSharePct(rawPct);
-        const isSelected=item.month===activeMonth;
-        const catsHtml=item.info.topCategories.length?`<span class="finance-day-card-cats">${item.info.topCategories.map(cat=>`<span><i style="background:${esc(cat.color)}" aria-hidden="true"></i>${esc(cat.name)}</span>`).join('<em class="finance-day-cat-sep" aria-hidden="true">·</em>')}</span>`:'<span class="finance-day-card-cats is-empty" aria-hidden="true"></span>';
-        return `<button type="button" class="finance-day-card finance-month-card ${item.info.tone}${isSelected?' is-selected':''}" data-finance-month-card="${esc(item.month)}" aria-expanded="${isSelected?'true':'false'}"><span class="finance-day-card-head"><span class="finance-day-card-stamp"><strong>${esc(item.monthNum)}<small>月</small></strong><span class="finance-day-card-meta"><span>${esc(item.yearNum)}年 · ${item.info.dayCount}天</span>${item.month===todayMonth?'<em class="finance-day-today">本月</em>':''}</span></span><span class="finance-day-card-count">${item.info.totalCount} 笔</span></span>${catsHtml}<span class="finance-day-card-foot"><span class="finance-day-card-amount"><small>${esc(item.info.label)}</small><strong>${esc(item.info.amountText)}</strong>${item.info.subline?`<span class="finance-day-card-sub">${esc(item.info.subline)}</span>`:''}</span><span class="finance-day-card-meter"><span class="finance-day-card-bar" aria-hidden="true"><i style="width:${barWidth}%"></i></span><span class="finance-day-card-share"><span>${esc(shareLabel)}</span><em>${esc(pctText)}</em></span></span></span></button>`;
-      }).join('');
+        return {rawPct,shareLabel,barWidth:rawPct>0?Math.max(3,Number(rawPct.toFixed(1))):0,pctText:formatSharePct(rawPct)};
+      };
+      const cols=monthCards.length===1?1:((globalThis.innerWidth||1200)<=880?1:2);
+      const insertAfter=activeIndex>=0?Math.min(monthCards.length-1,Math.floor(activeIndex/cols)*cols+cols-1):-1;
       let detailHtml='';
       if(selected){
-        const stripParts=[];
-        if(selected.info.expenseCents>0||selected.info.refundCents>0)stripParts.push(`<div class="finance-detail-metric is-expense"><span>当月净支出</span><strong>${selected.info.netExpenseCents<0?'−':''}¥${money(Math.abs(selected.info.netExpenseCents))}</strong></div>`);
-        if(selected.info.incomeCents>0)stripParts.push(`<div class="finance-detail-metric is-income"><span>当月收入</span><strong>+¥${money(selected.info.incomeCents)}</strong></div>`);
-        if(selected.info.refundCents>0)stripParts.push(`<div class="finance-detail-metric is-refund"><span>含退款</span><strong>¥${money(selected.info.refundCents)}</strong></div>`);
+        const share=shareOfMonth(selected);
+        const balanceCents=selected.info.balanceCents;
+        const balanceTone=balanceCents>0?'is-income':balanceCents<0?'is-slate':'is-neutral';
+        const balanceText=`${balanceCents>0?'+':balanceCents<0?'−':''}¥${money(Math.abs(balanceCents))}`;
+        const avgDayCents=selected.info.dayCount>0&&selected.info.netExpenseCents>0?Math.round(selected.info.netExpenseCents/selected.info.dayCount):0;
+        const metricCells=[
+          `<div class="finance-spread-metric is-expense"><span>当月净支出</span><strong>${selected.info.netExpenseCents<0?'−':''}¥${money(Math.abs(selected.info.netExpenseCents))}</strong></div>`,
+          `<div class="finance-spread-metric ${selected.info.incomeCents>0?'is-income':'is-muted'}"><span>当月收入</span><strong>${selected.info.incomeCents>0?`+¥${money(selected.info.incomeCents)}`:'¥0.00'}</strong></div>`,
+          `<div class="finance-spread-metric ${balanceTone}"><span>月度收支差额</span><strong>${balanceText}</strong></div>`,
+          selected.info.refundCents>0
+            ?`<div class="finance-spread-metric is-refund"><span>已登记退款</span><strong>¥${money(selected.info.refundCents)}</strong></div>`
+            :`<div class="finance-spread-metric is-slate"><span>日均净支出</span><strong>${avgDayCents>0?`¥${money(avgDayCents)}`:'—'}</strong></div>`
+        ].join('');
+        let mixItems=selected.info.topCategories.filter(cat=>cat.cents>0);
+        let mixTotal=selected.info.categoryTotalCents;
+        if(!mixItems.length&&monthDetailRows.length){
+          const derivedExp=new Map(),derivedInc=new Map();
+          for(const row of monthDetailRows){
+            if(row.deletedAt)continue;
+            if(row.kind==='expense'){const cid=String(row.categoryId||'uncategorized');derivedExp.set(cid,(derivedExp.get(cid)||0)+row.amountCents)}
+            if(row.kind==='income'){const cid=String(row.categoryId||'other-income');derivedInc.set(cid,(derivedInc.get(cid)||0)+row.amountCents)}
+          }
+          const map=derivedExp.size?derivedExp:derivedInc;
+          const sorted=[...map.entries()].sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0]));
+          mixTotal=sorted.reduce((sum,[,c])=>sum+c,0);
+          mixItems=sorted.slice(0,4).map(([cid,cents])=>({id:cid,name:categoryName(cid),cents,color:categoryAccent(cid)}));
+        }
+        let mixHtml='';
+        if(mixItems.length&&mixTotal>0){
+          const topSum=mixItems.reduce((sum,cat)=>sum+cat.cents,0);
+          const segments=[...mixItems];
+          if(mixTotal>topSum)segments.push({id:'_other',name:'其他',cents:mixTotal-topSum,color:'#c2ccc4'});
+          const mixLabel=selected.info.expenseCents>0?'当月支出构成':'当月入账构成';
+          mixHtml=`<div class="finance-spread-mix"><div class="finance-spread-mix-head"><span>${mixLabel}</span><small>${selected.info.dayCount} 天 · ${selected.info.totalCount} 笔</small></div><div class="finance-spread-mix-bar" aria-hidden="true">${segments.map(seg=>`<i style="width:${Math.max(2,Number((seg.cents/mixTotal*100).toFixed(1)))}%;background:${esc(seg.color)}" title="${esc(seg.name)}"></i>`).join('')}</div><div class="finance-spread-mix-legend">${segments.slice(0,4).map(seg=>`<span><i style="background:${esc(seg.color)}" aria-hidden="true"></i>${esc(seg.name)} <em>${Math.round(seg.cents/mixTotal*100)}%</em></span>`).join('')}</div></div>`;
+        }else if(selected.info.topCategories.length){
+          mixHtml=`<div class="finance-spread-mix"><div class="finance-spread-mix-head"><span>主要分类</span><small>${selected.info.dayCount} 天 · ${selected.info.totalCount} 笔</small></div><div class="finance-spread-mix-legend">${selected.info.topCategories.slice(0,4).map(cat=>`<span><i style="background:${esc(cat.color)}" aria-hidden="true"></i>${esc(cat.name)}</span>`).join('')}</div></div>`;
+        }
         let bodyHtml='';
         if(monthDetailLoading&&!monthDetailRows.length){
-          bodyHtml=`<p class="finance-month-detail-state" role="status">正在读取 ${esc(selected.monthNum)}月 收支明细…</p>`;
+          bodyHtml=`<p class="finance-spread-state" role="status">正在翻开 ${esc(selected.monthNum)}月 账册明细…</p>`;
         }else if(monthDetailError&&!monthDetailRows.length){
-          bodyHtml=`<div class="finance-month-detail-state is-error"><p>${esc(monthDetailError)}</p><button type="button" class="link-button" data-finance-month-retry>重新读取</button></div>`;
+          bodyHtml=`<div class="finance-spread-state is-error"><p>${esc(monthDetailError)}</p><button type="button" class="link-button" data-finance-month-retry>重新读取</button></div>`;
         }else if(!monthDetailRows.length){
-          bodyHtml=`<p class="finance-month-detail-state">该月暂无符合条件的明细。</p>`;
+          bodyHtml=`<p class="finance-spread-state">该月暂无符合条件的明细。</p>`;
         }else{
           const dayMap=new Map();
           for(const row of monthDetailRows){if(!dayMap.has(row.date))dayMap.set(row.date,[]);dayMap.get(row.date).push(row)}
-          bodyHtml=[...dayMap].map(([date,rows])=>{
+          bodyHtml=`<div class="finance-spread-days">${[...dayMap].map(([date,rows])=>{
             const parts=dayCardParts(date),dayInfo=summarizeDayRows(rows,categoryName);
-            return `<section class="finance-month-day-section"><header class="finance-month-day-head"><h4>${esc(parts.shortMonthDay)}${esc(parts.dayNum)}日 <span>${esc(parts.weekdayShort)}</span></h4><div><span>${rows.length} 笔</span><strong class="${esc(dayInfo.tone)}">${esc(dayInfo.amountText)}</strong></div></header><div class="finance-day-detail-list">${rows.map(entryHtml).join('')}</div></section>`;
-          }).join('');
-          if(monthDetailError)bodyHtml+=`<p class="finance-month-detail-state is-error">${esc(monthDetailError)} <button type="button" class="link-button" data-finance-month-retry>重试</button></p>`;
-          if(monthDetailCursor)bodyHtml+=`<button type="button" class="btn btn-ghost finance-month-more" data-finance-month-more ${monthDetailLoading?'disabled':''}>${monthDetailLoading?'正在读取…':`加载 ${esc(selected.monthNum)}月 更早记录`}</button>`;
+            return `<section class="finance-spread-day"><aside class="finance-spread-day-rail"><div class="finance-spread-day-stamp"><strong>${esc(parts.dayNum)}</strong><div><span>${esc(parts.shortMonthDay)} · ${esc(parts.weekdayShort)}</span><small>${rows.length} 笔流水</small></div></div><div class="finance-spread-day-sum ${esc(dayInfo.tone)}"><strong>${esc(dayInfo.amountText)}</strong>${dayInfo.subline?`<small>${esc(dayInfo.subline)}</small>`:''}</div></aside><div class="finance-spread-day-rows">${rows.map(annualEntryHtml).join('')}</div></section>`;
+          }).join('')}</div>`;
+          if(monthDetailError)bodyHtml+=`<p class="finance-spread-state is-error">${esc(monthDetailError)} <button type="button" class="link-button" data-finance-month-retry>重试</button></p>`;
+          if(monthDetailCursor)bodyHtml+=`<button type="button" class="btn btn-ghost finance-spread-more" data-finance-month-more ${monthDetailLoading?'disabled':''}>${monthDetailLoading?'正在读取…':`加载 ${esc(selected.monthNum)}月 更早记录`}</button>`;
         }
-        detailHtml=`<aside class="finance-day-detail finance-month-detail" data-finance-month-detail="${esc(selected.month)}" aria-label="${esc(selected.yearNum)}年${esc(selected.monthNum)}月 收支明细"><header class="finance-day-detail-head"><div class="finance-day-detail-title"><span class="finance-detail-date-badge" aria-hidden="true"><small>${esc(selected.yearNum)}</small><strong>${esc(selected.monthNum)}月</strong></span><div><h3>${esc(selected.monthNum)}月收支明细</h3><p>${esc(selected.yearNum)}年${esc(selected.monthNum)}月 · ${selected.info.dayCount} 天 · ${selected.info.totalCount} 笔流水</p></div></div><div class="finance-month-detail-actions"><button type="button" class="finance-day-close finance-month-enter" data-finance-year-month="${esc(selected.month)}">月度账本 ↗</button><button type="button" class="finance-day-close" data-finance-month-close aria-label="收起当月明细">收起</button></div></header>${stripParts.length?`<div class="finance-day-detail-strip">${stripParts.join('')}</div>`:''}<div class="finance-month-detail-scroll">${bodyHtml}</div></aside>`;
+        const pointerClass=cols===1?'is-from-single':(activeIndex%2===0?'is-from-left':'is-from-right');
+        detailHtml=`<section class="finance-annual-spread ${pointerClass}" data-finance-month-detail="${esc(selected.month)}" aria-label="${esc(selected.yearNum)}年${esc(selected.monthNum)}月 收支明细"><header class="finance-spread-head"><div class="finance-spread-title-wrap"><span class="finance-spread-seal" aria-hidden="true"><small>${esc(selected.yearNum)}</small><strong>${esc(selected.monthNum)}<em>月</em></strong></span><div class="finance-spread-heading"><span class="finance-spread-eyebrow">${esc(selected.monthName||`${selected.monthNum}月`)} · 月度账册</span><h3>${esc(selected.monthNum)}月收支明细</h3><p>${esc(selected.yearNum)}年${esc(selected.monthNum)}月 · ${selected.info.dayCount} 个记录日 · ${selected.info.totalCount} 笔流水 · ${esc(share.shareLabel)} ${esc(share.pctText)}</p></div></div><div class="finance-spread-actions"><button type="button" class="finance-spread-btn is-primary" data-finance-year-month="${esc(selected.month)}">进入月度账本 <span aria-hidden="true">↗</span></button><button type="button" class="finance-spread-btn" data-finance-month-close aria-label="收起当月明细">收起 <span aria-hidden="true">×</span></button></div></header><div class="finance-spread-overview"><div class="finance-spread-metrics">${metricCells}</div>${mixHtml}</div><div class="finance-spread-body">${bodyHtml}</div></section>`;
       }
-      render(list,`<div class="finance-ledger-board${activeMonth?' has-selection':''}"><div class="finance-day-cards" data-ui-native>${cardsHtml}</div>${detailHtml}</div>`);
+      const deckItems=monthCards.map((item,idx)=>{
+        const share=shareOfMonth(item);
+        const isSelected=item.month===activeMonth;
+        const isCurrent=item.month===todayMonth;
+        const isPeak=monthCards.length>1&&item.month===peakMonthKey;
+        const spineBadge=isCurrent?'<em class="finance-annual-spine-tag is-current">本月</em>':isPeak?'<em class="finance-annual-spine-tag is-peak">全年峰值</em>':item.quarter?`<em class="finance-annual-spine-tag">Q${item.quarter}</em>`:'';
+        const avgDayCents=item.info.dayCount>0&&item.info.netExpenseCents>0?Math.round(item.info.netExpenseCents/item.info.dayCount):0;
+        let companionHtml='';
+        if(item.info.tone==='is-expense'&&item.info.incomeCents>0){
+          companionHtml=`<span class="finance-annual-companion is-income"><small>当月收入</small><strong>+¥${money(item.info.incomeCents)}</strong></span>`;
+        }else if(item.info.tone==='is-expense'&&avgDayCents>0){
+          companionHtml=`<span class="finance-annual-companion"><small>日均花销</small><strong>¥${money(avgDayCents)}</strong></span>`;
+        }else if(item.info.tone==='is-income'&&item.info.totalCount>0){
+          companionHtml=`<span class="finance-annual-companion is-income"><small>笔均入账</small><strong>¥${money(Math.round(item.info.incomeCents/item.info.totalCount))}</strong></span>`;
+        }
+        const top3=item.info.topCategories.slice(0,3);
+        const catTotal=item.info.categoryTotalCents;
+        const catsHtml=top3.length?`<span class="finance-annual-cats">${top3.map(cat=>{
+          const pct=catTotal>0&&cat.cents>0?Math.max(1,Math.round(cat.cents/catTotal*100)):0;
+          return `<span class="finance-annual-cat-chip"><i style="background:${esc(cat.color)}" aria-hidden="true"></i><span>${esc(cat.name)}</span>${pct?`<em>${pct}%</em>`:''}</span>`;
+        }).join('')}</span>`:'<span class="finance-annual-cats is-empty" aria-hidden="true"></span>';
+        const cardHtml=`<button type="button" class="finance-annual-card ${item.info.tone}${isSelected?' is-selected':''}${monthCards.length===1?' is-featured':''}" data-finance-month-card="${esc(item.month)}" aria-expanded="${isSelected?'true':'false'}"><span class="finance-annual-spine"><span class="finance-annual-code">${esc(item.monthCode||'M')} · ${esc(item.yearNum)}</span><strong class="finance-annual-num">${esc(item.monthNum)}<small>月</small></strong>${spineBadge}</span><span class="finance-annual-stage"><span class="finance-annual-meta"><span>${item.info.dayCount} 个记录日</span><i aria-hidden="true"></i><span>${item.info.totalCount} 笔流水</span>${item.info.refundCents>0?`<i aria-hidden="true"></i><span class="is-refund">含退 ¥${money(item.info.refundCents)}</span>`:''}</span><span class="finance-annual-cue">${isSelected?'收起明细':'展开明细'} <i aria-hidden="true">${isSelected?'▴':'▾'}</i></span><span class="finance-annual-figures"><span class="finance-annual-primary"><small>${esc(item.info.label)}</small><strong>${esc(item.info.amountText)}</strong></span>${companionHtml}</span>${catsHtml}<span class="finance-annual-share"><span class="finance-annual-share-label">${esc(share.shareLabel)}</span><span class="finance-annual-share-track" aria-hidden="true"><i style="width:${share.barWidth}%"></i></span><em class="finance-annual-share-pct">${esc(share.pctText)}</em></span></span></button>`;
+        return idx===insertAfter?cardHtml+detailHtml:cardHtml;
+      }).join('');
+      render(list,`<div class="finance-annual-deck${activeMonth?' has-selection':''}" data-month-count="${monthCards.length}" data-ui-native>${deckItems}</div>`);
       return;
     }
     const groups=new Map();for(const entry of entries){if(!groups.has(entry.date))groups.set(entry.date,[]);groups.get(entry.date).push(entry)}

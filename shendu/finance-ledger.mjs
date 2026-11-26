@@ -162,8 +162,10 @@ export function createFinanceLedger({db,encryptData,decryptData,dataScope,now,re
         }
         monthSummaries=[...byMonth.values()].sort((a,b)=>b.month.localeCompare(a.month)).map(bucket=>{
           const cats=bucket.expenseCats.size?bucket.expenseCats:bucket.incomeCats;
-          const topCategories=[...cats.entries()].sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0])).slice(0,2).map(([cid])=>({id:cid,name:categoryNames.get(cid)||'待分类'}));
-          return {month:bucket.month,count:bucket.count,dayCount:bucket.days.size,expenseCents:bucket.expenseCents,refundCents:bucket.refundCents,netExpenseCents:bucket.expenseCents-bucket.refundCents,incomeCents:bucket.incomeCents,topCategories};
+          const catEntries=[...cats.entries()].sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0]));
+          const categoryTotalCents=catEntries.reduce((sum,[,cents])=>sum+cents,0);
+          const topCategories=catEntries.slice(0,4).map(([cid,cents])=>({id:cid,name:categoryNames.get(cid)||'待分类',cents}));
+          return {month:bucket.month,count:bucket.count,dayCount:bucket.days.size,expenseCents:bucket.expenseCents,refundCents:bucket.refundCents,netExpenseCents:bucket.expenseCents-bucket.refundCents,incomeCents:bucket.incomeCents,categoryTotalCents,topCategories};
         });
       }
       if(cursor){const anchor=matching.findIndex(item=>item.id===cursor);if(anchor<0)throw problem('账目分页已变化，请重新加载','finance_cursor_not_found',404);matching=matching.slice(anchor+1)}

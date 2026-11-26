@@ -453,7 +453,7 @@ test('yearly finance ledger query spans all months in the requested year and val
   assert.deepEqual(yearly.value.entries.map(item=>item.id),[nov.id,jan.id]);
   assert.equal(yearly.value.entries.some(item=>item.id===prev.id),false);
   assert.equal(yearly.value.summary.netExpenseCents,6500);
-  assert.deepEqual(yearly.value.monthSummaries.map(item=>[item.month,item.count,item.netExpenseCents]),[['2026-11',1,2500],['2026-01',1,4000]]);
+  assert.deepEqual(yearly.value.monthSummaries.map(item=>[item.month,item.count,item.netExpenseCents,item.categoryTotalCents,item.topCategories[0]?.cents]),[['2026-11',1,2500,2500,2500],['2026-01',1,4000,4000,4000]]);
   const filtered=await api('/api/finance?year=2026&q='+encodeURIComponent('冬衣'),{auth:ownerCookie});
   assert.equal(filtered.status,200,filtered.text);
   assert.deepEqual(filtered.value.entries.map(item=>item.id),[jan.id]);
