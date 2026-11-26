@@ -680,3 +680,25 @@ test('month ledger groups entries into collapsed day cards that expand on click 
   assert.equal($('[data-finance-day-detail]',f.root),null);
   assert.equal($$('.finance-entry',f.root).length,0);
 });
+
+test('all three summary cards render data bars and the split quick composer toggles its empty desk cleanly',async()=>{
+  const f=fixture({handler:path=>path.startsWith('/api/finance?')?{categories:DEFAULT_FINANCE_CATEGORIES,entries:[],summary:{expenseCents:6000,refundCents:0,netExpenseCents:6000,incomeCents:14000,balanceCents:8000,count:3},expenseCategoryTotals:[{categoryId:'food',name:'餐饮',cents:6000}],trend:[]}:undefined});await flush();
+  const meters=$$('.finance-summary .finance-stat .finance-flow-meter',f.root);
+  assert.equal(meters.length,3);
+  assert.match($('.finance-stat-expense .finance-flow-legend',f.root).textContent,/支出占 30%.*总支出 ¥60\.00/);
+  assert.match($('.finance-stat-income .finance-flow-legend',f.root).textContent,/收入占 70%.*覆盖支出 233%/);
+  assert.match($('.finance-stat-balance .finance-flow-legend',f.root).textContent,/结余率 57%.*净结余 ¥80\.00/);
+  assert.equal($('.finance-stat-expense .finance-flow-track>i',f.root).style.width,'30%');
+  assert.equal($('.finance-stat-income .finance-flow-track>i',f.root).style.width,'70%');
+  assert.equal($('.finance-stat-balance .finance-flow-track>i',f.root).style.width,'57%');
+  const form=$('[data-finance-create]',f.root),emptyDesk=$('[data-finance-desk-empty]',form),badge=$('[data-finance-desk-badge]',form);
+  assert.equal(emptyDesk.hidden,false);
+  assert.match(badge.textContent,/支持拖拽/);
+  input(form,'text','60 打车\n50 吃饭');
+  assert.equal(emptyDesk.hidden,true);
+  assert.match(badge.textContent,/已自动归类/);
+  assert.equal($$('.finance-line-row',form).length,2);
+  $('[data-clear-entry]',form).click();
+  assert.equal(emptyDesk.hidden,false);
+  assert.equal($$('.finance-line-row',form).length,0);
+});
