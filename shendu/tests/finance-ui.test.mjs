@@ -19,7 +19,7 @@ function fixture({daily=false,readonly=false,snapshot,draft,handler,receiptClien
   ui.disposeUi($('#app'));ui.disposeUi($('#modal-root'));$('#app').replaceChildren();$('#modal-root').replaceChildren();
   const root=document.createElement('section');$('#app').append(root);let current=true,pending=false;
   const calls=[],notices=[],drafts=[],dirty=[],ended=[];let savedStorage=initialStorage||{configured:false,config:{},version:0,receiptCount:0,disconnected:false,targets:[{id:'storage-target',name:'自己的S3'}]};let entries=structuredClone(initialEntries),categories=DEFAULT_FINANCE_CATEGORIES.map(category=>({...category,version:0})),nextCursor=null;
-  const result=(date)=>{const selected=entries.filter(row=>!date||row.date===date),active=selected.filter(row=>!row.deletedAt),totals=new Map();for(const row of active)if(row.kind==='expense')totals.set(row.categoryId,(totals.get(row.categoryId)||0)+row.amountCents);const expenseCents=active.filter(row=>row.kind==='expense').reduce((sum,row)=>sum+row.amountCents,0),refundCents=active.filter(row=>row.kind==='refund').reduce((sum,row)=>sum+row.amountCents,0);return {categories,entries:structuredClone(selected),nextCursor,summary:{incomeCents:0,expenseCents,refundCents,netExpenseCents:expenseCents-refundCents,balanceCents:refundCents-expenseCents,count:active.length},trend:[],categoryTotals:[],expenseCategoryTotals:[...totals].map(([categoryId,cents])=>({categoryId,name:categories.find(row=>row.id===categoryId)?.name||'待分类',cents})),day:{date:date||'2026-11-15',state:selected.length?'recorded':'unrecorded',version:0}}};
+  const result=({date=null,year=null,month=null}={})=>{const selected=entries.filter(row=>date?row.date===date:year?row.date.startsWith(year+'-'):month?row.date.startsWith(month+'-'):true),active=selected.filter(row=>!row.deletedAt),totals=new Map();for(const row of active)if(row.kind==='expense')totals.set(row.categoryId,(totals.get(row.categoryId)||0)+row.amountCents);const expenseCents=active.filter(row=>row.kind==='expense').reduce((sum,row)=>sum+row.amountCents,0),refundCents=active.filter(row=>row.kind==='refund').reduce((sum,row)=>sum+row.amountCents,0);return {categories,entries:structuredClone(selected),nextCursor,summary:{incomeCents:0,expenseCents,refundCents,netExpenseCents:expenseCents-refundCents,balanceCents:refundCents-expenseCents,count:active.length},trend:[],categoryTotals:[],expenseCategoryTotals:[...totals].map(([categoryId,cents])=>({categoryId,name:categories.find(row=>row.id===categoryId)?.name||'待分类',cents})),day:{date:date||'2026-11-15',state:selected.length?'recorded':'unrecorded',version:0}}};
   const request=async(path,args={},guard=()=>true)=>{
     calls.push({path,args,guard});const intercepted=handler?.(path,args,guard);if(intercepted!==undefined)return await intercepted;
     if(path==='/api/finance/storage/test')return {ok:true};
@@ -28,7 +28,7 @@ function fixture({daily=false,readonly=false,snapshot,draft,handler,receiptClien
       if(args.method==='DELETE')savedStorage={...savedStorage,configured:false,config:null,version:savedStorage.version+1,disconnected:Boolean(savedStorage.receiptCount)};
       return structuredClone(savedStorage);
     }
-    if(path.startsWith('/api/finance?'))return result(new URL(path,'https://shendu.test').searchParams.get('date'));
+    if(path.startsWith('/api/finance?')){const params=new URL(path,'https://shendu.test').searchParams;return result({date:params.get('date'),year:params.get('year'),month:params.get('month')})}
     if(path==='/api/finance/entries'&&args.method==='POST'){let categoryId=args.body.categoryId;if(!categoryId){const found=suggestFinanceCategory(args.body.purpose,categories,'expense');if(found!=='uncategorized')categoryId=found;else{let category=categories.find(row=>row.name===args.body.purpose);if(!category){category={id:globalThis.crypto.randomUUID(),name:args.body.purpose,keywords:[],active:true,version:1};categories.push(category)}categoryId=category.id}}const entry={...args.body,categoryId,amountCents:parseMoneyExpression(args.body.expression),version:1,createdAt:'2026-11-15T00:00:00Z',updatedAt:'2026-11-15T00:00:00Z',deletedAt:null};entries.unshift(entry);return {entry}}
     if(path==='/api/finance/day')return {day:args.body};
     if(path==='/api/finance/categories'){const category={...args.body,version:1};categories.push(category);return {category}}
@@ -366,24 +366,31 @@ test('historical months default to latest spending date or actual month end, and
 });
 
 
-test('ledger day/month scope keeps monthly totals, independent chart dates, paging and mounted drafts',async()=>{
+test('ledger month/year scope omits day scope and hero counter while keeping monthly totals, paging and mounted drafts',async()=>{
   const make=(id,date,amountCents)=>({id,date,kind:'expense',categoryId:'food',purpose:id,amountCents,expression:String(amountCents/100),receiptIds:[],version:1});
-  const f=fixture({initialEntries:[make('今天早餐','2026-11-15',800),make('昨天面条','2026-11-14',1200)]});await flush();
+  const f=fixture({initialEntries:[make('今天早餐','2026-11-15',800),make('昨天面条','2026-11-14',1200),make('夏季冷饮','2026-08-03',1500),make('去年记录','2025-12-20',5000)]});await flush();
   const form=$('[data-finance-create]',f.root),field=input(form,'text','30 尚未入账'),filters=$('[data-finance-filters]',f.root),summary=$('[data-finance-summary]',f.root);
+  assert.equal($('[data-finance-hero-count]',f.root),null);
+  assert.equal($('[data-finance-ledger-date-row]',f.root),null);
+  assert.deepEqual([...filters.elements.range.options].map(option=>option.value),['month','year']);
   assert.equal(filters.elements.range.value,'month');assert.equal($$('.finance-day-card',f.root).length,2);assert.equal($$('.finance-entry',f.root).length,0);
   $('[data-finance-day-card="2026-11-15"]',f.root).click();assert.equal($$('.finance-entry',f.root).length,1);assert.match($('[data-finance-day-detail="2026-11-15"]',f.root).textContent,/今天早餐/);
-  change(filters,'range','day');await flush();assert.equal($$('.finance-entry',f.root).length,1);assert.match($('[data-finance-entries]',f.root).textContent,/今天早餐/);assert.match(summary.textContent,/20\.00/);assert.match($('[data-finance-month-pie]',f.root).textContent,/20\.00/);
-  assert.equal($('[data-finance-ledger-date-row]',f.root).hidden,false);$('[aria-label^="选择明细日期"]',f.root).click();await flush();$('[aria-label="2026-11-14"]').click();await flush();
-  assert.match($('[data-finance-entries]',f.root).textContent,/昨天面条/);assert.doesNotMatch($('[data-finance-entries]',f.root).textContent,/今天早餐/);assert.match(summary.textContent,/20\.00/);assert.match($('[data-finance-day-pie]',f.root).textContent,/8\.00/,'ledger date does not change the independent daily chart');
-  f.setCursor('next-day-page');$('[data-finance-refresh]',f.root).click();await flush();$('[data-finance-more]',f.root).click();await flush();assert.ok(f.calls.some(call=>call.path.includes('date=2026-11-14')&&call.path.includes('cursor=next-day-page')));
-  change(filters,'range','month');await flush();assert.equal($$('.finance-day-card',f.root).length,2);assert.equal($$('.finance-entry',f.root).length,0);assert.equal($('[data-finance-ledger-date-row]',f.root).hidden,true);assert.equal(form.elements.text,field);assert.equal(field.value,'30 尚未入账');assert.equal(f.calls.some(call=>call.args.method==='POST'),false);
+  change(filters,'range','year');await flush();
+  assert.equal($$('.finance-day-card',f.root).length,3);assert.equal($$('.finance-entry',f.root).length,0);
+  assert.equal($('[data-finance-day-card="2025-12-20"]',f.root),null);
+  assert.match(summary.textContent,/20\.00/);assert.match($('[data-finance-month-pie]',f.root).textContent,/20\.00/);
+  assert.match($('[data-finance-day-pie]',f.root).textContent,/8\.00/,'yearly ledger view keeps independent monthly and daily charts');
+  $('[data-finance-day-card="2026-08-03"]',f.root).click();assert.match($('[data-finance-day-detail="2026-08-03"]',f.root).textContent,/夏季冷饮/);
+  $('[data-finance-day-close]',f.root).click();assert.equal($('[data-finance-day-detail]',f.root),null);
+  f.setCursor('next-year-page');$('[data-finance-refresh]',f.root).click();await flush();$('[data-finance-more]',f.root).click();await flush();assert.ok(f.calls.some(call=>call.path.includes('year=2026')&&call.path.includes('cursor=next-year-page')));
+  change(filters,'range','month');await flush();assert.equal($$('.finance-day-card',f.root).length,2);assert.equal($$('.finance-entry',f.root).length,0);assert.equal(form.elements.text,field);assert.equal(field.value,'30 尚未入账');assert.equal(f.calls.some(call=>call.args.method==='POST'),false);
 });
 
-test('a stale day-list response cannot overwrite a newer month view or its pagination',async()=>{
-  let resolveDay;const f=fixture({handler:path=>path==='/api/finance?date=2026-11-15&kind=income'?new Promise(resolve=>{resolveDay=resolve}):undefined});await flush();const filters=$('[data-finance-filters]',f.root);
-  change(filters,'kind','income');await flush();change(filters,'range','day');await flush();assert.equal(typeof resolveDay,'function');change(filters,'range','month');await flush();
-  resolveDay({...f.result(),entries:[{id:'stale',date:'2026-11-15',kind:'income',purpose:'过期单日记录',amountCents:99900,categoryId:'salary',receiptIds:[]}],nextCursor:'stale-cursor'});await flush();
-  assert.doesNotMatch($('[data-finance-entries]',f.root).textContent,/过期单日记录/);assert.equal($('[data-finance-more]',f.root).hidden,true);assert.equal(filters.elements.range.value,'month');
+test('a stale year-list response cannot overwrite a newer month view or its pagination',async()=>{
+  let resolveYear;const f=fixture({handler:path=>path==='/api/finance?year=2026&kind=income'?new Promise(resolve=>{resolveYear=resolve}):undefined});await flush();const filters=$('[data-finance-filters]',f.root);
+  change(filters,'kind','income');await flush();change(filters,'range','year');await flush();assert.equal(typeof resolveYear,'function');change(filters,'range','month');await flush();
+  resolveYear({...f.result(),entries:[{id:'stale',date:'2026-08-15',kind:'income',purpose:'过期整年记录',amountCents:99900,categoryId:'salary',receiptIds:[]}],nextCursor:'stale-cursor'});await flush();
+  assert.doesNotMatch($('[data-finance-entries]',f.root).textContent,/过期整年记录/);assert.equal($('[data-finance-more]',f.root).hidden,true);assert.equal(filters.elements.range.value,'month');
 });
 
 test('typing a new ledger search invalidates the previous result cursor immediately',async()=>{

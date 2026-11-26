@@ -116,3 +116,18 @@ test('Radix owns arrow navigation and user text remains plain text',async()=>{
   assert.equal($('[role="radio"][value="second"]').textContent,'<img src=x onerror=alert(1)>');
   assert.equal($$('[role="radio"][tabindex="0"]').length,1);
 });
+
+test('clicking a label around a compact or choice select suppresses native select activation while trigger clicks still work',()=>{
+  renderMarkup(root,'<section class="finance-page"><form><label id="range-label"><span>显示范围</span><select name="range" data-finance-compact><option value="month">整月明细</option><option value="year">整年明细</option></select></label></form></section>');
+  const label=$('#range-label'),caption=$('#range-label>span'),trigger=$('[data-ui-select-for="range"]'),select=$('select[name="range"]');
+  const labelClick=new win.Event('click',{bubbles:true,cancelable:true});
+  caption.dispatchEvent(labelClick);
+  assert.equal(labelClick.defaultPrevented,true,'label text click must not activate hidden native select');
+  const directSelectMouseDown=new win.Event('mousedown',{bubbles:true,cancelable:true});
+  select.dispatchEvent(directSelectMouseDown);
+  assert.equal(directSelectMouseDown.defaultPrevented,true);
+  const triggerClick=new win.Event('click',{bubbles:true,cancelable:true});
+  trigger.dispatchEvent(triggerClick);
+  assert.equal(triggerClick.defaultPrevented,false,'clicking the Radix select trigger must remain active');
+  assert.equal(label.control,select);
+});

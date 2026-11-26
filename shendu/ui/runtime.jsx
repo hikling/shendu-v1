@@ -141,6 +141,13 @@ function NativeCheckbox({initial, nativeProps}) {
   </span>;
 }
 
+function preventHiddenSelectActivation(event) {
+  if (event.defaultPrevented) return;
+  const target = event.target instanceof Element ? event.target : event.target?.parentElement;
+  if (target?.closest('button,input,select,textarea,a,[role="combobox"],[role="radio"],[role="checkbox"]')) return;
+  event.preventDefault();
+}
+
 // Keep the real select as the legacy form/value contract, with one Radix
 // RadioGroup as its visible interaction owner. No duplicate named radio fields.
 function NativeChoices({initial, nativeProps, options, html}) {
@@ -158,17 +165,25 @@ function NativeChoices({initial, nativeProps, options, html}) {
     const reset = () => queueMicrotask(sync);
     const fields = [];
     for(let parent = select.parentElement;parent;parent=parent.parentElement)if(parent.tagName === 'FIELDSET')fields.push(parent);
+    const labels = [...(select.labels || [])];
+    labels.forEach(label => label.addEventListener('click', preventHiddenSelectActivation));
     // Observe native attribute changes only; roots/nodes never remount on edits.
     const attributes = new MutationObserver(sync);
     attributes.observe(select,{attributes:true,attributeFilter:['disabled','required','aria-invalid']});
     fields.forEach(field => attributes.observe(field,{attributes:true,attributeFilter:['disabled']}));
     select.addEventListener('input',sync);select.addEventListener('change',sync);
     select.form?.addEventListener('reset',reset);sync();
-    return () => {attributes.disconnect();select.removeEventListener('input',sync);select.removeEventListener('change',sync);select.form?.removeEventListener('reset',reset);};
+    return () => {
+      attributes.disconnect();
+      labels.forEach(label => label.removeEventListener('click', preventHiddenSelectActivation));
+      select.removeEventListener('input',sync);select.removeEventListener('change',sync);
+      select.form?.removeEventListener('reset',reset);
+    };
   },[]);
   return <span className="sd-choice" data-ui-native="">
     <select {...nativeProps} ref={native} defaultValue={initial} data-slot="native-select"
       className={`sd-choice-native ${nativeProps.className || ''}`} tabIndex={-1} aria-hidden="true"
+      onMouseDown={event => event.preventDefault()} onClick={event => event.preventDefault()}
       onFocus={focusChoice} onInvalid={event=>{event.preventDefault();setInvalid(true);focusChoice();}}
       dangerouslySetInnerHTML={{__html:html}}/>
     <RadioGroup ref={group} className="sd-choice-group" value={value} disabled={disabled} loop
@@ -227,12 +242,15 @@ function CompactSelect({initial, nativeProps, options, html, variant = 'finance'
     for (let parent = select.parentElement; parent; parent = parent.parentElement) {
       if (parent.tagName === 'FIELDSET') observer.observe(parent, {attributes: true, attributeFilter: ['disabled']});
     }
+    const labels = [...(select.labels || [])];
+    labels.forEach(label => label.addEventListener('click', preventHiddenSelectActivation));
     select.addEventListener('input', changed);
     select.addEventListener('change', changed);
     select.form?.addEventListener('reset', reset);
     sync();
     return () => {
       observer.disconnect();
+      labels.forEach(label => label.removeEventListener('click', preventHiddenSelectActivation));
       select.removeEventListener('input', changed);
       select.removeEventListener('change', changed);
       select.form?.removeEventListener('reset', reset);
@@ -241,7 +259,7 @@ function CompactSelect({initial, nativeProps, options, html, variant = 'finance'
   const selected = optionList.findIndex(option => option.value === value), focus = () => trigger.current?.focus();
   const wrapperClass = variant === 'finance' ? 'sd-select sd-finance-select' : 'sd-select sd-history-select';
   return <span className={wrapperClass} data-ui-native="">
-    <select {...nativeProps} ref={native} defaultValue={initial} className="sd-choice-native" data-slot="native-select" tabIndex={-1} aria-hidden="true" onFocus={focus} onInvalid={event => {event.preventDefault(); setInvalid(true); focus();}} dangerouslySetInnerHTML={{__html: html}}/>
+    <select {...nativeProps} ref={native} defaultValue={initial} className="sd-choice-native" data-slot="native-select" tabIndex={-1} aria-hidden="true" onMouseDown={event => event.preventDefault()} onClick={event => event.preventDefault()} onFocus={focus} onInvalid={event => {event.preventDefault(); setInvalid(true); focus();}} dangerouslySetInnerHTML={{__html: html}}/>
     <Select value={selected < 0 ? '' : `option-${selected}`} disabled={disabled}
       onOpenChange={open => {
         if (!open || !trigger.current) return;
@@ -300,7 +318,11 @@ function componentFor(node) {
     if(financeCompact||historyFilter)return <CompactSelect nativeProps={props} initial={selected} options={options} html={node.innerHTML} variant={historyFilter?'history':'finance'}/>;
     return <NativeChoices nativeProps={props} initial={selected} options={options} html={node.innerHTML}/>;
   }
-  if (tag === 'label') return <Label {...props} {...raw(node)}/>;
+  if (tag === 'label') {
+    return <Label {...props} onClick={event => {
+      if (event.currentTarget.control?.classList?.contains('sd-choice-native')) preventHiddenSelectActivation(event);
+    }} {...raw(node)}/>;
+  }
   if (tag === 'table') return <Table {...props} {...raw(node)}/>;
   if (tag === 'hr') return <Separator {...props} decorative={!node.hasAttribute('aria-label')}/>;
   if (node.classList.contains('progress') || tag === 'progress') {

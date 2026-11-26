@@ -122,12 +122,13 @@ export function createFinanceLedger({db,encryptData,decryptData,dataScope,now,re
   async function handle(req,res,url,user){
     const path=url.pathname,method=req.method;
     if(path==='/api/finance'&&method==='GET'){
-      const date=url.searchParams.get('date'),month=url.searchParams.get('month')||today().slice(0,7),kind=url.searchParams.get('kind'),category=url.searchParams.get('category'),q=(url.searchParams.get('q')||'').trim().slice(0,160),cursor=url.searchParams.get('cursor'),includeDeleted=url.searchParams.get('deleted')==='1';
+      const date=url.searchParams.get('date'),year=url.searchParams.get('year'),month=url.searchParams.get('month')||today().slice(0,7),kind=url.searchParams.get('kind'),category=url.searchParams.get('category'),q=(url.searchParams.get('q')||'').trim().slice(0,160),cursor=url.searchParams.get('cursor'),includeDeleted=url.searchParams.get('deleted')==='1';
       if(date!==null&&!validDate(date))throw problem('请选择有效的账目日期');
+      if(year!==null&&(!/^\d{4}$/.test(year)||year==='0000'))throw problem('请选择有效年份');
       if(!/^\d{4}-(0[1-9]|1[0-2])$/.test(month))throw problem('请选择有效月份');
       if(kind&&!Object.hasOwn(FINANCE_KINDS,kind))throw problem('收支类型无效');
       if(cursor&&!UUID.test(cursor))throw problem('账目分页位置无效','finance_cursor_invalid');
-      const rows=date?db.prepare('SELECT * FROM finance_entries WHERE user_id=? AND date=? ORDER BY date DESC,id DESC').all(user.id,date):db.prepare('SELECT * FROM finance_entries WHERE user_id=? AND date>=? AND date<=? ORDER BY date DESC,id DESC').all(user.id,month+'-01',month+'-31');
+      const rows=date?db.prepare('SELECT * FROM finance_entries WHERE user_id=? AND date=? ORDER BY date DESC,id DESC').all(user.id,date):year!==null?db.prepare('SELECT * FROM finance_entries WHERE user_id=? AND date>=? AND date<=? ORDER BY date DESC,id DESC').all(user.id,year+'-01-01',year+'-12-31'):db.prepare('SELECT * FROM finance_entries WHERE user_id=? AND date>=? AND date<=? ORDER BY date DESC,id DESC').all(user.id,month+'-01',month+'-31');
       const decoded=rows.map(decodeEntry),active=decoded.filter(item=>!item.deletedAt),list=categories(user.id),needle=q.toLocaleLowerCase();
       let matching=decoded.filter(item=>(includeDeleted||!item.deletedAt)&&(!kind||item.kind===kind)&&(!category||item.categoryId===category)&&(!needle||`${item.purpose} ${item.note} ${list.find(value=>value.id===item.categoryId)?.name||''}`.toLocaleLowerCase().includes(needle)));
       if(cursor){const anchor=matching.findIndex(item=>item.id===cursor);if(anchor<0)throw problem('账目分页已变化，请重新加载','finance_cursor_not_found',404);matching=matching.slice(anchor+1)}

@@ -443,3 +443,18 @@ test('storage disconnect routes clear credentials and CSP without deleting ledge
   assert.equal((await api('/api/finance/storage',{auth:a.cookie})).value.configured,false);
   assert.equal((await ledger(a.cookie)).entries.some(row=>row.id===entry.id),true);
 });
+
+test('yearly finance ledger query spans all months in the requested year and validates year format',async()=>{
+  const jan=await create(ownerCookie,{date:'2026-01-10',expression:'40',purpose:'冬衣',categoryId:'shopping'});
+  const nov=await create(ownerCookie,{date:'2026-11-15',expression:'25',purpose:'午饭',categoryId:'food'});
+  const prev=await create(ownerCookie,{date:'2025-12-31',expression:'99',purpose:'去年跨年',categoryId:'food'});
+  const yearly=await api('/api/finance?year=2026',{auth:ownerCookie});
+  assert.equal(yearly.status,200,yearly.text);
+  assert.deepEqual(yearly.value.entries.map(item=>item.id),[nov.id,jan.id]);
+  assert.equal(yearly.value.entries.some(item=>item.id===prev.id),false);
+  assert.equal(yearly.value.summary.netExpenseCents,6500);
+  const filtered=await api('/api/finance?year=2026&q='+encodeURIComponent('冬衣'),{auth:ownerCookie});
+  assert.equal(filtered.status,200,filtered.text);
+  assert.deepEqual(filtered.value.entries.map(item=>item.id),[jan.id]);
+  for(const bad of ['0000','2026-11','abc','26'])assert.equal((await api('/api/finance?year='+encodeURIComponent(bad),{auth:ownerCookie})).status,400,bad);
+});
