@@ -147,6 +147,25 @@ export function createFinanceLedger({db,encryptData,decryptData,dataScope,now,re
       const rows=date?db.prepare('SELECT * FROM finance_entries WHERE user_id=? AND date=? ORDER BY date DESC,id DESC').all(user.id,date):year!==null?db.prepare('SELECT * FROM finance_entries WHERE user_id=? AND date>=? AND date<=? ORDER BY date DESC,id DESC').all(user.id,year+'-01-01',year+'-12-31'):db.prepare('SELECT * FROM finance_entries WHERE user_id=? AND date>=? AND date<=? ORDER BY date DESC,id DESC').all(user.id,month+'-01',month+'-31');
       const decoded=rows.map(decodeEntry),active=decoded.filter(item=>!item.deletedAt),list=categories(user.id),categoryNames=new Map(list.map(value=>[value.id,value.name])),needle=q.toLocaleLowerCase();
       let matching=decoded.filter(item=>(includeDeleted||!item.deletedAt)&&(!kind||item.kind===kind)&&(!category||item.categoryId===category)&&(!needle||`${item.purpose} ${item.note} ${categoryNames.get(item.categoryId)||''}`.toLocaleLowerCase().includes(needle)));
+      let monthSummaries;
+      if(year!==null){
+        const byMonth=new Map();
+        for(const item of matching){
+          const mk=String(item.date||'').slice(0,7);if(!mk)continue;
+          let bucket=byMonth.get(mk);
+          if(!bucket){bucket={month:mk,count:0,days:new Set(),expenseCents:0,refundCents:0,incomeCents:0,expenseCats:new Map(),incomeCats:new Map()};byMonth.set(mk,bucket)}
+          bucket.count++;bucket.days.add(item.date);
+          if(item.deletedAt)continue;
+          if(item.kind==='expense'){bucket.expenseCents+=item.amountCents;const cid=String(item.categoryId||'uncategorized');bucket.expenseCats.set(cid,(bucket.expenseCats.get(cid)||0)+item.amountCents)}
+          if(item.kind==='refund')bucket.refundCents+=item.amountCents;
+          if(item.kind==='income'){bucket.incomeCents+=item.amountCents;const cid=String(item.categoryId||'other-income');bucket.incomeCats.set(cid,(bucket.incomeCats.get(cid)||0)+item.amountCents)}
+        }
+        monthSummaries=[...byMonth.values()].sort((a,b)=>b.month.localeCompare(a.month)).map(bucket=>{
+          const cats=bucket.expenseCats.size?bucket.expenseCats:bucket.incomeCats;
+          const topCategories=[...cats.entries()].sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0])).slice(0,2).map(([cid])=>({id:cid,name:categoryNames.get(cid)||'待分类'}));
+          return {month:bucket.month,count:bucket.count,dayCount:bucket.days.size,expenseCents:bucket.expenseCents,refundCents:bucket.refundCents,netExpenseCents:bucket.expenseCents-bucket.refundCents,incomeCents:bucket.incomeCents,topCategories};
+        });
+      }
       if(cursor){const anchor=matching.findIndex(item=>item.id===cursor);if(anchor<0)throw problem('账目分页已变化，请重新加载','finance_cursor_not_found',404);matching=matching.slice(anchor+1)}
       const entries=matching.slice(0,50),trendMap=new Map(),totals=new Map(),expenseTotals=new Map();
       for(const item of active){
@@ -155,7 +174,7 @@ export function createFinanceLedger({db,encryptData,decryptData,dataScope,now,re
         trendMap.set(item.date,point);
         if(item.kind==='expense'||item.kind==='refund')totals.set(item.categoryId,(totals.get(item.categoryId)||0)+(item.kind==='refund'?-1:1)*item.amountCents);
       }
-      json(res,200,{entries,categories:list,summary:summaryOf(active),expenseCategoryTotals:[...expenseTotals].map(([categoryId,cents])=>({categoryId,name:categoryNames.get(categoryId)||'待分类',cents})).sort((a,b)=>b.cents-a.cents||a.categoryId.localeCompare(b.categoryId)),trend:[...trendMap.values()].sort((a,b)=>a.date.localeCompare(b.date)),categoryTotals:[...totals].map(([categoryId,cents])=>({categoryId,name:categoryNames.get(categoryId)||'待分类',cents})).sort((a,b)=>b.cents-a.cents),nextCursor:matching.length>50?entries.at(-1).id:null,...(date?{day:dayState(user.id,date,active)}:{})});return true;
+      json(res,200,{entries,categories:list,summary:summaryOf(active),expenseCategoryTotals:[...expenseTotals].map(([categoryId,cents])=>({categoryId,name:categoryNames.get(categoryId)||'待分类',cents})).sort((a,b)=>b.cents-a.cents||a.categoryId.localeCompare(b.categoryId)),trend:[...trendMap.values()].sort((a,b)=>a.date.localeCompare(b.date)),categoryTotals:[...totals].map(([categoryId,cents])=>({categoryId,name:categoryNames.get(categoryId)||'待分类',cents})).sort((a,b)=>b.cents-a.cents),nextCursor:matching.length>50?entries.at(-1).id:null,...(monthSummaries?{monthSummaries}:{}),...(date?{day:dayState(user.id,date,active)}:{})});return true;
     }
     if(path==='/api/finance/entries'&&method==='POST'){
       const body=await readJson(req);if(!UUID.test(String(body.id||'')))throw problem('账目编号无效');
