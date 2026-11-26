@@ -99,11 +99,22 @@ export function createFinanceReceipts(deps){
     const saved=storage(userId),config=saved?.config;
     return {configured:!!config,disconnected:!config&&Boolean(storageIdentity(saved)),receiptCount:readyCount(userId),version:saved?.version||0,config:config?{endpoint:config.endpoint,region:config.region,bucket:config.bucket,directory:config.directory,pathStyle:config.pathStyle,accessKey:config.accessKey}:null,targets:deps.getS3Targets?.(userId)||[]};
   };
-  const draftConfig=(body,userId,prior)=>{
+  const draftConfig=(body,userId,prior,{testing=false}={})=>{
     try{
       let config;
       if(body.reuseTargetId){config=deps.getS3TargetConfig?.(userId,body.reuseTargetId);if(!config)throw bad('所选存储目标不存在','finance_storage_target',404)}
-      else{const incoming={...body.config};if(incoming.secretKey===undefined&&prior?.config)incoming.secretKey=prior.config.secretKey;config=incoming}
+      else{
+        const incoming={...body.config};
+        if(incoming.secretKey===undefined&&prior?.config){
+          const priorNorm=normalizeBackupConfig('s3',prior.config);
+          const candidate=normalizeBackupConfig('s3',{...incoming,secretKey:priorNorm.secretKey});
+          const sameAuth=candidate.endpoint===priorNorm.endpoint&&candidate.accessKey===priorNorm.accessKey;
+          const sameTarget=!testing||(candidate.region===priorNorm.region&&candidate.bucket===priorNorm.bucket&&candidate.directory===priorNorm.directory&&candidate.pathStyle===priorNorm.pathStyle);
+          if(!sameAuth||!sameTarget)throw bad('修改存储地址或访问密钥标识时，请重新填写访问密钥密码','finance_storage_invalid');
+          incoming.secretKey=priorNorm.secretKey;
+        }
+        config=incoming;
+      }
       return normalizeBackupConfig('s3',config);
     }catch(caught){if(caught.status)throw caught;throw bad('图片存储配置无效，请核对 HTTPS 服务地址、存储桶、目录和访问密钥','finance_storage_invalid')}
   };
@@ -179,7 +190,7 @@ export function createFinanceReceipts(deps){
     for(const item of checked.receipts){
       const old=db.prepare('SELECT version FROM finance_receipts WHERE id=? AND user_id=?').get(item.id,userId);
       if(old&&old.version>=item.version)continue;
-      db.prepare('INSERT INTO finance_receipts(id,user_id,hash,ready,data,version,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?) ON CONFLICT(id) DO UPDATE SET ready=excluded.ready,data=excluded.data,version=excluded.version,updated_at=excluded.updated_at').run(item.id,userId,item.hash,item.ready,encryptData(item.data,dataScope('finance-receipt',userId,item.id,'data')),item.version,item.createdAt,item.updatedAt);
+      db.prepare('INSERT INTO finance_receipts(id,user_id,hash,ready,data,version,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?) ON CONFLICT(id) DO UPDATE SET hash=excluded.hash,ready=excluded.ready,data=excluded.data,version=excluded.version,updated_at=excluded.updated_at').run(item.id,userId,item.hash,item.ready,encryptData(item.data,dataScope('finance-receipt',userId,item.id,'data')),item.version,item.createdAt,item.updatedAt);
     }
   }
 
@@ -201,9 +212,9 @@ export function createFinanceReceipts(deps){
       if(path==='/api/finance/storage'&&req.method==='PUT'||path==='/api/finance/storage/test'&&req.method==='POST'){
         const body=await readJson(req),prior=storage(user.id);sessionCurrent(req,user);
         if(body.version!==undefined&&body.version!==(prior?.version||0))throw bad('存储设置已更新，请刷新后重试','version_conflict',409);
-        const config=draftConfig(body,user.id,prior),testing=path.endsWith('/test');
+        const testing=path.endsWith('/test'),config=draftConfig(body,user.id,prior,{testing});
         if(testing)checkRate(user.id,'storage-test',10,60000);
-        try{await assertPublicHttps(config.endpoint)}catch{sameStorage(req,user,prior);throw bad('无法验证图片存储地址，请使用可访问的公网 HTTPS 服务地址','finance_storage_invalid')}
+        try{await assertPublicHttps(receiptObjectUrl(config,'').origin)}catch{sameStorage(req,user,prior);throw bad('无法验证图片存储地址，请使用可访问的公网 HTTPS 服务地址','finance_storage_invalid')}
         sameStorage(req,user,prior);
         if(testing){
           await network(user.id,async()=>{
@@ -236,7 +247,7 @@ export function createFinanceReceipts(deps){
         const body=await readJson(req);sessionCurrent(req,user);checkRate(user.id,'prepare-minute',30,60000);checkRate(user.id,'prepare-day',250,86400000);
         if(!UUID.test(body.id)||!HASH.test(String(body.hash||'')))throw bad('图片标识不正确');
         const variants=variantsFrom(body.variants),config=requireStorage(user.id),prior=storage(user.id);
-        try{await assertPublicHttps(config.endpoint)}catch(caught){sameStorage(req,user,prior);throw caught}
+        try{await assertPublicHttps(receiptObjectUrl(config,'').origin)}catch{sameStorage(req,user,prior);throw bad('无法验证图片存储地址，请使用可访问的公网 HTTPS 服务地址','finance_storage_invalid')}
         sameStorage(req,user,prior);
         let row=db.prepare('SELECT * FROM finance_receipts WHERE user_id=? AND hash=?').get(user.id,body.hash);
         const sameId=db.prepare('SELECT * FROM finance_receipts WHERE id=?').get(body.id);
@@ -260,7 +271,8 @@ export function createFinanceReceipts(deps){
         else{
           if(db.prepare('SELECT COUNT(*) n FROM finance_receipts WHERE user_id=?').get(user.id).n>=MAX_RECEIPTS)throw bad('凭证图片数量已达上限，请先整理','finance_receipt_quota',413);
           const stamp=now(),data=uploadData(user.id,body.id,variants,config);
-          db.prepare('INSERT INTO finance_receipts(id,user_id,hash,data,created_at,updated_at) VALUES(?,?,?,?,?,?)').run(body.id,user.id,body.hash,encryptData(data,dataScope('finance-receipt',user.id,body.id,'data')),stamp,stamp);row={id:body.id,hash:body.hash,data,version:1};
+          try{db.prepare('INSERT INTO finance_receipts(id,user_id,hash,data,created_at,updated_at) VALUES(?,?,?,?,?,?)').run(body.id,user.id,body.hash,encryptData(data,dataScope('finance-receipt',user.id,body.id,'data')),stamp,stamp)}catch(caught){if(caught?.errcode===2067||caught?.errcode===1555)throw bad('图片资料已更新，请重新上传','version_conflict',409);throw caught}
+          row={id:body.id,hash:body.hash,data,version:1};
         }
         if(row.data.storageIdentity!==receiptStorageIdentity(config))throw bad('图片存储位置已变化，请检查设置','finance_storage_conflict',409);
         const uploads=Object.fromEntries(['image','thumb'].map(name=>[name,presignReceipt(config,row.data.keys[name],{method:'PUT',variant:row.data.variants[name]})]));
@@ -301,7 +313,9 @@ export function createFinanceReceipts(deps){
         const body=await readJson(req);sessionCurrent(req,user);checkRate(user.id,'read',120,60000);
         if(!Array.isArray(body.ids)||body.ids.length<1||body.ids.length>50||!['image','thumb'].includes(body.variant))throw bad('图片读取参数不正确');
         const rows=[...new Set(body.ids)].map(id=>owned(user.id,id));if(rows.some(row=>!row.ready))throw bad('图片尚未上传完成','finance_receipt_not_ready',409);
-        const config=requireStorage(user.id);await assertPublicHttps(config.endpoint);sessionCurrent(req,user);
+        const config=requireStorage(user.id);
+        try{await assertPublicHttps(receiptObjectUrl(config,'').origin)}catch{sessionCurrent(req,user);throw bad('无法验证图片存储地址，请使用可访问的公网 HTTPS 服务地址','finance_storage_invalid')}
+        sessionCurrent(req,user);
         if(receiptStorageIdentity(requireStorage(user.id))!==receiptStorageIdentity(config)||rows.some(row=>{const current=owned(user.id,row.id);return !current.ready||current.version!==row.version||stable(current.data)!==stable(row.data)}))throw bad('图片资料或存储配置已更新，请重试','version_conflict',409);
         if(rows.some(row=>row.data.storageIdentity!==receiptStorageIdentity(config)))throw bad('图片存储关联不一致');
         json(res,200,{urls:Object.fromEntries(rows.map(row=>[row.id,presignReceipt(config,row.data.keys[body.variant],{expires:300}).url]))});return true;

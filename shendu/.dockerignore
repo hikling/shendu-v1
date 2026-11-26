@@ -4,6 +4,8 @@
 .env.install.*
 compose.override.yaml
 .deploy-image.override.*
+.host-runtime/
+.secrets/
 data/*
 !data/.gitkeep
 tmp/*

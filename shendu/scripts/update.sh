@@ -49,7 +49,10 @@ git_in_repo() {
 }
 
 command -v git >/dev/null 2>&1 || fail "服务器没有安装 git。请先执行：apt update && apt install -y git"
-[ -d "$repo_dir/.git" ] || fail "$repo_dir 不是 Git 克隆目录。ZIP 解压版不能执行 git pull，请按 README 的“ZIP 旧部署迁移”处理。"
+[ ! -L "$repo_dir" ] && [ -d "$repo_dir/.git" ] && [ ! -L "$repo_dir/.git" ] || fail "$repo_dir 不是 Git 克隆目录。ZIP 解压版不能执行 git pull，请按 README 的“ZIP 旧部署迁移”处理。"
+if [ -r /proc/self/status ] && LC_ALL=C awk '/^Uid:/ { exit ($2 != 0) }' /proc/self/status 2>/dev/null; then
+  [ "$(stat -c %u "$repo_dir")" -eq 0 ] && [ "$(stat -c %u "$repo_dir/.git")" -eq 0 ] || fail "$repo_dir 或其 .git 目录不属于 root，已拒绝更新。"
+fi
 [ -f "$app_dir/compose.yaml" ] || fail "缺少 $app_dir/compose.yaml，项目目录可能填写错误。"
 [ -f "$app_dir/.env" ] || fail "缺少 $app_dir/.env。为防止覆盖域名与加密密钥，脚本已停止。"
 origin="$(git_in_repo config --get remote.origin.url)" || fail '无法确认项目的仓库来源。'
@@ -57,8 +60,11 @@ case "$origin" in
   https://github.com/hikling/shendu-v1|https://github.com/hikling/shendu-v1.git|git@github.com:hikling/shendu-v1.git) ;;
   *) fail '当前目录的 origin 不是 hikling/shendu-v1，未执行备份、拉取或容器更新。' ;;
 esac
-mkdir -p "$app_dir/tmp"
-update_lock_dir="$app_dir/tmp/.update.lock"
+host_runtime_dir="$app_dir/.host-runtime"
+[ ! -L "$host_runtime_dir" ] || fail "$host_runtime_dir 不能是符号链接。"
+mkdir -p "$host_runtime_dir"
+chmod 700 "$host_runtime_dir"
+update_lock_dir="$host_runtime_dir/.update.lock"
 if ! mkdir "$update_lock_dir" 2>/dev/null; then
   fail "检测到另一个更新任务正在运行。如果确认没有更新进程，请删除 $update_lock_dir 后重试。"
 fi
@@ -129,11 +135,23 @@ case "$backup_choice" in
     ;;
 esac
 
+old_full_commit="$(git_in_repo rev-parse HEAD)"
 old_commit="$(git_in_repo rev-parse --short HEAD)"
 echo "[3/7] 拉取 GitHub main 分支……"
 git_in_repo fetch --prune origin main
 git_in_repo merge --ff-only origin/main
+new_full_commit="$(git_in_repo rev-parse HEAD)"
 new_commit="$(git_in_repo rev-parse --short HEAD)"
+caddyfile_changed=0
+if [ "$old_full_commit" != "$new_full_commit" ] && ! git_in_repo diff --quiet "$old_full_commit" "$new_full_commit" -- shendu/Caddyfile; then
+  caddyfile_changed=1
+fi
+
+rollback_git_checkout() {
+  if [ "$old_full_commit" != "$new_full_commit" ]; then
+    git_in_repo reset --hard "$old_full_commit" >/dev/null 2>&1 || true
+  fi
+}
 
 if [ "${SHENDU_UPDATE_GIT_ONLY:-0}" = "1" ]; then
   echo "Git 更新测试通过：$old_commit -> $new_commit"
@@ -141,22 +159,45 @@ if [ "${SHENDU_UPDATE_GIT_ONLY:-0}" = "1" ]; then
 fi
 
 echo "[4/7] 用新版代码再次校验 Compose……"
-docker compose config >/dev/null
+if ! docker compose config >/dev/null; then
+  rollback_git_checkout
+  fail '新版 Compose 配置校验失败，已恢复原代码版本，原容器仍保持运行。'
+fi
 
 echo "[5/7] 拉取新版 Caddy 镜像（当前网站继续运行）……"
-docker compose pull caddy
+if ! docker compose pull caddy; then
+  rollback_git_checkout
+  fail 'Caddy 镜像拉取失败，已恢复原代码版本，原容器仍保持运行。'
+fi
 
 echo "[6/7] 准备已通过 CI 的应用镜像（当前网站继续运行）……"
-sh "$app_dir/scripts/prepare-image.sh" || fail '镜像准备失败，原应用容器仍保持运行。'
+if ! sh "$app_dir/scripts/prepare-image.sh"; then
+  rollback_git_checkout
+  fail '镜像准备失败，已恢复原代码版本，原应用容器仍保持运行。'
+fi
 
 echo "[7/7] 启动新版应用并等待健康检查……"
 docker compose up -d --no-deps shendu
 attempt=0
 health=""
+container_status=""
 while [ "$attempt" -lt 60 ]; do
-  health="$(docker inspect --format '{{if .State.Health}}{{.State.Health.Status}}{{else}}{{.State.Status}}{{end}}' shendu 2>/dev/null || true)"
-  [ "$health" = "healthy" ] && break
-  case "$health" in
+  state_info="$(docker inspect --format '{{.State.Status}}|{{if .State.Health}}{{.State.Health.Status}}{{end}}' shendu 2>/dev/null || true)"
+  case "$state_info" in
+    *'|'*)
+      container_status="${state_info%%|*}"
+      health="${state_info#*|}"
+      [ -n "$health" ] || health="$container_status"
+      ;;
+    *)
+      container_status="$state_info"
+      health="$state_info"
+      ;;
+  esac
+  if [ "$health" = "healthy" ] && { [ "$container_status" = "running" ] || [ "$container_status" = "healthy" ]; }; then
+    break
+  fi
+  case "$container_status" in
     exited|dead)
       docker compose logs --tail=160 shendu >&2 || true
       fail "shendu 容器已经退出。上方是错误日志。"
@@ -168,11 +209,15 @@ done
 
 if [ "$health" != "healthy" ]; then
   docker compose logs --tail=160 shendu >&2 || true
-  fail "等待 120 秒后应用仍未通过健康检查（当前状态：${health:-未知}）。"
+  fail "等待 120 秒后应用仍未通过健康检查（当前状态：${container_status:-未知}/${health:-未知}）。"
 fi
 
 echo "应用健康检查通过，正在启动完整服务并清理旧容器……"
 docker compose up -d --remove-orphans
+if [ "$caddyfile_changed" = "1" ]; then
+  echo "检测到 Caddyfile 已更新，正在重建 Caddy 以加载新配置……"
+  docker compose up -d --force-recreate --no-deps caddy
+fi
 docker compose exec -T shendu node scripts/smoke-ui.mjs http://127.0.0.1:3000 || fail '应用前端资源检查失败，请查看日志。'
 docker compose ps
 

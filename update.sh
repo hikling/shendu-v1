@@ -12,12 +12,18 @@ fail() {
 requested_repo="${1:-$(dirname -- "$0")}"
 repo_dir="$(CDPATH= cd -- "$requested_repo" && pwd)" || fail '找不到项目目录。'
 app_dir="$repo_dir/shendu"
-[ -d "$repo_dir/.git" ] && [ -f "$app_dir/scripts/update.sh" ] || fail '请在完整的慎独 Git 克隆中运行。'
+[ ! -L "$repo_dir" ] && [ -d "$repo_dir/.git" ] && [ ! -L "$repo_dir/.git" ] && [ -f "$app_dir/scripts/update.sh" ] || fail '请在完整的慎独 Git 克隆中运行。'
+if [ -r /proc/self/status ] && LC_ALL=C awk '/^Uid:/ { exit ($2 != 0) }' /proc/self/status 2>/dev/null; then
+  [ "$(stat -c %u "$repo_dir")" -eq 0 ] && [ "$(stat -c %u "$repo_dir/.git")" -eq 0 ] || fail '项目仓库或其 .git 目录不属于 root，已拒绝更新。'
+fi
 origin="$(git -c safe.directory="$repo_dir" -C "$repo_dir" config --get remote.origin.url)" || fail '无法确认仓库来源。'
 case "$origin" in
   https://github.com/hikling/shendu-v1|https://github.com/hikling/shendu-v1.git|git@github.com:hikling/shendu-v1.git) ;;
   *) fail '项目来源必须为 hikling/shendu-v1。' ;;
 esac
+if [ -d "$app_dir/.host-runtime/.update.lock" ] || [ -d "$app_dir/tmp/.update.lock" ]; then
+  fail '检测到另一个安装或更新任务正在运行；请等待结束后重试。'
+fi
 command -v docker >/dev/null 2>&1 || fail '没有找到 Docker。'
 docker_root="$(docker info --format '{{.DockerRootDir}}')" || fail '无法连接 Docker。'
 [ -d "$docker_root" ] || fail '无法检查 Docker 存储目录。'

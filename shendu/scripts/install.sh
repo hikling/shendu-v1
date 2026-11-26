@@ -96,7 +96,11 @@ else
   valid_domain "$domain" || fail '域名无效。请输入实际域名，不带协议、路径或端口，也不要使用示例域名。'
 fi
 
-lock_dir="$app_dir/tmp/.update.lock"
+host_runtime_dir="$app_dir/.host-runtime"
+[ ! -L "$host_runtime_dir" ] || fail '.host-runtime 不能是符号链接。'
+mkdir -p "$host_runtime_dir"
+chmod 700 "$host_runtime_dir"
+lock_dir="$host_runtime_dir/.update.lock"
 temp_env=''
 lock_acquired=0
 cleanup() {
@@ -105,7 +109,6 @@ cleanup() {
 }
 trap cleanup EXIT
 trap 'exit 130' HUP INT TERM
-mkdir -p tmp
 mkdir "$lock_dir" 2>/dev/null || fail '另一个安装或更新任务正在运行；请等待它结束后重试。'
 lock_acquired=1
 
@@ -117,19 +120,20 @@ if ! command -v docker >/dev/null 2>&1; then
 fi
 if [ -n "$packages" ]; then
   echo '正在安装缺少的系统依赖……'
-  apt-get update || fail '无法更新系统软件源。'
+  ( umask 022; apt-get update ) || fail '无法更新系统软件源。'
   # Intentional splitting: packages contains only the fixed names above.
-  apt-get install -y $packages || fail '无法安装系统依赖。'
+  ( umask 022; apt-get install -y $packages ) || fail '无法安装系统依赖。'
 fi
 
 if ! command -v docker >/dev/null 2>&1; then
   echo '正在从 Docker 官方源安装 Engine 与 Compose……'
   install -m 0755 -d /etc/apt/keyrings /etc/apt/sources.list.d
-  curl -fsSL https://download.docker.com/linux/debian/gpg -o /etc/apt/keyrings/docker.asc || fail '无法下载 Docker 官方签名密钥。'
+  curl --proto '=https' --tlsv1.2 -fsSL https://download.docker.com/linux/debian/gpg -o /etc/apt/keyrings/docker.asc || fail '无法下载 Docker 官方签名密钥。'
   chmod a+r /etc/apt/keyrings/docker.asc
-  printf 'deb [arch=%s signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/debian %s stable\n' "$(dpkg --print-architecture)" "$os_codename" > /etc/apt/sources.list.d/docker.list
-  apt-get update || fail '无法更新 Docker 软件源。'
-  apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin || fail '无法安装 Docker；已有冲突软件包需按 Docker 官方指南处理，安装器不会自动删除它们。'
+  ( umask 022; printf 'deb [arch=%s signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/debian %s stable\n' "$(dpkg --print-architecture)" "$os_codename" > /etc/apt/sources.list.d/docker.list )
+  chmod 0644 /etc/apt/sources.list.d/docker.list
+  ( umask 022; apt-get update ) || fail '无法更新 Docker 软件源。'
+  ( umask 022; apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin ) || fail '无法安装 Docker；已有冲突软件包需按 Docker 官方指南处理，安装器不会自动删除它们。'
 fi
 docker compose version >/dev/null 2>&1 || fail '已有 Docker 缺少 Compose v2 插件，请按 Docker 官方指南安装 docker-compose-plugin 后重试。'
 if ! docker info >/dev/null 2>&1; then
@@ -142,7 +146,10 @@ if [ ! -f .env ]; then
   key=$(openssl rand -hex 32) || fail '无法生成随机主密钥。'
   valid_key "$key" || fail '随机主密钥生成失败。'
   temp_env=$(mktemp "$app_dir/.env.install.XXXXXX")
-  sed -e "s/^SHENDU_DOMAIN=.*/SHENDU_DOMAIN=$domain/" -e "s/replace_with_64_hex_characters/$key/" .env.example > "$temp_env"
+  SHENDU_NEW_DOMAIN="$domain" SHENDU_NEW_KEY="$key" LC_ALL=C awk '
+    /^SHENDU_DOMAIN=/ { print "SHENDU_DOMAIN=" ENVIRON["SHENDU_NEW_DOMAIN"]; next }
+    { gsub(/replace_with_64_hex_characters/, ENVIRON["SHENDU_NEW_KEY"]); print }
+  ' .env.example > "$temp_env"
   chmod 600 "$temp_env"
   # Atomic publication without overwriting a concurrently created configuration.
   ln -T -- "$temp_env" .env || fail '.env 已被其他进程创建；请核对原配置后重试。'
@@ -168,4 +175,4 @@ docker compose exec -T shendu node scripts/smoke-ui.mjs http://127.0.0.1:3000 ||
 docker compose ps
 printf '\n安装完成，访问：https://%s\n' "$domain"
 echo 'Caddy 会自动申请 HTTPS 证书；若暂时无法访问，请检查域名解析和 TCP 80/443 端口。'
-printf '以后更新：sh %s/shendu/scripts/update.sh %s\n' "$repo_dir" "$repo_dir"
+printf '以后更新：sh %s/update.sh\n' "$repo_dir"

@@ -144,6 +144,13 @@ class UpdateLauncherTests(unittest.TestCase):
         result, _ = self.run_launcher(QA_UPDATER_EXIT="7")
         self.assertEqual(result.returncode, 7)
 
+    def test_active_update_lock_stops_before_image_pruning(self):
+        (self.repo / "shendu/.host-runtime/.update.lock").mkdir(parents=True)
+        images = "\n".join(self.image(index) for index in range(4))
+        result, commands = self.run_launcher(QA_IMAGES=images)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertEqual(commands, "")
+
 
 if __name__ == "__main__":
     unittest.main()

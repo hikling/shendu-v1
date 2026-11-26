@@ -1,4 +1,4 @@
-import {parseMoneyExpression} from './finance-domain.js?v=1.0.0-finance-receipts1';
+import {parseMoneyExpression} from './finance-domain.js?v=1.0.0-audit1';
 
 const array=value=>Array.isArray(value)?value:[];
 const validAmount=value=>Number.isSafeInteger(value)&&value>0;
@@ -36,11 +36,8 @@ export function matchFinanceReceipts(rows=[],result={}){
       amountReceipts.get(amount).push(receipt.id);
     }
   }
-  for(const row of sourceRows){
+  sourceRows.forEach(row=>{
     if(validAmount(row?.amountCents))rowCounts.set(row.amountCents,(rowCounts.get(row.amountCents)||0)+1);
-  }
-  sourceRows.forEach((row,index)=>{
-    if(manualForRow[index].length)return;
     for(const id of amountReceipts.get(row?.amountCents)||[])receiptCounts.set(id,(receiptCounts.get(id)||0)+1);
   });
 

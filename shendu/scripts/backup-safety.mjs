@@ -31,6 +31,8 @@ export function atomicWriteFile(file, contents) {
 // A syntactically valid key is not enough: authenticate every encrypted field in the snapshot.
 export function validateSnapshotDatabase(db, keyHex) {
   if (!/^[a-f0-9]{64}$/i.test(keyHex)) throw new Error('快照缺少有效的内部数据加密密钥');
+  db.exec('PRAGMA trusted_schema = OFF;');
+  if (db.prepare("SELECT 1 FROM sqlite_master WHERE type IN ('trigger','view')").get()) throw new Error('快照数据库包含不支持的触发器或视图');
   const integrity = db.prepare('PRAGMA integrity_check').all();
   if (integrity.length !== 1 || Object.values(integrity[0])[0] !== 'ok' || db.prepare('PRAGMA foreign_key_check').all().length) throw new Error('快照数据库完整性校验失败');
   const key = Buffer.from(keyHex, 'hex');
@@ -42,12 +44,20 @@ export function validateSnapshotDatabase(db, keyHex) {
       return;
     }
     const parts = value.split('.'); if (parts.length !== 4) throw new Error('快照中的加密字段格式无效');
-    const decipher = createDecipheriv('aes-256-gcm', key, Buffer.from(parts[1], 'base64url'), { authTagLength: 16 });
+    const iv = Buffer.from(parts[1], 'base64url');
+    if (iv.length !== 12) throw new Error('快照中的加密字段 IV 无效');
+    const decipher = createDecipheriv('aes-256-gcm', key, iv, { authTagLength: 16 });
     decipher.setAAD(Buffer.from(`shendu:data:v1:${scope}`)); decipher.setAuthTag(Buffer.from(parts[2], 'base64url'));
     JSON.parse(Buffer.concat([decipher.update(Buffer.from(parts[3], 'base64url')), decipher.final()]).toString('utf8'));
   };
-  const credential = value => {
-    const x = JSON.parse(value), decipher = createDecipheriv('aes-256-gcm', key, Buffer.from(x.iv, 'base64'), { authTagLength: 16 });
+  const credential = (value, expectedScope = null) => {
+    const x = JSON.parse(value), iv = Buffer.from(x.iv, 'base64');
+    if (iv.length !== 12) throw new Error('快照中的凭据 IV 无效');
+    const decipher = createDecipheriv('aes-256-gcm', key, iv, { authTagLength: 16 });
+    if (x.v === 2) {
+      if (!expectedScope) throw new Error('快照中的凭据作用域缺失');
+      decipher.setAAD(Buffer.from(`shendu:secret:v2:${expectedScope}`));
+    }
     decipher.setAuthTag(Buffer.from(x.tag, 'base64'));
     JSON.parse(Buffer.concat([decipher.update(Buffer.from(x.data, 'base64')), decipher.final()]).toString('utf8'));
   };
@@ -56,10 +66,15 @@ export function validateSnapshotDatabase(db, keyHex) {
       for (const field of ['title', 'data', 'verification']) if (field !== 'verification' || row[field] !== null) content(row[field], `record:${row.user_id}:${row.id}:${field}`);
     }
     for (const row of db.prepare('SELECT user_id,key,value FROM user_settings').all()) {
-      if (row.key === 'backup_secret') { const wrapped = JSON.parse(row.value); if (wrapped) credential(wrapped); }
+      if (row.key === 'backup_secret') { const wrapped = JSON.parse(row.value); if (wrapped) credential(wrapped, `backup-secret:${row.user_id}`); }
       else content(row.value, `setting:${row.user_id}:${row.key}`);
     }
-    for (const row of db.prepare('SELECT encrypted_config FROM backup_targets').all()) credential(row.encrypted_config);
+    const targetCols = new Set(db.prepare('PRAGMA table_info(backup_targets)').all().map(col => col.name));
+    if (targetCols.has('id') && targetCols.has('user_id')) {
+      for (const row of db.prepare('SELECT id,user_id,encrypted_config FROM backup_targets').all()) credential(row.encrypted_config, `backup-target:${row.user_id}:${row.id}`);
+    } else {
+      for (const row of db.prepare('SELECT encrypted_config FROM backup_targets').all()) credential(row.encrypted_config);
+    }
     // Older snapshots predate finance. Authenticate every field when its table
     // exists, using the same owner/identity AAD as the live ledger and receipts.
     for (const [table, identity, scope, suffix] of [

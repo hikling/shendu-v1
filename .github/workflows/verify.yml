@@ -17,8 +17,8 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      - name: Test compact GitHub handover
-        run: python -B -m unittest discover -s tests -p 'test_package_handover.py' -v
+      - name: Test compact GitHub handover and update launcher
+        run: python -B -m unittest discover -s tests -p 'test_*.py' -v
       - name: Package and verify link-only handover
         run: |
           python -B scripts/package-handover.py --output-dir "$RUNNER_TEMP/handover"
@@ -44,6 +44,7 @@ jobs:
       - name: Verify isolated installation scenarios
         run: |
           sh -n install.sh
+          sh -n update.sh
           sh -n shendu/scripts/install.sh
           sh -n shendu/scripts/update.sh
           sh -n shendu/scripts/prepare-image.sh
@@ -78,6 +79,7 @@ jobs:
             if (services.shendu.environment.SHENDU_TRUST_PROXY !== "true") throw new Error("Private Compose upstream must explicitly trust Caddy");
             if (services.shendu.build || services.shendu.pull_policy !== "never") throw new Error("Default server deployment must use a prepared image without building");
           '
+          docker run --rm -e SHENDU_DOMAIN=review.example.com -v "$PWD/Caddyfile:/etc/caddy/Caddyfile:ro" caddy:2-alpine caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile
       - name: Build cached native image
         uses: docker/build-push-action@v6
         with:
@@ -145,17 +147,35 @@ jobs:
           TREE: ${{ needs.verify.outputs.tree }}
           COMMIT: ${{ github.sha }}
         run: |
-          tag="deploy-$TREE"
-          if ! gh release view "$tag" >/dev/null 2>&1; then
-            gh release create "$tag" --target "$COMMIT" --title "Deployment $TREE" --notes 'Verified Linux amd64/arm64 images. Deployment scripts verify SHA-256 and source identity before use.' --latest
-          fi
-          existing=$(gh release view "$tag" --json assets --jq '.assets[].name')
-          for asset in deploy-images/*; do
-            name=$(basename "$asset")
-            if ! printf '%s\n' "$existing" | grep -Fx "$name" >/dev/null; then
-              gh release upload "$tag" "$asset"
-            fi
+          set -euo pipefail
+          expected="shendu-linux-amd64.tar.gz shendu-linux-amd64.tar.gz.sha256 shendu-linux-arm64.tar.gz shendu-linux-arm64.tar.gz.sha256"
+          for name in $expected; do
+            test -s "deploy-images/$name"
           done
+          (cd deploy-images && sha256sum -c shendu-linux-amd64.tar.gz.sha256 shendu-linux-arm64.tar.gz.sha256)
+          tag="deploy-$TREE"
+          notes='Verified Linux amd64/arm64 images. Deployment scripts verify SHA-256 and source identity before use.'
+          if gh release view "$tag" >/dev/null 2>&1; then
+            is_draft=$(gh release view "$tag" --json isDraft --jq '.isDraft')
+            if [ "$is_draft" = "true" ]; then
+              gh release delete "$tag" --yes --cleanup-tag
+            else
+              existing=$(gh release view "$tag" --json assets --jq '.assets[].name')
+              for name in $expected; do
+                if ! printf '%s\n' "$existing" | grep -Fx "$name" >/dev/null; then
+                  gh release upload "$tag" "deploy-images/$name"
+                fi
+              done
+              exit 0
+            fi
+          fi
+          gh release create "$tag" \
+            deploy-images/shendu-linux-amd64.tar.gz \
+            deploy-images/shendu-linux-amd64.tar.gz.sha256 \
+            deploy-images/shendu-linux-arm64.tar.gz \
+            deploy-images/shendu-linux-arm64.tar.gz.sha256 \
+            --draft --target "$COMMIT" --title "Deployment $TREE" --notes "$notes"
+          gh release edit "$tag" --draft=false --latest
 
   download-smoke:
     if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main'

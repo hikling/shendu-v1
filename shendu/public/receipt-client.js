@@ -1,4 +1,4 @@
-import {parseReceiptText} from './finance-domain.js?v=1.0.0-finance-receipts1';
+import {parseReceiptText} from './finance-domain.js?v=1.0.0-audit1';
 
 export const RECEIPT_LIMITS=Object.freeze({files:20,fileBytes:20*1024*1024,pixels:32*1024*1024,imageBytes:2*1024*1024,thumbBytes:96*1024});
 let worker=null,workerPromise=null,workerGeneration=0,activeBatch=null,ocrProgress=()=>{};
@@ -22,10 +22,12 @@ export function inspectReceiptImage(buffer,type){
     let offset=2;
     while(offset+4<=Math.min(bytes.length,512*1024)){
       if(bytes[offset]!==255)break;
-      while(bytes[offset+1]===255)offset++;
+      while(offset+1<bytes.length&&bytes[offset+1]===255)offset++;
+      if(offset+2>bytes.length)break;
       const marker=bytes[offset+1];offset+=2;
       if(marker===217||marker===218)break;
-      if(marker===216||(marker>=208&&marker<=215))continue;
+      if(marker===1||marker===216||(marker>=208&&marker<=215))continue;
+      if(offset+2>bytes.length)break;
       const length=view.getUint16(offset);if(length<2||offset+length>bytes.length)break;
       if(marker>=192&&marker<=207&&![196,200,204].includes(marker)&&length>=7)return dimensions(view.getUint16(offset+5),view.getUint16(offset+3));
       offset+=length;
@@ -155,7 +157,7 @@ async function uploadVariants(compressed,{request,isCurrent,signal,config}){
   try{
   assertCurrent(isCurrent,signal);
   const variants=Object.fromEntries(['image','thumb'].map(name=>[name,{bytes:compressed[name].bytes,type:compressed[name].type,sha256:compressed[name].sha256}]));
-  const ticket=await request('/api/finance/receipts/prepare',{method:'POST',body:{id:crypto.randomUUID(),hash:compressed.hash,variants}},isCurrent);assertCurrent(isCurrent,signal);
+  const ticket=await request('/api/finance/receipts/prepare',{method:'POST',body:{id:crypto.randomUUID(),hash:compressed.hash,variants},signal},isCurrent);assertCurrent(isCurrent,signal);
   if(typeof ticket.receiptId!=='string'||!ticket.receiptId)throw new Error('凭证保存响应不完整，请重试');
   if(ticket.ready)return {id:ticket.receiptId,duplicate:ticket.duplicate===true,inUse:ticket.inUse===true};
   if(ticket.uploadVersion!==undefined&&(!Number.isSafeInteger(ticket.uploadVersion)||ticket.uploadVersion<1))throw Object.assign(new Error('上传版本无效'),{code:'finance_receipt_stale_upload'});
@@ -169,7 +171,7 @@ async function uploadVariants(compressed,{request,isCurrent,signal,config}){
     }catch(caught){if(signal?.aborted)throw cancelled();throw caught.name==='AbortError'?Object.assign(new Error('图片上传超时'),{receiptTimeout:true}):caught}
     finally{clearTimeout(deadline);signal?.removeEventListener('abort',stop)}
   }
-  stage='complete';assertCurrent(isCurrent,signal);const completed=await request(`/api/finance/receipts/${encodeURIComponent(ticket.receiptId)}/complete`,{method:'POST',body:ticket.uploadVersion===undefined?{}:{uploadVersion:ticket.uploadVersion}},isCurrent);assertCurrent(isCurrent,signal);
+  stage='complete';assertCurrent(isCurrent,signal);const completed=await request(`/api/finance/receipts/${encodeURIComponent(ticket.receiptId)}/complete`,{method:'POST',body:ticket.uploadVersion===undefined?{}:{uploadVersion:ticket.uploadVersion},signal},isCurrent);assertCurrent(isCurrent,signal);
   if(!completed?.receipt?.ready)throw new Error('图片尚未通过存储校验，请重试');
   return {id:ticket.receiptId,duplicate:false};
   }catch(caught){
@@ -198,7 +200,7 @@ function storageTarget(raw,config){
   try{
     target=new URL(raw);expected=new URL(config.endpoint);
     if(!config.pathStyle)expected.hostname=`${config.bucket}.${expected.hostname}`;
-    const parts=[...expected.pathname.split('/').filter(Boolean).map(decodeURIComponent),...(config.pathStyle?[config.bucket]:[]),...String(config.directory||'').split('/').filter(Boolean),'receipts'];
+    const parts=[...expected.pathname.split('/').filter(Boolean).map(part=>{try{return decodeURIComponent(part)}catch{return part}}),...(config.pathStyle?[config.bucket]:[]),...String(config.directory||'').split('/').filter(Boolean),'receipts'];
     const prefix='/'+parts.map(part=>encodeURIComponent(part).replace(/[!'()*]/g,char=>'%'+char.charCodeAt(0).toString(16).toUpperCase())).join('/')+'/';
     if(target.protocol!=='https:'||target.origin!==expected.origin||target.username||target.password||target.hash||!target.pathname.startsWith(prefix))throw new Error();
   }catch{throw Object.assign(new Error('图片地址与私有存储设置不一致，请重新读取设置'),{receiptTargetMismatch:true})}
@@ -209,11 +211,11 @@ export async function processReceiptFiles(files,{request,isCurrent=()=>true,onPr
   const list=Array.from(files||[]);if(!list.length)return {candidates:[],receiptIds:[],warnings:[]};
   if(list.length>RECEIPT_LIMITS.files)throw new Error('每次最多处理20张截图，请分批选择');
   if(activeBatch)throw new Error('上一批截图还在处理中，请稍候');list.forEach(validateReceiptFile);
-  const owner=new AbortController();activeBatch=owner;const abort=()=>owner.abort();signal?.addEventListener('abort',abort,{once:true});if(signal?.aborted)owner.abort();
-  const current=()=>activeBatch===owner&&!owner.signal.aborted&&isCurrent(),candidates=[],receiptIds=[],usedReceiptIds=new Set(),warnings=[];
+  const owner=new AbortController();activeBatch=owner;const abort=()=>{owner.abort();if(activeBatch===owner)activeBatch=null};signal?.addEventListener('abort',abort,{once:true});if(signal?.aborted)abort();
+  const current=()=>!owner.signal.aborted&&isCurrent(),candidates=[],receiptIds=[],usedReceiptIds=new Set(),warnings=[];
   try{
     let configured=null;
-    if(upload&&request){const result=await request('/api/finance/storage',{},current);assertCurrent(current,owner.signal);configured=result.configured?result.config:null;if(!configured)warnings.push('尚未配置凭证存储：本次图片不会长期保存，请先配置图片存储，再上传并确认支出。')}
+    if(upload&&request){const result=await request('/api/finance/storage',{signal:owner.signal},current);assertCurrent(current,owner.signal);configured=result.configured?result.config:null;if(!configured)warnings.push('尚未配置凭证存储：本次图片不会长期保存，请先配置图片存储，再上传并确认支出。')}
     for(let index=0;index<list.length;index++){
       assertCurrent(current,owner.signal);onProgress({stage:'compressing',message:`正在压缩第${index+1}/${list.length}张截图`,index,total:list.length});
       const compressed=await compressReceipt(list[index],{isCurrent:current,signal:owner.signal});

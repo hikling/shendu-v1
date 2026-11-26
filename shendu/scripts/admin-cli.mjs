@@ -13,11 +13,15 @@ const masterKeyPath = resolve(process.env.SHENDU_MASTER_KEY_PATH || join(dataDir
 // Resolve existing parent aliases as well as files: output directories can be links.
 function canonicalPath(file) {
   const absolute = resolve(file);
-  const path = existsSync(absolute) ? realpathSync(absolute) : join(canonicalPath(dirname(absolute)), basename(absolute));
+  if (existsSync(absolute)) {
+    const path = realpathSync(absolute);
+    return process.platform === 'win32' ? path.toLowerCase() : path;
+  }
+  const parent = dirname(absolute);
+  const path = parent === absolute ? absolute : join(canonicalPath(parent), basename(absolute));
   return process.platform === 'win32' ? path.toLowerCase() : path;
 }
 if(canonicalPath(database)===canonicalPath(masterKeyPath))throw new Error('数据库与内部密钥不能使用同一个文件路径');
-const password=passwordArgument==='--password-file'&&passwordFileArgument?readFileSync(resolve(passwordFileArgument),'utf8').replace(/\r?\n$/,''):passwordArgument;
 
 function usage() {
   console.log('创建整站加密快照：node scripts/admin-cli.mjs snapshot ./backups/site.shendu-db --password-file ./password.txt');
@@ -25,7 +29,15 @@ function usage() {
   console.log('恢复：            node scripts/admin-cli.mjs restore ./backups/site.shendu-db --password-file ./password.txt');
   process.exit(1);
 }
-if (!['snapshot','migration','restore'].includes(command) || !output || !password || password.length < 15) usage();
+let password;
+if (passwordArgument === '--password-file') {
+  if (!passwordFileArgument || process.argv.length > 6) usage();
+  password = readFileSync(resolve(passwordFileArgument), 'utf8').replace(/\r?\n$/, '');
+} else {
+  if (passwordFileArgument !== undefined) usage();
+  password = passwordArgument;
+}
+if (!['snapshot','migration','restore'].includes(command) || !output || !password || password.length < 15 || password.length > 256) usage();
 
 function seal(payload, kind) {
   const clear=Buffer.from(JSON.stringify(payload));
@@ -47,17 +59,18 @@ if (command === 'snapshot' || command === 'migration') {
   const protectedFiles=[database,`${database}-wal`,`${database}-shm`,masterKeyPath,...(passwordArgument==='--password-file'?[resolve(passwordFileArgument)]:[])];
   if(protectedFiles.some(file=>canonicalPath(file)===canonicalPath(output)))throw new Error('备份输出不能覆盖正在使用的数据库、SQLite 边车文件、内部密钥或密码文件');
   if (!existsSync(database)) throw new Error('找不到数据库，请先启动慎独');
-  const temp=join(dataDir,`.snapshot-${process.pid}.db`);let snapshotDb;
+  const temp=join(dataDir,`.snapshot-${randomUUID()}.db`);let snapshotDb;
   try {
-    snapshotDb=new DatabaseSync(database);snapshotDb.exec(`VACUUM INTO '${temp.replaceAll("'","''")}'`);snapshotDb.close();snapshotDb=null;
+    snapshotDb=new DatabaseSync(database);snapshotDb.exec('PRAGMA busy_timeout=5000;');snapshotDb.exec(`VACUUM INTO '${temp.replaceAll("'","''")}'`);snapshotDb.close();snapshotDb=null;
     const persistedMasterKey=existsSync(masterKeyPath)?readFileSync(masterKeyPath,'utf8').trim():String(process.env.SHENDU_MASTER_KEY||'').trim();
     if(!/^[a-f0-9]{64}$/i.test(persistedMasterKey))throw new Error('找不到有效的 64 位内部数据加密密钥，已停止创建快照');
-    const check=new DatabaseSync(temp);let schemaVersion;try{validateSnapshotDatabase(check,persistedMasterKey);schemaVersion=Number(check.prepare("SELECT value FROM schema_meta WHERE key='schema_version'").get()?.value||0)}finally{check.close()}
+    const check=new DatabaseSync(temp);let schemaVersion;try{check.exec('PRAGMA trusted_schema = OFF;');validateSnapshotDatabase(check,persistedMasterKey);schemaVersion=Number(check.prepare("SELECT value FROM schema_meta WHERE key='schema_version'").get()?.value||0)}finally{check.close()}
     const payload={createdAt:new Date().toISOString(),schemaVersion,masterKey:persistedMasterKey,database:readFileSync(temp).toString('base64')};
     mkdirSync(dirname(resolve(output)),{recursive:true});atomicWriteFile(resolve(output),seal(payload,command));
     console.log(resolve(output));
   } finally {
-    try{snapshotDb?.close()}catch{}try{if(existsSync(temp))unlinkSync(temp)}catch{}
+    try{snapshotDb?.close()}catch{}
+    for(const candidate of [temp,`${temp}-wal`,`${temp}-shm`,`${temp}-journal`])try{if(existsSync(candidate))unlinkSync(candidate)}catch{}
   }
 } else {
   const payload=open(readFileSync(resolve(output)));mkdirSync(dataDir,{recursive:true});
@@ -68,14 +81,14 @@ if (command === 'snapshot' || command === 'migration') {
   let databaseReplaced=false,keyReplaced=false;
   try{
     writeFileSync(temp,incomingDatabase,{mode:0o600,flag:'wx'});
-    const check=new DatabaseSync(temp);try{validateSnapshotDatabase(check,payload.masterKey);check.exec('DELETE FROM sessions');check.exec('UPDATE users SET session_version=session_version+1');check.exec('PRAGMA wal_checkpoint(TRUNCATE)')}finally{check.close()}
+    const check=new DatabaseSync(temp);try{check.exec('PRAGMA trusted_schema = OFF;');validateSnapshotDatabase(check,payload.masterKey);check.exec('DELETE FROM sessions');check.exec('UPDATE users SET session_version=session_version+1');check.exec('PRAGMA wal_checkpoint(TRUNCATE)')}finally{check.close()}
     mkdirSync(dirname(masterKeyPath),{recursive:true});atomicWriteFile(tempKey,`${payload.masterKey}\n`);
     if(hadDatabase){const current=new DatabaseSync(database);try{const result=current.prepare('PRAGMA wal_checkpoint(TRUNCATE)').get();if(result.busy)throw new Error('数据库仍被占用，请先停止应用再恢复')}finally{current.close()}copyFileSync(database,`${database}.before-restore`);chmodSync(`${database}.before-restore`,0o600)}
     if(hadKey){copyFileSync(masterKeyPath,`${masterKeyPath}.before-restore`);chmodSync(`${masterKeyPath}.before-restore`,0o600)}
     for(const suffix of ['-wal','-shm'])try{unlinkSync(`${database}${suffix}`)}catch(e){if(e.code!=='ENOENT')throw e}
     renameSync(temp,database);databaseReplaced=true;renameSync(tempKey,masterKeyPath);keyReplaced=true;chmodSync(database,0o600);chmodSync(masterKeyPath,0o600);
   }catch(error){
-    try{if(existsSync(temp))unlinkSync(temp)}catch{}try{if(existsSync(tempKey))unlinkSync(tempKey)}catch{}
+    for(const candidate of [temp,`${temp}-wal`,`${temp}-shm`,`${temp}-journal`,tempKey])try{if(existsSync(candidate))unlinkSync(candidate)}catch{}
     const rollbackErrors=[];
     try{if(databaseReplaced){if(hadDatabase)copyFileSync(`${database}.before-restore`,database);else unlinkSync(database)}}catch(e){rollbackErrors.push(e)}
     try{if(keyReplaced){if(hadKey)copyFileSync(`${masterKeyPath}.before-restore`,masterKeyPath);else unlinkSync(masterKeyPath)}}catch(e){rollbackErrors.push(e)}

@@ -6,7 +6,13 @@ script_dir="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
 app_dir="$(CDPATH= cd -- "$script_dir/.." && pwd)"
 out_dir="${1:-$app_dir/backups}"
 reason="${2:-manual}"
-password_file="${SHENDU_SNAPSHOT_PASSWORD_FILE:-$app_dir/data/server-backup.password}"
+if [ -n "${SHENDU_SNAPSHOT_PASSWORD_FILE:-}" ]; then
+  password_file="$SHENDU_SNAPSHOT_PASSWORD_FILE"
+elif [ -e "$app_dir/data/server-backup.password" ] || [ -L "$app_dir/data/server-backup.password" ]; then
+  password_file="$app_dir/data/server-backup.password"
+else
+  password_file="$app_dir/.secrets/server-backup.password"
+fi
 password_temporary=""
 password_host_file=""
 host_temp=""
@@ -26,7 +32,14 @@ case "$reason" in
   *) echo "备份类型只能是 manual 或 pre-update" >&2; exit 1 ;;
 esac
 
-mkdir -p "$app_dir/data" "$app_dir/tmp" "$out_dir" "$(dirname -- "$password_file")"
+[ ! -L "$app_dir/tmp" ] || { echo "应用 tmp 目录不能是符号链接" >&2; exit 1; }
+[ ! -L "$password_file" ] || { echo "整站备份密码文件不能是符号链接" >&2; exit 1; }
+password_dir="$(dirname -- "$password_file")"
+[ ! -L "$password_dir" ] || { echo "整站备份密码目录不能是符号链接" >&2; exit 1; }
+mkdir -p "$app_dir/data" "$app_dir/tmp" "$out_dir" "$password_dir"
+if [ "$password_dir" = "$app_dir/.secrets" ]; then
+  chmod 700 "$password_dir"
+fi
 out_dir="$(CDPATH= cd -- "$out_dir" && pwd -P)"
 snapshot_tmp_dir="$(CDPATH= cd -- "$app_dir/tmp" && pwd -P)"
 [ "$out_dir" != "$snapshot_tmp_dir" ] || { echo "备份输出目录不能使用应用的 tmp 临时目录" >&2; exit 1; }
@@ -43,14 +56,14 @@ else
     if ln -T -- "$password_temporary" "$password_file" 2>/dev/null; then
       echo "已生成服务器整站备份密码文件：$password_file" >&2
       echo "请把该密码文件另存到服务器之外；恢复整站快照时必须使用。" >&2
-    elif [ ! -f "$password_file" ]; then
+    elif [ -L "$password_file" ] || [ ! -f "$password_file" ]; then
       echo "无法保存服务器整站备份密码，备份已停止" >&2
       exit 1
     fi
     rm -f -- "$password_temporary"
     password_temporary=""
   fi
-  [ -f "$password_file" ] || { echo "整站备份密码文件不可用，备份已停止" >&2; exit 1; }
+  [ ! -L "$password_file" ] && [ -f "$password_file" ] || { echo "整站备份密码文件不可用，备份已停止" >&2; exit 1; }
   chmod 600 "$password_file"
   backup_password="$(cat "$password_file")"
 fi
@@ -77,11 +90,16 @@ chmod 600 "$password_host_file"
 cd "$app_dir"
 docker compose config >/dev/null
 if ! docker compose exec -T -u root shendu node scripts/admin-cli.mjs snapshot "$container_file" --password-file "$password_container_file"; then
+  running_shendu="$(docker compose ps -q --status running shendu 2>/dev/null || true)"
+  if [ -n "$running_shendu" ]; then
+    echo "运行中的应用容器快照失败，为避免并发访问数据库，已停止备份。" >&2
+    exit 1
+  fi
   echo "运行中的应用容器不可用，正在使用临时容器创建整站快照……" >&2
   docker compose run --rm --no-deps shendu node scripts/admin-cli.mjs snapshot "$container_file" --password-file "$password_container_file"
 fi
 
-[ -s "$host_temp" ] || { echo "整站快照没有生成，备份已停止" >&2; exit 1; }
+[ ! -L "$host_temp" ] && [ -f "$host_temp" ] && [ -s "$host_temp" ] || { echo "整站快照没有生成，备份已停止" >&2; exit 1; }
 output_staged="$(mktemp "$out_dir/.snapshot-output.XXXXXX")"
 install -m 600 "$host_temp" "$output_staged"
 # Expose only a complete file on the destination filesystem, without replacing

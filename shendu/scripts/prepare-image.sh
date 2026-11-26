@@ -46,24 +46,28 @@ if image_matches; then
 else
   case "${SHENDU_BUILD_FROM_SOURCE:-0}" in
     1)
+      [ -z "$(git_app status --porcelain -- shendu)" ] || fail '应用源码目录存在未跟踪或未提交文件，源码构建已停止。'
       echo '已明确选择源码构建；服务器将安装依赖并编译，耗时取决于配置与网络。'
       docker build --build-arg "SHENDU_SOURCE_TREE=$source_tree" -t "$image" . || fail '源码构建失败，原容器未替换。'
       ;;
     0)
       command -v curl >/dev/null 2>&1 || fail '需要 curl 下载预构建镜像。'
       command -v sha256sum >/dev/null 2>&1 || fail '需要 sha256sum 校验镜像。'
-      mkdir -p "$app_dir/tmp"
-      temporary="$(mktemp -d "$app_dir/tmp/.deploy-image.XXXXXX")"
+      host_runtime_dir="$app_dir/.host-runtime"
+      [ ! -L "$host_runtime_dir" ] || fail '.host-runtime 不能是符号链接。'
+      mkdir -p "$host_runtime_dir"
+      chmod 700 "$host_runtime_dir"
+      temporary="$(mktemp -d "$host_runtime_dir/.deploy-image.XXXXXX")"
       archive="shendu-linux-$arch.tar.gz"
       url="https://github.com/hikling/shendu-v1/releases/download/deploy-$source_tree/$archive"
       printf '获取已通过 CI 的 %s 镜像（无需 npm 安装或前端编译）：%.8s\n' "$arch" "$source_tree"
-      if ! curl -fL --retry 2 --connect-timeout 10 --max-time 60 --silent --show-error "$url.sha256" -o "$temporary/checksum"; then
+      if ! curl --proto '=https' --tlsv1.2 -fL --retry 2 --connect-timeout 10 --max-time 60 --silent --show-error "$url.sha256" -o "$temporary/checksum"; then
         fail '该版本镜像尚未发布或 GitHub 无法访问。请确认 GitHub Actions 发布成功后重试；不会自动切回耗时的本机编译。'
       fi
       expected="$(awk 'NR==1 {print $1}' "$temporary/checksum")"
       [ "${#expected}" -eq 64 ] || fail '镜像校验文件不正确。'
       case "$expected" in *[!0-9a-f]*) fail '镜像校验文件不正确。' ;; esac
-      curl -fL --retry 2 --connect-timeout 10 --max-time 600 --speed-limit 1024 --speed-time 45 --progress-bar "$url" -o "$temporary/$archive" || fail '镜像下载失败；原容器、配置和数据未替换。'
+      curl --proto '=https' --tlsv1.2 -fL --retry 2 --connect-timeout 10 --max-time 600 --speed-limit 1024 --speed-time 45 --progress-bar "$url" -o "$temporary/$archive" || fail '镜像下载失败；原容器、配置和数据未替换。'
       actual="$(sha256sum "$temporary/$archive")"
       [ "${actual%% *}" = "$expected" ] || fail '镜像 SHA-256 校验失败，未加载，也未替换原容器。'
       docker load --input "$temporary/$archive" || fail '镜像加载失败；原容器未替换。'

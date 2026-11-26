@@ -5,7 +5,7 @@
 .finance-period-control button:focus-visible,.finance-day-trigger:focus-visible{outline:2px solid var(--ring,#176b67);outline-offset:2px}
 .finance-period-control button:disabled{opacity:.4}
 .finance-period-control button:not(:disabled):hover,.finance-day-trigger:not(:disabled):hover{background:var(--accent,#e9efea)}
-.finance-period-menu{width:272px;max-width:calc(100vw - 24px);padding:12px;border:1px solid var(--border,#d3dbd1);border-radius:12px;background:var(--popover,#fffefa);box-shadow:0 8px 28px #243d341c;color:var(--popover-foreground,#28473b)}
+.finance-period-menu{z-index:110;width:272px;max-width:calc(100vw - 24px);padding:12px;border:1px solid var(--border,#d3dbd1);border-radius:12px;background:var(--popover,#fffefa);box-shadow:0 8px 28px #243d341c;color:var(--popover-foreground,#28473b)}
 .finance-period-year{display:grid;grid-template-columns:38px 1fr 38px;align-items:center;text-align:center;margin-bottom:10px;font-size:16px;font-weight:600}
 .finance-period-year>[role="menuitem"]{justify-content:center;min-height:38px;border-radius:7px;padding:0}
 .finance-period-months{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}
@@ -14,7 +14,7 @@
 .finance-period-months>[aria-current="date"]{background:var(--primary,#176b67);color:var(--primary-foreground,#fff)}
 .finance-period-menu .finance-period-today{justify-content:center;min-height:38px;padding:7px;border-top:1px solid var(--border,#e5e9df);border-radius:0;margin-top:10px;font-size:14px;color:var(--primary,#176b67)}
 .finance-day-trigger{display:inline-flex;align-items:center;gap:7px;min-height:42px;padding:6px 8px;border:0;border-radius:7px;background:transparent;box-shadow:none;color:var(--foreground,#314b3b);font:500 14px/1.5 "Noto Sans SC","Microsoft YaHei",sans-serif;white-space:nowrap}
-.finance-day-menu{width:max-content;max-width:calc(100vw - 24px);padding:10px;border:1px solid var(--border,#d3dbd1);border-radius:12px;background:var(--popover,#fffefa);color:var(--popover-foreground,#28473b);box-shadow:0 8px 28px #243d341c}
+.finance-day-menu{z-index:110;width:max-content;max-width:calc(100vw - 24px);padding:10px;border:1px solid var(--border,#d3dbd1);border-radius:12px;background:var(--popover,#fffefa);color:var(--popover-foreground,#28473b);box-shadow:0 8px 28px #243d341c}
 .finance-day-menu [data-slot="calendar"]{--cell-size:34px;padding:0}.finance-day-menu .rdp-root{margin:0}.finance-day-menu .rdp-month_caption{height:36px;justify-content:center}.finance-day-menu .rdp-caption_label{font-size:14px}.finance-day-menu button{min-width:0}.finance-day-menu .rdp-month_grid{width:100%}
 .finance-day-menu .rdp-day_button{width:var(--cell-size);height:var(--cell-size);padding:0;border:0;border-radius:7px;background:transparent;color:inherit;box-shadow:none;font:400 14px/1.4 "Noto Sans SC","Microsoft YaHei",sans-serif}
 .finance-day-menu .rdp-day_button:hover{background:var(--accent,#e9efea)}

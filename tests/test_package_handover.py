@@ -242,6 +242,28 @@ class HandoverPackageTests(unittest.TestCase):
                 with self.assertRaises(PACKAGE.PackageError):
                     PACKAGE.verify_archive(path)
 
+    def test_spoofed_zip_header_size_and_non_regular_paths_are_refused(self):
+        archive, _, _ = self.package()
+        with self.assertRaises(PACKAGE.PackageError):
+            PACKAGE.verify_archive(self.output, check_sidecar=False)
+        with zipfile.ZipFile(archive) as zipped:
+            entries = [(info, zipped.read(info)) for info in zipped.infolist()]
+        bomb = self.output / "spoofed-bomb.zip"
+        with zipfile.ZipFile(bomb, "w", compression=zipfile.ZIP_DEFLATED) as out:
+            for info, content in entries:
+                payload = b"A" * (PACKAGE.MAX_SIZE + 4096) if info.filename.endswith("README.md") else content
+                out.writestr(info, payload, compress_type=zipfile.ZIP_DEFLATED)
+        raw = bytearray(bomb.read_bytes())
+        # Spoof uncompressed file_size fields in local header and central directory to 10 bytes.
+        actual_len = (PACKAGE.MAX_SIZE + 4096).to_bytes(4, "little")
+        spoofed_len = (10).to_bytes(4, "little")
+        self.assertIn(actual_len, raw)
+        patched = bytes(raw).replace(actual_len, spoofed_len)
+        bomb.write_bytes(patched)
+        self.checksum(bomb)
+        with self.assertRaises(PACKAGE.PackageError):
+            PACKAGE.verify_archive(bomb)
+
 
 if __name__ == "__main__":
     unittest.main()

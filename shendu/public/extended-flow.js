@@ -1,4 +1,4 @@
-import {reviewQuestions} from './review-schema.js?v=1.0.0-custom1';
+import {reviewQuestions} from './review-schema.js?v=1.0.0-finance1';
 
 // The five longer reviews share one traversal contract. Field labels and
 // required flags still come from QUESTIONS and the saved review template.

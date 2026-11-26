@@ -90,10 +90,24 @@ def _verify_bytes(content):
             if len(infos) != 3 or {item.filename for item in infos} != {PREFIX + name for name in DOCUMENTS | {MANIFEST}}:
                 raise PackageError("Expected only README, version and manifest")
             if sum(item.file_size for item in infos) >= MAX_SIZE or any(
-                    item.file_size < 0 or (item.external_attr >> 16) != MODE or item.flag_bits & 1 for item in infos):
+                    item.file_size < 0 or (item.external_attr >> 16) != MODE or item.flag_bits & 1
+                    or item.compress_type not in (zipfile.ZIP_STORED, zipfile.ZIP_DEFLATED)
+                    for item in infos):
                 raise PackageError("Unsupported or oversized handover entry")
-            manifest = json.loads(archive.read(PREFIX + MANIFEST))
-            version = json.loads(archive.read(PREFIX + "VERSION.json"))
+            members = {}
+            total_read = 0
+            for item in infos:
+                remaining = MAX_SIZE - 1 - total_read
+                if remaining < 0 or item.file_size > remaining:
+                    raise PackageError("Unsupported or oversized handover entry")
+                with archive.open(item) as stream:
+                    chunk = stream.read(remaining + 1)
+                if len(chunk) > remaining or len(chunk) != item.file_size:
+                    raise PackageError("Unsupported or oversized handover entry")
+                total_read += len(chunk)
+                members[item.filename] = chunk
+            manifest = json.loads(members[PREFIX + MANIFEST])
+            version = json.loads(members[PREFIX + "VERSION.json"])
             if not isinstance(manifest, dict) or not isinstance(version, dict):
                 raise PackageError("Invalid handover metadata")
             if type(manifest.get("format_version")) is not int or manifest["format_version"] != 2:
@@ -114,7 +128,7 @@ def _verify_bytes(content):
                 if not isinstance(entry, dict) or not isinstance(entry.get("path"), str) or entry["path"] not in DOCUMENTS or entry["path"] in seen:
                     raise PackageError("Unexpected or duplicate document")
                 seen.add(entry["path"])
-                payload = archive.read(PREFIX + entry["path"])
+                payload = members[PREFIX + entry["path"]]
                 if (type(entry.get("size")) is not int or entry["size"] != len(payload) or not payload
                         or entry.get("mode") != "100644" or entry.get("sha256") != hashlib.sha256(payload).hexdigest()):
                     raise PackageError("Document integrity mismatch")
@@ -128,6 +142,8 @@ def verify_archive(path, check_sidecar=True):
     sidecar = Path(str(path) + ".sha256")
     if path.is_symlink() or sidecar.is_symlink():
         raise PackageError("Linked archive or checksum is not supported")
+    if not path.is_file():
+        raise PackageError("Handover ZIP does not exist or is not a regular file")
     if path.stat().st_size >= MAX_SIZE:
         raise PackageError("Handover ZIP exceeds 20KiB")
     if check_sidecar:

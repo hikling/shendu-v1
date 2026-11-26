@@ -169,7 +169,7 @@ curl -fsS "https://$shendu_domain/healthz"
 | --- | --- |
 | `data/shendu.db` | SQLite 数据库；运行时可能同时存在 `-wal`、`-shm` 文件 |
 | `data/backup-master.key` | 原服务器内部主密钥；与数据库配套保管 |
-| `data/server-backup.password` | 创建服务器整站快照时使用的恢复密码文件 |
+| `.secrets/server-backup.password` | 新建服务器整站快照的恢复密码文件（权限 700/600，不挂载进容器；旧站已有 `data/server-backup.password` 会继续兼容保留） |
 | `backups/*.shendu-db` | 服务器整站加密快照 |
 | `tmp/` | 导入与备份过程中的临时文件 |
 | `.env` | 域名、密钥与容器环境配置 |

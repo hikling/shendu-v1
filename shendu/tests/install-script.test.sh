@@ -90,7 +90,8 @@ case "$*" in
     ;;
   load*) [ "${MOCK_IMAGE_LOAD_FAIL:-0}" != 1 ] || exit 1; : > "$MOCK_CASE/image-loaded" ;;
   build*) [ "${MOCK_BUILD_FAIL:-0}" != 1 ] || exit 1; : > "$MOCK_CASE/image-loaded" ;;
-  inspect*) printf 'healthy\n' ;;
+  inspect*) printf '%s\n' "${MOCK_CONTAINER_STATE:-running|healthy}" ;;
+  'compose ps -q --status running shendu') [ "${MOCK_CONTAINER_RUNNING:-0}" != 1 ] || printf 'running-shendu\n' ;;
   'compose config'*) [ "${MOCK_CONFIG_FAIL:-0}" != 1 ] ;;
   'compose build'*) [ "${MOCK_BUILD_FAIL:-0}" != 1 ] ;;
   'compose pull'*) [ "${MOCK_PULL_FAIL:-0}" != 1 ] ;;
@@ -102,7 +103,7 @@ MOCK
 cat > "$suite_dir/templates/ln" <<'MOCK'
 #!/bin/sh
 for destination do :; done
-if [ "${MOCK_PASSWORD_RACE:-0}" = 1 ] && [ "$destination" = "$MOCK_FIXTURE/shendu/data/server-backup.password" ]; then
+if [ "${MOCK_PASSWORD_RACE:-0}" = 1 ] && [ "$destination" = "$MOCK_FIXTURE/shendu/.secrets/server-backup.password" ]; then
   printf '%s\n' cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc > "$destination"
 fi
 exec "$real_ln" "$@"
@@ -190,7 +191,7 @@ new_case() {
   cp "$suite_dir/templates/"* "$MOCK_BIN/"
   : > "$MOCK_LOG"
   unset MOCK_UID MOCK_OS MOCK_OS_VERSION MOCK_APT_FAIL MOCK_COMPOSE_BAD MOCK_DAEMON_STOPPED MOCK_CONFIG_FAIL MOCK_BUILD_FAIL MOCK_PULL_FAIL MOCK_HEALTH_FAIL MOCK_SMOKE_FAIL MOCK_OPENSSL_FAIL MOCK_DOWNLOAD_FAIL MOCK_CLONE_FAIL MOCK_ORIGIN MOCK_BRANCH MOCK_DIRTY MOCK_PASSWORD_RACE MOCK_SNAPSHOT_FAIL MOCK_SNAPSHOT_EXEC_FAIL MOCK_INSTALL_PARTIAL_FAIL SHENDU_SNAPSHOT_PASSWORD SHENDU_SNAPSHOT_PASSWORD_FILE
-  unset MOCK_IMAGE_CACHED MOCK_IMAGE_LOAD_FAIL MOCK_CHECKSUM_BAD MOCK_IMAGE_BYTES_BAD MOCK_IMAGE_META_BAD MOCK_PLATFORM SHENDU_BUILD_FROM_SOURCE SHENDU_UPDATE_GIT_ONLY
+  unset MOCK_IMAGE_CACHED MOCK_IMAGE_LOAD_FAIL MOCK_CHECKSUM_BAD MOCK_IMAGE_BYTES_BAD MOCK_IMAGE_META_BAD MOCK_PLATFORM SHENDU_BUILD_FROM_SOURCE SHENDU_UPDATE_GIT_ONLY MOCK_CONTAINER_STATE MOCK_CONTAINER_RUNNING
   unset SHENDU_BACKUP_BEFORE_UPDATE
   # Redirect only system package-source paths in the copied scripts; OS detection
   # is supplied by the fake cat command. All actual installer logic stays intact.
@@ -491,44 +492,60 @@ pass 'unsupported OS stops before server changes'
 
 new_case
 run_snapshot || fail 'fresh server snapshot failed'
-[ -s "$app_dir/data/server-backup.password" ] || fail 'snapshot password was not created'
-cmp "$app_dir/data/server-backup.password" "$MOCK_CASE/password-used" || fail 'snapshot used a different password'
-[ "$(stat -c %a "$app_dir/data/server-backup.password")" = 600 ] || fail 'snapshot password permissions are not 600'
+[ -s "$app_dir/.secrets/server-backup.password" ] || fail 'snapshot password was not created in host-only .secrets'
+[ ! -e "$app_dir/data/server-backup.password" ] || fail 'fresh snapshot password should not be placed in container-mounted data/'
+cmp "$app_dir/.secrets/server-backup.password" "$MOCK_CASE/password-used" || fail 'snapshot used a different password'
+[ "$(stat -c %a "$app_dir/.secrets")" = 700 ] || fail '.secrets directory permissions are not 700'
+[ "$(stat -c %a "$app_dir/.secrets/server-backup.password")" = 600 ] || fail 'snapshot password permissions are not 600'
 [ "$(find "$app_dir/backups" -type f | wc -l)" -eq 1 ] || fail 'snapshot was not published'
 [ -z "$(find "$app_dir/tmp" -type f -print -quit)" ] || fail 'temporary snapshot or password remains'
-pass 'snapshot creates a private password, publishes output and cleans secret temporary files'
+pass 'snapshot creates a host-only private password, publishes output and cleans secret temporary files'
 
 new_case
 mkdir -p "$app_dir/data"
 printf '  password with spaces\nand newline  \r\n' > "$app_dir/data/server-backup.password"
 cp "$app_dir/data/server-backup.password" "$MOCK_CASE/password-before"
-run_snapshot || fail 'existing multiline snapshot password failed'
+run_snapshot || fail 'existing multiline legacy snapshot password failed'
 cmp "$app_dir/data/server-backup.password" "$MOCK_CASE/password-before" || fail 'original snapshot password changed'
 cmp "$MOCK_CASE/password-used" "$MOCK_CASE/password-before" || fail 'snapshot password bytes were normalized'
 assert_not_logged 'openssl'
-pass 'snapshot uses original password-file bytes, preserving whitespace and line endings'
+pass 'snapshot reuses legacy data/server-backup.password bytes, preserving whitespace and line endings'
+
+new_case
+mkdir -p "$app_dir/data"
+printf 'secret-target-password\n' > "$MOCK_CASE/symlink-target"
+ln -s "$MOCK_CASE/symlink-target" "$app_dir/data/server-backup.password"
+if run_snapshot; then fail 'symlinked snapshot password was accepted'; fi
+assert_not_logged 'snapshot /app/tmp/'
+pass 'snapshot rejects symlinked password files before executing Docker'
 
 new_case
 MOCK_PASSWORD_RACE=1; export MOCK_PASSWORD_RACE
 run_snapshot || fail 'concurrent password publication failed'
-grep -Fx cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc "$app_dir/data/server-backup.password" >/dev/null || fail 'concurrent winning password was overwritten'
-cmp "$app_dir/data/server-backup.password" "$MOCK_CASE/password-used" || fail 'snapshot ignored concurrently published password'
+grep -Fx cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc "$app_dir/.secrets/server-backup.password" >/dev/null || fail 'concurrent winning password was overwritten'
+cmp "$app_dir/.secrets/server-backup.password" "$MOCK_CASE/password-used" || fail 'snapshot ignored concurrently published password'
 pass 'concurrent first snapshots share the winning password instead of overwriting it'
 
 new_case
 MOCK_SNAPSHOT_EXEC_FAIL=1; export MOCK_SNAPSHOT_EXEC_FAIL
 run_snapshot || fail 'snapshot temporary-container fallback failed'
 assert_logged 'compose run --rm --no-deps shendu'
-cmp "$app_dir/data/server-backup.password" "$MOCK_CASE/password-used" || fail 'fallback used a different password'
+cmp "$app_dir/.secrets/server-backup.password" "$MOCK_CASE/password-used" || fail 'fallback used a different password'
 [ -z "$(find "$app_dir/tmp" -type f -print -quit)" ] || fail 'fallback left secret temporary files'
-pass 'snapshot falls back to a temporary container with the same password'
+pass 'snapshot falls back to a temporary container when the running container is absent'
+
+new_case
+MOCK_SNAPSHOT_EXEC_FAIL=1; MOCK_CONTAINER_RUNNING=1; export MOCK_SNAPSHOT_EXEC_FAIL MOCK_CONTAINER_RUNNING
+if run_snapshot; then fail 'snapshot unexpectedly succeeded while running container exec failed'; fi
+assert_not_logged 'compose run --rm --no-deps shendu'
+pass 'snapshot does not launch a concurrent temporary container when shendu is running'
 
 new_case
 MOCK_SNAPSHOT_FAIL=1; export MOCK_SNAPSHOT_FAIL
 if run_snapshot; then fail 'failed snapshot unexpectedly succeeded'; fi
 [ -z "$(find "$app_dir/backups" -type f -print -quit)" ] || fail 'failed snapshot published output'
 [ -z "$(find "$app_dir/tmp" -type f -print -quit)" ] || fail 'failed snapshot left secret temporary files'
-[ -s "$app_dir/data/server-backup.password" ] || fail 'failure deleted recovery password'
+[ -s "$app_dir/.secrets/server-backup.password" ] || fail 'failure deleted recovery password'
 pass 'snapshot failure preserves recovery password and publishes no partial output'
 
 new_case
@@ -559,7 +576,7 @@ assert_not_logged 'snapshot'
 assert_not_logged 'fetch --prune'
 assert_not_logged 'docker'
 cmp "$app_dir/.env" "$MOCK_CASE/env-before" || fail 'rejected origin changed configuration'
-[ ! -d "$app_dir/tmp/.update.lock" ] || fail 'rejected origin left an update lock'
+[ ! -d "$app_dir/.host-runtime/.update.lock" ] && [ ! -d "$app_dir/tmp/.update.lock" ] || fail 'rejected origin left an update lock'
 pass 'updater rejects unrelated repository before backup, fetch or Docker'
 
 new_case
@@ -567,7 +584,7 @@ mkdir -p "$MOCK_FIXTURE/.git" "$app_dir/data"
 existing_env
 printf '%s\n' bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb > "$app_dir/data/backup-master.key"
 run_update || fail 'update backup delegation failed'
-cmp "$app_dir/data/server-backup.password" "$MOCK_CASE/password-used" || fail 'update did not use shared snapshot password'
+cmp "$app_dir/.secrets/server-backup.password" "$MOCK_CASE/password-used" || fail 'update did not use shared snapshot password'
 assert_logged 'fetch --prune origin main'
 [ "$(find "$app_dir/backups" -type f | wc -l)" -eq 1 ] || fail 'update did not preserve a snapshot'
 pass 'update delegates to the shared snapshot path before fetching code'
@@ -597,7 +614,7 @@ for terminal_input in '["y\n"]' '[" Y \n"]' '["\t y\t\r\n"]' '["yEs\n"]'; do
   fetch_line="$(grep -n 'fetch --prune origin main' "$MOCK_LOG" | head -n 1 | cut -d: -f1)"
   [ "$snapshot_line" -lt "$fetch_line" ] || fail 'Git fetched before the confirmed snapshot'
   cmp "$app_dir/.env" "$MOCK_CASE/env-before" || fail 'terminal choice changed config'
-  [ ! -d "$app_dir/tmp/.update.lock" ] || fail 'successful terminal update left its lock'
+  [ ! -d "$app_dir/.host-runtime/.update.lock" ] && [ ! -d "$app_dir/tmp/.update.lock" ] || fail 'successful terminal update left its lock'
   pass "terminal explicit yes accepts its case and surrounding whitespace: $terminal_input"
 done
 
@@ -634,7 +651,7 @@ for terminal_input in '[null]' '["maybe\n",null]'; do
   assert_not_logged 'fetch --prune'
   assert_not_logged 'compose up'
   cmp "$app_dir/.env" "$MOCK_CASE/env-before" || fail 'terminal EOF changed config'
-  [ ! -d "$app_dir/tmp/.update.lock" ] || fail 'terminal EOF left its lock'
+  [ ! -d "$app_dir/.host-runtime/.update.lock" ] && [ ! -d "$app_dir/tmp/.update.lock" ] || fail 'terminal EOF left its lock'
   pass 'terminal EOF aborts before snapshot, Git fetch or container changes'
 done
 
@@ -647,7 +664,7 @@ if run_terminal_update '[" y \r\n"]'; then fail 'terminal update continued after
 assert_logged 'snapshot /app/tmp/'
 assert_not_logged 'fetch --prune'
 assert_not_logged 'compose up'
-[ ! -d "$app_dir/tmp/.update.lock" ] || fail 'failed terminal backup left its update lock'
+[ ! -d "$app_dir/.host-runtime/.update.lock" ] && [ ! -d "$app_dir/tmp/.update.lock" ] || fail 'failed terminal backup left its update lock'
 pass 'normalized terminal yes still aborts when the required snapshot fails'
 
 for backup_choice in ' y ' 'YeS' '1'; do
@@ -671,7 +688,7 @@ for backup_choice in 'maybe' 'y n' 'yes please'; do
   assert_not_logged 'snapshot /app/tmp/'
   assert_not_logged 'fetch --prune'
   assert_not_logged 'compose up'
-  [ ! -d "$app_dir/tmp/.update.lock" ] || fail 'invalid environment choice left its lock'
+  [ ! -d "$app_dir/.host-runtime/.update.lock" ] && [ ! -d "$app_dir/tmp/.update.lock" ] || fail 'invalid environment choice left its lock'
   pass 'invalid configured confirmation fails before Git or container changes'
 done
 
@@ -717,7 +734,7 @@ for failure in DOWNLOAD_FAIL CHECKSUM_BAD IMAGE_BYTES_BAD IMAGE_LOAD_FAIL IMAGE_
   assert_not_logged 'docker build'
   assert_not_logged 'compose up'
   case "$failure" in DOWNLOAD_FAIL|CHECKSUM_BAD|IMAGE_BYTES_BAD) assert_not_logged 'docker load' ;; esac
-  [ -z "$(find "$app_dir/tmp" -type f -print -quit 2>/dev/null)" ] || fail 'failed image left partial download'
+  [ -z "$(find "$app_dir/tmp" "$app_dir/.host-runtime" -type f -print -quit 2>/dev/null)" ] || fail 'failed image left partial download'
   pass "image $failure preserves active selection and cleans downloads without build fallback"
 done
 
@@ -784,5 +801,14 @@ assert_not_logged 'compose up'
 assert_not_logged 'docker build'
 cmp "$app_dir/.env" "$MOCK_CASE/env-before" || fail 'failed update changed config'
 pass 'corrupt update image stops before replacing any running container'
+
+new_case
+mkdir -p "$MOCK_FIXTURE/.git" "$app_dir/data"
+existing_env
+printf 'original key\n' > "$app_dir/data/backup-master.key"
+MOCK_CONTAINER_STATE='exited|unhealthy'; export MOCK_CONTAINER_STATE
+if run_full_update; then fail 'exited container unexpectedly passed update'; fi
+assert_output 'shendu 容器已经退出'
+pass 'exited container fast-fails update even when Health metadata is present'
 
 printf 'Passed %s isolated installation scenarios.\n' "$case_number"

@@ -24,16 +24,19 @@ case "$repo_dir" in /*) ;; *) fail '安装目录必须是绝对路径。' ;; esa
 
 if ! command -v git >/dev/null 2>&1 || [ ! -s /etc/ssl/certs/ca-certificates.crt ]; then
   echo '正在安装 Git 与 HTTPS 证书依赖……'
-  apt-get update || fail '无法更新系统软件源。'
-  apt-get install -y git ca-certificates || fail '无法安装 Git 与证书依赖。'
+  ( umask 022; apt-get update ) || fail '无法更新系统软件源。'
+  ( umask 022; apt-get install -y git ca-certificates ) || fail '无法安装 Git 与证书依赖。'
 fi
 
 git_in_repo() {
   git -c safe.directory="$repo_dir" -c core.fileMode=false -C "$repo_dir" "$@"
 }
 
-if [ -e "$repo_dir" ]; then
-  [ -d "$repo_dir/.git" ] || fail "$repo_dir 已存在且不是项目 Git 克隆；为保护原有文件，未覆盖。"
+if [ -e "$repo_dir" ] || [ -L "$repo_dir" ]; then
+  [ ! -L "$repo_dir" ] && [ -d "$repo_dir/.git" ] && [ ! -L "$repo_dir/.git" ] || fail "$repo_dir 已存在且不是项目 Git 克隆；为保护原有文件，未覆盖。"
+  if [ -r /proc/self/status ] && LC_ALL=C awk '/^Uid:/ { exit ($2 != 0) }' /proc/self/status 2>/dev/null; then
+    [ "$(stat -c %u "$repo_dir")" -eq 0 ] && [ "$(stat -c %u "$repo_dir/.git")" -eq 0 ] || fail "$repo_dir 或其 .git 目录不属于 root，已拒绝操作。"
+  fi
   origin=$(git_in_repo config --get remote.origin.url) || fail '无法确认现有目录的仓库来源。'
   case "$origin" in
     https://github.com/hikling/shendu-v1|https://github.com/hikling/shendu-v1.git|git@github.com:hikling/shendu-v1.git) ;;

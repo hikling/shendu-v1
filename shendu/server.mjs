@@ -150,27 +150,36 @@ const encryptDataWithKey = (value, key, scope) => {
 const decryptDataWithKey = (value, key, scope) => {
   const parts = String(value || '').split('.');
   if (parts.length !== 4 || `${parts[0]}.` !== DATA_ENVELOPE_PREFIX) throw new Error('加密数据格式不正确');
-  const decipher = createDecipheriv('aes-256-gcm', key, Buffer.from(parts[1], 'base64url'), { authTagLength: 16 });
+  const iv = Buffer.from(parts[1], 'base64url');
+  if (iv.length !== 12) throw new Error('加密数据格式不正确');
+  const decipher = createDecipheriv('aes-256-gcm', key, iv, { authTagLength: 16 });
   decipher.setAAD(Buffer.from(`shendu:data:v1:${scope}`));
   decipher.setAuthTag(Buffer.from(parts[2], 'base64url'));
   return JSON.parse(Buffer.concat([decipher.update(Buffer.from(parts[3], 'base64url')), decipher.final()]).toString('utf8'));
 };
 const parseMasterKey = value => /^[a-f0-9]{64}$/i.test(String(value || '').trim()) ? Buffer.from(String(value).trim(), 'hex') : null;
-const decryptSecretWithKey = (value, key) => {
+const decryptSecretWithKey = (value, key, expectedScope = null) => {
   const x = JSON.parse(value);
-  const decipher = createDecipheriv('aes-256-gcm', key, Buffer.from(x.iv, 'base64'), { authTagLength: 16 });
+  const iv = Buffer.from(x.iv, 'base64');
+  if (iv.length !== 12) throw new Error('加密凭据格式不正确');
+  const decipher = createDecipheriv('aes-256-gcm', key, iv, { authTagLength: 16 });
+  if (x.v === 2) {
+    if (!expectedScope) throw new Error('加密凭据作用域缺失');
+    decipher.setAAD(Buffer.from(`shendu:secret:v2:${expectedScope}`));
+  }
   decipher.setAuthTag(Buffer.from(x.tag, 'base64'));
   return JSON.parse(Buffer.concat([decipher.update(Buffer.from(x.data, 'base64')), decipher.final()]).toString('utf8'));
 };
 const encryptedCredentialRows = () => {
   const rows = [];
-  for (const row of db.prepare(`SELECT value FROM user_settings WHERE key='backup_secret'`).all()) {
+  for (const row of db.prepare(`SELECT user_id,value FROM user_settings WHERE key='backup_secret'`).all()) {
+    const scope = dataScope('backup-secret', row.user_id);
     try {
       const wrapped = JSON.parse(row.value);
-      if (typeof wrapped === 'string' && wrapped) rows.push(wrapped);
-    } catch { rows.push(row.value); }
+      if (typeof wrapped === 'string' && wrapped) rows.push({ value: wrapped, scope });
+    } catch { rows.push({ value: row.value, scope }); }
   }
-  for (const row of db.prepare(`SELECT encrypted_config FROM backup_targets`).all()) if (row.encrypted_config) rows.push(row.encrypted_config);
+  for (const row of db.prepare(`SELECT id,user_id,encrypted_config FROM backup_targets`).all()) if (row.encrypted_config) rows.push({ value: row.encrypted_config, scope: dataScope('backup-target', row.user_id, row.id) });
   return rows;
 };
 const encryptedContentRows = () => {
@@ -207,8 +216,8 @@ const initialiseMasterKey = () => {
     .filter(Boolean)
     .filter((key, index, all) => all.findIndex(candidate => candidate.equals(key)) === index);
   if (encryptedRows.length || encryptedContent.length) {
-    masterKey = candidates.find(key => encryptedRows.every(value => {
-      try { decryptSecretWithKey(value, key); return true; } catch { return false; }
+    masterKey = candidates.find(key => encryptedRows.every(item => {
+      try { decryptSecretWithKey(item.value, key, item.scope); return true; } catch { return false; }
     }) && encryptedContent.every(item => {
       try { decryptDataWithKey(item.value, key, item.scope); return true; } catch { return false; }
     })) || null;
@@ -292,10 +301,28 @@ const setSessionCookie = (res, token, maxAge = 2592000) => {
   res.setHeader('Set-Cookie', `shendu_session=${encodeURIComponent(token)}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${maxAge}${secure}`);
 };
 const readBody = (req, limit = 2 * 1024 * 1024) => new Promise((resolveBody, reject) => {
-  const chunks = []; let size = 0, rejected=false;
-  req.on('data', chunk => { size += chunk.length; if (size > limit) { if(!rejected){rejected=true;reject(Object.assign(new Error('请求内容过大'),{status:413,code:'payload_too_large'}))} } else if(!rejected)chunks.push(chunk); });
-  req.on('end', () => {if(!rejected)resolveBody(Buffer.concat(chunks))});
-  req.on('error', reject);
+  const declared = Number(req.headers['content-length']);
+  if (Number.isFinite(declared) && declared > limit) {
+    req.pause();
+    return reject(Object.assign(new Error('请求内容过大'), { status: 413, code: 'payload_too_large' }));
+  }
+  const chunks = []; let size = 0, rejected = false;
+  const onData = chunk => {
+    if (rejected) return;
+    size += chunk.length;
+    if (size > limit) {
+      rejected = true;
+      chunks.length = 0;
+      req.off('data', onData);
+      req.pause();
+      reject(Object.assign(new Error('请求内容过大'), { status: 413, code: 'payload_too_large' }));
+      return;
+    }
+    chunks.push(chunk);
+  };
+  req.on('data', onData);
+  req.on('end', () => { if (!rejected) resolveBody(Buffer.concat(chunks)); });
+  req.on('error', err => { if (!rejected) { rejected = true; chunks.length = 0; reject(err); } });
 });
 const readJson = async (req, limit) => {
   if (!/^application\/json(?:\s*;|\s*$)/i.test(String(req.headers['content-type'] || ''))) {
@@ -316,6 +343,7 @@ const hashPassword = (password) => {
 const DUMMY_PASSWORD_HASH = hashPassword(randomBytes(32).toString('base64url'));
 const verifyPassword = (password, stored) => {
   try {
+    if (typeof password !== 'string' || password.length > 256) return false;
     const [, n, salt64, hash64] = stored.split('$');
     const expected = Buffer.from(hash64, 'base64');
     const actual = scryptSync(password, Buffer.from(salt64, 'base64'), expected.length, { N: Number(n), r: 8, p: 1, maxmem: 64 * 1024 * 1024 });
@@ -334,14 +362,15 @@ const decryptData = (value, scope) => {
     throw Object.assign(new Error('服务器无法解密现有数据，请恢复正确的 backup-master.key。'), { status: 503, code: 'data_key_mismatch' });
   }
 };
-const encryptSecret = (value) => {
+const encryptSecret = (value, scope = null) => {
   const key = requireMasterKey(); const iv = randomBytes(12); const cipher = createCipheriv('aes-256-gcm', key, iv);
+  if (scope) cipher.setAAD(Buffer.from(`shendu:secret:v2:${scope}`));
   const encrypted = Buffer.concat([cipher.update(JSON.stringify(value)), cipher.final()]);
-  return JSON.stringify({ iv: iv.toString('base64'), tag: cipher.getAuthTag().toString('base64'), data: encrypted.toString('base64') });
+  return JSON.stringify({ ...(scope ? { v: 2 } : {}), iv: iv.toString('base64'), tag: cipher.getAuthTag().toString('base64'), data: encrypted.toString('base64') });
 };
-const decryptSecret = (value) => {
+const decryptSecret = (value, scope = null) => {
   const key = requireMasterKey();
-  try { return decryptSecretWithKey(value, key); }
+  try { return decryptSecretWithKey(value, key, scope); }
   catch { throw Object.assign(new Error('服务器无法读取旧的备份配置，请恢复原 backup-master.key 或重新设置备份密码。'), { status: 503, code: 'backup_key_mismatch' }); }
 };
 const cleanUser = (u) => u && ({ id: u.id, username: u.username, displayName: u.display_name, role: u.role, status: u.status, createdAt: u.created_at });
@@ -502,6 +531,27 @@ function migrateSensitiveData() {
       if(isEncryptedData(row.value))continue;
       updateSetting.run(encryptData(JSON.parse(row.value),dataScope('setting',row.user_id,row.key)),row.user_id,row.key);migrated=true;
     }
+    for (const row of db.prepare(`SELECT user_id,value FROM user_settings WHERE key='backup_secret'`).all()) {
+      const wrapped = JSON.parse(row.value);
+      if (typeof wrapped === 'string' && wrapped) {
+        const envelope = JSON.parse(wrapped);
+        if (envelope.v !== 2) {
+          const scope = dataScope('backup-secret', row.user_id);
+          updateSetting.run(JSON.stringify(encryptSecret(decryptSecret(wrapped, scope), scope)), row.user_id, 'backup_secret');
+          migrated = true;
+        }
+      }
+    }
+    const updateTarget = db.prepare(`UPDATE backup_targets SET encrypted_config=? WHERE id=? AND user_id=?`);
+    for (const row of db.prepare(`SELECT id,user_id,encrypted_config FROM backup_targets`).all()) {
+      if (!row.encrypted_config) continue;
+      const envelope = JSON.parse(row.encrypted_config);
+      if (envelope.v !== 2) {
+        const scope = dataScope('backup-target', row.user_id, row.id);
+        updateTarget.run(encryptSecret(decryptSecret(row.encrypted_config, scope), scope), row.id, row.user_id);
+        migrated = true;
+      }
+    }
     db.prepare(`INSERT INTO schema_meta(key,value) VALUES('schema_version','9') ON CONFLICT(key) DO UPDATE SET value='9'`).run();
     db.prepare(`INSERT INTO schema_meta(key,value) VALUES('data_encryption','AES-256-GCM') ON CONFLICT(key) DO UPDATE SET value='AES-256-GCM'`).run();
     db.exec('COMMIT');
@@ -513,7 +563,7 @@ function migrateSensitiveData() {
 }
 migrateSensitiveData();
 
-const financeReceipts=createFinanceReceipts({db,setting,putSetting,encryptData,decryptData,dataScope,now,readJson,json,error,assertPublicHttps,s3Request,normalizeBackupConfig,sessionUser,withActivity,isReceiptUsed:(userId,id)=>financeLedger.hasUsedReceipt(userId,[id]),recordActivity:appendActivity,getS3Targets:userId=>db.prepare("SELECT id,name FROM backup_targets WHERE user_id=? AND kind='s3' ORDER BY name,id").all(userId),getS3TargetConfig:(userId,id)=>{const target=db.prepare("SELECT encrypted_config FROM backup_targets WHERE user_id=? AND id=? AND kind='s3'").get(userId,id);return target?decryptSecret(target.encrypted_config):null}});
+const financeReceipts=createFinanceReceipts({db,setting,putSetting,encryptData,decryptData,dataScope,now,readJson,json,error,assertPublicHttps,s3Request,normalizeBackupConfig,sessionUser,withActivity,isReceiptUsed:(userId,id)=>financeLedger.hasUsedReceipt(userId,[id]),recordActivity:appendActivity,getS3Targets:userId=>db.prepare("SELECT id,name FROM backup_targets WHERE user_id=? AND kind='s3' ORDER BY name,id").all(userId),getS3TargetConfig:(userId,id)=>{const target=db.prepare("SELECT encrypted_config FROM backup_targets WHERE user_id=? AND id=? AND kind='s3'").get(userId,id);return target?decryptSecret(target.encrypted_config,dataScope('backup-target',userId,id)):null}});
 const financeLedger=createFinanceLedger({db,encryptData,decryptData,dataScope,now,readJson,json,today:todayDate,withActivity,verifyReceipts:(userId,ids)=>ids.every(id=>financeReceipts.hasReadyReceipt(userId,id))});
 
 const rateMap = new Map();
@@ -522,13 +572,27 @@ const clientAddress = req => {
   const candidate=forwarded.at(-1)||String(req.socket.remoteAddress||'').replace(/^::ffff:/,'');
   return net.isIP(candidate)?candidate:'unknown';
 };
-const limited = (req, bucket, max, windowMs) => {
-  const key = `${bucket}:${clientAddress(req)}`; const t = Date.now(); let x = rateMap.get(key);
-  if (!x || x.until < t) x = { count: 0, until: t + windowMs };
-  x.count += 1; rateMap.set(key, x);
-  if(rateMap.size>10000){for(const [entryKey,entry] of rateMap)if(entry.until<t)rateMap.delete(entryKey);while(rateMap.size>8000)rateMap.delete(rateMap.keys().next().value)}
+const recordLimit = (key, max, windowMs) => {
+  const t = Date.now(); let x = rateMap.get(key);
+  if (!x || x.until < t) x = { count: 0, max, until: t + windowMs };
+  else x.max = max;
+  x.count += 1;
+  rateMap.delete(key);
+  rateMap.set(key, x);
+  if (rateMap.size > 10000) {
+    for (const [entryKey, entry] of rateMap) if (entry.until < t) rateMap.delete(entryKey);
+    if (rateMap.size > 8000) {
+      for (const [entryKey, entry] of rateMap) {
+        if (rateMap.size <= 8000) break;
+        if (entryKey !== key && entry.count < entry.max) rateMap.delete(entryKey);
+      }
+    }
+    if (rateMap.size > 10000) return true;
+  }
   return x.count > max;
 };
+const limited = (req, bucket, max, windowMs) => recordLimit(`${bucket}:${clientAddress(req)}`, max, windowMs);
+const limitedUser = (userId, bucket, max, windowMs) => recordLimit(`user:${bucket}:${userId}`, max, windowMs);
 
 function exportPayload(userId) {
   db.exec('BEGIN');
@@ -575,12 +639,8 @@ function createBackupBuffer(userId, password) {
 }
 
 const validTime = value => typeof value === 'string' && Number.isFinite(Date.parse(value));
-function isoWeek(dateValue) {
-  const x = new Date(`${dateValue}T12:00:00Z`); const day=x.getUTCDay()||7; x.setUTCDate(x.getUTCDate()+4-day);
-  const first=new Date(Date.UTC(x.getUTCFullYear(),0,1)); return `${x.getUTCFullYear()}-W${String(Math.ceil((((x-first)/86400000)+1)/7)).padStart(2,'0')}`;
-}
 function legacyPeriod(type, period) {
-  if (type === 'weekly' && /^\d{4}-\d{2}-\d{2}$/.test(period || '')) return isoWeek(period);
+  if (type === 'weekly' && validIsoDate(period)) return isoWeekValue(period);
   if (type === 'monthly' && /^\d{4}-\d{2}/.test(period || '')) return period.slice(0,7);
   if (type === 'yearly' && /^\d{4}/.test(period || '')) return period.slice(0,4);
   return period;
@@ -610,7 +670,7 @@ function legacyReviewToRecord(review, unsupportedFields = null) {
   }
   if(review.type==='decision'&&source.firstStep&&!answers.firstStep)answers.firstStep=[String(source.firstStep)];
   const statusMap={done:'已达标',partial:'部分达标',missed:'未达标',rest:'计划休息'};
-  const metrics=[0,1,2].map(i=>({name:String(source[`metricName${i}`]||`指标 ${i+1}`),target:String(source[`metricTarget${i}`]||''),action:String(source[`metric${i}`]||''),status:statusMap[source[`metricStatus${i}`]]||String(source[`metricStatus${i}`]||'')}));
+  const metrics=[0,1,2].map(i=>{const rawStatus=source[`metricStatus${i}`];return {name:String(source[`metricName${i}`]||`指标 ${i+1}`),target:String(source[`metricTarget${i}`]||''),action:String(source[`metric${i}`]||''),status:Object.hasOwn(statusMap,rawStatus)?statusMap[rawStatus]:String(rawStatus||'')}});
   const verified=review.verified===true, stamp=validTime(review.updatedAt)?new Date(review.updatedAt).toISOString():'1970-01-01T00:00:00.000Z';
   const createdAt=validTime(review.createdAt)?new Date(review.createdAt).toISOString():stamp;
   return {id:safeText(review.id,100)||stableImportId(JSON.stringify(review)),type:review.type,period:legacyPeriod(review.type,review.period),title:safeText(review.title,200),status:verified?'verified':review.status==='completed'?'completed':'draft',version:Math.max(1,Number(review.revision)||1),created_at:createdAt,updated_at:stamp,completed_at:review.status==='completed'||verified?stamp:null,verified_at:verified?stamp:null,verification:verified?{result:safeText(source.outcome,6000),adjustment:safeText(source.lesson,6000),outcome:source.resultQuality==='good'?'好':source.resultQuality==='poor'?'差':null,process:source.processQuality==='good'?'好':source.processQuality==='poor'?'差':null}:null,data:{answers,action:String(source.action||''),ifThen:String(source.ifThen||''),verifyDate:String(review.verificationDate||''),journal:String(source.journal||''),sleep:String(source.sleep||''),energy:String(source.energy||''),risk:String(source.risk||''),metrics}};
@@ -674,24 +734,28 @@ function parseBackupBuffer(buffer, password) {
   const raw=buffer.toString('utf8').trim(), lines=raw.split('\n');
   if(!raw)throw new Error('备份文件为空');
   let first;try{first=JSON.parse(lines[0])}catch{throw new Error('备份文件头无效')}
-  if(first.format==='shendu-v4'||first.format==='shendu-v3')return parseCurrentEnvelope(JSON.parse(raw),password);
+  if(!isPlainObject(first))throw new Error('备份文件头无效');
+  if(first.format==='shendu-v4'||first.format==='shendu-v3'){let full;try{full=JSON.parse(raw)}catch{throw new Error('备份文件格式无效')}return parseCurrentEnvelope(full,password)}
   if(first.format==='shendu-stream-v2')return parseLegacyStream(lines,password);
   if(first.format==='shendu-encrypted-backup')return parseLegacyEnvelope(buffer,password);
   if (lines.length < 3) throw new Error('备份文件不完整');
   const header = first;
-  if (header.format !== 'shendu-v2' || header.iterations !== 600000) throw new Error('不支持的备份格式');
-  const footer = JSON.parse(lines.at(-1));
-  if (!footer.end || footer.count !== header.count || lines.length !== header.count + 2) throw new Error('备份条目缺失或顺序异常');
+  if (header.format !== 'shendu-v2' || header.iterations !== 600000 || !Number.isSafeInteger(header.count) || header.count < 0 || !validBase64(header.salt, 16)) throw new Error('不支持的备份格式');
+  let footer;try{footer=JSON.parse(lines.at(-1))}catch{throw new Error('备份文件尾无效')}
+  if (!isPlainObject(footer) || !footer.end || footer.count !== header.count || lines.length !== header.count + 2 || !validBase64(footer.mac, 32)) throw new Error('备份条目缺失或顺序异常');
   const keyMaterial = pbkdf2Sync(password, Buffer.from(header.salt, 'base64'), 600000, 64, 'sha256');
   const expected = createHmac('sha256', keyMaterial.subarray(32)).update(lines.slice(0,-1).join('\n')).digest();
   const received = Buffer.from(footer.mac, 'base64');
   if (expected.length !== received.length || !timingSafeEqual(expected, received)) throw new Error('密码错误或备份已被篡改');
   const entries = [];
   for (let i = 1; i < lines.length - 1; i += 1) {
-    const x = JSON.parse(lines[i]); if (x.seq !== i - 1) throw new Error('备份条目顺序异常');
-    const decipher = createDecipheriv('aes-256-gcm', keyMaterial.subarray(0,32), Buffer.from(x.iv,'base64'),{authTagLength:16});
-    decipher.setAAD(Buffer.from(`shendu-v2|${x.seq}|${header.count}`)); decipher.setAuthTag(Buffer.from(x.tag,'base64'));
-    entries.push(JSON.parse(Buffer.concat([decipher.update(Buffer.from(x.data,'base64')), decipher.final()]).toString('utf8')));
+    let x;try{x=JSON.parse(lines[i])}catch{throw new Error('备份条目格式无效')}
+    if (!isPlainObject(x) || x.seq !== i - 1 || !validBase64(x.iv, 12) || !validBase64(x.tag, 16) || !validBase64(x.data)) throw new Error('备份条目顺序异常');
+    try {
+      const decipher = createDecipheriv('aes-256-gcm', keyMaterial.subarray(0,32), Buffer.from(x.iv,'base64'),{authTagLength:16});
+      decipher.setAAD(Buffer.from(`shendu-v2|${x.seq}|${header.count}`)); decipher.setAuthTag(Buffer.from(x.tag,'base64'));
+      entries.push(JSON.parse(Buffer.concat([decipher.update(Buffer.from(x.data,'base64')), decipher.final()]).toString('utf8')));
+    } catch { throw new Error('密码错误或备份已被篡改'); }
   }
   return { header, entries };
 }
@@ -735,12 +799,14 @@ function stableImportId(seed) {
   const hex=bytes.toString('hex');
   return `${hex.slice(0,8)}-${hex.slice(8,12)}-${hex.slice(12,16)}-${hex.slice(16,20)}-${hex.slice(20)}`;
 }
-function importedRecordId(userId,sourceId) {
-  const collision=db.prepare(`SELECT user_id FROM records WHERE id=?`).get(sourceId);
-  if(!collision||collision.user_id===userId)return sourceId;
-  const id=stableImportId(`${userId}:${sourceId}`);
-  const mapped=db.prepare(`SELECT user_id FROM records WHERE id=?`).get(id);
-  if(mapped&&mapped.user_id!==userId)throw Object.assign(new Error('导入记录编号冲突'),{code:'backup_id_conflict'});
+function importedRecordId(userId, sourceId, rec = null) {
+  const collision = db.prepare(`SELECT user_id,type,period FROM records WHERE id=?`).get(sourceId);
+  const sameOwnerSlot = collision && collision.user_id === userId && (!rec || (collision.type === rec.type && (rec.type === 'decision' || collision.period === rec.period)));
+  if (!collision || sameOwnerSlot) return sourceId;
+  const seed = rec ? `${userId}:${sourceId}:${rec.type}:${rec.period}` : `${userId}:${sourceId}`;
+  const id = stableImportId(seed);
+  const mapped = db.prepare(`SELECT user_id,type,period FROM records WHERE id=?`).get(id);
+  if (mapped && (mapped.user_id !== userId || (rec && (mapped.type !== rec.type || (rec.type !== 'decision' && mapped.period !== rec.period))))) throw Object.assign(new Error('导入记录编号冲突'), { code: 'backup_id_conflict' });
   return id;
 }
 function assertBackupOwner(user,parsed,sourceUsername='') {
@@ -755,7 +821,7 @@ function backupPreview(parsed,currentUser=null) {
   const counts = parsed.entries.reduce((result, entry) => {
     result[entry.kind] = (result[entry.kind] || 0) + 1;
     return result;
-  }, {});
+  }, Object.create(null));
   const owner=backupOwner(parsed),unsupportedFields=new Set(parsed.unsupportedFields||[]);
   for (const entry of parsed.entries) {
     if (!['profile','stage','theme','record','finance'].includes(entry.kind)) unsupportedFields.add(`entry.${entry.kind}`);
@@ -764,7 +830,7 @@ function backupPreview(parsed,currentUser=null) {
   const conflicts={existing:0,protected:0,newerOrEqualDraft:0,willUpdate:0,willCreate:0,idRemapped:0};
   if (currentUser) for (const rec of prepared.records) {
     const natural=rec.type==='decision'?null:db.prepare(`SELECT id,updated_at,status FROM records WHERE user_id=? AND type=? AND period=?`).get(currentUser.id,rec.type,rec.period);
-    const id=natural?.id||importedRecordId(currentUser.id,rec.id);
+    const id=natural?.id||importedRecordId(currentUser.id,rec.id,rec);
     if(id!==rec.id)conflicts.idRemapped++;
     const existing=natural||db.prepare(`SELECT updated_at,status FROM records WHERE id=? AND user_id=?`).get(id,currentUser.id);
     if (!existing) { conflicts.willCreate++; continue; }
@@ -833,7 +899,7 @@ function prepareBackup(parsed) {
 function getBackupPassword(userId) {
   const wrapped = setting(userId, 'backup_secret');
   if (!wrapped) return null;
-  return decryptSecret(wrapped).password;
+  return decryptSecret(wrapped, dataScope('backup-secret', userId)).password;
 }
 
 function getBackupStatus(userId) {
@@ -841,7 +907,7 @@ function getBackupStatus(userId) {
   if (!wrapped) return { configured: false, available: Boolean(masterKey), error: masterKeyError };
   if (!masterKey) return { configured: false, available: false, error: masterKeyError || '服务器内部备份密钥暂不可用。' };
   try {
-    return { configured: Boolean(decryptSecret(wrapped)?.password), available: true, error: masterKeyError };
+    return { configured: Boolean(decryptSecret(wrapped, dataScope('backup-secret', userId))?.password), available: true, error: masterKeyError };
   } catch {
     return { configured: false, available: true, error: '原备份密码配置无法读取，可重新设置；已有 .shendu 文件仍可用原密码直接恢复。' };
   }
@@ -858,7 +924,7 @@ function normalizeImportedRecord(value) {
   const status=value.status;
   return {
     id:validEntityId(value.id)?value.id:stableImportId(JSON.stringify(value)),type:value.type,period:String(value.period),title:safeText(value.title,200),data:value.data,
-    status,version:Math.max(1,Math.min(1000000,Number(value.version)||1)),verification,created_at:createdAt,updated_at:updatedAt,
+    status,version:Math.max(1,Math.min(1000000,Math.trunc(Number(value.version)||1))),verification,created_at:createdAt,updated_at:updatedAt,
     completed_at:validTime(value.completed_at)?new Date(value.completed_at).toISOString():null,
     verified_at:status==='verified'&&validTime(value.verified_at)?new Date(value.verified_at).toISOString():null
   };
@@ -877,7 +943,7 @@ function applyBackup(userId, parsed, mode) {
       let recordId = rec.id;
       const natural = rec.type==='decision'?null:db.prepare(`SELECT id,updated_at FROM records WHERE user_id=? AND type=? AND period=?`).get(userId,rec.type,rec.period);
       if(natural)recordId=natural.id;
-      else recordId=importedRecordId(userId,recordId);
+      else recordId=importedRecordId(userId,recordId,rec);
       const existing = db.prepare(`SELECT updated_at,status FROM records WHERE id=? AND user_id=?`).get(recordId, userId);
       if (existing && (existing.status!=='draft' || Date.parse(existing.updated_at) >= Date.parse(rec.updated_at || 0))) continue;
       const title=encryptData(safeText(rec.title,200),dataScope('record',userId,recordId,'title'));
@@ -911,13 +977,13 @@ function siteBackupPayload() {
     const settings=db.prepare(`SELECT user_id,key,value,updated_at FROM user_settings WHERE key!='finance_receipt_storage' ORDER BY user_id,key`).all().map(row=>{
       if(row.key==='backup_secret'){
         const wrapped=setting(row.user_id,'backup_secret');
-        return {user_id:row.user_id,key:row.key,value:wrapped?decryptSecret(wrapped):null,updated_at:row.updated_at};
+        return {user_id:row.user_id,key:row.key,value:wrapped?decryptSecret(wrapped,dataScope('backup-secret',row.user_id)):null,updated_at:row.updated_at};
       }
       return {user_id:row.user_id,key:row.key,value:setting(row.user_id,row.key),updated_at:row.updated_at};
     });
     const records=db.prepare(`SELECT * FROM records ORDER BY user_id,updated_at,id`).all().map(recordOut);
     const targets=db.prepare(`SELECT * FROM backup_targets ORDER BY user_id,created_at,id`).all().map(row=>({
-      id:row.id,user_id:row.user_id,name:row.name,kind:row.kind,config:decryptSecret(row.encrypted_config),...normalizeBackupSchedule(row),schedule_anchor_at:row.schedule_anchor_at,last_scheduled_slot:row.last_scheduled_slot,
+      id:row.id,user_id:row.user_id,name:row.name,kind:row.kind,config:decryptSecret(row.encrypted_config,dataScope('backup-target',row.user_id,row.id)),...normalizeBackupSchedule(row),schedule_anchor_at:row.schedule_anchor_at,last_scheduled_slot:row.last_scheduled_slot,
       enabled:Number(row.enabled),last_run_at:row.last_run_at,last_success_at:row.last_success_at,last_error:row.last_error,created_at:row.created_at,updated_at:row.updated_at
     }));
     const runs=db.prepare(`SELECT id,target_id,user_id,status,message,created_at,operation,target_name,target_kind,trigger_kind AS 'trigger' FROM backup_runs ORDER BY created_at,id`).all();
@@ -997,7 +1063,7 @@ function validateSiteBackupPayload(payload) {
   }
   const recordIds=new Set(),recordCounts=new Map();
   for(const [index,record] of payload.records.entries()){
-    const invalid = !isPlainObject(record)?'结构':!userIds.has(record.user_id)?'所属账户':!validStoredRecordId(record.id)?'编号':recordIds.has(record.id)?'重复编号':!validRecordType(record.type)?'类型':!validStoredRecordPeriod(record.period)?'周期':!['draft','completed','verified'].includes(record.status)?'状态':typeof record.title!=='string'?'标题':!isPlainObject(record.data)?'正文':record.verification!==null&&record.verification!==undefined&&!isPlainObject(record.verification)?'验证结果':null;
+    const invalid = !isPlainObject(record)?'结构':!userIds.has(record.user_id)?'所属账户':!validStoredRecordId(record.id)?'编号':recordIds.has(record.id)?'重复编号':!validRecordType(record.type)?'类型':!validStoredRecordPeriod(record.period)?'周期':!['draft','completed','verified'].includes(record.status)?'状态':(record.version!==undefined&&(!Number.isSafeInteger(Number(record.version))||Number(record.version)<1||Number(record.version)>1000000))?'版本':typeof record.title!=='string'?'标题':!isPlainObject(record.data)?'正文':record.verification!==null&&record.verification!==undefined&&!isPlainObject(record.verification)?'验证结果':null;
     if(invalid)throw Object.assign(new Error(`整站备份中的第 ${index+1} 条复盘数据无效（${invalid}）`),{code:'site_backup_invalid_record'});
     recordIds.add(record.id);const count=(recordCounts.get(record.user_id)||0)+1;if(count>MAX_RECORDS_PER_USER)throw new Error(`整站备份中的单个账户不能超过 ${MAX_RECORDS_PER_USER} 条复盘记录`);recordCounts.set(record.user_id,count);
   }
@@ -1035,18 +1101,18 @@ function applySiteBackup(payload) {
     const insertUser=db.prepare(`INSERT INTO users(id,username,display_name,password_hash,role,status,session_version,created_at) VALUES(?,?,?,?,?,?,?,?)`);
     for(const user of payload.users)insertUser.run(user.id,user.username,safeText(user.display_name||user.username,32),user.password_hash,user.role,user.status,Math.max(1,Number(user.session_version)||1),validTime(user.created_at)?user.created_at:now());
     for(const item of payload.settings){
-      if(item.key==='backup_secret'){if(item.value)putSetting(item.user_id,item.key,encryptSecret(item.value));}
+      if(item.key==='backup_secret'){if(item.value)putSetting(item.user_id,item.key,encryptSecret({password:item.value.password,createdAt:validTime(item.value.createdAt)?new Date(item.value.createdAt).toISOString():now()},dataScope('backup-secret',item.user_id)));}
       else putSetting(item.user_id,item.key,item.key==='stage'?normalizeStage(item.value):normalizeTheme(item.value));
       if(validTime(item.updated_at))db.prepare(`UPDATE user_settings SET updated_at=? WHERE user_id=? AND key=?`).run(item.updated_at,item.user_id,item.key);
     }
     const insertRecord=db.prepare(`INSERT INTO records(id,user_id,type,period,title,data,status,version,verification,created_at,updated_at,completed_at,verified_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)`);
     for(const record of payload.records){
       const createdAt=validTime(record.created_at)?record.created_at:now(),updatedAt=validTime(record.updated_at)?record.updated_at:createdAt;
-      insertRecord.run(record.id,record.user_id,record.type,record.period,encryptData(safeText(record.title,200),dataScope('record',record.user_id,record.id,'title')),encryptData(record.data||{},dataScope('record',record.user_id,record.id,'data')),record.status,Math.max(1,Number(record.version)||1),record.verification?encryptData(record.verification,dataScope('record',record.user_id,record.id,'verification')):null,createdAt,updatedAt,validTime(record.completed_at)?record.completed_at:null,validTime(record.verified_at)?record.verified_at:null);
+      insertRecord.run(record.id,record.user_id,record.type,record.period,encryptData(safeText(record.title,200),dataScope('record',record.user_id,record.id,'title')),encryptData(record.data||{},dataScope('record',record.user_id,record.id,'data')),record.status,Math.max(1,Math.min(1000000,Math.trunc(Number(record.version)||1))),record.verification?encryptData(record.verification,dataScope('record',record.user_id,record.id,'verification')):null,createdAt,updatedAt,validTime(record.completed_at)?record.completed_at:null,validTime(record.verified_at)?record.verified_at:null);
     }
     for(const user of payload.users)if(accountRecordBytes(user.id)>MAX_ACCOUNT_CONTENT_BYTES)throw new Error('整站备份中的单个账户内容超过存储上限');
     const insertTarget=db.prepare(`INSERT INTO backup_targets(id,user_id,name,kind,encrypted_config,schedule,schedule_time,schedule_weekday,schedule_anchor_at,last_scheduled_slot,enabled,last_run_at,last_success_at,last_error,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`);
-    for(const target of payload.targets){const plan=normalizeBackupSchedule(target);insertTarget.run(target.id,target.user_id,safeText(target.name,80),target.kind,encryptSecret(target.config),plan.schedule,plan.scheduleTime,plan.scheduleWeekday,validTime(target.schedule_anchor_at)?new Date(target.schedule_anchor_at).toISOString():now(),validTime(target.last_scheduled_slot)?new Date(target.last_scheduled_slot).toISOString():null,target.enabled===0?0:1,validTime(target.last_run_at)?target.last_run_at:null,validTime(target.last_success_at)?target.last_success_at:null,safeText(target.last_error,300)||null,validTime(target.created_at)?target.created_at:now(),validTime(target.updated_at)?target.updated_at:now());}
+    for(const target of payload.targets){const plan=normalizeBackupSchedule(target),cleanConfig=normalizeBackupConfig(target.kind,target.config);insertTarget.run(target.id,target.user_id,safeText(target.name,80),target.kind,encryptSecret(cleanConfig,dataScope('backup-target',target.user_id,target.id)),plan.schedule,plan.scheduleTime,plan.scheduleWeekday,validTime(target.schedule_anchor_at)?new Date(target.schedule_anchor_at).toISOString():now(),validTime(target.last_scheduled_slot)?new Date(target.last_scheduled_slot).toISOString():null,target.enabled===0?0:1,validTime(target.last_run_at)?target.last_run_at:null,validTime(target.last_success_at)?target.last_success_at:null,safeText(target.last_error,300)||null,validTime(target.created_at)?target.created_at:now(),validTime(target.updated_at)?target.updated_at:now());}
     const insertRun=db.prepare(`INSERT INTO backup_runs(id,target_id,user_id,status,message,created_at,operation,target_name,target_kind,trigger_kind) VALUES(?,?,?,?,?,?,?,?,?,?)`);
     for(const run of payload.runs){
       const target=payload.targets.find(target=>target.id===run.target_id),metadata=backupRunMetadata(run,target);
@@ -1064,9 +1130,43 @@ function applySiteBackup(payload) {
   }catch(error){try{db.exec('ROLLBACK')}catch{}throw error}
 }
 
+const parseIpv6Groups = raw => {
+  const clean = String(raw || '').toLowerCase().replace(/^\[|\]$/g, '').split('%')[0];
+  if (!net.isIPv6(clean)) return null;
+  let headStr = clean, tailStr = '';
+  const doubleIndex = clean.indexOf('::');
+  if (doubleIndex >= 0) {
+    if (clean.indexOf('::', doubleIndex + 2) >= 0) return null;
+    headStr = clean.slice(0, doubleIndex);
+    tailStr = clean.slice(doubleIndex + 2);
+  }
+  const parsePart = str => {
+    if (!str) return [];
+    const tokens = str.split(':'), out = [];
+    for (let i = 0; i < tokens.length; i += 1) {
+      const token = tokens[i];
+      if (i === tokens.length - 1 && token.includes('.')) {
+        if (!net.isIPv4(token)) return null;
+        const q = token.split('.').map(Number);
+        out.push((q[0] << 8) | q[1], (q[2] << 8) | q[3]);
+      } else {
+        if (!/^[0-9a-f]{1,4}$/.test(token)) return null;
+        out.push(parseInt(token, 16));
+      }
+    }
+    return out;
+  };
+  const head = parsePart(headStr), tail = parsePart(tailStr);
+  if (!head || !tail) return null;
+  if (doubleIndex < 0) return head.length === 8 ? head : null;
+  const missing = 8 - head.length - tail.length;
+  if (missing < 1) return null;
+  return [...head, ...new Array(missing).fill(0), ...tail];
+};
 const isPrivateIp = ip => {
-  if (net.isIPv4(ip)) {
-    const p = ip.split('.').map(Number);
+  const clean = String(ip || '').trim().replace(/^\[|\]$/g, '').split('%')[0];
+  if (net.isIPv4(clean)) {
+    const p = clean.split('.').map(Number);
     return p[0] === 10 || p[0] === 127 || p[0] === 0 || p[0] >= 224 ||
       (p[0] === 100 && p[1] >= 64 && p[1] <= 127) ||
       (p[0] === 169 && p[1] === 254) ||
@@ -1075,22 +1175,35 @@ const isPrivateIp = ip => {
       (p[0] === 198 && (p[1] === 18 || p[1] === 19 || (p[1] === 51 && p[2] === 100))) ||
       (p[0] === 203 && p[1] === 0 && p[2] === 113);
   }
-  const value=String(ip).toLowerCase();
-  if(value.startsWith('::ffff:')){
-    const mapped=value.slice(7);
-    if(net.isIPv4(mapped))return isPrivateIp(mapped);
-    const match=/^([0-9a-f]{1,4}):([0-9a-f]{1,4})$/.exec(mapped);
-    if(match){const first=parseInt(match[1],16),second=parseInt(match[2],16);return isPrivateIp(`${first>>8}.${first&255}.${second>>8}.${second&255}`)}
-  }
-  return value==='::1'||value==='::'||value.startsWith('fc')||value.startsWith('fd')||/^fe[89abcdef]/.test(value)||value.startsWith('ff')||value.startsWith('64:ff9b:')||value.startsWith('2001:0:')||value.startsWith('2001:db8:')||value.startsWith('2002:');
+  const g = parseIpv6Groups(clean);
+  if (!g) return true; // Fail closed on unparseable/unknown addresses
+  const embeddedIpv4 = (hi, lo) => `${hi >> 8}.${hi & 255}.${lo >> 8}.${lo & 255}`;
+  // ::/96 (includes ::, ::1, and IPv4-compatible ::a.b.c.d)
+  if (g[0] === 0 && g[1] === 0 && g[2] === 0 && g[3] === 0 && g[4] === 0 && g[5] === 0) return true;
+  // ::ffff:0:0/96 (IPv4-mapped)
+  if (g[0] === 0 && g[1] === 0 && g[2] === 0 && g[3] === 0 && g[4] === 0 && g[5] === 0xffff) return isPrivateIp(embeddedIpv4(g[6], g[7]));
+  // ::ffff:0:0:0/96 (IPv4-translated RFC 2765)
+  if (g[0] === 0 && g[1] === 0 && g[2] === 0 && g[3] === 0 && g[4] === 0xffff && g[5] === 0) return true;
+  // 64:ff9b::/96 and 64:ff9b:1::/48 (NAT64)
+  if (g[0] === 0x0064 && g[1] === 0xff9b && ((g[2] === 0 && g[3] === 0 && g[4] === 0 && g[5] === 0) || g[2] === 1)) return true;
+  // 100::/64 (Discard-Only RFC 6666)
+  if (g[0] === 0x0100 && g[1] === 0 && g[2] === 0 && g[3] === 0) return true;
+  // 2001::/32 (Teredo), 2001:2::/48 (Benchmarking), 2001:10::/28 & 2001:20::/28 (ORCHID), 2001:db8::/32 (Documentation)
+  if (g[0] === 0x2001 && (g[1] === 0 || (g[1] === 2 && g[2] === 0) || (g[1] & 0xfff0) === 0x0010 || (g[1] & 0xfff0) === 0x0020 || g[1] === 0x0db8)) return true;
+  // 2002::/16 (6to4)
+  if (g[0] === 0x2002) return true;
+  // fc00::/7 (ULA), fe80::/10 (Link-Local), fec0::/10 (Site-Local), ff00::/8 (Multicast)
+  if ((g[0] & 0xfe00) === 0xfc00 || (g[0] & 0xffc0) === 0xfe80 || (g[0] & 0xffc0) === 0xfec0 || (g[0] & 0xff00) === 0xff00) return true;
+  // Only allow Global Unicast (2000::/3) outside the reserved blocks above
+  return (g[0] & 0xe000) !== 0x2000;
 };
 function endpointUrl(raw,label='地址') {
   let url;try{url=new URL(String(raw||''))}catch{throw new Error(`${label}格式不正确`)}
   if(url.protocol!=='https:')throw new Error(`${label}只允许 HTTPS`);
   if(url.username||url.password)throw new Error(`${label}不能包含账号或密码`);
   if(url.search||url.hash)throw new Error(`${label}不能包含查询参数或片段`);
-  const hostname=url.hostname.toLowerCase(),literal=hostname.replace(/^\[|\]$/g,'');
-  if(['localhost','localhost.localdomain'].includes(hostname)||(net.isIP(literal)&&isPrivateIp(literal)))throw new Error(`${label}不允许本机或内网地址`);
+  const hostname=url.hostname.toLowerCase(),hostNoDot=hostname.replace(/\.+$/,''),literal=hostNoDot.replace(/^\[|\]$/g,'');
+  if(hostNoDot==='localhost'||hostNoDot.endsWith('.localhost')||hostNoDot==='localhost.localdomain'||hostNoDot.endsWith('.localhost.localdomain')||(net.isIP(literal)&&isPrivateIp(literal)))throw new Error(`${label}不允许本机或内网地址`);
   return url;
 }
 function backupDirectory(value) {
@@ -1110,6 +1223,8 @@ function normalizeBackupConfig(kind,value) {
   }
   if(kind==='s3'){
     const endpoint=endpointUrl(value.endpoint,'存储服务地址'),pathStyle=value.pathStyle===true;
+    const literal=endpoint.hostname.replace(/^\[|\]$/g,'');
+    if(!pathStyle&&net.isIP(literal))throw new Error('IP 地址存储服务仅支持路径风格访问');
     const bucket=String(value.bucket||'').trim();
     const bucketPattern=pathStyle?/^[A-Za-z0-9][A-Za-z0-9._-]{1,61}[A-Za-z0-9]$/:/^[a-z0-9][a-z0-9.-]{1,61}[a-z0-9]$/;
     if(!bucketPattern.test(bucket)||bucket.includes('..'))throw new Error('存储桶名称格式不正确');
@@ -1120,7 +1235,13 @@ function normalizeBackupConfig(kind,value) {
 }
 async function assertPublicHttps(raw) {
   const u=endpointUrl(raw);
-  const addresses = await lookup(u.hostname, { all: true });
+  const host=u.hostname.replace(/^\[|\]$/g,'');
+  const ipFamily=net.isIP(host);
+  if(ipFamily){
+    if(isPrivateIp(host))throw new Error('目标解析到了内网或保留地址');
+    return {url:u,addresses:[{address:host,family:ipFamily}]};
+  }
+  const addresses = await lookup(host, { all: true });
   if (!addresses.length || addresses.some(a => isPrivateIp(a.address))) throw new Error('目标解析到了内网或保留地址');
   return {url:u,addresses};
 }
@@ -1129,8 +1250,10 @@ function pinnedHttpsRequest(validated,target,{method='GET',headers={},body=Buffe
     const targetUrl=target instanceof URL?target:new URL(target);
     const allowedHost=targetUrl.hostname===validated.url.hostname||targetUrl.hostname.endsWith(`.${validated.url.hostname}`);
     if(targetUrl.protocol!=='https:'||targetUrl.port!==validated.url.port||!allowedHost)return rejectRequest(new Error('外部备份目标地址校验失败'));
+    const rawHost=targetUrl.hostname.replace(/^\[|\]$/g,'');
+    const isIpHost=typeof net!=='undefined'?Boolean(net.isIP(rawHost)):(/^\d+\.\d+\.\d+\.\d+$/.test(rawHost)||rawHost.includes(':'));
     const requestHeaders={...headers};if(body.length&&!Object.keys(requestHeaders).some(name=>name.toLowerCase()==='content-length'))requestHeaders['Content-Length']=String(body.length);
-    const request=https.request({protocol:'https:',hostname:targetUrl.hostname,port:targetUrl.port||443,path:`${targetUrl.pathname}${targetUrl.search}`,method,headers:requestHeaders,servername:targetUrl.hostname,rejectUnauthorized:true,lookup(_hostname,options,callback){
+    const request=https.request({protocol:'https:',hostname:rawHost,port:targetUrl.port||443,path:`${targetUrl.pathname}${targetUrl.search}`,method,headers:requestHeaders,...(isIpHost?{}:{servername:rawHost}),rejectUnauthorized:true,lookup(_hostname,options,callback){
       const candidates=options?.family?validated.addresses.filter(item=>item.family===options.family):validated.addresses;
       const available=candidates.length?candidates:validated.addresses;
       if(options?.all)return callback(null,available.map(item=>({address:item.address,family:item.family})));
@@ -1150,13 +1273,15 @@ function pinnedHttpsRequest(validated,target,{method='GET',headers={},body=Buffe
 const awsDate = d => d.toISOString().replace(/[:-]|\.\d{3}/g, '');
 async function s3Request(config, key, method, body = Buffer.alloc(0), {maxResponseBytes=1024*1024}={}) {
   if(!Number.isSafeInteger(maxResponseBytes)||maxResponseBytes<1||maxResponseBytes>2*1024*1024)throw new Error('S3 响应读取上限无效');
-  const validated=await assertPublicHttps(config.endpoint),endpoint=validated.url,region=config.region||'auto';
+  const endpoint=typeof endpointUrl==='function'?endpointUrl(config.endpoint,'存储服务地址'):new URL(config.endpoint),region=config.region||'auto';
   const objectPath = `${String(config.directory || 'shendu').replace(/^\/+|\/+$/g,'')}/${key}`;
   let hostname,pathname;
   if(config.pathStyle){hostname=endpoint.hostname;pathname=`${endpoint.pathname.replace(/\/$/,'')}/${config.bucket}/${objectPath}`}
   else{hostname=`${config.bucket}.${endpoint.hostname}`;pathname=`${endpoint.pathname.replace(/\/$/,'')}/${objectPath}`}
   pathname='/'+pathname.split('/').filter(Boolean).map(part=>{let value;try{value=decodeURIComponent(part)}catch{value=part}return encodeURIComponent(value).replace(/[!'()*]/g,char=>'%'+char.charCodeAt(0).toString(16).toUpperCase())}).join('/');
-  const host=`${hostname}${endpoint.port?`:${endpoint.port}`:''}`;
+  const target=new URL(endpoint.href);target.hostname=hostname;target.pathname=pathname;target.search='';target.hash='';
+  const validated=await assertPublicHttps(target.origin);
+  const host=`${target.hostname}${target.port?`:${target.port}`:''}`;
   const stamp = awsDate(new Date()), date = stamp.slice(0,8), payloadHash = createHash('sha256').update(body).digest('hex');
   const headers = { host, 'x-amz-content-sha256': payloadHash, 'x-amz-date': stamp, 'content-type': 'application/octet-stream' };
   if(method==='HEAD'&&!isR2ReceiptStorage(config))headers['x-amz-checksum-mode']='ENABLED';
@@ -1169,7 +1294,6 @@ async function s3Request(config, key, method, body = Buffer.alloc(0), {maxRespon
   const signingKey = hmac(hmac(hmac(hmac(`AWS4${config.secretKey}`, date), region), 's3'), 'aws4_request');
   const signature = createHmac('sha256', signingKey).update(stringToSign).digest('hex');
   const authorization = `AWS4-HMAC-SHA256 Credential=${config.accessKey}/${scope}, SignedHeaders=${signedHeaders}, Signature=${signature}`;
-  const target=new URL(endpoint.href);target.hostname=hostname;target.pathname=pathname;target.search='';target.hash='';
   const response=await pinnedHttpsRequest(validated,target,{method,headers:{...headers,Authorization:authorization},body:['GET','HEAD'].includes(method)?Buffer.alloc(0):body,maxResponseBytes});
   if (!response.ok) throw new Error(`S3 返回 ${response.status}`);
   return response;
@@ -1192,7 +1316,8 @@ async function runExternalBackup(target, test = false) {
   if(activeExternalBackupUsers.has(target.user_id)||activeExternalBackupUsers.size>=4)throw Object.assign(new Error('已有备份任务正在运行，请稍后再试'),{status:429,code:'backup_busy'});
   activeExternalBackupUsers.add(target.user_id);
   try {
-    const config=normalizeBackupConfig(target.kind,decryptSecret(target.encrypted_config));const password=getBackupPassword(target.user_id);
+    const targetScope=target.id?`backup-target:${target.user_id}:${target.id}`:'';
+    const config=normalizeBackupConfig(target.kind,decryptSecret(target.encrypted_config,targetScope));const password=getBackupPassword(target.user_id);
     if (!password) throw new Error('请先设置个人备份密码');
     const body = test ? randomBytes(64) : createBackupBuffer(target.user_id, password);
     const key = test ? `connection-test-${randomUUID()}.bin` : accountBackupFilename();
@@ -1220,7 +1345,7 @@ function pruneBackupRuns(stamp=new Date()){
 function safeBackupTarget(target){
   const result={id:target.id,name:target.name,kind:target.kind,...normalizeBackupSchedule(target),enabled:target.enabled,last_run_at:target.last_run_at,last_success_at:target.last_success_at,last_error:target.last_error,created_at:target.created_at};
   try{
-    const config=decryptSecret(target.encrypted_config);
+    const config=decryptSecret(target.encrypted_config,dataScope('backup-target',target.user_id,target.id));
     result.config=target.kind==='s3'?{endpoint:config.endpoint,region:config.region,bucket:config.bucket,directory:config.directory,pathStyle:config.pathStyle===true}:{url:config.url,username:config.username,directory:config.directory};
   }catch{result.config={}}
   return result;
@@ -1252,20 +1377,33 @@ function staticFile(req, res, pathname) {
   const info=statSync(file);if(info.isDirectory())return false;
   const types = { '.html':'text/html; charset=utf-8','.css':'text/css; charset=utf-8','.js':'text/javascript; charset=utf-8','.wasm':'application/wasm','.svg':'image/svg+xml','.png':'image/png','.webp':'image/webp','.jpg':'image/jpeg','.jpeg':'image/jpeg','.ico':'image/x-icon','.ttf':'font/ttf','.woff2':'font/woff2' };
   const isHtml = extname(file) === '.html';
-  res.writeHead(200, { 'Content-Type': types[extname(file)] || 'application/octet-stream', 'Content-Length':info.size, 'Cache-Control': isHtml ? 'no-cache' : 'public, max-age=31536000, immutable' });
-  if(req.method==='HEAD')res.end();else createReadStream(file).pipe(res);return true;
+  const versioned = /[?&]v=/.test(String(req.url || ''));
+  res.writeHead(200, { 'Content-Type': types[extname(file)] || 'application/octet-stream', 'Content-Length':info.size, 'Cache-Control': isHtml ? 'no-cache' : versioned ? 'public, max-age=31536000, immutable' : 'public, max-age=3600' });
+  if(req.method==='HEAD')res.end();else createReadStream(file).on('error',()=>{if(!res.headersSent)res.writeHead(500);res.destroy()}).pipe(res);return true;
 }
+
+const usernameCollision = value => {
+  const target = String(value || '').trim().normalize('NFKC').toLowerCase();
+  if (!target) return false;
+  for (const row of db.prepare('SELECT username FROM users').all()) {
+    if (String(row.username || '').trim().normalize('NFKC').toLowerCase() === target) return true;
+  }
+  return false;
+};
 
 async function api(req, res, url) {
   const method = req.method || 'GET'; const path = url.pathname;
   const fetchSite=String(req.headers['sec-fetch-site']||'').toLowerCase();
   if(fetchSite&&!['same-origin','none'].includes(fetchSite))return error(res,403,'已阻止跨站接口请求','csrf');
   if (!['GET','HEAD','OPTIONS'].includes(method)) {
-    const origin=String(req.headers.origin||'');
-    if(origin){
-      let originUrl;try{originUrl=new URL(origin)}catch{return error(res,403,'已阻止来源不明的写入','csrf')}
-      const expectedHost=String(req.headers.host||'').toLowerCase(),expectedProtocol=String(req.headers['x-forwarded-proto']||'http').split(',')[0].trim().toLowerCase();
-      if(originUrl.host.toLowerCase()!==expectedHost||originUrl.protocol!==`${expectedProtocol}:`)return error(res,403,'已阻止跨站写入','csrf');
+    const origin=String(req.headers.origin||''),referer=String(req.headers.referer||'');
+    if(origin||referer){
+      const expectedHost=String(req.headers.host||'').toLowerCase();
+      const forwardedProto=TRUST_PROXY?String(req.headers['x-forwarded-proto']||'').split(',').map(v=>v.trim().toLowerCase()).filter(Boolean).at(-1):'';
+      const secureDefault=(typeof COOKIE_SECURE==='boolean'&&COOKIE_SECURE)||Boolean(req.socket?.encrypted);
+      const expectedProtocol=['http','https'].includes(forwardedProto)?forwardedProto:(secureDefault?'https':'http');
+      let sourceUrl;try{sourceUrl=new URL(origin||referer)}catch{return error(res,403,'已阻止来源不明的写入','csrf')}
+      if(sourceUrl.host.toLowerCase()!==expectedHost||sourceUrl.protocol!==`${expectedProtocol}:`)return error(res,403,'已阻止跨站写入','csrf');
     }
   }
   if (path === '/api/auth/state' && method === 'GET') {
@@ -1281,11 +1419,12 @@ async function api(req, res, url) {
     if (!checkUsername(body.username)) return error(res,400,'用户名需为 3–32 个汉字、字母、数字或 _ . -');
     if (!checkPasswordShape(body.password)) return error(res,400,'密码需为 15–128 个字符');
     if(!masterKey)return error(res,503,masterKeyError||'服务器数据加密密钥暂不可用','data_key_unavailable');
-    if(db.prepare(`SELECT 1 FROM users WHERE username=? COLLATE NOCASE`).get(body.username.trim()))return error(res,409,'这个用户名已经存在');
-    const user = { id: randomUUID(), username: body.username.trim(), display_name: safeText(body.displayName || body.username,32), role: count === 0 ? 'superadmin' : 'member', session_version: 1 };
+    const cleanName = body.username.trim(), stamp = now();
+    const user = { id: randomUUID(), username: cleanName, display_name: safeText(body.displayName || cleanName,32), role: count === 0 ? 'superadmin' : 'member', status: 'active', session_version: 1, created_at: stamp };
     db.exec('BEGIN IMMEDIATE');
     try{
-      db.prepare(`INSERT INTO users(id,username,display_name,password_hash,role,created_at) VALUES(?,?,?,?,?,?)`).run(user.id,user.username,user.display_name,hashPassword(body.password),user.role,now());
+      if(db.prepare(`SELECT 1 FROM users WHERE username=? COLLATE NOCASE`).get(cleanName)||usernameCollision(cleanName)){db.exec('ROLLBACK');return error(res,409,'这个用户名已经存在')}
+      db.prepare(`INSERT INTO users(id,username,display_name,password_hash,role,created_at) VALUES(?,?,?,?,?,?)`).run(user.id,user.username,user.display_name,hashPassword(body.password),user.role,stamp);
       putSetting(user.id,'stage',defaultStage());putSetting(user.id,'theme',defaultTheme());
       if(count===0)db.prepare(`UPDATE schema_meta SET value='false' WHERE key='public_registration'`).run();
       db.exec('COMMIT');
@@ -1294,8 +1433,9 @@ async function api(req, res, url) {
     return json(res,201,{ user: cleanUser(user) });
   }
   if (path === '/api/auth/login' && method === 'POST') {
+    if (limited(req,'login-total',60,15*60000)) return error(res,429,'登录尝试过多，请 15 分钟后再试');
     const body=await readJson(req),loginName=String(body.username||'').trim(),loginBucket=createHash('sha256').update(loginName.toLocaleLowerCase()).digest('hex').slice(0,24);
-    if (limited(req,'login-total',60,15*60000)||limited(req,`login:${loginBucket}`,12,15*60000)) return error(res,429,'登录尝试过多，请 15 分钟后再试');
+    if (limited(req,`login:${loginBucket}`,12,15*60000)) return error(res,429,'登录尝试过多，请 15 分钟后再试');
     const user = db.prepare(`SELECT * FROM users WHERE username=? COLLATE NOCASE`).get(loginName);
     const passwordMatches=verifyPassword(body.password||'',user?.password_hash||DUMMY_PASSWORD_HASH);
     if (!user || !passwordMatches) return error(res,401,'用户名或密码不正确');
@@ -1307,15 +1447,15 @@ async function api(req, res, url) {
   }
   const user = requireUser(req,res); if (!user) return;req.authUser=user;
   if(path==='/api/finance'||path.startsWith('/api/finance/')){
-    if(method==='GET'&&limited(req,`finance-read:${user.id}`,120,60000))return error(res,429,'读取账目过于频繁，请稍后再试','finance_rate_limited');
-    if(method!=='GET'&&limited(req,`finance-write:${user.id}`,360,3600000))return error(res,429,'记账操作过于频繁，请稍后再试','finance_rate_limited');
+    if(method==='GET'&&limitedUser(user.id,'finance-read',120,60000))return error(res,429,'读取账目过于频繁，请稍后再试','finance_rate_limited');
+    if(method!=='GET'&&limitedUser(user.id,'finance-write',360,3600000))return error(res,429,'记账操作过于频繁，请稍后再试','finance_rate_limited');
     if(await financeReceipts.handle(req,res,url,user))return;
     if(await financeLedger.handle(req,res,url,user))return;
     return error(res,404,'财务接口不存在','not_found');
   }
   if (path === '/api/me' && method === 'GET') return json(res,200,{ user:cleanUser(user), stage:normalizeStage(setting(user.id,'stage',defaultStage())), theme:normalizeTheme(setting(user.id,'theme',defaultTheme())) });
   if (path === '/api/me/password' && method === 'POST') {
-    if (limited(req,`password:${user.id}`,6,3600000)) return error(res,429,'尝试次数过多');
+    if (limitedUser(user.id,'password',6,3600000)) return error(res,429,'尝试次数过多');
     const body=await readJson(req); if (!verifyPassword(body.currentPassword || '',user.password_hash)) return error(res,400,'当前密码不正确');
     if (!checkPasswordShape(body.newPassword)) return error(res,400,'新密码需为 15–128 个字符');
     withActivity(user.id,'password_updated',{},()=>{db.prepare(`UPDATE users SET password_hash=?,session_version=session_version+1 WHERE id=?`).run(hashPassword(body.newPassword),user.id);db.prepare(`DELETE FROM sessions WHERE user_id=?`).run(user.id)});setSessionCookie(res,'',0); return json(res,200,{ok:true,relogin:true});
@@ -1371,8 +1511,8 @@ async function api(req, res, url) {
     return json(res,200,{ok:true});
   }
   if (path === '/api/records' && method === 'PUT') {
-    const body=await readJson(req); if(!validRecordType(body.type)||!body.period)return error(res,400,'记录类型或周期不正确');
-    if(String(body.period)!==currentPeriodFor(body.type))return error(res,400,currentPeriodMessage(body.type),'period_locked');
+    const body=await readJson(req); if(!validRecordType(body.type)||typeof body.period!=='string'||!body.period)return error(res,400,'记录类型或周期不正确');
+    if(body.period!==currentPeriodFor(body.type))return error(res,400,currentPeriodMessage(body.type),'period_locked');
     if(body.id&&!validStoredRecordId(body.id))return error(res,400,'记录编号不正确');
     const id=body.id||randomUUID(), existing=db.prepare(`SELECT * FROM records WHERE id=? AND user_id=?`).get(id,user.id);
     if(body.id&&!existing)return error(res,404,'记录不存在或已被删除','record_not_found');
@@ -1422,18 +1562,18 @@ async function api(req, res, url) {
     const earliest=verificationMinimum(row.type,todayDate(new Date(row.completed_at||row.created_at)));
     if(todayDate()<earliest)return error(res,400,`最早可在 ${earliest} 提交验证结果`,'verification_too_early');
     if(!safeText(body.result).trim()||!safeText(body.adjustment).trim()||(row.type==='decision'&&(!['好','差'].includes(body.outcome)||!['好','差'].includes(body.process))))return error(res,400,'请完整填写验证结果');
-    const stamp=now(),decoded=recordOut(row),verification=encryptData({result:safeText(body.result),adjustment:safeText(body.adjustment),outcome:body.outcome||null,process:body.process||null,expectedDate:decoded.data.verifyDate||null,actualAt:stamp},dataScope('record',user.id,id,'verification'));
+    const stamp=now(),decoded=recordOut(row),verification=encryptData({result:safeText(body.result),adjustment:safeText(body.adjustment),outcome:row.type==='decision'?body.outcome:null,process:row.type==='decision'?body.process:null,expectedDate:decoded.data.verifyDate||null,actualAt:stamp},dataScope('record',user.id,id,'verification'));
     if(accountRecordBytes(user.id)-Buffer.byteLength(row.verification||'')+Buffer.byteLength(verification)>MAX_ACCOUNT_CONTENT_BYTES)return error(res,413,'账户复盘内容已达到存储上限','account_storage_limit');
     const updated=withActivity(user.id,'action_verified',{recordType:row.type,period:row.period},()=>db.prepare(`UPDATE records SET status='verified',verification=?,verified_at=?,updated_at=?,version=version+1 WHERE id=? AND user_id=? AND status='completed'`).run(verification,stamp,stamp,id,user.id));
     if(updated.changes!==1)return error(res,409,'这条行动已经被其他请求验证，请刷新后查看','already_verified');
     return json(res,200,{record:recordOut(db.prepare(`SELECT * FROM records WHERE id=?`).get(id))});
   }
   if (path === '/api/backup/password' && method === 'POST') {
-    const body=await readJson(req); if(!checkPasswordShape(body.password))return error(res,400,'备份密码需为 15–128 个字符'); withActivity(user.id,'backup_password_updated',{},()=>putSetting(user.id,'backup_secret',encryptSecret({password:body.password,createdAt:now()}))); return json(res,200,{ok:true});
+    const body=await readJson(req); if(!checkPasswordShape(body.password))return error(res,400,'备份密码需为 15–128 个字符'); withActivity(user.id,'backup_password_updated',{},()=>putSetting(user.id,'backup_secret',encryptSecret({password:body.password,createdAt:now()},dataScope('backup-secret',user.id)))); return json(res,200,{ok:true});
   }
   if (path === '/api/backup/status' && method === 'GET') return json(res,200,getBackupStatus(user.id));
   if (path === '/api/backup/export' && method === 'POST') {
-    if(limited(req,`backup-export:${user.id}`,12,3600000))return error(res,429,'备份导出次数过多，请稍后再试');
+    if(limitedUser(user.id,'backup-export',12,3600000))return error(res,429,'备份导出次数过多，请稍后再试');
     await readJson(req);
     const password=getBackupPassword(user.id); if(!password)return error(res,400,'请先设置备份密码'); const body=createBackupBuffer(user.id,password);
     if(body.length>MAX_BACKUP_FILE_BYTES)return error(res,413,'个人备份超过 36 MB，无法生成可恢复的文件');
@@ -1442,17 +1582,17 @@ async function api(req, res, url) {
     res.writeHead(200,{'Content-Type':'application/octet-stream','Content-Disposition':`attachment; filename="shendu-account-${todayDate()}.shendu"; filename*=UTF-8''${encodeURIComponent(filename)}`,'Content-Length':body.length,'Cache-Control':'no-store'}); return res.end(body);
   }
   if (path === '/api/data/inspect' && method === 'POST') {
-    if (limited(req,`backup-inspect:${user.id}`,20,3600000)) return error(res,429,'备份校验次数过多，请稍后再试');
+    if (limitedUser(user.id,'backup-inspect',20,3600000)) return error(res,429,'备份校验次数过多，请稍后再试');
     const body=await readJson(req,MAX_BACKUP_REQUEST_BYTES);
     try {
       const parsed=parseBackupBuffer(backupTextFrom(body.encryptedBackup),backupPasswordFrom(body.password));
       const preview=backupPreview(parsed,user);
       if(!checkUsername(preview.ownerUsername))return error(res,400,'这份备份没有可验证的所属用户名，无法恢复。请先在原账户恢复后重新导出新版备份。','backup_owner_missing');
       return json(res,200,preview);
-    } catch(e) { return error(res,e.status||400,e.message||'无法校验这份备份',backupErrorCode(e,'backup_inspect_failed')); }
+    } catch(e) { if(e instanceof TypeError||e instanceof SyntaxError||e?.errcode)return error(res,400,'无法校验这份备份','backup_inspect_failed'); return error(res,e.status||400,e.message||'无法校验这份备份',backupErrorCode(e,'backup_inspect_failed')); }
   }
   if (path === '/api/data/import' && method === 'POST') {
-    if (limited(req,`backup-import:${user.id}`,10,3600000)) return error(res,429,'备份恢复次数过多，请稍后再试');
+    if (limitedUser(user.id,'backup-import',10,3600000)) return error(res,429,'备份恢复次数过多，请稍后再试');
     const body=await readJson(req,MAX_BACKUP_REQUEST_BYTES);
     if (!['merge','replace'].includes(body.mode)) return error(res,400,'请选择安全合并或完整恢复','backup_mode_required');
     if (body.mode==='replace'&&body.confirmation!=='RESTORE') return error(res,400,'完整恢复需要再次确认','backup_replace_confirmation_required');
@@ -1462,11 +1602,11 @@ async function api(req, res, url) {
       const preview=backupPreview(parsed,user);
       const restored=applyBackup(user.id,parsed,body.mode);
       return json(res,200,{ok:true,mode:body.mode,...preview,restored});
-    } catch(e) { return error(res,e.status||400,e.message||'无法恢复这份备份',backupErrorCode(e,'backup_import_failed')); }
+    } catch(e) { if(e instanceof TypeError||e instanceof SyntaxError||e?.errcode)return error(res,400,'无法恢复这份备份','backup_import_failed'); return error(res,e.status||400,e.message||'无法恢复这份备份',backupErrorCode(e,'backup_import_failed')); }
   }
   if (path === '/api/admin/site-backup/export' && method === 'POST') {
     if(user.role!=='superadmin')return error(res,403,'只有超级管理员可以导出整站备份','forbidden');
-    if(limited(req,`site-backup-export:${user.id}`,4,3600000))return error(res,429,'整站备份导出次数过多，请稍后再试');
+    if(limitedUser(user.id,'site-backup-export',4,3600000))return error(res,429,'整站备份导出次数过多，请稍后再试');
     const body=await readJson(req);
     if(!verifyPassword(body.currentPassword||'',user.password_hash))return error(res,400,'当前超级管理员登录密码不正确','current_password_invalid');
     if(!checkPasswordShape(body.backupPassword))return error(res,400,'整站备份密码需为 15–128 个字符');
@@ -1480,14 +1620,14 @@ async function api(req, res, url) {
   }
   if (path === '/api/admin/site-backup/inspect' && method === 'POST') {
     if(user.role!=='superadmin')return error(res,403,'只有超级管理员可以校验整站备份','forbidden');
-    if(limited(req,`site-backup-inspect:${user.id}`,10,3600000))return error(res,429,'整站备份校验次数过多，请稍后再试');
+    if(limitedUser(user.id,'site-backup-inspect',10,3600000))return error(res,429,'整站备份校验次数过多，请稍后再试');
     const body=await readJson(req,MAX_SITE_BACKUP_REQUEST_BYTES);
     try{return json(res,200,siteBackupPreview(parseSiteBackupBuffer(siteBackupTextFrom(body.encryptedBackup),body.backupPassword)))}
     catch(e){return error(res,e.status||400,e.message||'无法校验整站备份',e.code||'site_backup_inspect_failed')}
   }
   if (path === '/api/admin/site-backup/restore' && method === 'POST') {
     if(user.role!=='superadmin')return error(res,403,'只有超级管理员可以恢复整站备份','forbidden');
-    if(limited(req,`site-backup-restore:${user.id}`,5,3600000))return error(res,429,'整站恢复尝试次数过多，请稍后再试');
+    if(limitedUser(user.id,'site-backup-restore',5,3600000))return error(res,429,'整站恢复尝试次数过多，请稍后再试');
     const body=await readJson(req,MAX_SITE_BACKUP_REQUEST_BYTES);
     if(!verifyPassword(body.currentPassword||'',user.password_hash))return error(res,400,'当前超级管理员登录密码不正确','current_password_invalid');
     if(body.confirmation!=='RESTORE_SITE')return error(res,400,'请确认将完整替换本站全部资料','site_restore_confirmation_required');
@@ -1504,7 +1644,7 @@ async function api(req, res, url) {
     const name=safeText(body.name,80).trim();if(!name)return error(res,400,'请填写备份目标名称');
     let config;try{config=normalizeBackupConfig(body.kind,body.config)}catch(validationError){return error(res,400,validationError.message,'backup_target_invalid')}
     let plan;try{plan=normalizeBackupSchedule(body)}catch(validationError){return error(res,400,validationError.message,'backup_schedule_invalid')}
-    const id=randomUUID(),stamp=now();withActivity(user.id,'backup_target_created',{targetKind:body.kind},()=>db.prepare(`INSERT INTO backup_targets(id,user_id,name,kind,encrypted_config,schedule,schedule_time,schedule_weekday,schedule_anchor_at,enabled,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)`).run(id,user.id,name,body.kind,encryptSecret(config),plan.schedule,plan.scheduleTime,plan.scheduleWeekday,stamp,body.enabled===false?0:1,stamp,stamp));return json(res,201,{id});
+    const id=randomUUID(),stamp=now();withActivity(user.id,'backup_target_created',{targetKind:body.kind},()=>db.prepare(`INSERT INTO backup_targets(id,user_id,name,kind,encrypted_config,schedule,schedule_time,schedule_weekday,schedule_anchor_at,enabled,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)`).run(id,user.id,name,body.kind,encryptSecret(config,dataScope('backup-target',user.id,id)),plan.schedule,plan.scheduleTime,plan.scheduleWeekday,stamp,body.enabled===false?0:1,stamp,stamp));return json(res,201,{id});
   }
   if (/^\/api\/backup\/targets\/[^/]+$/.test(path) && method === 'PATCH') {
     const id=path.split('/')[4], body=await readJson(req), target=db.prepare(`SELECT * FROM backup_targets WHERE id=? AND user_id=?`).get(id,user.id); if(!target)return error(res,404,'备份目标不存在');
@@ -1513,7 +1653,7 @@ async function api(req, res, url) {
     const name=safeText(body.name||target.name,80).trim();if(!name)return error(res,400,'请填写备份目标名称');
     if(kind!==target.kind&&!body.config)return error(res,400,'切换目标类型时必须重新填写连接配置');
     let encryptedConfig=target.encrypted_config;
-    if(body.config){try{encryptedConfig=encryptSecret(normalizeBackupConfig(kind,body.config))}catch(validationError){return error(res,400,validationError.message,'backup_target_invalid')}}
+    if(body.config){try{encryptedConfig=encryptSecret(normalizeBackupConfig(kind,body.config),dataScope('backup-target',user.id,id))}catch(validationError){return error(res,400,validationError.message,'backup_target_invalid')}}
     const enabled=body.enabled===undefined?target.enabled:body.enabled===false?0:1;
     const changed=plan.schedule!==target.schedule||plan.scheduleTime!==target.schedule_time||plan.scheduleWeekday!==target.schedule_weekday||(target.enabled===0&&enabled===1),stamp=now();
     withActivity(user.id,'backup_target_updated',{targetKind:kind},()=>db.prepare(`UPDATE backup_targets SET name=?,kind=?,encrypted_config=?,schedule=?,schedule_time=?,schedule_weekday=?,schedule_anchor_at=?,enabled=?,updated_at=? WHERE id=? AND user_id=?`).run(name,kind,encryptedConfig,plan.schedule,plan.scheduleTime,plan.scheduleWeekday,changed?stamp:target.schedule_anchor_at,enabled,stamp,id,user.id));return json(res,200,{ok:true});
@@ -1521,7 +1661,7 @@ async function api(req, res, url) {
   if (/^\/api\/backup\/targets\/[^/]+$/.test(path) && method === 'DELETE') { const id=path.split('/')[4];const target=db.prepare(`SELECT kind FROM backup_targets WHERE id=? AND user_id=?`).get(id,user.id);if(target)withActivity(user.id,'backup_target_deleted',{targetKind:target.kind},()=>db.prepare(`DELETE FROM backup_targets WHERE id=? AND user_id=?`).run(id,user.id));return json(res,200,{ok:true}); }
   if (/^\/api\/backup\/targets\/[^/]+\/(test|run)$/.test(path) && method === 'POST') {
     const [,,, ,id,action]=path.split('/'); const target=db.prepare(`SELECT * FROM backup_targets WHERE id=? AND user_id=?`).get(id,user.id); if(!target)return error(res,404,'备份目标不存在');
-    if(limited(req,`backup-run:${user.id}`,12,3600000))return error(res,429,'外部备份操作过多，请稍后再试','backup_rate_limited');
+    if(typeof limitedUser==='function'?limitedUser(user.id,'backup-run',12,3600000):limited(req,'backup-run',12,3600000))return error(res,429,'外部备份操作过多，请稍后再试','backup_rate_limited');
     try {await runExternalBackup(target,action==='test');if(action==='run'&&!saveBackupOutcome(target,'success','备份成功','manual'))return error(res,409,'备份目标已被删除');return json(res,200,{ok:true});}
     catch(e){if(action==='run'&&e.code!=='backup_busy')saveBackupOutcome(target,'error',e.message,'manual');return error(res,e.status||400,e.message,e.code||'request_error')}
   }
@@ -1529,32 +1669,37 @@ async function api(req, res, url) {
     if(!['admin','superadmin'].includes(user.role))return error(res,403,'没有权限'); const q=safeText(url.searchParams.get('q')||'',100); return json(res,200,{users:db.prepare(`SELECT id,username,display_name,role,status,created_at FROM users WHERE username LIKE ? OR display_name LIKE ? ORDER BY created_at DESC`).all(`%${q}%`,`%${q}%`).map(cleanUser),registrationOpen:db.prepare(`SELECT value FROM schema_meta WHERE key='public_registration'`).get().value==='true'});
   }
   if (path === '/api/admin/users' && method === 'POST') {
-    if(!['admin','superadmin'].includes(user.role))return error(res,403,'没有权限');if(limited(req,`user-create:${user.id}`,30,3600000))return error(res,429,'创建账户次数过多，请稍后再试');
+    if(!['admin','superadmin'].includes(user.role))return error(res,403,'没有权限');if(limitedUser(user.id,'user-create',30,3600000))return error(res,429,'创建账户次数过多，请稍后再试');
     const body=await readJson(req),actor=db.prepare(`SELECT role,status FROM users WHERE id=?`).get(user.id);if(!actor||actor.status!=='active'||!['admin','superadmin'].includes(actor.role))return error(res,403,'权限已经变化，请重新登录');
     if(db.prepare(`SELECT COUNT(*) AS n FROM users`).get().n>=MAX_USERS)return error(res,403,'本站账户数量已达上限');
     if(!checkUsername(body.username)||!checkPasswordShape(body.password))return error(res,400,'请检查用户名与密码'); const role=body.role==='admin'&&actor.role==='superadmin'?'admin':'member';
-    if(db.prepare(`SELECT 1 FROM users WHERE username=? COLLATE NOCASE`).get(body.username))return error(res,409,'用户名已存在');
-    const newUserId=randomUUID();db.exec('BEGIN IMMEDIATE');
-    try{db.prepare(`INSERT INTO users(id,username,display_name,password_hash,role,created_at) VALUES(?,?,?,?,?,?)`).run(newUserId,body.username,safeText(body.displayName||body.username,32),hashPassword(body.password),role,now());putSetting(newUserId,'stage',defaultStage());putSetting(newUserId,'theme',defaultTheme());db.exec('COMMIT');return json(res,201,{ok:true})}
+    const cleanName=body.username.trim(),newUserId=randomUUID();db.exec('BEGIN IMMEDIATE');
+    try{
+      if(db.prepare(`SELECT 1 FROM users WHERE username=? COLLATE NOCASE`).get(cleanName)||usernameCollision(cleanName)){db.exec('ROLLBACK');return error(res,409,'用户名已存在')}
+      db.prepare(`INSERT INTO users(id,username,display_name,password_hash,role,created_at) VALUES(?,?,?,?,?,?)`).run(newUserId,cleanName,safeText(body.displayName||cleanName,32),hashPassword(body.password),role,now());putSetting(newUserId,'stage',defaultStage());putSetting(newUserId,'theme',defaultTheme());db.exec('COMMIT');return json(res,201,{ok:true})
+    }
     catch(createError){try{db.exec('ROLLBACK')}catch{}throw createError}
   }
   if (/^\/api\/admin\/users\/[^/]+$/.test(path) && method === 'PATCH') {
     if(!['admin','superadmin'].includes(user.role))return error(res,403,'没有权限'); const id=path.split('/')[4],body=await readJson(req),actor=db.prepare(`SELECT role,status FROM users WHERE id=?`).get(user.id),target=db.prepare(`SELECT * FROM users WHERE id=?`).get(id);
     if(!actor||actor.status!=='active'||!['admin','superadmin'].includes(actor.role))return error(res,403,'权限已经变化，请重新登录');
     if(!target||target.id===user.id||target.role==='superadmin'||(actor.role==='admin'&&target.role==='admin'))return error(res,403,'不能管理该账户');
+    if(body.role!==undefined&&actor.role!=='superadmin')return error(res,403,'只有超级管理员可以修改角色');
     if(body.password&&!checkPasswordShape(body.password))return error(res,400,'密码需为 15–128 个字符');
     const passwordHash=body.password?hashPassword(body.password):null;
     db.exec('BEGIN IMMEDIATE');
     try{
-      if(body.status&&['active','disabled'].includes(body.status))db.prepare(`UPDATE users SET status=?,session_version=session_version+1 WHERE id=?`).run(body.status,id);
-      if(body.role&&actor.role==='superadmin'&&['admin','member'].includes(body.role))db.prepare(`UPDATE users SET role=?,session_version=session_version+1 WHERE id=?`).run(body.role,id);
-      if(passwordHash)db.prepare(`UPDATE users SET password_hash=?,session_version=session_version+1 WHERE id=?`).run(passwordHash,id);
-      db.prepare(`DELETE FROM sessions WHERE user_id=?`).run(id);db.exec('COMMIT');return json(res,200,{ok:true});
+      let updated=false;
+      if(body.status&&['active','disabled'].includes(body.status)){db.prepare(`UPDATE users SET status=?,session_version=session_version+1 WHERE id=?`).run(body.status,id);updated=true}
+      if(body.role&&actor.role==='superadmin'&&['admin','member'].includes(body.role)){db.prepare(`UPDATE users SET role=?,session_version=session_version+1 WHERE id=?`).run(body.role,id);updated=true}
+      if(passwordHash){db.prepare(`UPDATE users SET password_hash=?,session_version=session_version+1 WHERE id=?`).run(passwordHash,id);updated=true}
+      if(updated)db.prepare(`DELETE FROM sessions WHERE user_id=?`).run(id);
+      db.exec('COMMIT');return json(res,200,{ok:true});
     }catch(updateError){try{db.exec('ROLLBACK')}catch{}throw updateError}
   }
   if (/^\/api\/admin\/users\/[^/]+$/.test(path) && method === 'DELETE') {
     if(!['admin','superadmin'].includes(user.role))return error(res,403,'没有权限');
-    if(limited(req,`user-delete:${user.id}`,6,3600000))return error(res,429,'删除验证次数过多，请稍后再试');
+    if(limitedUser(user.id,'user-delete',6,3600000))return error(res,429,'删除验证次数过多，请稍后再试');
     const id=path.split('/')[4],body=await readJson(req),actor=db.prepare(`SELECT role,status,password_hash FROM users WHERE id=?`).get(user.id),target=db.prepare(`SELECT * FROM users WHERE id=?`).get(id);
     if(!actor||actor.status!=='active'||!['admin','superadmin'].includes(actor.role))return error(res,403,'权限已经变化，请重新登录');
     if(!target)return error(res,404,'账户不存在');
@@ -1586,6 +1731,7 @@ const server = http.createServer(async (req,res) => {
   res.setHeader('X-Content-Type-Options','nosniff'); res.setHeader('X-Frame-Options','DENY'); res.setHeader('Referrer-Policy','same-origin');
   res.setHeader('Permissions-Policy','camera=(), microphone=(), geolocation=()');
   res.setHeader('Cross-Origin-Opener-Policy','same-origin');res.setHeader('Cross-Origin-Resource-Policy','same-origin');res.setHeader('X-Permitted-Cross-Domain-Policies','none');
+  if (COOKIE_SECURE) res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
   const storageOrigins=financeReceipts.storageOrigins(sessionUser(req)?.id).join(' ');
   res.setHeader('Content-Security-Policy',`default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: ${storageOrigins}; connect-src 'self' ${storageOrigins}; object-src 'none'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'`);
   if (req.method === 'OPTIONS') { res.writeHead(204); return res.end(); }
@@ -1609,7 +1755,10 @@ const cleanup = () => {
   const stamp=Date.now();for(const [key,value] of rateMap)if(value.until<stamp)rateMap.delete(key);
 };
 const scheduledBackups = async () => {
-  const targets=db.prepare(`SELECT * FROM backup_targets WHERE enabled=1 AND schedule!='manual'`).all();
+  const hasUsersTable=Boolean(db.prepare(`SELECT 1 FROM sqlite_master WHERE type='table' AND name='users'`).get());
+  const targets=hasUsersTable
+    ? db.prepare(`SELECT t.* FROM backup_targets t JOIN users u ON u.id=t.user_id WHERE t.enabled=1 AND t.schedule!='manual' AND u.status='active'`).all()
+    : db.prepare(`SELECT * FROM backup_targets WHERE enabled=1 AND schedule!='manual'`).all();
   for(const target of targets){
     const slot=backupScheduleDue(target);if(!slot)continue;
     // Busy work must not consume this schedule slot. An expiring lease allows
@@ -1617,7 +1766,8 @@ const scheduledBackups = async () => {
     // outcomes consume the slot once in the same transaction as their log.
     if(activeExternalBackupUsers.has(target.user_id)||activeExternalBackupUsers.size>=4)continue;
     const claimToken=randomUUID(),stamp=now(),claimUntil=new Date(Date.parse(stamp)+5*60000).toISOString();
-    const claimed=db.prepare(`UPDATE backup_targets SET schedule_claim_token=?,schedule_claim_until=? WHERE id=? AND user_id=? AND last_scheduled_slot IS ? AND schedule=? AND schedule_time=? AND schedule_weekday=? AND schedule_anchor_at IS ? AND updated_at IS ? AND enabled=1 AND (schedule_claim_until IS NULL OR schedule_claim_until<=?)`).run(claimToken,claimUntil,target.id,target.user_id,target.last_scheduled_slot,target.schedule,target.schedule_time,target.schedule_weekday,target.schedule_anchor_at,target.updated_at,stamp);
+    const activeClause=hasUsersTable?` AND EXISTS(SELECT 1 FROM users u WHERE u.id=backup_targets.user_id AND u.status='active')`:'';
+    const claimed=db.prepare(`UPDATE backup_targets SET schedule_claim_token=?,schedule_claim_until=? WHERE id=? AND user_id=? AND last_scheduled_slot IS ? AND schedule=? AND schedule_time=? AND schedule_weekday=? AND schedule_anchor_at IS ? AND updated_at IS ? AND enabled=1 AND (schedule_claim_until IS NULL OR schedule_claim_until<=?)${activeClause}`).run(claimToken,claimUntil,target.id,target.user_id,target.last_scheduled_slot,target.schedule,target.schedule_time,target.schedule_weekday,target.schedule_anchor_at,target.updated_at,stamp);
     if(claimed.changes!==1)continue;
     const scheduled={slot,claimToken};
     try{await runExternalBackup(target,false);saveBackupOutcome(target,'success','定时备份成功','scheduled',scheduled)}

@@ -49,16 +49,16 @@ export function createFinanceLedger({db,encryptData,decryptData,dataScope,now,re
   const automaticCategory=(purpose,list,kind,fallbackId=randomUUID())=>{
     const suggested=suggestFinanceCategory(purpose,list,purpose?'expense':kind);
     if(suggested!=='uncategorized'||!purpose)return list.find(item=>item.id===suggested);
-    const named=list.find(item=>item.name===purpose);
+    const named=list.find(item=>item.name===purpose&&item.active!==false);
     if(named)return named;
     return {id:fallbackId,name:purpose.trim().slice(0,160),keywords:[],active:true};
   };
-  const entryData=(value,userId,{allowArchived=false,providedCategories=null,allowAutomatic=false}={})=>{
+  const entryData=(value,userId,{allowArchived=false,providedCategories=null,categoryMap=null,allowAutomatic=false}={})=>{
     if(!plain(value)||!validDate(value.date)||!Object.hasOwn(FINANCE_KINDS,value.kind)||typeof value.expression!=='string'||value.expression.length>200)throw problem('请填写有效日期、收支类型和金额');
     let amountCents;try{amountCents=parseMoneyExpression(value.expression)}catch{throw problem('金额只支持最多两位小数的数字和加减运算','finance_amount_invalid')}
     if(!Number.isSafeInteger(amountCents)||amountCents<=0||amountCents>MAX_AMOUNT)throw problem('金额必须大于零且不超过金额上限','finance_amount_invalid');
-    const list=providedCategories||categories(userId),purpose=text(value.purpose,160);
-    const category=allowAutomatic&&!text(value.categoryId,100)?automaticCategory(purpose,list,value.kind):list.find(item=>item.id===(text(value.categoryId,100)||suggestFinanceCategory(purpose,list,value.kind)||'uncategorized'));
+    const list=providedCategories||categories(userId),byId=categoryMap||new Map(list.map(item=>[item.id,item])),purpose=text(value.purpose,160),explicitId=text(value.categoryId,100);
+    const category=allowAutomatic&&!explicitId?automaticCategory(purpose,list,value.kind):byId.get(explicitId||suggestFinanceCategory(purpose,list,value.kind)||'uncategorized');
     const categoryId=category?.id;
     if(!category||(!allowArchived&&!category.active))throw problem('请选择有效的花销类别','finance_category_invalid');
     if(!purpose)throw problem('请填写这笔账的用途','finance_purpose_required');
@@ -68,6 +68,10 @@ export function createFinanceLedger({db,encryptData,decryptData,dataScope,now,re
     if(value.kind==='refund'&&!UUID.test(refundOf))throw problem('退款需要关联原支出','finance_refund_invalid');
     return {date:value.date,kind:value.kind,expression:value.expression.trim(),amountCents,purpose,categoryId,note:text(value.note,1000),refundOf,receiptIds,source:value.source==='daily'?'daily':'finance'};
   };
+  const storedFinanceBytes=userId=>
+    db.prepare('SELECT COALESCE(SUM(length(CAST(data AS BLOB))),0) AS n FROM finance_entries WHERE user_id=?').get(userId).n+
+    db.prepare('SELECT COALESCE(SUM(length(CAST(data AS BLOB))),0) AS n FROM finance_categories WHERE user_id=?').get(userId).n+
+    db.prepare('SELECT COALESCE(SUM(length(CAST(data AS BLOB))),0) AS n FROM finance_days WHERE user_id=?').get(userId).n;
   const allEntries=userId=>db.prepare('SELECT * FROM finance_entries WHERE user_id=? ORDER BY date DESC,id DESC').all(userId).map(decodeEntry);
   const accountEntries=db.prepare('SELECT * FROM finance_entries WHERE user_id=?');
   const hasUsedReceipt=(userId,receiptIds)=>{
@@ -84,23 +88,25 @@ export function createFinanceLedger({db,encryptData,decryptData,dataScope,now,re
     if(entry.refundOf===ownId)throw problem('退款不能关联自身','finance_refund_invalid');
     const original=decodeEntry(find(userId,entry.refundOf));
     if(!original||original.deletedAt||original.kind!=='expense')throw problem('原支出不存在或不属于当前账户','finance_refund_invalid');
+    if(entry.date<original.date)throw problem('退款日期不能早于原支出日期','finance_refund_invalid');
     const paid=allEntries(userId).filter(item=>!item.deletedAt&&item.kind==='refund'&&item.refundOf===entry.refundOf).reduce((sum,item)=>sum+item.amountCents,0);
     if(paid+entry.amountCents>original.amountCents)throw problem('累计退款不能超过原支出','finance_refund_exceeded',409);
   };
   const writeEntry=(userId,id,value,createHash)=>{
     // Both this category and the entry belong to the caller's activity transaction.
     // Validation failures and failed receipts must never leave orphan categories.
-    const list=categories(userId);
+    const list=categories(userId);let categoryEncrypted=null,newCategory=null;
     if(!list.some(item=>item.id===value.categoryId)){
       const category=automaticCategory(value.purpose,list,value.kind,value.categoryId);
       if(!category||category.id!==value.categoryId)throw problem('自动分类已变化，请重试','finance_category_changed',409);
       if(list.length>=MAX_CATEGORIES)throw problem('分类数量已达到上限','finance_category_limit',413);
-      const time=now();
-      db.prepare('INSERT INTO finance_categories(user_id,id,data,version,created_at,updated_at) VALUES(?,?,?,?,?,?)').run(userId,category.id,encryptData({name:category.name,keywords:[],active:true},dataScope('finance-category',userId,category.id)),1,time,time);
+      newCategory=category;
+      categoryEncrypted=encryptData({name:category.name,keywords:[],active:true},dataScope('finance-category',userId,category.id));
     }
     const time=now(),data=encryptData(value,dataScope('finance-entry',userId,id));
-    const storedBytes=db.prepare('SELECT COALESCE(SUM(length(CAST(data AS BLOB))),0) AS n FROM finance_entries WHERE user_id=?').get(userId).n;
-    if(storedBytes+Buffer.byteLength(data)>MAX_FINANCE_BYTES)throw problem('账目内容超过账户存储上限','finance_storage_limit',413);
+    const addedBytes=Buffer.byteLength(data)+(categoryEncrypted?Buffer.byteLength(categoryEncrypted):0);
+    if(storedFinanceBytes(userId)+addedBytes>MAX_FINANCE_BYTES)throw problem('账目内容超过账户存储上限','finance_storage_limit',413);
+    if(newCategory)db.prepare('INSERT INTO finance_categories(user_id,id,data,version,created_at,updated_at) VALUES(?,?,?,?,?,?)').run(userId,newCategory.id,categoryEncrypted,1,time,time);
     db.prepare('INSERT INTO finance_entries(user_id,id,date,data,create_hash,version,created_at,updated_at) VALUES(?,?,?,?,?,1,?,?)').run(userId,id,value.date,data,createHash,time,time);
     return decodeEntry(find(userId,id));
   };
@@ -113,11 +119,21 @@ export function createFinanceLedger({db,encryptData,decryptData,dataScope,now,re
   const dayState=(userId,date,entries)=>{
     const row=db.prepare('SELECT * FROM finance_days WHERE user_id=? AND date=?').get(userId,date);
     const saved=row?decryptData(row.data,dataScope('finance-day',userId,date)):null;
-    return {date,state:entries.some(item=>!item.deletedAt&&item.kind!=='transfer')?'recorded':saved?.state==='zero'?'zero':'unrecorded',version:row?.version||0};
+    const hasSpending=entries.some(item=>!item.deletedAt&&['expense','refund'].includes(item.kind));
+    const hasNonTransfer=entries.some(item=>!item.deletedAt&&item.kind!=='transfer');
+    return {date,state:hasSpending?'recorded':saved?.state==='zero'?'zero':hasNonTransfer?'recorded':'unrecorded',version:row?.version||0};
   };
   function snapshot(userId,date){
     const entries=db.prepare('SELECT * FROM finance_entries WHERE user_id=? AND date=? AND deleted_at IS NULL ORDER BY id').all(userId,date).map(decodeEntry),list=categories(userId);
-    return {date,state:dayState(userId,date,entries).state,...summaryOf(entries),entries:entries.map(item=>({id:item.id,kind:item.kind,amountCents:item.amountCents,purpose:item.purpose,categoryName:list.find(category=>category.id===item.categoryId)?.name||'待分类'})),capturedAt:now()};
+    const byId=new Map(list.map(category=>[category.id,category.name]));
+    const summaryEntries=[];let budget=512*1024,truncated=false;
+    for(const item of entries){
+      const row={id:item.id,kind:item.kind,amountCents:item.amountCents,purpose:item.purpose,categoryName:byId.get(item.categoryId)||'待分类'};
+      const size=Buffer.byteLength(JSON.stringify(row));
+      if(budget-size<0){truncated=true;break}
+      budget-=size;summaryEntries.push(row);
+    }
+    return {date,state:dayState(userId,date,entries).state,...summaryOf(entries),entries:summaryEntries,...(truncated?{truncated:true}:{}),capturedAt:now()};
   }
   async function handle(req,res,url,user){
     const path=url.pathname,method=req.method;
@@ -129,8 +145,8 @@ export function createFinanceLedger({db,encryptData,decryptData,dataScope,now,re
       if(kind&&!Object.hasOwn(FINANCE_KINDS,kind))throw problem('收支类型无效');
       if(cursor&&!UUID.test(cursor))throw problem('账目分页位置无效','finance_cursor_invalid');
       const rows=date?db.prepare('SELECT * FROM finance_entries WHERE user_id=? AND date=? ORDER BY date DESC,id DESC').all(user.id,date):year!==null?db.prepare('SELECT * FROM finance_entries WHERE user_id=? AND date>=? AND date<=? ORDER BY date DESC,id DESC').all(user.id,year+'-01-01',year+'-12-31'):db.prepare('SELECT * FROM finance_entries WHERE user_id=? AND date>=? AND date<=? ORDER BY date DESC,id DESC').all(user.id,month+'-01',month+'-31');
-      const decoded=rows.map(decodeEntry),active=decoded.filter(item=>!item.deletedAt),list=categories(user.id),needle=q.toLocaleLowerCase();
-      let matching=decoded.filter(item=>(includeDeleted||!item.deletedAt)&&(!kind||item.kind===kind)&&(!category||item.categoryId===category)&&(!needle||`${item.purpose} ${item.note} ${list.find(value=>value.id===item.categoryId)?.name||''}`.toLocaleLowerCase().includes(needle)));
+      const decoded=rows.map(decodeEntry),active=decoded.filter(item=>!item.deletedAt),list=categories(user.id),categoryNames=new Map(list.map(value=>[value.id,value.name])),needle=q.toLocaleLowerCase();
+      let matching=decoded.filter(item=>(includeDeleted||!item.deletedAt)&&(!kind||item.kind===kind)&&(!category||item.categoryId===category)&&(!needle||`${item.purpose} ${item.note} ${categoryNames.get(item.categoryId)||''}`.toLocaleLowerCase().includes(needle)));
       if(cursor){const anchor=matching.findIndex(item=>item.id===cursor);if(anchor<0)throw problem('账目分页已变化，请重新加载','finance_cursor_not_found',404);matching=matching.slice(anchor+1)}
       const entries=matching.slice(0,50),trendMap=new Map(),totals=new Map(),expenseTotals=new Map();
       for(const item of active){
@@ -139,7 +155,7 @@ export function createFinanceLedger({db,encryptData,decryptData,dataScope,now,re
         trendMap.set(item.date,point);
         if(item.kind==='expense'||item.kind==='refund')totals.set(item.categoryId,(totals.get(item.categoryId)||0)+(item.kind==='refund'?-1:1)*item.amountCents);
       }
-      json(res,200,{entries,categories:list,summary:summaryOf(active),expenseCategoryTotals:[...expenseTotals].map(([categoryId,cents])=>({categoryId,name:list.find(value=>value.id===categoryId)?.name||'待分类',cents})).sort((a,b)=>b.cents-a.cents||a.categoryId.localeCompare(b.categoryId)),trend:[...trendMap.values()].sort((a,b)=>a.date.localeCompare(b.date)),categoryTotals:[...totals].map(([categoryId,cents])=>({categoryId,name:list.find(value=>value.id===categoryId)?.name||'待分类',cents})).sort((a,b)=>b.cents-a.cents),nextCursor:matching.length>50?entries.at(-1).id:null,...(date?{day:dayState(user.id,date,active)}:{})});return true;
+      json(res,200,{entries,categories:list,summary:summaryOf(active),expenseCategoryTotals:[...expenseTotals].map(([categoryId,cents])=>({categoryId,name:categoryNames.get(categoryId)||'待分类',cents})).sort((a,b)=>b.cents-a.cents||a.categoryId.localeCompare(b.categoryId)),trend:[...trendMap.values()].sort((a,b)=>a.date.localeCompare(b.date)),categoryTotals:[...totals].map(([categoryId,cents])=>({categoryId,name:categoryNames.get(categoryId)||'待分类',cents})).sort((a,b)=>b.cents-a.cents),nextCursor:matching.length>50?entries.at(-1).id:null,...(date?{day:dayState(user.id,date,active)}:{})});return true;
     }
     if(path==='/api/finance/entries'&&method==='POST'){
       const body=await readJson(req);if(!UUID.test(String(body.id||'')))throw problem('账目编号无效');
@@ -176,8 +192,10 @@ export function createFinanceLedger({db,encryptData,decryptData,dataScope,now,re
       const name=text(body.name,30),keywords=Array.isArray(body.keywords)?[...new Set(body.keywords.map(value=>text(value,30)).filter(Boolean))].slice(0,30):[];
       if(!name||list.some(item=>item.id!==id&&item.name===name))throw problem('分类名称不能为空或重复');
       const value={name,keywords,active:body.active!==false};if(id==='uncategorized'&&!value.active)throw problem('待分类不能停用');
-      const time=now(),revision=(previous?.version||0)+1;
-      transact(user.id,'finance_category_updated',null,()=>db.prepare('INSERT INTO finance_categories(user_id,id,data,version,created_at,updated_at) VALUES(?,?,?,?,?,?) ON CONFLICT(user_id,id) DO UPDATE SET data=excluded.data,version=excluded.version,updated_at=excluded.updated_at').run(user.id,id,encryptData(value,dataScope('finance-category',user.id,id)),revision,previous?.createdAt||time,time));
+      const time=now(),revision=(previous?.version||0)+1,encryptedCategory=encryptData(value,dataScope('finance-category',user.id,id));
+      const existingCategoryBytes=db.prepare('SELECT COALESCE(length(CAST(data AS BLOB)),0) AS n FROM finance_categories WHERE user_id=? AND id=?').get(user.id,id)?.n||0;
+      if(storedFinanceBytes(user.id)-existingCategoryBytes+Buffer.byteLength(encryptedCategory)>MAX_FINANCE_BYTES)throw problem('账目内容超过账户存储上限','finance_storage_limit',413);
+      transact(user.id,'finance_category_updated',null,()=>db.prepare('INSERT INTO finance_categories(user_id,id,data,version,created_at,updated_at) VALUES(?,?,?,?,?,?) ON CONFLICT(user_id,id) DO UPDATE SET data=excluded.data,version=excluded.version,updated_at=excluded.updated_at').run(user.id,id,encryptedCategory,revision,previous?.createdAt||time,time));
       json(res,method==='POST'?201:200,{category:categories(user.id).find(item=>item.id===id)});return true;
     }
     if(path==='/api/finance/day'&&method==='POST'){
@@ -194,24 +212,29 @@ export function createFinanceLedger({db,encryptData,decryptData,dataScope,now,re
   }
   function validateImport(value){
     if(!plain(value)||value.version!==1||!Array.isArray(value.entries)||value.entries.length>MAX_ENTRIES||!Array.isArray(value.categories)||value.categories.length>MAX_CATEGORIES||!Array.isArray(value.days)||value.days.length>MAX_ENTRIES)throw problem('备份中的财务结构无效','finance_backup_invalid');
-    const ids=new Set(),categoryIds=new Set(),dates=new Set(),list=DEFAULT_FINANCE_CATEGORIES.map(item=>({...item,active:true}));
+    const ids=new Set(),categoryIds=new Set(),dates=new Set();
+    const categoryMap=new Map(DEFAULT_FINANCE_CATEGORIES.map(item=>[item.id,{...item,active:true}]));
     const clean={version:1,entries:[],categories:[],days:[]};
     for(const item of value.categories){
       if(!plain(item)||(!UUID.test(String(item.id||''))&&!baseIds.has(item.id))||categoryIds.has(item.id)||!version(item.version)||!stamp(item.createdAt)||!stamp(item.updatedAt)||typeof item.name!=='string'||!item.name.trim()||item.name.length>160||!Array.isArray(item.keywords)||item.keywords.length>30||item.keywords.some(key=>typeof key!=='string'||!key.trim()||key.length>30)||typeof item.active!=='boolean')throw problem('备份中的财务分类无效','finance_backup_invalid');
       categoryIds.add(item.id);const normalized={id:item.id,name:item.name,keywords:[...new Set(item.keywords)],active:item.active,version:item.version,createdAt:stamp(item.createdAt),updatedAt:stamp(item.updatedAt)};
       if(normalized.id==='uncategorized'&&!normalized.active)throw problem('备份中的待分类无效','finance_backup_invalid');
-      clean.categories.push(normalized);const index=list.findIndex(category=>category.id===item.id);if(index<0)list.push(normalized);else list[index]=normalized;
+      clean.categories.push(normalized);categoryMap.set(normalized.id,normalized);
     }
+    const list=[...categoryMap.values()];
     if(new Set(list.map(item=>item.name)).size!==list.length)throw problem('备份中存在重复财务分类','finance_backup_invalid');
+    const entryById=new Map(),refundTotals=new Map();
     for(const item of value.entries){
       if(!plain(item)||!UUID.test(String(item.id||''))||ids.has(item.id)||!version(item.version)||!stamp(item.createdAt)||!stamp(item.updatedAt)||(item.deletedAt!==null&&!stamp(item.deletedAt))||typeof item.createHash!=='string'||!/^[0-9a-f]{64}$/.test(item.createHash))throw problem('备份中的账目无效','finance_backup_invalid');
-      const data=entryData(item,null,{allowArchived:true,providedCategories:list});if(item.amountCents!==data.amountCents)throw problem('备份中的账目金额不一致','finance_backup_invalid');
-      ids.add(item.id);clean.entries.push({id:item.id,...data,version:item.version,createdAt:stamp(item.createdAt),updatedAt:stamp(item.updatedAt),deletedAt:item.deletedAt?stamp(item.deletedAt):null,createHash:item.createHash});
+      const data=entryData(item,null,{allowArchived:true,providedCategories:list,categoryMap});if(item.amountCents!==data.amountCents)throw problem('备份中的账目金额不一致','finance_backup_invalid');
+      const normalized={id:item.id,...data,version:item.version,createdAt:stamp(item.createdAt),updatedAt:stamp(item.updatedAt),deletedAt:item.deletedAt?stamp(item.deletedAt):null,createHash:item.createHash};
+      ids.add(item.id);clean.entries.push(normalized);entryById.set(normalized.id,normalized);
+      if(normalized.kind==='refund'&&!normalized.deletedAt)refundTotals.set(normalized.refundOf,(refundTotals.get(normalized.refundOf)||0)+normalized.amountCents);
     }
     for(const item of clean.entries){
       if(item.kind!=='refund')continue;
-      const original=clean.entries.find(entry=>entry.id===item.refundOf);if(!original||original.id===item.id)throw problem('备份中的退款关联无效','finance_backup_invalid');
-      if(!item.deletedAt){if(original.kind!=='expense'||original.deletedAt)throw problem('备份中的退款关联已删除或已更正的支出','finance_backup_invalid');const total=clean.entries.filter(entry=>!entry.deletedAt&&entry.kind==='refund'&&entry.refundOf===original.id).reduce((sum,entry)=>sum+entry.amountCents,0);if(total>original.amountCents)throw problem('备份中的退款超过支出','finance_backup_invalid')}
+      const original=entryById.get(item.refundOf);if(!original||original.id===item.id)throw problem('备份中的退款关联无效','finance_backup_invalid');
+      if(!item.deletedAt){if(original.kind!=='expense'||original.deletedAt)throw problem('备份中的退款关联已删除或已更正的支出','finance_backup_invalid');if((refundTotals.get(original.id)||0)>original.amountCents)throw problem('备份中的退款超过支出','finance_backup_invalid')}
     }
     for(const item of value.days){if(!plain(item)||!validDate(item.date)||dates.has(item.date)||!['zero','unrecorded'].includes(item.state)||!version(item.version)||!stamp(item.updatedAt))throw problem('备份中的花销日期状态无效','finance_backup_invalid');dates.add(item.date);clean.days.push({date:item.date,state:item.state,version:item.version,updatedAt:stamp(item.updatedAt)})}
     return clean;
@@ -221,17 +244,17 @@ export function createFinanceLedger({db,encryptData,decryptData,dataScope,now,re
     if(replace)db.prepare('DELETE FROM finance_entries WHERE user_id=?').run(userId),db.prepare('DELETE FROM finance_categories WHERE user_id=?').run(userId),db.prepare('DELETE FROM finance_days WHERE user_id=?').run(userId);
     for(const item of clean.categories){
       const row=db.prepare('SELECT * FROM finance_categories WHERE user_id=? AND id=?').get(userId,item.id),old=row?{...decryptData(row.data,dataScope('finance-category',userId,item.id)),version:row.version,createdAt:row.created_at,updatedAt:row.updated_at,id:item.id}:null;
-      if(old){if(old.version>item.version||old.updatedAt>item.updatedAt)continue;if(old.version===item.version){if(canonical(old)!==canonical(item)&&digest({name:old.name,keywords:old.keywords,active:old.active})!==digest({name:item.name,keywords:item.keywords,active:item.active}))throw problem('分类备份与当前版本冲突','finance_import_conflict',409);continue}}
+      if(old){if(old.version>item.version)continue;if(old.version===item.version){if(canonical(old)!==canonical(item)&&digest({name:old.name,keywords:old.keywords,active:old.active})!==digest({name:item.name,keywords:item.keywords,active:item.active}))throw problem('分类备份与当前版本冲突','finance_import_conflict',409);continue}}
       db.prepare('INSERT INTO finance_categories(user_id,id,data,version,created_at,updated_at) VALUES(?,?,?,?,?,?) ON CONFLICT(user_id,id) DO UPDATE SET data=excluded.data,version=excluded.version,created_at=excluded.created_at,updated_at=excluded.updated_at').run(userId,item.id,encryptData({name:item.name,keywords:item.keywords,active:item.active},dataScope('finance-category',userId,item.id)),item.version,item.createdAt,item.updatedAt);
     }
     for(const item of clean.entries){
       const row=find(userId,item.id),old=decodeEntry(row),{id,version:revision,createdAt,updatedAt,deletedAt,createHash,...data}=item;
-      if(old){if(old.deletedAt&&!deletedAt)continue;if(old.version>revision||old.updatedAt>updatedAt)continue;if(old.version===revision){const {version:oldVersion,createdAt:oldCreated,updatedAt:oldUpdated,deletedAt:oldDeleted,id:oldId,...oldData}=old;if(digest(oldData)!==digest(data)||oldDeleted!==deletedAt)throw problem('账目备份与当前版本冲突','finance_import_conflict',409);continue}}
+      if(old){if(old.deletedAt&&!deletedAt)continue;if(old.version>revision)continue;if(old.version===revision){const {version:oldVersion,createdAt:oldCreated,updatedAt:oldUpdated,deletedAt:oldDeleted,id:oldId,...oldData}=old;if(digest(oldData)!==digest(data)||oldDeleted!==deletedAt)throw problem('账目备份与当前版本冲突','finance_import_conflict',409);continue}}
       db.prepare('INSERT INTO finance_entries(user_id,id,date,data,create_hash,version,created_at,updated_at,deleted_at) VALUES(?,?,?,?,?,?,?,?,?) ON CONFLICT(user_id,id) DO UPDATE SET date=excluded.date,data=excluded.data,create_hash=excluded.create_hash,version=excluded.version,created_at=excluded.created_at,updated_at=excluded.updated_at,deleted_at=excluded.deleted_at').run(userId,id,data.date,encryptData(data,dataScope('finance-entry',userId,id)),createHash,revision,createdAt,updatedAt,deletedAt);
     }
-    for(const item of clean.days){const row=db.prepare('SELECT * FROM finance_days WHERE user_id=? AND date=?').get(userId,item.date);if(row&&(row.version>item.version||row.updated_at>item.updatedAt))continue;if(row&&row.version===item.version){if(decryptData(row.data,dataScope('finance-day',userId,item.date)).state!==item.state)throw problem('花销日期状态备份冲突','finance_import_conflict',409);continue}db.prepare('INSERT INTO finance_days(user_id,date,data,version,updated_at) VALUES(?,?,?,?,?) ON CONFLICT(user_id,date) DO UPDATE SET data=excluded.data,version=excluded.version,updated_at=excluded.updated_at').run(userId,item.date,encryptData({state:item.state},dataScope('finance-day',userId,item.date)),item.version,item.updatedAt)}
+    for(const item of clean.days){const row=db.prepare('SELECT * FROM finance_days WHERE user_id=? AND date=?').get(userId,item.date);if(row&&row.version>item.version)continue;if(row&&row.version===item.version){if(decryptData(row.data,dataScope('finance-day',userId,item.date)).state!==item.state)throw problem('花销日期状态备份冲突','finance_import_conflict',409);continue}db.prepare('INSERT INTO finance_days(user_id,date,data,version,updated_at) VALUES(?,?,?,?,?) ON CONFLICT(user_id,date) DO UPDATE SET data=excluded.data,version=excluded.version,updated_at=excluded.updated_at').run(userId,item.date,encryptData({state:item.state},dataScope('finance-day',userId,item.date)),item.version,item.updatedAt)}
     if(db.prepare('SELECT COUNT(*) AS n FROM finance_entries WHERE user_id=?').get(userId).n>MAX_ENTRIES)throw problem('恢复后的账目超过账户上限','finance_entry_limit',413);
-    if(db.prepare('SELECT COALESCE(SUM(length(CAST(data AS BLOB))),0) AS n FROM finance_entries WHERE user_id=?').get(userId).n>MAX_FINANCE_BYTES)throw problem('恢复后的账目内容超过账户存储上限','finance_storage_limit',413);
+    if(storedFinanceBytes(userId)>MAX_FINANCE_BYTES)throw problem('恢复后的账目内容超过账户存储上限','finance_storage_limit',413);
     // Validate the combined graph as well as the incoming graph: merges can mix revisions.
     validateImport(exportUser(userId));
     return clean.entries.length;

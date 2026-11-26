@@ -54,8 +54,10 @@ export function overviewRecordExcerpt(record,fallback=''){
 }
 // Every visual loop is made of whole record groups and exactly spaced card centers.
 export function overviewLoopMetrics(recordCount,arcLength,cardWidth,gap){
-  if(!recordCount)return{groups:0,slots:0,pitch:0,length:0,extension:0};
-  const pitch=cardWidth+gap,groups=Math.max(1,Math.ceil(arcLength/(recordCount*pitch))),slots=groups*recordCount,length=slots*pitch;
+  if(!recordCount||!Number.isFinite(arcLength)||arcLength<=0||!Number.isFinite(cardWidth)||cardWidth<=0)return{groups:0,slots:0,pitch:0,length:0,extension:0};
+  const pitch=cardWidth+(Number.isFinite(gap)?gap:0);
+  if(pitch<=0)return{groups:0,slots:0,pitch:0,length:0,extension:0};
+  const groups=Math.max(1,Math.ceil(arcLength/(recordCount*pitch))),slots=groups*recordCount,length=slots*pitch;
   return{groups,slots,pitch,length,extension:(length-arcLength)/2};
 }
 // Allocate once per render so loop copies agree; fallback art can change on the next visit.

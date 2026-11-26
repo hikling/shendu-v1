@@ -109,9 +109,12 @@ function NativeCheckbox({initial, nativeProps}) {
     const input = native.current;
     const sync = () => setChecked(input.checked);
     const reset = () => queueMicrotask(sync);
-    const syncDisabled = () => setDisabled(input.disabled);
+    const syncDisabled = () => setDisabled(input.matches(':disabled'));
     const attributes = new MutationObserver(syncDisabled);
     attributes.observe(input, {attributes: true, attributeFilter: ['disabled']});
+    for (let parent = input.parentElement; parent; parent = parent.parentElement) {
+      if (parent.tagName === 'FIELDSET') attributes.observe(parent, {attributes: true, attributeFilter: ['disabled']});
+    }
     syncDisabled();
     input.addEventListener('change', sync);
     input.form?.addEventListener('reset', reset);
