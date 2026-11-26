@@ -374,7 +374,7 @@ body.reduce-motion .finance-page *,body.reduce-motion .finance-dialog *,body.red
 .finance-day-card-cats>span>i{width:6px;height:6px;border-radius:50%;flex-shrink:0}
 .finance-day-cat-sep{font-style:normal;color:#bcc6ba;font-size:.7rem}
 
-.finance-day-card-foot{position:relative;z-index:1;display:flex;flex-direction:column;gap:2px;width:100%;padding-top:12px;margin-top:auto;border-top:1px solid rgba(33,58,44,.07)}
+.finance-day-card-foot{position:relative;z-index:1;display:flex;flex-direction:column;gap:9px;width:100%;padding-top:12px;margin-top:auto;border-top:1px solid rgba(33,58,44,.07)}
 .finance-day-card.is-selected .finance-day-card-foot{border-top-color:rgba(23,92,82,.14)}
 .finance-day-card-amount{display:flex;flex-direction:column;gap:2px;width:100%;min-width:0}
 .finance-day-card-amount>small{font-size:.66rem;font-weight:500;color:#808e81;line-height:1.35;letter-spacing:.02em}
@@ -382,10 +382,11 @@ body.reduce-motion .finance-page *,body.reduce-motion .finance-dialog *,body.red
 .finance-day-card.is-expense .finance-day-card-amount>strong{color:#8a501c}
 .finance-day-card.is-income .finance-day-card-amount>strong,.finance-day-card.is-refund .finance-day-card-amount>strong{color:#155c4f}
 .finance-day-card-sub{margin-top:2px;font-size:.66rem;color:#1d6554;font-variant-numeric:tabular-nums;white-space:nowrap}
-.finance-day-card-bar{position:absolute;inset:auto 18px 0 18px;height:2.5px;border-radius:99px 99px 0 0;background:transparent;overflow:hidden;pointer-events:none}
-.finance-day-card-bar>i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,#cc9659,#9f642b);opacity:.65;transition:opacity .18s ease}
-.finance-day-card.is-income .finance-day-card-bar>i,.finance-day-card.is-refund .finance-day-card-bar>i{background:linear-gradient(90deg,#4ea18a,#175c52)}
-.finance-day-card.is-selected .finance-day-card-bar>i{opacity:1}
+.finance-day-card-bar{position:static;display:block;width:100%;height:5px;border-radius:99px;background:#eceae0;overflow:hidden;pointer-events:none}
+.finance-day-card.is-income .finance-day-card-bar,.finance-day-card.is-refund .finance-day-card-bar{background:#e2eee8}
+.finance-day-card.is-selected .finance-day-card-bar{background:#dfece5}
+.finance-day-card-bar>i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,#d19d61,#a4672d);transition:width .22s ease,opacity .18s ease}
+.finance-day-card.is-income .finance-day-card-bar>i,.finance-day-card.is-refund .finance-day-card-bar>i{background:linear-gradient(90deg,#4da38b,#175c52)}
 
 /* Seamless Editorial Single-Day Folio Sheet — clean hairlines, zero box-in-box noise */
 .finance-day-detail{position:sticky;top:82px;padding:26px 28px 22px;border:1px solid rgba(23,92,82,.18);border-radius:20px;background:#fffefb;box-shadow:0 24px 48px -28px rgba(18,46,36,.2),0 2px 6px rgba(18,46,36,.04);min-width:0}
